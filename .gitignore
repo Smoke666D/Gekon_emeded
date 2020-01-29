@@ -1,0 +1,18 @@
+settings/
+Debug/
+
+
+# Compiled Binaries
+*.bin
+*.elf
+*.hex
+*.map
+
+
+
+# Build
+*.d
+*.o
+*.su
+
+*.dump

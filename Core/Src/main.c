@@ -51,6 +51,7 @@ SRAM_HandleTypeDef hsram1;
 SRAM_HandleTypeDef hsram2;
 
 osThreadId_t defaultTaskHandle;
+osThreadId_t netTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -62,6 +63,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_FSMC_Init(void);
 void StartDefaultTask(void *argument);
+void StartNetTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -134,6 +136,14 @@ int main(void)
     .stack_size = 128
   };
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* definition and creation of netTask */
+  const osThreadAttr_t netTask_attributes = {
+    .name = "netTask",
+    .priority = (osPriority_t) osPriorityLow,
+    .stack_size = 256
+  };
+  netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -421,6 +431,24 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */ 
+}
+
+/* USER CODE BEGIN Header_StartNetTask */
+/**
+* @brief Function implementing the netTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartNetTask */
+void StartNetTask(void *argument)
+{
+  /* USER CODE BEGIN StartNetTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartNetTask */
 }
 
 /**

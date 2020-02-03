@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "eth_common.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,6 +52,7 @@ SRAM_HandleTypeDef hsram2;
 
 osThreadId_t defaultTaskHandle;
 osThreadId_t netTaskHandle;
+osThreadId_t commTAslHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -64,6 +65,7 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_FSMC_Init(void);
 void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
+void StartCommTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -133,7 +135,7 @@ int main(void)
   const osThreadAttr_t defaultTask_attributes = {
     .name = "defaultTask",
     .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 128
+    .stack_size = 512
   };
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
@@ -144,6 +146,14 @@ int main(void)
     .stack_size = 256
   };
   netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
+
+  /* definition and creation of commTAsl */
+  const osThreadAttr_t commTAsl_attributes = {
+    .name = "commTAsl",
+    .priority = (osPriority_t) osPriorityLow,
+    .stack_size = 512
+  };
+  commTAslHandle = osThreadNew(StartCommTask, NULL, &commTAsl_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -443,12 +453,38 @@ void StartDefaultTask(void *argument)
 void StartNetTask(void *argument)
 {
   /* USER CODE BEGIN StartNetTask */
+
   /* Infinite loop */
   for(;;)
   {
+  	vETHinitLwip();
     osDelay(1);
   }
   /* USER CODE END StartNetTask */
+}
+
+/* USER CODE BEGIN Header_StartCommTask */
+/**
+* @brief Function implementing the commTAsl thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartCommTask */
+void StartCommTask(void *argument)
+{
+  /* USER CODE BEGIN StartCommTask */
+  /* Infinite loop */
+  for(;;)
+  {
+  	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
+    osDelay(100);
+    HAL_GPIO_TogglePin( GPIOB, LD2_Pin );
+    osDelay(100);
+    HAL_GPIO_TogglePin( GPIOB, LD3_Pin );
+    osDelay(100);
+
+  }
+  /* USER CODE END StartCommTask */
 }
 
 /**

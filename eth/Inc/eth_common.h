@@ -7,4 +7,6 @@
 #ifndef INC_ETH_COMMON_H_
 #define INC_ETH_COMMON_H_
 
+void vETHinitLwip( void );
+
 #endif /* INC_ETH_COMMON_H_ */

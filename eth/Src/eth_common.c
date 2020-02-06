@@ -7,6 +7,8 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "eth_common.h"
 
+#include "sys.h"
+
 #include "cmsis_os.h"
 
 #include "lwip.h"
@@ -61,22 +63,18 @@ void vETHinitLwip( void )
 	nc = netconn_new( NETCONN_TCP );
 	if ( nc == NULL )
 	{
-		start = 2;
 		while( 1 ) osDelay( 1 );
 	}
 	res = netconn_bind(nc, IP_ADDR_ANY, 80);
 	if ( res != ERR_OK )
 	{
-		start = 3;
 		while( 1 ) osDelay( 1 );
 	}
 	res = netconn_listen( nc );
 	if ( res != ERR_OK )
 	{
-		start = 4;
 		while( 1 ) osDelay( 1 );
 	}
-	start = 0;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
@@ -105,14 +103,14 @@ uint8_t vETHlistenRoutine( void )
 	return client;
 }
 /*---------------------------------------------------------------------------------------------------*/
-static char buf[50];
+static char buf[500];
 void startNetClientTask( void const * argument )
 {
 	struct 		netconn * netcon = ( struct netconn * )argument;
-	//struct 		netbuf  * nb;
+	struct 		netbuf  * nb;
 	//char *		buffer       = pvPortMalloc( 2048U );
-	//uint32_t 	len          = 0U;
-	//err_t			res          = ERR_OK;
+	uint32_t 	len          = 0U;
+	err_t			res          = ERR_OK;
 
 
 	sprintf( buf, "<h1>Hello World!<h1>" );
@@ -120,20 +118,24 @@ void startNetClientTask( void const * argument )
 
   for(;;)
   {
-  	/*
+
   	res = netconn_recv( netcon, &nb );
   	if( res != ERR_OK )
   	{
   		while( 1 ) osDelay( 1 );
   	}
+
   	else
   	{
   		len = netbuf_len( nb );
   		netbuf_copy( nb, buf, len );
   		netbuf_delete( nb );
   		buf[len] = 0U;
+  		vSYSSerial("******************************************************\n\r");
+  		vSYSSerial( buf );
+  		vSYSSerial("******************************************************\n\r");
+  		while( 1 ) osDelay( 1 );
   	}
-  	*/
   	osDelay( 1 );
   }
 }

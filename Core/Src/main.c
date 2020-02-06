@@ -26,11 +26,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "eth_common.h"
+#include "sys.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+void vWriteDebugSerial( char* msg );
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -115,7 +116,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_LWIP_Init();
   /* USER CODE BEGIN 2 */
-
+  vSYSInitSerial();
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();
@@ -334,6 +335,7 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+	vSYSSerial( ">>Start Default Task!\n\r" );
   /* Infinite loop */
   for(;;)
   {
@@ -353,7 +355,13 @@ void StartDefaultTask(void *argument)
 void StartNetTask(void *argument)
 {
   /* USER CODE BEGIN StartNetTask */
+	char ipaddr[16];
 	vETHinitLwip();
+	cETHgetStrIP( ipaddr );
+	vSYSSerial( ">>LwIP ready and listen port 80!\n\r" );
+	vSYSSerial( ">>IP address: ");
+	vSYSSerial( ipaddr );
+	vSYSSerial("\n\r");
 	HAL_GPIO_WritePin( GPIOB, LD2_Pin, GPIO_PIN_SET );
   /* Infinite loop */
   for(;;)

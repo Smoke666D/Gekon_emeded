@@ -6,7 +6,11 @@
  */
 #ifndef INC_ETH_COMMON_H_
 #define INC_ETH_COMMON_H_
-
-void vETHinitLwip( void );
-
+/* Includes ------------------------------------------------------------------*/
+#include "stm32f2xx_hal.h"
+/* Functions -----------------------------------------------------------------*/
+uint8_t vETHlistenRoutine( void );
+void 		cETHgetStrIP( char* ipStr );
+void 		vETHinitLwip( void );
+/*----------------------------------------------------------------------------*/
 #endif /* INC_ETH_COMMON_H_ */

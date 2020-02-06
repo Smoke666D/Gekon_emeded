@@ -58,6 +58,7 @@ void vETHinitLwip( void )
 	}
 	cETHgetStrIP( localIpStr );
 	local_ip  = gnetif.ip_addr;
+	/*
 	nc = netconn_new( NETCONN_TCP );
 	if ( nc == NULL )
 	{
@@ -77,6 +78,7 @@ void vETHinitLwip( void )
 		while( 1 ) osDelay( 1 );
 	}
 	start = 0;
+	*/
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**

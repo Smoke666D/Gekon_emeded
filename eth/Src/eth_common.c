@@ -58,7 +58,6 @@ void vETHinitLwip( void )
 	}
 	cETHgetStrIP( localIpStr );
 	local_ip  = gnetif.ip_addr;
-	/*
 	nc = netconn_new( NETCONN_TCP );
 	if ( nc == NULL )
 	{
@@ -78,7 +77,6 @@ void vETHinitLwip( void )
 		while( 1 ) osDelay( 1 );
 	}
 	start = 0;
-	*/
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
@@ -111,17 +109,18 @@ static char buf[50];
 void startNetClientTask( void const * argument )
 {
 	struct 		netconn * netcon = ( struct netconn * )argument;
-	struct 		netbuf  * nb;
+	//struct 		netbuf  * nb;
 	//char *		buffer       = pvPortMalloc( 2048U );
-	uint32_t 	len          = 0U;
-	err_t			res          = ERR_OK;
+	//uint32_t 	len          = 0U;
+	//err_t			res          = ERR_OK;
 
-	/*
+
 	sprintf( buf, "<h1>Hello World!<h1>" );
 	netconn_write( netcon, buf, strlen(buf), NETCONN_COPY );
-	*/
+
   for(;;)
   {
+  	/*
   	res = netconn_recv( netcon, &nb );
   	if( res != ERR_OK )
   	{
@@ -134,6 +133,7 @@ void startNetClientTask( void const * argument )
   		netbuf_delete( nb );
   		buf[len] = 0U;
   	}
+  	*/
   	osDelay( 1 );
   }
 }

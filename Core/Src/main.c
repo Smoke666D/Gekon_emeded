@@ -50,9 +50,27 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 SRAM_HandleTypeDef hsram1;
 SRAM_HandleTypeDef hsram2;
 
+/* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 512
+};
+/* Definitions for netTask */
 osThreadId_t netTaskHandle;
+const osThreadAttr_t netTask_attributes = {
+  .name = "netTask",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 256
+};
+/* Definitions for commTAsl */
 osThreadId_t commTAslHandle;
+const osThreadAttr_t commTAsl_attributes = {
+  .name = "commTAsl",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 512
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -108,10 +126,11 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_FSMC_Init();
+  MX_LWIP_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
-
+  /* Init scheduler */
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -131,28 +150,13 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  const osThreadAttr_t defaultTask_attributes = {
-    .name = "defaultTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 512
-  };
+  /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* definition and creation of netTask */
-  const osThreadAttr_t netTask_attributes = {
-    .name = "netTask",
-    .priority = (osPriority_t) osPriorityLow,
-    .stack_size = 256
-  };
+  /* creation of netTask */
   netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
 
-  /* definition and creation of commTAsl */
-  const osThreadAttr_t commTAsl_attributes = {
-    .name = "commTAsl",
-    .priority = (osPriority_t) osPriorityLow,
-    .stack_size = 512
-  };
+  /* creation of commTAsl */
   commTAslHandle = osThreadNew(StartCommTask, NULL, &commTAsl_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -161,7 +165,7 @@ int main(void)
 
   /* Start scheduler */
   osKernelStart();
-  
+ 
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
@@ -432,8 +436,6 @@ static void MX_FSMC_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  /* init code for LWIP */
-  MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
   for(;;)
@@ -453,11 +455,12 @@ void StartDefaultTask(void *argument)
 void StartNetTask(void *argument)
 {
   /* USER CODE BEGIN StartNetTask */
-
+	MX_LWIP_Init();
+	vETHinitLwip();
   /* Infinite loop */
   for(;;)
   {
-  	vETHinitLwip();
+
     osDelay(1);
   }
   /* USER CODE END StartNetTask */

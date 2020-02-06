@@ -6,6 +6,7 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "eth_common.h"
+#include "http.h"
 
 #include "sys.h"
 
@@ -18,6 +19,13 @@
 static 		struct 		netconn * nc;
 static 		struct 		netconn * in_nc;
 static 		osThreadId netClientHandle;
+
+HTTP_RESPONSE response = {
+		.status  = HTTP_STATUS_OK,
+		.method  = HTTP_METHOD_GET,
+		.contentLength = 92U,
+		.connect = 1
+};
 /*----------------------- Variables -----------------------------------------------------------------*/
 static		uint8_t			start 		= 1;
 volatile 	err_t 			res 			= ERR_OK;
@@ -80,6 +88,7 @@ void vETHinitLwip( void )
 /**
  * Listen open port
  */
+static char	output[200];
 uint8_t vETHlistenRoutine( void )
 {
 	uint8_t client = 0U;
@@ -92,6 +101,13 @@ uint8_t vETHlistenRoutine( void )
 	}
 	else
 	{
+
+		eHTTPmakeResponse(output, 200, response);
+		strcat(output, HTTP_END_LINE);
+		strcat(output, "<html><body><h1>This is WebServer!</h1></body></html>");
+		//strcat(output, "This is WebServer!");
+
+
 		const osThreadAttr_t netClientTask_attributes = {
 				.name       = "netClientTask",
 		    .priority   = ( osPriority_t ) osPriorityIdle,
@@ -104,6 +120,7 @@ uint8_t vETHlistenRoutine( void )
 }
 /*---------------------------------------------------------------------------------------------------*/
 static char buf[500];
+
 void startNetClientTask( void const * argument )
 {
 	struct 		netconn * netcon = ( struct netconn * )argument;
@@ -112,13 +129,11 @@ void startNetClientTask( void const * argument )
 	uint32_t 	len          = 0U;
 	err_t			res          = ERR_OK;
 
-
-	sprintf( buf, "<h1>Hello World!<h1>" );
-	netconn_write( netcon, buf, strlen(buf), NETCONN_COPY );
+	//sprintf( buf, "<h1>Hello World!<h1>" );
+	//netconn_write( netcon, buf, strlen(buf), NETCONN_COPY );
 
   for(;;)
   {
-
   	res = netconn_recv( netcon, &nb );
   	if( res != ERR_OK )
   	{
@@ -134,6 +149,12 @@ void startNetClientTask( void const * argument )
   		vSYSSerial("******************************************************\n\r");
   		vSYSSerial( buf );
   		vSYSSerial("******************************************************\n\r");
+  		vSYSSerial(output);
+  		vSYSSerial("******************************************************\n\r");
+
+
+  		netconn_write( netcon, output, strlen(output), NETCONN_COPY );
+
   		while( 1 ) osDelay( 1 );
   	}
   	osDelay( 1 );

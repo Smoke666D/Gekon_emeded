@@ -27,11 +27,12 @@
 /* USER CODE BEGIN Includes */
 #include "eth_common.h"
 #include "sys.h"
+#include "http.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-void vWriteDebugSerial( char* msg );
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/

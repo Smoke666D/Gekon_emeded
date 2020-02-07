@@ -7,6 +7,7 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "eth_common.h"
 #include "http.h"
+#include "index.h"
 
 #include "sys.h"
 
@@ -18,8 +19,8 @@
 /*----------------------- Structures ----------------------------------------------------------------*/
 static 		struct 		netconn * nc;
 static 		struct 		netconn * in_nc;
-static 		osThreadId netClientHandle;
 
+static 		osThreadId_t 	netClientHandle;
 static 		HTTP_RESPONSE response;
 static		HTTP_REQUEST	request;
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -83,7 +84,6 @@ void vETHinitLwip( void )
 /**
  * Listen open port
  */
-static char	output[400];
 uint8_t vETHlistenRoutine( void )
 {
 	uint8_t client = 0U;
@@ -98,7 +98,7 @@ uint8_t vETHlistenRoutine( void )
 		const osThreadAttr_t netClientTask_attributes = {
 				.name       = "netClientTask",
 				.priority   = ( osPriority_t ) osPriorityLow,
-				.stack_size = 512U
+				.stack_size = 1024U
 		};
 		netClientHandle = osThreadNew( startNetClientTask, (void*)in_nc, &netClientTask_attributes );
 		client = 1U;
@@ -108,8 +108,8 @@ uint8_t vETHlistenRoutine( void )
 /*---------------------------------------------------------------------------------------------------*/
 static char buf[500];
 
-
-char webPagenn[] = "<html><body><h1>This is WebServer!</h1></body></html>\r\n";
+#define	httpBufSize		256
+static char	output[httpBufSize];
 
 void startNetClientTask( void const * argument )
 {
@@ -118,7 +118,13 @@ void startNetClientTask( void const * argument )
 	//char *		buffer       = pvPortMalloc( 2048U );
 	uint32_t 	len          = 0U;
 	err_t			res          = ERR_OK;
-	char*			data;
+
+	uint32_t	mesNum			= 0U;
+	char*			pchSt;
+	char*			pchEn;
+	uint32_t	i = 0U;
+
+	uint32_t	control = 0U;
 
   for(;;)
   {
@@ -133,7 +139,6 @@ void startNetClientTask( void const * argument )
   		eHTTPparsingRequest( buf, &request );
   		eHTTPbuildResponse( request, &response );
   		eHTTPmakeResponse( output, response );
-  		strcat( output, response.data );
 
 
   		vSYSSerial("******************************************************\n\r");
@@ -141,14 +146,36 @@ void startNetClientTask( void const * argument )
   		vSYSSerial("******************************************************\n\r");
   		vSYSSerial(output);
   		vSYSSerial("******************************************************\n\r");
-  		if ( response.status != HTTP_METHOD_NO)
+
+  		if ( response.contentLength != HTTP_METHOD_NO )
   		{
+  			vSYSSerial("[");
   			netconn_write( netcon, output, strlen(output), NETCONN_COPY );
+
+  			if ( response.contentLength != 0U )
+  			{
+  				vSYSSerial("[");
+  				mesNum = ( uint32_t )( HTML_LENGTH / httpBufSize ) + 2U;
+  				pchSt  = response.data;
+  				pchEn  = pchSt + httpBufSize;
+  				for( i=0U; i<mesNum; i++ )
+  				{
+  					strncpy( output, ( pchSt ), ( pchEn - pchSt ) );
+  				  pchSt  = pchEn;
+  				  pchEn  = pchSt + httpBufSize;
+  				  vSYSSerial("|");
+  				  netconn_write( netcon, output, strlen(output), NETCONN_COPY );
+  				  control += strlen(output);
+  				}
+  				vSYSSerial("]");
+  				char buffer[6];
+  				sprintf( buffer, "%lu", control );
+  				vSYSSerial("\r\n");
+  				vSYSSerial(buffer);
+  			}
   		}
-
-
   	}
-  	osDelay( 10 );
+  	osDelay( 1 );
   }
 }
 /*---------------------------------------------------------------------------------------------------*/

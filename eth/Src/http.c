@@ -7,6 +7,9 @@
 
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "http.h"
+
+#include "index.h"
+
 #include "string.h"
 #include "stdio.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
@@ -19,6 +22,7 @@ char webPage[53U] = {0x3C, 0x68, 0x74, 0x6D, 0x6C, 0x3E, 0x3C, 0x62, 0x6F, 0x64,
 
 /*----------------------- Functions -----------------------------------------------------------------*/
 void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );
+void 		vHTTPCleanResponse( HTTP_RESPONSE *response );
 void 		eHTTPbuildGet( char* path, HTTP_RESPONSE *response );
 uint8_t vHTTPgetLine( char* input, uint16_t num, char* line );
 /*---------------------------------------------------------------------------------------------------*/
@@ -34,30 +38,30 @@ void vHTTPcleanRequest( HTTP_REQUEST *httpRequest )
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vHTTPCleanResponse( HTTP_RESPONSE response )
+void vHTTPCleanResponse( HTTP_RESPONSE *response )
 {
 	uint32_t i = 0U;
 
-	response.status = HTTP_STATUS_BAD_REQUEST;
-	response.method = HTTP_METHOD_NO;
+	response->status = HTTP_STATUS_BAD_REQUEST;
+	response->method = HTTP_METHOD_NO;
 	for( i=0U; i<DATE_LENGTH; i++ )
 	{
-		response.date[i] = 0x00U;
+		response->date[i] = 0x00U;
 	}
 	for( i=0U; i<SERVER_LENGTH; i++)
 	{
-		response.server[i] = 0x00U;
+		response->server[i] = 0x00U;
 	}
 	for( i=0U; i<DATE_LENGTH; i++)
 	{
-		response.modified[i] = 0x00U;
+		response->modified[i] = 0x00U;
 	}
-	response.contentLength = 0U;
+	response->contentLength = 0U;
 	for( i=0U; i<CONTENT_TYPE_LENGTH; i++ )
 	{
-		response.contetntType[i] = 0x00U;
+		response->contetntType[i] = 0x00U;
 	}
-	response.connect = HTTP_CONNECT_CLOSED;
+	response->connect = HTTP_CONNECT_CLOSED;
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t vHTTPgetLine( char* input, uint16_t num, char* line )
@@ -122,17 +126,30 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 /*---------------------------------------------------------------------------------------------------*/
 void eHTTPbuildGet( char* path, HTTP_RESPONSE *response)
 {
+	strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
+	strcpy( response->server, HTTP_SERVER_NAME );
+	strcpy(response->modified, "Sat, 20 Nov 2004 07:16:26 GMT");
+	strcpy(response->contetntType, "text/html");
+
+	response->connect = HTTP_CONNECT_CLOSED;
 	if( path[0] == 0x00 )
 	{
 		response->status = HTTP_STATUS_OK;
-		strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
-		strcpy( response->server, HTTP_SERVER_NAME );
-		strcpy(response->modified, "Sat, 20 Nov 2004 07:16:26 GMT");
-		strcpy(response->contetntType, "text/html");
-		response->connect = HTTP_CONNECT_CLOSED;
-		response->contentLength = strlen(webPage);
-		response->data = webPage;
+		//response->contentLength = strlen(webPage);
+		//response->data = webPage;
+		response->contentLength = HTML_LENGTH;
+		response->data = data__index_html;
 	}
+	else
+	{
+		response->status = HTTP_STATUS_NON_CONNECT;
+		response->contentLength = 0U;
+	}
+
+	// /css/style.css
+	// /js/main.js
+	// //js/nouislider.min.js
+
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -140,6 +157,7 @@ HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
 {
 	HTTP_STATUS res = HTTP_STATUS_OK;
 
+	vHTTPCleanResponse( response );
 	response->method = HTTP_METHOD_NO;
 
 	switch ( request.method )
@@ -171,12 +189,8 @@ HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
 /*---------------------------------------------------------------------------------------------------*/
 HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 {
-	HTTP_STATUS 	res   = HTTP_STATUS_OK;
+	HTTP_STATUS 	res = HTTP_STATUS_OK;
 	char					buffer[30];
-
-	//strcpy(response.server, HTTP_SERVER_NAME);
-	//strcpy(response.modified, "Sat, 20 Nov 2004 07:16:26 GMT");
-	//strcpy(response.contetntType, "text/html");
 
 	switch( response.status )
 	{
@@ -196,14 +210,6 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	strcat( httpStr, response.date );
 	strcat( httpStr, HTTP_END_LINE );
 
-	//strcat( httpStr, HTTP_SERVER_LINE );
-	//strcat( httpStr, response.server );
-	//strcat( httpStr, HTTP_END_LINE );
-
-	//strcat( httpStr, HTTP_MODIF_LINE );
-	//strcat( httpStr, response.modified );
-	//strcat( httpStr, HTTP_END_LINE );
-
 	strcat( httpStr, HTTP_LENGTH_LINE );
 	sprintf( buffer, "%lu", response.contentLength );
 	strcat( httpStr, buffer );
@@ -212,6 +218,8 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	strcat( httpStr, HTTP_CONTENT_LINE );
 	strcat( httpStr, response.contetntType );
 	strcat( httpStr, HTTP_END_LINE );
+
+	//Connection: keep-alive
 
 	strcat( httpStr, HTTP_CONN_LINE );
 	strcat( httpStr, HTTP_END_LINE );

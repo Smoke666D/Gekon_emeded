@@ -10,36 +10,51 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
+#define		CR_HEX								0x0D
+#define		LF_HEX								0x0A
+
 #define		DATE_LENGTH						29
 #define		SERVER_LENGTH					21
 #define		CONTENT_TYPE_LENGTH		9
+
+#define		HTTP_PATH_LENGTH			30
+#define		WEB_PAGE_SIZE					60
 /*-------------------------- ENUM --------------------------------------*/
+
 typedef enum
 {
 	//HTTP_STATUS_CONTINUE 						= 100,
 	//HTTP_STATUS_SWITCHING_PROTOCOLS = 101,
 	HTTP_STATUS_OK									= 200,
 	HTTP_STATUS_BAD_REQUEST					= 400,
-	//HTTP_STATUS_NON_CONNECT					= 404
+	HTTP_STATUS_NON_CONNECT					= 404
 } HTTP_STATUS;
+/*------------------------- Methods -----------------------------------*/
+#define		HTTP_METHOD_NUM							4U
+
+#define		HTTP_METHOD_STR_GET					"GET"
+#define		HTTP_METHOD_STR_POST				"POST"
+#define		HTTP_METHOD_STR_HEAD				"HEAD"
+#define		HTTP_METHOD_STR_OPTION			"OPTION"
 
 typedef enum
 {
-	HTTP_METHOD_ERROR,
-	HTTP_METHOD_GET,
-	HTTP_METHOD_POST,
-	HTTP_METHOD_HEAD,
-	HTTP_METHOD_OPTION
-}HTTP_METHOD;
-
+	HTTP_METHOD_NO			= 0x00U,
+	HTTP_METHOD_GET			= 0x01U,
+	HTTP_METHOD_POST		= 0x02U,
+	HTTP_METHOD_HEAD		= 0x03U,
+	HTTP_METHOD_OPTION	= 0x04U
+} HTTP_METHOD;
+/*----------------------------------------------------------------------*/
 typedef enum
 {
-	CLOSED
+	HTTP_CONNECT_CLOSED
 }HTTP_CONNECT;
 /*----------------------- Structures -----------------------------------*/
 typedef struct
 {
-		HTTP_METHOD	method;
+		HTTP_METHOD		method;
+		char					path[HTTP_PATH_LENGTH];
 } HTTP_REQUEST;
 
 typedef struct
@@ -52,6 +67,7 @@ typedef struct
 		uint32_t			contentLength;
 		char					contetntType[CONTENT_TYPE_LENGTH];
 		HTTP_CONNECT	connect;
+		char* 				data;
 } HTTP_RESPONSE;
 /* HHTP status-codes ---------------------------------------------------*/
 /*
@@ -95,7 +111,7 @@ typedef struct
 #define		HTTP_STATUS_GATEWAY_TIMEOUT									"504"
 #define		HTTP_STATUS_HTTP_VERSION_NOT_SUPPORTED			"505"
 */
-/* Tempaltes -----------------------------------------------------------*/
+/*------------------------ Tempaltes ----------------------------------*/
 #define		HTTP_END_LINE								"\r\n"
 #define		HTTP_SERVER_NAME						"EMBmss/0.0.1"
 
@@ -111,8 +127,9 @@ typedef struct
 #define		HTTP_CONN_LINE							"Connection: closed"
 #define		HTTP_CONTENT_LINE						"Content-Type: "
 /*----------------------- Functions ------------------------------------*/
-HTTP_STATUS eHTTPparsingRequest( char* req, uint32_t len, HTTP_REQUEST httpRequest );
-HTTP_STATUS eHTTPmakeResponse( char* httpStr, uint32_t len, HTTP_RESPONSE response );
+HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request );
+HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response );
+HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response );
 /*----------------------------------------------------------------------*/
 #endif /* INC_HTTP_H_ */
 

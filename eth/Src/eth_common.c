@@ -20,14 +20,9 @@ static 		struct 		netconn * nc;
 static 		struct 		netconn * in_nc;
 static 		osThreadId netClientHandle;
 
-HTTP_RESPONSE response = {
-		.status  = HTTP_STATUS_OK,
-		.method  = HTTP_METHOD_GET,
-		.contentLength = 92U,
-		.connect = 1
-};
+static 		HTTP_RESPONSE response;
+static		HTTP_REQUEST	request;
 /*----------------------- Variables -----------------------------------------------------------------*/
-static		uint8_t			start 		= 1;
 volatile 	err_t 			res 			= ERR_OK;
 static 		ip_addr_t		local_ip;
 static		char 				localIpStr[IP4ADDR_STRLEN_MAX];
@@ -88,7 +83,7 @@ void vETHinitLwip( void )
 /**
  * Listen open port
  */
-static char	output[200];
+static char	output[400];
 uint8_t vETHlistenRoutine( void )
 {
 	uint8_t client = 0U;
@@ -97,21 +92,13 @@ uint8_t vETHlistenRoutine( void )
 	if ( res != ERR_OK )
 	{
 		client = 0U;
-		//while( 1 ) osDelay( 1 );
 	}
 	else
 	{
-
-		eHTTPmakeResponse(output, 200, response);
-		strcat(output, HTTP_END_LINE);
-		strcat(output, "<html><body><h1>This is WebServer!</h1></body></html>");
-		//strcat(output, "This is WebServer!");
-
-
 		const osThreadAttr_t netClientTask_attributes = {
 				.name       = "netClientTask",
-		    .priority   = ( osPriority_t ) osPriorityIdle,
-		    .stack_size = 512U
+				.priority   = ( osPriority_t ) osPriorityLow,
+				.stack_size = 512U
 		};
 		netClientHandle = osThreadNew( startNetClientTask, (void*)in_nc, &netClientTask_attributes );
 		client = 1U;
@@ -121,6 +108,9 @@ uint8_t vETHlistenRoutine( void )
 /*---------------------------------------------------------------------------------------------------*/
 static char buf[500];
 
+
+char webPagenn[] = "<html><body><h1>This is WebServer!</h1></body></html>\r\n";
+
 void startNetClientTask( void const * argument )
 {
 	struct 		netconn * netcon = ( struct netconn * )argument;
@@ -128,36 +118,37 @@ void startNetClientTask( void const * argument )
 	//char *		buffer       = pvPortMalloc( 2048U );
 	uint32_t 	len          = 0U;
 	err_t			res          = ERR_OK;
-
-	//sprintf( buf, "<h1>Hello World!<h1>" );
-	//netconn_write( netcon, buf, strlen(buf), NETCONN_COPY );
+	char*			data;
 
   for(;;)
   {
   	res = netconn_recv( netcon, &nb );
-  	if( res != ERR_OK )
-  	{
-  		while( 1 ) osDelay( 1 );
-  	}
-
-  	else
+  	if( res == ERR_OK )
   	{
   		len = netbuf_len( nb );
   		netbuf_copy( nb, buf, len );
   		netbuf_delete( nb );
   		buf[len] = 0U;
+
+  		eHTTPparsingRequest( buf, &request );
+  		eHTTPbuildResponse( request, &response );
+  		eHTTPmakeResponse( output, response );
+  		strcat( output, response.data );
+
+
   		vSYSSerial("******************************************************\n\r");
   		vSYSSerial( buf );
   		vSYSSerial("******************************************************\n\r");
   		vSYSSerial(output);
   		vSYSSerial("******************************************************\n\r");
+  		if ( response.status != HTTP_METHOD_NO)
+  		{
+  			netconn_write( netcon, output, strlen(output), NETCONN_COPY );
+  		}
 
 
-  		netconn_write( netcon, output, strlen(output), NETCONN_COPY );
-
-  		while( 1 ) osDelay( 1 );
   	}
-  	osDelay( 1 );
+  	osDelay( 10 );
   }
 }
 /*---------------------------------------------------------------------------------------------------*/

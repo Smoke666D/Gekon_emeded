@@ -7,9 +7,12 @@
 
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "http.h"
-
+// Site
+#include "filePath.h"
 #include "index.h"
-
+#include "main_js.h"
+#include "style_css.h"
+// Common
 #include "string.h"
 #include "stdio.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
@@ -21,10 +24,11 @@ char webPage[53U] = {0x3C, 0x68, 0x74, 0x6D, 0x6C, 0x3E, 0x3C, 0x62, 0x6F, 0x64,
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );
-void 		vHTTPCleanResponse( HTTP_RESPONSE *response );
-void 		eHTTPbuildGet( char* path, HTTP_RESPONSE *response );
-uint8_t vHTTPgetLine( char* input, uint16_t num, char* line );
+void 						vHTTPcleanRequest( HTTP_REQUEST *httpRequest );
+void 						vHTTPCleanResponse( HTTP_RESPONSE *response );
+void 						eHTTPbuildGet( char* path, HTTP_RESPONSE *response );
+uint8_t 				uHTTPgetLine( char* input, uint16_t num, char* line );
+HTTP_SITE_PATH 	eHTTPgetPath( char* path );
 /*---------------------------------------------------------------------------------------------------*/
 void vHTTPcleanRequest( HTTP_REQUEST *httpRequest )
 {
@@ -57,14 +61,11 @@ void vHTTPCleanResponse( HTTP_RESPONSE *response )
 		response->modified[i] = 0x00U;
 	}
 	response->contentLength = 0U;
-	for( i=0U; i<CONTENT_TYPE_LENGTH; i++ )
-	{
-		response->contetntType[i] = 0x00U;
-	}
-	response->connect = HTTP_CONNECT_CLOSED;
+	response->contetntType  = HTTP_CONTENT_HTML;
+	response->connect 			= HTTP_CONNECT_CLOSED;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t vHTTPgetLine( char* input, uint16_t num, char* line )
+uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
 {
 	uint8_t   res   = 0U;
 	uint16_t  i     = 0U;
@@ -94,7 +95,7 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 	char* 				pchEnd = NULL;
 	char					line[50];
 
-	vHTTPgetLine( req, 0, line );
+	uHTTPgetLine( req, 0, line );
 	vHTTPcleanRequest( request );
 	/* Parsing HTTP methods */
 	for( i=0U; i<HTTP_METHOD_NUM; i++)
@@ -124,32 +125,71 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+HTTP_SITE_PATH eHTTPgetPath( char* path )
+{
+	HTTP_SITE_PATH res = NO_PATH;
+
+	if ( strstr( path, STYLE_CSS_PATH ) )
+	{
+		res = STYLE_CSS;
+	}
+	else if ( strstr( path, MAIN_JS_PATH ) )
+	{
+		res = MAIN_JS;
+	}
+
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void eHTTPbuildGet( char* path, HTTP_RESPONSE *response)
 {
+	HTTP_SITE_PATH file = NO_PATH;
+
 	strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
-	strcpy( response->server, HTTP_SERVER_NAME );
-	strcpy(response->modified, "Sat, 20 Nov 2004 07:16:26 GMT");
-	strcpy(response->contetntType, "text/html");
+	//strcpy( response->modified, "Sat, 20 Nov 2004 07:16:26 GMT" );
 
 	response->connect = HTTP_CONNECT_CLOSED;
 	if( path[0] == 0x00 )
 	{
-		response->status = HTTP_STATUS_OK;
-		//response->contentLength = strlen(webPage);
-		//response->data = webPage;
+		response->contetntType 	= HTTP_CONTENT_HTML;
+		response->status 				= HTTP_STATUS_OK;
 		response->contentLength = HTML_LENGTH;
-		response->data = data__index_html;
+		response->data 					= data__index_html;
+	}
+	else if ( path[0] )
+	{
+		file = eHTTPgetPath( path );
+		switch ( file )
+		{
+			case NO_PATH:
+				response->contetntType 	= HTTP_CONTENT_HTML;
+				response->status 				= HTTP_STATUS_NON_CONNECT;
+				response->contentLength = 0U;
+				break;
+			case STYLE_CSS:
+				response->contetntType 	= HTTP_CONTENT_CSS;
+				response->status 				= HTTP_STATUS_OK;
+				response->contentLength = STYLE_CSS_LENGTH;
+				response->data 					= data__style_css;
+				break;
+			case MAIN_JS:
+				response->contetntType 	= HTTP_CONTENT_JS;
+				response->status 				= HTTP_STATUS_OK;
+				response->contentLength = MAIN_JS_LENGTH;
+			  response->data 					= data__main_js;
+				break;
+			default:
+				response->contetntType 	= HTTP_CONTENT_HTML;
+				response->status 				= HTTP_STATUS_NON_CONNECT;
+				response->contentLength = 0U;
+				break;
+		}
 	}
 	else
 	{
 		response->status = HTTP_STATUS_NON_CONNECT;
 		response->contentLength = 0U;
 	}
-
-	// /css/style.css
-	// /js/main.js
-	// //js/nouislider.min.js
-
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -216,7 +256,21 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	strcat( httpStr, HTTP_END_LINE );
 
 	strcat( httpStr, HTTP_CONTENT_LINE );
-	strcat( httpStr, response.contetntType );
+	switch ( response.contetntType )
+	{
+		case HTTP_CONTENT_HTML:
+			strcat( httpStr, HTTP_CONTENT_STR_HTML );
+			break;
+		case HTTP_CONTENT_CSS:
+			strcat( httpStr, HHTP_CONTENT_STR_CSS );
+			break;
+		case HTTP_CONTENT_JS:
+			strcat( httpStr, HTTP_CONTENT_STR_JS );
+			break;
+		default:
+			strcat( httpStr, "Error" );
+			break;
+	}
 	strcat( httpStr, HTTP_END_LINE );
 
 	//Connection: keep-alive

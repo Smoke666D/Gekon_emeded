@@ -7,8 +7,6 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "eth_common.h"
 #include "http.h"
-#include "index.h"
-
 #include "sys.h"
 
 #include "cmsis_os.h"
@@ -16,13 +14,13 @@
 #include "lwip.h"
 #include "api.h"
 #include "string.h"
+
+#include "../Site/index.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static 		struct 		netconn * nc;
 static 		struct 		netconn * in_nc;
 
 static 		osThreadId_t 	netClientHandle;
-static 		HTTP_RESPONSE response;
-static		HTTP_REQUEST	request;
 /*----------------------- Variables -----------------------------------------------------------------*/
 volatile 	err_t 			res 			= ERR_OK;
 static 		ip_addr_t		local_ip;
@@ -100,31 +98,31 @@ uint8_t vETHlistenRoutine( void )
 				.priority   = ( osPriority_t ) osPriorityLow,
 				.stack_size = 1024U
 		};
+		osDelay( 1 );
 		netClientHandle = osThreadNew( startNetClientTask, (void*)in_nc, &netClientTask_attributes );
 		client = 1U;
 	}
 	return client;
 }
 /*---------------------------------------------------------------------------------------------------*/
-static char buf[500];
-
-#define	httpBufSize		256
-static char	output[httpBufSize];
-
 void startNetClientTask( void const * argument )
 {
-	struct 		netconn * netcon = ( struct netconn * )argument;
-	struct 		netbuf  * nb;
-	//char *		buffer       = pvPortMalloc( 2048U );
-	uint32_t 	len          = 0U;
-	err_t			res          = ERR_OK;
+	struct 				netconn * netcon = ( struct netconn * )argument;
+	struct 				netbuf  * nb;
+	char*					input       = pvPortMalloc( HTTP_INPUT_BUFFER_SIZE );
+	char*					output			= pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
+	HTTP_RESPONSE response;
+	HTTP_REQUEST	request;
+	uint32_t 			len         = 0U;
+	err_t					res         = ERR_OK;
 
-	uint32_t	mesNum			= 0U;
-	char*			pchSt;
-	char*			pchEn;
-	uint32_t	i = 0U;
+	uint32_t			mesNum			= 0U;
+	char*					pchSt;
+	char*					pchEn;
+	uint32_t			i 					= 0U;
 
-	uint32_t	control = 0U;
+	uint32_t			control 		= 0U;
+	uint16_t 			outlen  		= 0;
 
   for(;;)
   {
@@ -132,50 +130,49 @@ void startNetClientTask( void const * argument )
   	if( res == ERR_OK )
   	{
   		len = netbuf_len( nb );
-  		netbuf_copy( nb, buf, len );
+  		netbuf_copy( nb, input, len );
   		netbuf_delete( nb );
-  		buf[len] = 0U;
+  		input[len] = 0U;
 
-  		eHTTPparsingRequest( buf, &request );
+  		eHTTPparsingRequest( input, &request );
   		eHTTPbuildResponse( request, &response );
   		eHTTPmakeResponse( output, response );
 
 
-  		vSYSSerial("******************************************************\n\r");
-  		vSYSSerial( buf );
-  		vSYSSerial("******************************************************\n\r");
-  		vSYSSerial(output);
-  		vSYSSerial("******************************************************\n\r");
-
-  		if ( response.contentLength != HTTP_METHOD_NO )
+  		if ( response.method != HTTP_METHOD_NO )
   		{
-  			vSYSSerial("[");
+  			control = 0U;
   			netconn_write( netcon, output, strlen(output), NETCONN_COPY );
-
   			if ( response.contentLength != 0U )
   			{
-  				vSYSSerial("[");
-  				mesNum = ( uint32_t )( HTML_LENGTH / httpBufSize ) + 2U;
+  				mesNum = ( uint32_t )( response.contentLength / HTTP_OUTPUT_BUFFER_SIZE ) + 1U;
   				pchSt  = response.data;
-  				pchEn  = pchSt + httpBufSize;
+  				pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
   				for( i=0U; i<mesNum; i++ )
   				{
   					strncpy( output, ( pchSt ), ( pchEn - pchSt ) );
   				  pchSt  = pchEn;
-  				  pchEn  = pchSt + httpBufSize;
-  				  vSYSSerial("|");
-  				  netconn_write( netcon, output, strlen(output), NETCONN_COPY );
-  				  control += strlen(output);
+  				  pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
+  				  outlen = strlen(output);
+  				  if ( outlen > HTTP_OUTPUT_BUFFER_SIZE)
+  				  {
+  				  	outlen = HTTP_OUTPUT_BUFFER_SIZE;
+  				  }
+  				  netconn_write( netcon, output, outlen, NETCONN_COPY );
+  				  control += outlen;
   				}
-  				vSYSSerial("]");
+
   				char buffer[6];
   				sprintf( buffer, "%lu", control );
-  				vSYSSerial("\r\n");
   				vSYSSerial(buffer);
+
+  				vSYSSerial("\r\n");
   			}
   		}
   	}
-  	osDelay( 1 );
+  	vPortFree( input );
+  	vPortFree( output );
+  	osThreadExit();
   }
 }
 /*---------------------------------------------------------------------------------------------------*/

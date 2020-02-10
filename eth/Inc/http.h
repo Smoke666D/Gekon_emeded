@@ -20,7 +20,6 @@
 #define		HTTP_PATH_LENGTH			30
 #define		WEB_PAGE_SIZE					60
 /*-------------------------- ENUM --------------------------------------*/
-
 typedef enum
 {
 	//HTTP_STATUS_CONTINUE 						= 100,
@@ -45,6 +44,29 @@ typedef enum
 	HTTP_METHOD_HEAD		= 0x03U,
 	HTTP_METHOD_OPTION	= 0x04U
 } HTTP_METHOD;
+/*----------------------- Content type ---------------------------------*/
+#define	HTTP_CONTENT_STR_HTML	"text/html"
+#define	HHTP_CONTENT_STR_CSS	"text/css"
+#define HTTP_CONTENT_STR_JS		"text/javascript"
+
+typedef enum
+{
+	HTTP_CONTENT_HTML,
+	HTTP_CONTENT_CSS,
+	HTTP_CONTENT_JS
+} HTTP_CONTENT;
+/*------------------------ Cache control -------------------------------*/
+
+typedef enum
+{
+	HTTP_CACHE_NO_CACHE,
+	HTTP_CACHE_NO_STORE,
+	HTTP_CACHE_NO_TRANSFORM,
+	HTTP_CACHE_ONLY_IF_CACHED,
+	HTTP_CACHE_MAX_AGE,
+	HTTP_CACHE_MAX_STALE,
+	HTTP_CACHE_MIN_FRESH
+} HTTP_CACHE;
 /*----------------------------------------------------------------------*/
 typedef enum
 {
@@ -65,7 +87,7 @@ typedef struct
 		char					server[SERVER_LENGTH];
 		char					modified[DATE_LENGTH];
 		uint32_t			contentLength;
-		char					contetntType[CONTENT_TYPE_LENGTH];
+		HTTP_CONTENT	contetntType;
 		HTTP_CONNECT	connect;
 		char* 				data;
 } HTTP_RESPONSE;
@@ -126,6 +148,7 @@ typedef struct
 #define		HTTP_LENGTH_LINE						"Content-Length: "
 #define		HTTP_CONN_LINE							"Connection: closed"
 #define		HTTP_CONTENT_LINE						"Content-Type: "
+#define		HTTP_CACHE_CONTROL					"Cache-Control: "
 /*----------------------- Functions ------------------------------------*/
 HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request );
 HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response );

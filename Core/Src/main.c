@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include <tcp.h>
+#include "tcp.h"
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "sys.h"
+#include "server.h"
 #include "http.h"
 /* USER CODE END Includes */
 
@@ -323,7 +324,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -340,19 +340,9 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-  	/*
-  	if ( HAL_GPIO_ReadPin( USER_Btn_GPIO_Port, USER_Btn_Pin ) )
-  	{
-  		HAL_GPIO_WritePin( GPIOB, LD1_Pin, GPIO_PIN_SET);
-  	}
-  	else
-  	{
-  		HAL_GPIO_WritePin( GPIOB, LD1_Pin, GPIO_PIN_RESET);
-  	}
-*/
 
   	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
-  	osDelay(10);
+  	osDelay(100);
   }
   /* USER CODE END 5 */ 
 }
@@ -368,18 +358,26 @@ void StartNetTask(void *argument)
 {
   /* USER CODE BEGIN StartNetTask */
 	char ipaddr[16];
-	vETHinitLwip();
+
+	vSERVERinit();
+
+	if ( eSERVERstart() != SERVER_OK )
+	{
+		while( 1 ) osDelay( 1 );
+	}
+
 	cETHgetStrIP( ipaddr );
 	vSYSSerial( ">>LwIP ready and listen port 80!\n\r" );
 	vSYSSerial( ">>IP address: ");
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
 	HAL_GPIO_WritePin( GPIOB, LD2_Pin, GPIO_PIN_SET );
+
   /* Infinite loop */
   for(;;)
   {
   	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
-    if ( uETHlistenRoutine() )
+    if ( eSERVERlistenRoutine() == SERVER_OK )
     {
     	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
     }

@@ -31,7 +31,9 @@
 #include "lwip/tcpip.h"
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
-
+#include "FreeRTOS.h"
+#include "semphr.h"
+#include "task.h"
 /* USER CODE END 0 */
 
 /* Private define ------------------------------------------------------------*/
@@ -191,7 +193,14 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
   */
 void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
 {
-  osSemaphoreRelease(s_xSemaphore);
+	BaseType_t   yield = pdFALSE;
+	TaskHandle_t hTask = (TaskHandle_t)ethernetifHandle;
+
+	if ( ethernetifHandle != NULL )
+	{
+		vTaskNotifyGiveFromISR( hTask, &yield );
+		portYIELD_FROM_ISR ( yield );
+	}
 }
 
 /* USER CODE BEGIN 4 */
@@ -280,7 +289,7 @@ static void low_level_init(struct netif *netif)
   attributes.name = "EthIf";
   attributes.stack_size = INTERFACE_THREAD_STACK_SIZE;
   attributes.priority = osPriorityRealtime;
-  osThreadNew(ethernetif_input, netif, &attributes);
+  ethernetifHandle = osThreadNew(ethernetif_input, netif, &attributes);
   /* Enable MAC and DMA transmission and reception */
   HAL_ETH_Start(&heth);
 
@@ -500,6 +509,7 @@ static struct pbuf * low_level_input(struct netif *netif)
  *
  * @param netif the lwip network interface structure for this ethernetif
  */
+uint8_t check = 0U;
 void ethernetif_input(void* argument)
 {
   struct pbuf *p;
@@ -507,8 +517,10 @@ void ethernetif_input(void* argument)
   
   for( ;; )
   {
-    if (osSemaphoreAcquire(s_xSemaphore, TIME_WAITING_FOR_INPUT) == osOK)
+  	check = 1;
+  	if ( ulTaskNotifyTake( pdTRUE, portMAX_DELAY ) )
     {
+    	check = 2;
       do
       {   
         LOCK_TCPIP_CORE();
@@ -523,6 +535,7 @@ void ethernetif_input(void* argument)
         UNLOCK_TCPIP_CORE();
       } while(p!=NULL);
     }
+    check = 0;
   }
 }
 

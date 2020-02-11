@@ -5,7 +5,7 @@
  *      Author: mikhail.mikhailov
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
-#include "tcpip.h"
+#include "server.h"
 #include "http.h"
 #include "sys.h"
 
@@ -21,7 +21,6 @@ static 		struct 		netconn * in_nc;
 static 		osThreadId_t 	netClientHandle;
 /*----------------------- Variables -----------------------------------------------------------------*/
 volatile 	err_t 			res 			= ERR_OK;
-static		char 				localIpStr[IP4ADDR_STRLEN_MAX];
 /*----------------------- Functions -----------------------------------------------------------------*/
 void startNetClientTask(void const * argument);
 /*---------------------------------------------------------------------------------------------------*/
@@ -45,44 +44,69 @@ void cETHgetStrIP( char* ipStr )
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vSERVERinit( void )
+{
+	while ( gnetif.ip_addr.addr == 0U ) osDelay(1);		// Wait the ip to reach the structure
+	return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /**
  * Open 80 port and start listen it
  */
-void vETHinitLwip( void )
+SERVER_ERROR eSERVERstart( void )
 {
-	while ( gnetif.ip_addr.addr == 0U )
+	SERVER_ERROR 	servRes 	= SERVER_OK;
+	err_t 				netconRes = ERR_OK;
+
+	nc = netconn_new( NETCONN_TCP );										// Create new network connection TCP TYPE
+	if ( nc != NULL )
 	{
-		osDelay(1);
+		netconRes = netconn_bind (nc, IP_ADDR_ANY, 80 );	// Bind connection to well known port number 80
+		if ( netconRes == ERR_OK )
+		{
+			netconRes = netconn_listen( nc );								// Tell connection to go into listening mode
+			if ( netconRes != ERR_OK )
+			{
+				servRes = SERVER_LISTEN_ERROR;
+			}
+		}
+		else
+		{
+			servRes = SERVER_BIND_ERROR;
+		}
 	}
-	cETHgetStrIP( localIpStr );
-	nc = netconn_new( NETCONN_TCP );
-	if ( nc == NULL )
+	else
 	{
-		while( 1 ) osDelay( 1 );
+		servRes = SERVER_NEW_CONNECT_ERROR;
 	}
-	res = netconn_bind(nc, IP_ADDR_ANY, 80);
-	if ( res != ERR_OK )
+
+	return servRes;
+}
+/*---------------------------------------------------------------------------------------------------*/
+SERVER_ERROR eSERVERstop( void )
+{
+	SERVER_ERROR 	servRes 	= SERVER_OK;
+	err_t 				netconRes = ERR_OK;
+
+	netconRes = netconn_close( nc );
+	if ( netconRes != ERR_OK )
 	{
-		while( 1 ) osDelay( 1 );
+		servRes = SERVER_CLOSE_ERROR;
 	}
-	res = netconn_listen( nc );
-	if ( res != ERR_OK )
-	{
-		while( 1 ) osDelay( 1 );
-	}
+	return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
  * Listen open port
  */
-uint8_t uETHlistenRoutine( void )
+SERVER_ERROR eSERVERlistenRoutine( void )
 {
-	uint8_t client = 0U;
+	SERVER_ERROR 	servRes 	= SERVER_OK;
 
-	res = netconn_accept( nc, &in_nc );
-	if ( res != ERR_OK )
+	res = netconn_accept( nc, &in_nc );			// Grab new connection
+	if ( res != ERR_OK )										// Block until we get an incoming connection
 	{
-		client = 0U;
+		servRes = SERVER_ACCEPT_ERROR;
 	}
 	else
 	{
@@ -92,14 +116,10 @@ uint8_t uETHlistenRoutine( void )
 				.stack_size = 1024U
 		};
 		netClientHandle = osThreadNew( startNetClientTask, (void*)in_nc, &netClientTask_attributes );
-		client = 1U;
 	}
-	return client;
+	return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
-#define	HTTP_INPUT_BUFFER_SIZE		512U
-#define	HTTP_OUTPUT_BUFFER_SIZE		256U
-
 void startNetClientTask( void const * argument )
 {
 	struct 				netconn * netcon = ( struct netconn * )argument;
@@ -109,20 +129,17 @@ void startNetClientTask( void const * argument )
 	HTTP_RESPONSE response;
 	HTTP_REQUEST	request;
 	uint32_t 			len         = 0U;
-	err_t					res         = ERR_OK;
 
 	uint32_t			mesNum			= 0U;
 	char*					pchSt;
 	char*					pchEn;
 	uint32_t			i 					= 0U;
 
-	uint32_t			control 		= 0U;
 	uint16_t 			outlen  		= 0;
 
   for(;;)
   {
-  	res = netconn_recv( netcon, &nb );
-  	if( res == ERR_OK )
+  	if( netconn_recv( netcon, &nb ) == ERR_OK )
   	{
   		len = netbuf_len( nb );
   		netbuf_copy( nb, input, len );
@@ -136,7 +153,6 @@ void startNetClientTask( void const * argument )
 
   		if ( response.method != HTTP_METHOD_NO )
   		{
-  			control = 0U;
   			netconn_write( netcon, output, strlen(output), NETCONN_COPY );
   			if ( response.contentLength != 0U )
   			{
@@ -154,14 +170,18 @@ void startNetClientTask( void const * argument )
   				  	outlen = HTTP_OUTPUT_BUFFER_SIZE;
   				  }
   				  netconn_write( netcon, output, outlen, NETCONN_COPY );
-  				  control += outlen;
   				}
   			}
   		}
   	}
-  	vPortFree( input );
-  	vPortFree( output );
-  	osThreadExit();
+  	else
+  	{
+  		netconn_close( netcon );
+  		netconn_delete( netcon );
+  		vPortFree( input );
+  		vPortFree( output );
+  		osThreadExit();
+  	}
   }
 }
 /*---------------------------------------------------------------------------------------------------*/

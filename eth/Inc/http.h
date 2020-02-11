@@ -9,6 +9,8 @@
 #define INC_HTTP_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+
+
 /*------------------------ Define --------------------------------------*/
 #define		CR_HEX								0x0D
 #define		LF_HEX								0x0A
@@ -56,16 +58,22 @@ typedef enum
 	HTTP_CONTENT_JS
 } HTTP_CONTENT;
 /*------------------------ Cache control -------------------------------*/
+#define	HTTP_CACHE_STR_NO_CACHE		"no-cache"
+#define	HTTP_CACHE_STR_NO_STORE		"no-store"
+
 
 typedef enum
 {
 	HTTP_CACHE_NO_CACHE,
 	HTTP_CACHE_NO_STORE,
+	HTTP_CACHE_NO_CACHE_STORE,
+	/*
 	HTTP_CACHE_NO_TRANSFORM,
 	HTTP_CACHE_ONLY_IF_CACHED,
 	HTTP_CACHE_MAX_AGE,
 	HTTP_CACHE_MAX_STALE,
 	HTTP_CACHE_MIN_FRESH
+	*/
 } HTTP_CACHE;
 /*----------------------------------------------------------------------*/
 typedef enum
@@ -90,6 +98,7 @@ typedef struct
 		HTTP_CONTENT	contetntType;
 		HTTP_CONNECT	connect;
 		char* 				data;
+		HTTP_CACHE		cache;
 } HTTP_RESPONSE;
 /* HHTP status-codes ---------------------------------------------------*/
 /*

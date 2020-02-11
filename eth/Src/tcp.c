@@ -1,11 +1,11 @@
 /*
- * eth_common.c
+ * tcpip.c
  *
- *  Created on: Jan 30, 2020
+ *  Created on: 10 февр. 2020 г.
  *      Author: mikhail.mikhailov
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
-#include "eth_common.h"
+#include "tcpip.h"
 #include "http.h"
 #include "sys.h"
 
@@ -14,8 +14,6 @@
 #include "lwip.h"
 #include "api.h"
 #include "string.h"
-
-#include "../Site/index.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static 		struct 		netconn * nc;
 static 		struct 		netconn * in_nc;
@@ -23,11 +21,7 @@ static 		struct 		netconn * in_nc;
 static 		osThreadId_t 	netClientHandle;
 /*----------------------- Variables -----------------------------------------------------------------*/
 volatile 	err_t 			res 			= ERR_OK;
-static 		ip_addr_t		local_ip;
 static		char 				localIpStr[IP4ADDR_STRLEN_MAX];
-/*
-static		ip_addr_t 	remote_ip;
-*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 void startNetClientTask(void const * argument);
 /*---------------------------------------------------------------------------------------------------*/
@@ -61,7 +55,6 @@ void vETHinitLwip( void )
 		osDelay(1);
 	}
 	cETHgetStrIP( localIpStr );
-	local_ip  = gnetif.ip_addr;
 	nc = netconn_new( NETCONN_TCP );
 	if ( nc == NULL )
 	{
@@ -82,7 +75,7 @@ void vETHinitLwip( void )
 /**
  * Listen open port
  */
-uint8_t vETHlistenRoutine( void )
+uint8_t uETHlistenRoutine( void )
 {
 	uint8_t client = 0U;
 
@@ -98,13 +91,15 @@ uint8_t vETHlistenRoutine( void )
 				.priority   = ( osPriority_t ) osPriorityLow,
 				.stack_size = 1024U
 		};
-		osDelay( 1 );
 		netClientHandle = osThreadNew( startNetClientTask, (void*)in_nc, &netClientTask_attributes );
 		client = 1U;
 	}
 	return client;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#define	HTTP_INPUT_BUFFER_SIZE		512U
+#define	HTTP_OUTPUT_BUFFER_SIZE		256U
+
 void startNetClientTask( void const * argument )
 {
 	struct 				netconn * netcon = ( struct netconn * )argument;
@@ -161,12 +156,6 @@ void startNetClientTask( void const * argument )
   				  netconn_write( netcon, output, outlen, NETCONN_COPY );
   				  control += outlen;
   				}
-
-  				char buffer[6];
-  				sprintf( buffer, "%lu", control );
-  				vSYSSerial(buffer);
-
-  				vSYSSerial("\r\n");
   			}
   		}
   	}
@@ -176,11 +165,4 @@ void startNetClientTask( void const * argument )
   }
 }
 /*---------------------------------------------------------------------------------------------------*/
-
-
-
-
-
-
-
 

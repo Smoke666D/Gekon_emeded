@@ -8,10 +8,7 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "http.h"
 // Site
-#include "filePath.h"
 #include "index.h"
-#include "main_js.h"
-#include "style_css.h"
 // Common
 #include "string.h"
 #include "stdio.h"
@@ -19,8 +16,6 @@
 
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
-//char webPage[] = "<html><body><h1>This is WebServer!</h1></body></html>";
-char webPage[53U] = {0x3C, 0x68, 0x74, 0x6D, 0x6C, 0x3E, 0x3C, 0x62, 0x6F, 0x64, 0x79, 0x3E, 0x3C, 0x68, 0x31, 0x3E, 0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x57, 0x65, 0x62, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x21, 0x3C, 0x2F, 0x68, 0x31, 0x3E, 0x3C, 0x2F, 0x62, 0x6F, 0x64, 0x79, 0x3E, 0x3C, 0x2F, 0x68, 0x74, 0x6D, 0x6C, 0x3E };
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -28,7 +23,7 @@ void 						vHTTPcleanRequest( HTTP_REQUEST *httpRequest );
 void 						vHTTPCleanResponse( HTTP_RESPONSE *response );
 void 						eHTTPbuildGet( char* path, HTTP_RESPONSE *response );
 uint8_t 				uHTTPgetLine( char* input, uint16_t num, char* line );
-HTTP_SITE_PATH 	eHTTPgetPath( char* path );
+//HTTP_SITE_PATH 	eHTTPgetPath( char* path );
 /*---------------------------------------------------------------------------------------------------*/
 void vHTTPcleanRequest( HTTP_REQUEST *httpRequest )
 {
@@ -125,6 +120,7 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
 HTTP_SITE_PATH eHTTPgetPath( char* path )
 {
 	HTTP_SITE_PATH res = NO_PATH;
@@ -140,13 +136,14 @@ HTTP_SITE_PATH eHTTPgetPath( char* path )
 
 	return res;
 }
+*/
 /*---------------------------------------------------------------------------------------------------*/
 void eHTTPbuildGet( char* path, HTTP_RESPONSE *response)
 {
-	HTTP_SITE_PATH file = NO_PATH;
+	//HTTP_SITE_PATH file = NO_PATH;
 
 	strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
-	//strcpy( response->modified, "Sat, 20 Nov 2004 07:16:26 GMT" );
+	response->cache = HTTP_CACHE_NO_CACHE_STORE;
 
 	response->connect = HTTP_CONNECT_CLOSED;
 	if( path[0] == 0x00 )
@@ -158,36 +155,17 @@ void eHTTPbuildGet( char* path, HTTP_RESPONSE *response)
 	}
 	else if ( path[0] )
 	{
+		/*
 		file = eHTTPgetPath( path );
 		switch ( file )
 		{
-			case NO_PATH:
-				response->contetntType 	= HTTP_CONTENT_HTML;
-				response->status 				= HTTP_STATUS_NON_CONNECT;
-				response->contentLength = 0U;
-				break;
-			case STYLE_CSS:
-				response->contetntType 	= HTTP_CONTENT_CSS;
-				response->status 				= HTTP_STATUS_OK;
-				response->contentLength = STYLE_CSS_LENGTH;
-				response->data 					= data__style_css;
-				break;
-			case MAIN_JS:
-				response->contetntType 	= HTTP_CONTENT_JS;
-				response->status 				= HTTP_STATUS_OK;
-				response->contentLength = MAIN_JS_LENGTH;
-			  response->data 					= data__main_js;
-				break;
-			default:
-				response->contetntType 	= HTTP_CONTENT_HTML;
-				response->status 				= HTTP_STATUS_NON_CONNECT;
-				response->contentLength = 0U;
-				break;
+
 		}
+		*/
 	}
 	else
 	{
-		response->status = HTTP_STATUS_NON_CONNECT;
+		response->status 				= HTTP_STATUS_NON_CONNECT;
 		response->contentLength = 0U;
 	}
 	return;
@@ -232,6 +210,7 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	HTTP_STATUS 	res = HTTP_STATUS_OK;
 	char					buffer[30];
 
+	// STATUS
 	switch( response.status )
 	{
 		case HTTP_STATUS_OK:
@@ -245,16 +224,16 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 			break;
 	}
 	strcat( httpStr, HTTP_END_LINE );
-
+	// DATE
 	strcat( httpStr, HTTP_DATE_LINE );
 	strcat( httpStr, response.date );
 	strcat( httpStr, HTTP_END_LINE );
-
+	// LENGTH
 	strcat( httpStr, HTTP_LENGTH_LINE );
 	sprintf( buffer, "%lu", response.contentLength );
 	strcat( httpStr, buffer );
 	strcat( httpStr, HTTP_END_LINE );
-
+	// CONTENT TYPE
 	strcat( httpStr, HTTP_CONTENT_LINE );
 	switch ( response.contetntType )
 	{
@@ -272,11 +251,32 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 			break;
 	}
 	strcat( httpStr, HTTP_END_LINE );
-
-	//Connection: keep-alive
-
+	// CACHE
+	strcat( httpStr, HTTP_CACHE_CONTROL );
+	switch ( response.cache )
+	{
+		case HTTP_CACHE_NO_CACHE:
+			strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			break;
+		case HTTP_CACHE_NO_STORE:
+			strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			break;
+		case HTTP_CACHE_NO_CACHE_STORE:
+			strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			strcat( httpStr, ',' );
+			strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			break;
+		default:
+			strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			strcat( httpStr, ',' );
+			strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			break;
+	}
+	strcat( httpStr, HTTP_END_LINE );
+	// CONNECTION
 	strcat( httpStr, HTTP_CONN_LINE );
 	strcat( httpStr, HTTP_END_LINE );
+
 	strcat( httpStr, HTTP_END_LINE );
 
 	return res;

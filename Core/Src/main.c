@@ -19,13 +19,13 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <tcp.h>
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "eth_common.h"
 #include "sys.h"
 #include "http.h"
 /* USER CODE END Includes */
@@ -340,8 +340,19 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+  	/*
+  	if ( HAL_GPIO_ReadPin( USER_Btn_GPIO_Port, USER_Btn_Pin ) )
+  	{
+  		HAL_GPIO_WritePin( GPIOB, LD1_Pin, GPIO_PIN_SET);
+  	}
+  	else
+  	{
+  		HAL_GPIO_WritePin( GPIOB, LD1_Pin, GPIO_PIN_RESET);
+  	}
+*/
+
   	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
-  	osDelay(100);
+  	osDelay(10);
   }
   /* USER CODE END 5 */ 
 }
@@ -367,15 +378,12 @@ void StartNetTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(10);
-    if ( vETHlistenRoutine() )
+  	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
+    if ( uETHlistenRoutine() )
     {
     	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
     }
-    else
-    {
-    	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
-    }
+    osDelay(10);
   }
   /* USER CODE END StartNetTask */
 }

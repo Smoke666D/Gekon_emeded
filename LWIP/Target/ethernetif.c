@@ -28,9 +28,12 @@
 #include "ethernetif.h"
 #include <string.h>
 #include "cmsis_os.h"
+#include "lwip/tcpip.h"
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
-
+#include "FreeRTOS.h"
+#include "semphr.h"
+#include "task.h"
 /* USER CODE END 0 */
 
 /* Private define ------------------------------------------------------------*/
@@ -77,7 +80,7 @@ osSemaphoreId s_xSemaphore = NULL;
 ETH_HandleTypeDef heth;
 
 /* USER CODE BEGIN 3 */
-
+osThreadId_t ethernetifHandle;
 /* USER CODE END 3 */
 
 /* Private functions ---------------------------------------------------------*/
@@ -136,6 +139,9 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef* ethHandle)
     GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
+    /* Peripheral interrupt init */
+    HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(ETH_IRQn);
   /* USER CODE BEGIN ETH_MspInit 1 */
 
   /* USER CODE END ETH_MspInit 1 */
@@ -171,6 +177,9 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
 
     HAL_GPIO_DeInit(GPIOG, RMII_TX_EN_Pin|RMII_TXD0_Pin);
 
+    /* Peripheral interrupt Deinit*/
+    HAL_NVIC_DisableIRQ(ETH_IRQn);
+
   /* USER CODE BEGIN ETH_MspDeInit 1 */
 
   /* USER CODE END ETH_MspDeInit 1 */
@@ -184,7 +193,14 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
   */
 void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
 {
-  osSemaphoreRelease(s_xSemaphore);
+	BaseType_t   yield = pdFALSE;
+	TaskHandle_t hTask = (TaskHandle_t)ethernetifHandle;
+
+	if ( ethernetifHandle != NULL )
+	{
+		vTaskNotifyGiveFromISR( hTask, &yield );
+		portYIELD_FROM_ISR ( yield );
+	}
 }
 
 /* USER CODE BEGIN 4 */
@@ -214,11 +230,11 @@ static void low_level_init(struct netif *netif)
   heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
   heth.Init.PhyAddress = LAN8742A_PHY_ADDRESS;
   MACAddr[0] = 0x00;
-  MACAddr[1] = 0x80;
-  MACAddr[2] = 0xE1;
-  MACAddr[3] = 0x00;
-  MACAddr[4] = 0x00;
-  MACAddr[5] = 0x00;
+  MACAddr[1] = 0x10;
+  MACAddr[2] = 0xFA;
+  MACAddr[3] = 0x6E;
+  MACAddr[4] = 0x38;
+  MACAddr[5] = 0x4A;
   heth.Init.MACAddr = &MACAddr[0];
   heth.Init.RxMode = ETH_RXINTERRUPT_MODE;
   heth.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
@@ -273,7 +289,7 @@ static void low_level_init(struct netif *netif)
   attributes.name = "EthIf";
   attributes.stack_size = INTERFACE_THREAD_STACK_SIZE;
   attributes.priority = osPriorityRealtime;
-  osThreadNew(ethernetif_input, netif, &attributes);
+  ethernetifHandle = osThreadNew(ethernetif_input, netif, &attributes);
   /* Enable MAC and DMA transmission and reception */
   HAL_ETH_Start(&heth);
 
@@ -418,6 +434,7 @@ static struct pbuf * low_level_input(struct netif *netif)
 
   /* get received frame */
   if (HAL_ETH_GetReceivedFrame_IT(&heth) != HAL_OK)
+  
     return NULL;
   
   /* Obtain the size of the packet and put it into the "len" variable. */
@@ -492,6 +509,7 @@ static struct pbuf * low_level_input(struct netif *netif)
  *
  * @param netif the lwip network interface structure for this ethernetif
  */
+uint8_t check = 0U;
 void ethernetif_input(void* argument)
 {
   struct pbuf *p;
@@ -499,10 +517,13 @@ void ethernetif_input(void* argument)
   
   for( ;; )
   {
-    if (osSemaphoreAcquire(s_xSemaphore, TIME_WAITING_FOR_INPUT) == osOK)
+  	check = 1;
+  	if ( ulTaskNotifyTake( pdTRUE, portMAX_DELAY ) )
     {
+    	check = 2;
       do
       {   
+        LOCK_TCPIP_CORE();
         p = low_level_input( netif );
         if   (p != NULL)
         {
@@ -511,8 +532,10 @@ void ethernetif_input(void* argument)
             pbuf_free(p);
           }
         }
+        UNLOCK_TCPIP_CORE();
       } while(p!=NULL);
     }
+    check = 0;
   }
 }
 

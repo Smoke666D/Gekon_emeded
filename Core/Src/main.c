@@ -19,13 +19,16 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "tcp.h"
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "sys.h"
+#include "server.h"
+#include "http.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,10 +50,20 @@ UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
-SRAM_HandleTypeDef hsram1;
-SRAM_HandleTypeDef hsram2;
-
+/* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 512
+};
+/* Definitions for neyTask */
+osThreadId_t neyTaskHandle;
+const osThreadAttr_t neyTask_attributes = {
+  .name = "neyTask",
+  .priority = (osPriority_t) osPriorityBelowNormal,
+  .stack_size = 512
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -60,8 +73,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
-static void MX_FSMC_Init(void);
 void StartDefaultTask(void *argument);
+void StartNetTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -103,11 +116,11 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
-  MX_FSMC_Init();
+  MX_LWIP_Init();
   /* USER CODE BEGIN 2 */
-
+  vSYSInitSerial();
   /* USER CODE END 2 */
-
+  /* Init scheduler */
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -127,13 +140,11 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  const osThreadAttr_t defaultTask_attributes = {
-    .name = "defaultTask",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 128
-  };
+  /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of neyTask */
+  neyTaskHandle = osThreadNew(StartNetTask, NULL, &neyTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -141,7 +152,7 @@ int main(void)
 
   /* Start scheduler */
   osKernelStart();
-  
+ 
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
@@ -272,11 +283,9 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
@@ -314,93 +323,7 @@ static void MX_GPIO_Init(void)
 
 }
 
-/* FSMC initialization function */
-static void MX_FSMC_Init(void)
-{
-
-  /* USER CODE BEGIN FSMC_Init 0 */
-
-  /* USER CODE END FSMC_Init 0 */
-
-  FSMC_NORSRAM_TimingTypeDef Timing = {0};
-
-  /* USER CODE BEGIN FSMC_Init 1 */
-
-  /* USER CODE END FSMC_Init 1 */
-
-  /** Perform the SRAM1 memory initialization sequence
-  */
-  hsram1.Instance = FSMC_NORSRAM_DEVICE;
-  hsram1.Extended = FSMC_NORSRAM_EXTENDED_DEVICE;
-  /* hsram1.Init */
-  hsram1.Init.NSBank = FSMC_NORSRAM_BANK1;
-  hsram1.Init.DataAddressMux = FSMC_DATA_ADDRESS_MUX_DISABLE;
-  hsram1.Init.MemoryType = FSMC_MEMORY_TYPE_SRAM;
-  hsram1.Init.MemoryDataWidth = FSMC_NORSRAM_MEM_BUS_WIDTH_8;
-  hsram1.Init.BurstAccessMode = FSMC_BURST_ACCESS_MODE_DISABLE;
-  hsram1.Init.WaitSignalPolarity = FSMC_WAIT_SIGNAL_POLARITY_LOW;
-  hsram1.Init.WrapMode = FSMC_WRAP_MODE_DISABLE;
-  hsram1.Init.WaitSignalActive = FSMC_WAIT_TIMING_BEFORE_WS;
-  hsram1.Init.WriteOperation = FSMC_WRITE_OPERATION_ENABLE;
-  hsram1.Init.WaitSignal = FSMC_WAIT_SIGNAL_DISABLE;
-  hsram1.Init.ExtendedMode = FSMC_EXTENDED_MODE_DISABLE;
-  hsram1.Init.AsynchronousWait = FSMC_ASYNCHRONOUS_WAIT_DISABLE;
-  hsram1.Init.WriteBurst = FSMC_WRITE_BURST_DISABLE;
-  /* Timing */
-  Timing.AddressSetupTime = 15;
-  Timing.AddressHoldTime = 15;
-  Timing.DataSetupTime = 255;
-  Timing.BusTurnAroundDuration = 15;
-  Timing.CLKDivision = 16;
-  Timing.DataLatency = 17;
-  Timing.AccessMode = FSMC_ACCESS_MODE_A;
-  /* ExtTiming */
-
-  if (HAL_SRAM_Init(&hsram1, &Timing, NULL) != HAL_OK)
-  {
-    Error_Handler( );
-  }
-
-  /** Perform the SRAM2 memory initialization sequence
-  */
-  hsram2.Instance = FSMC_NORSRAM_DEVICE;
-  hsram2.Extended = FSMC_NORSRAM_EXTENDED_DEVICE;
-  /* hsram2.Init */
-  hsram2.Init.NSBank = FSMC_NORSRAM_BANK2;
-  hsram2.Init.DataAddressMux = FSMC_DATA_ADDRESS_MUX_DISABLE;
-  hsram2.Init.MemoryType = FSMC_MEMORY_TYPE_SRAM;
-  hsram2.Init.MemoryDataWidth = FSMC_NORSRAM_MEM_BUS_WIDTH_8;
-  hsram2.Init.BurstAccessMode = FSMC_BURST_ACCESS_MODE_DISABLE;
-  hsram2.Init.WaitSignalPolarity = FSMC_WAIT_SIGNAL_POLARITY_LOW;
-  hsram2.Init.WrapMode = FSMC_WRAP_MODE_DISABLE;
-  hsram2.Init.WaitSignalActive = FSMC_WAIT_TIMING_BEFORE_WS;
-  hsram2.Init.WriteOperation = FSMC_WRITE_OPERATION_ENABLE;
-  hsram2.Init.WaitSignal = FSMC_WAIT_SIGNAL_DISABLE;
-  hsram2.Init.ExtendedMode = FSMC_EXTENDED_MODE_DISABLE;
-  hsram2.Init.AsynchronousWait = FSMC_ASYNCHRONOUS_WAIT_DISABLE;
-  hsram2.Init.WriteBurst = FSMC_WRITE_BURST_DISABLE;
-  /* Timing */
-  Timing.AddressSetupTime = 15;
-  Timing.AddressHoldTime = 15;
-  Timing.DataSetupTime = 255;
-  Timing.BusTurnAroundDuration = 15;
-  Timing.CLKDivision = 16;
-  Timing.DataLatency = 17;
-  Timing.AccessMode = FSMC_ACCESS_MODE_A;
-  /* ExtTiming */
-
-  if (HAL_SRAM_Init(&hsram2, &Timing, NULL) != HAL_OK)
-  {
-    Error_Handler( );
-  }
-
-  /* USER CODE BEGIN FSMC_Init 2 */
-
-  /* USER CODE END FSMC_Init 2 */
-}
-
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -412,15 +335,55 @@ static void MX_FSMC_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  /* init code for LWIP */
-  MX_LWIP_Init();
   /* USER CODE BEGIN 5 */
+	vSYSSerial( ">>Start Default Task!\n\r" );
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+
+  	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
+  	osDelay(100);
   }
   /* USER CODE END 5 */ 
+}
+
+/* USER CODE BEGIN Header_StartNetTask */
+/**
+* @brief Function implementing the neyTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartNetTask */
+void StartNetTask(void *argument)
+{
+  /* USER CODE BEGIN StartNetTask */
+	char ipaddr[16];
+
+	vSERVERinit();
+
+	if ( eSERVERstart() != SERVER_OK )
+	{
+		while( 1 ) osDelay( 1 );
+	}
+
+	cSERVERgetStrIP( ipaddr );
+	vSYSSerial( ">>LwIP ready and listen port 80!\n\r" );
+	vSYSSerial( ">>IP address: ");
+	vSYSSerial( ipaddr );
+	vSYSSerial("\n\r");
+	HAL_GPIO_WritePin( GPIOB, LD2_Pin, GPIO_PIN_SET );
+
+  /* Infinite loop */
+  for(;;)
+  {
+  	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
+    if ( eSERVERlistenRoutine() == SERVER_OK )
+    {
+    	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
+    }
+    osDelay(10);
+  }
+  /* USER CODE END StartNetTask */
 }
 
 /**

@@ -19,24 +19,33 @@ const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void 						vHTTPcleanRequest( HTTP_REQUEST *httpRequest );
-void 						vHTTPCleanResponse( HTTP_RESPONSE *response );
-void 						eHTTPbuildGet( char* path, HTTP_RESPONSE *response );
-uint8_t 				uHTTPgetLine( char* input, uint16_t num, char* line );
-//HTTP_SITE_PATH 	eHTTPgetPath( char* path );
+void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );					// Clean request structure
+void 		vHTTPCleanResponse( HTTP_RESPONSE *response );					// Clean response structure
+uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );	// Get the string of line from multiline text.
+void 		eHTTPbuildGet( char* path, HTTP_RESPONSE *response );		// Build get response in response structure
 /*---------------------------------------------------------------------------------------------------*/
-void vHTTPcleanRequest( HTTP_REQUEST *httpRequest )
+/*
+ * Clean request structure
+ * Input:		request structure
+ * Output:	none
+ */
+void vHTTPcleanRequest( HTTP_REQUEST *request )
 {
 	uint8_t i = 0U;
 
-	httpRequest->method = HTTP_METHOD_NO;
+	request->method = HTTP_METHOD_NO;
 	for( i=0U; i<HTTP_PATH_LENGTH; i++)
 	{
-		httpRequest->path[i] = 0x00U;
+		request->path[i] = 0x00U;
 	}
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Clean response structure
+ * Input:		request structure
+ * Output:	none
+ */
 void vHTTPCleanResponse( HTTP_RESPONSE *response )
 {
 	uint32_t i = 0U;
@@ -60,6 +69,15 @@ void vHTTPCleanResponse( HTTP_RESPONSE *response )
 	response->connect 			= HTTP_CONNECT_CLOSED;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Get the string of line from multiline text.
+ * The end of line is LF simbol (Line Feed)
+ * Input:		input - pointer to char array of multiline text
+ * 					num		- number of line of interest
+ * 					line	- pointer to char array of output buffer for line
+ * Output:	1 		- There is valid line in output buffer
+ * 					0 		- There is no valid line in output buffer
+ */
 uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
 {
 	uint8_t   res   = 0U;
@@ -69,51 +87,16 @@ uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
 
 	for( i=0U; i<num; i++ )
 	{
-		start = strchr( ( end ), LF_HEX ) + 1;
+		start = strchr( ( end ), LF_HEX ) + 1U;
 		end   = strchr( start, LF_HEX );
 	}
 
 	if ( start && end)
 	{
 		res = 1U;
-		strncpy( line, start, ( end - start ) );
-	}
-
-	return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
-HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
-{
-	HTTP_STATUS 	res 	 = HTTP_STATUS_OK;
-	uint8_t 			i      = 0U;
-	char* 				pchSt  = NULL;
-	char* 				pchEnd = NULL;
-	char					line[50];
-
-	uHTTPgetLine( req, 0, line );
-	vHTTPcleanRequest( request );
-	/* Parsing HTTP methods */
-	for( i=0U; i<HTTP_METHOD_NUM; i++)
-	{
-		pchSt = strstr( line, httpMethodsStr[i] );
-		if ( pchSt != NULL)
+		if ( strncpy( line, start, ( end - start ) ) == NULL )
 		{
-			request->method = i + 1U;
-			break;
-		}
-	}
-	if ( request->method == HTTP_METHOD_NO )
-	{
-		res = HTTP_STATUS_BAD_REQUEST;
-	}
-	/* Parsing HTTP path  */
-	if ( res == HTTP_STATUS_OK )
-	{
-		pchSt  = strchr( line, '/' );
-		pchEnd = strchr( pchSt, ' ' );
-		if ( ( pchEnd - pchSt ) > 2U )
-		{
-			strncpy( request->path, ( pchSt ), ( pchEnd - pchSt ) );
+			res = 0U;
 		}
 	}
 
@@ -121,47 +104,79 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
-HTTP_SITE_PATH eHTTPgetPath( char* path )
+ * Parsing data from request text
+ * Input:		req 		- pointer to char array with input request in text form
+ * 					request	- pointer to the ouyput request structure
+ * Output:	HTTP status
+ */
+HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 {
-	HTTP_SITE_PATH res = NO_PATH;
+	HTTP_STATUS 	res 	 = HTTP_STATUS_BAD_REQUEST;
+	uint8_t 			i      = 0U;
+	char* 				pchSt  = NULL;
+	char* 				pchEnd = NULL;
+	char					line[50];
 
-	if ( strstr( path, STYLE_CSS_PATH ) )
+	if ( uHTTPgetLine( req, 0, line ) > 0U)
 	{
-		res = STYLE_CSS;
-	}
-	else if ( strstr( path, MAIN_JS_PATH ) )
-	{
-		res = MAIN_JS;
+		res 	 = HTTP_STATUS_OK;
+		vHTTPcleanRequest( request );
+		/* Parsing HTTP methods */
+		for( i=0U; i<HTTP_METHOD_NUM; i++)
+		{
+			pchSt = strstr( line, httpMethodsStr[i] );
+			if ( pchSt != NULL)
+			{
+				request->method = i + 1U;
+				break;
+			}
+		}
+		if ( request->method == HTTP_METHOD_NO )
+		{
+			res = HTTP_STATUS_BAD_REQUEST;
+		}
+		/* Parsing HTTP path  */
+		if ( res == HTTP_STATUS_OK )
+		{
+			pchSt  = strchr( line, '/' );
+			pchEnd = strchr( pchSt, ' ' );
+			if ( ( pchEnd - pchSt ) > 2U )
+			{
+				if( strncpy( request->path, ( pchSt ), ( pchEnd - pchSt ) ) == NULL )
+				{
+					res = HTTP_STATUS_BAD_REQUEST;
+				}
+			}
+		}
 	}
 
 	return res;
 }
-*/
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Build get response in response structure
+ * Input:		path 			- url to the file from request
+ * 					response	- structure of response
+ * Output:	none
+ */
 void eHTTPbuildGet( char* path, HTTP_RESPONSE *response)
 {
-	//HTTP_SITE_PATH file = NO_PATH;
+	char *res;
 
-	strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
+	res = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
 	response->cache = HTTP_CACHE_NO_CACHE_STORE;
 
 	response->connect = HTTP_CONNECT_CLOSED;
-	if( path[0] == 0x00 )
+	if( path[0U] == 0x00U )
 	{
 		response->contetntType 	= HTTP_CONTENT_HTML;
 		response->status 				= HTTP_STATUS_OK;
 		response->contentLength = HTML_LENGTH;
 		response->data 					= data__index_html;
 	}
-	else if ( path[0] )
+	else if ( path[0U] > 0U )
 	{
-		/*
-		file = eHTTPgetPath( path );
-		switch ( file )
-		{
 
-		}
-		*/
 	}
 	else
 	{
@@ -171,6 +186,12 @@ void eHTTPbuildGet( char* path, HTTP_RESPONSE *response)
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Build response in response structure
+ * Input:		request		- structure of request
+ * 					response	- structure of response
+ * Output:	HTTP status
+ */
 HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
 {
 	HTTP_STATUS res = HTTP_STATUS_OK;
@@ -205,79 +226,86 @@ HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Make string response from response structure
+ * Input:		httpStr  - pointer to char array of output buffer for response string
+ *  				response - response structure
+ * Output:	HTTP_STATUS
+ */
 HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 {
 	HTTP_STATUS 	res = HTTP_STATUS_OK;
 	char					buffer[30];
+	char					*strRes;
 
 	// STATUS
 	switch( response.status )
 	{
 		case HTTP_STATUS_OK:
-			strcpy( httpStr, HTTP_OK_STATUS_LINE );
+			strRes = strcpy( httpStr, HTTP_OK_STATUS_LINE );
 			break;
 		case HTTP_STATUS_BAD_REQUEST:
-			strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
+			strRes = strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
 			break;
 		default:
-			strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
+			strRes = strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
 			break;
 	}
-	strcat( httpStr, HTTP_END_LINE );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 	// DATE
-	strcat( httpStr, HTTP_DATE_LINE );
-	strcat( httpStr, response.date );
-	strcat( httpStr, HTTP_END_LINE );
+	strRes = strcat( httpStr, HTTP_DATE_LINE );
+	strRes = strcat( httpStr, response.date );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 	// LENGTH
-	strcat( httpStr, HTTP_LENGTH_LINE );
-	sprintf( buffer, "%lu", response.contentLength );
-	strcat( httpStr, buffer );
-	strcat( httpStr, HTTP_END_LINE );
+	strRes = strcat( httpStr, HTTP_LENGTH_LINE );
+	strRes = sprintf( buffer, "%lu", response.contentLength );
+	strRes = strcat( httpStr, buffer );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 	// CONTENT TYPE
-	strcat( httpStr, HTTP_CONTENT_LINE );
+	strRes = strcat( httpStr, HTTP_CONTENT_LINE );
 	switch ( response.contetntType )
 	{
 		case HTTP_CONTENT_HTML:
-			strcat( httpStr, HTTP_CONTENT_STR_HTML );
+			strRes = strcat( httpStr, HTTP_CONTENT_STR_HTML );
 			break;
 		case HTTP_CONTENT_CSS:
-			strcat( httpStr, HHTP_CONTENT_STR_CSS );
+			strRes = strcat( httpStr, HHTP_CONTENT_STR_CSS );
 			break;
 		case HTTP_CONTENT_JS:
-			strcat( httpStr, HTTP_CONTENT_STR_JS );
+			strRes = strcat( httpStr, HTTP_CONTENT_STR_JS );
 			break;
 		default:
-			strcat( httpStr, "Error" );
+			strRes = strcat( httpStr, "Error" );
 			break;
 	}
-	strcat( httpStr, HTTP_END_LINE );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 	// CACHE
-	strcat( httpStr, HTTP_CACHE_CONTROL );
+	strRes = strcat( httpStr, HTTP_CACHE_CONTROL );
 	switch ( response.cache )
 	{
 		case HTTP_CACHE_NO_CACHE:
-			strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
 			break;
 		case HTTP_CACHE_NO_STORE:
-			strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
 			break;
 		case HTTP_CACHE_NO_CACHE_STORE:
-			strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
-			strcat( httpStr, ',' );
-			strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			strRes = strcat( httpStr, "," );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
 			break;
 		default:
-			strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
-			strcat( httpStr, ',' );
-			strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			strRes = strcat( httpStr, "," );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
 			break;
 	}
-	strcat( httpStr, HTTP_END_LINE );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 	// CONNECTION
-	strcat( httpStr, HTTP_CONN_LINE );
-	strcat( httpStr, HTTP_END_LINE );
+	strRes = strcat( httpStr, HTTP_CONN_LINE );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 
-	strcat( httpStr, HTTP_END_LINE );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 
 	return res;
 }

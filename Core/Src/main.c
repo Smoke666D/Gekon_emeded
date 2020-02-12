@@ -366,7 +366,7 @@ void StartNetTask(void *argument)
 		while( 1 ) osDelay( 1 );
 	}
 
-	cETHgetStrIP( ipaddr );
+	cSERVERgetStrIP( ipaddr );
 	vSYSSerial( ">>LwIP ready and listen port 80!\n\r" );
 	vSYSSerial( ">>IP address: ");
 	vSYSSerial( ipaddr );

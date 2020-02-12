@@ -15,43 +15,56 @@
 #include "api.h"
 #include "string.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static 		struct 		netconn * nc;
-static 		struct 		netconn * in_nc;
-
-static 		osThreadId_t 	netClientHandle;
+static 		struct 		netconn * nc;									// Connection to the port 80
+static 		struct 		netconn * in_nc;							// New user connection
+/*------------------------- Task --------------------------------------------------------------------*/
+static 		osThreadId_t 	netClientHandle;					// Network task handle
 /*----------------------- Variables -----------------------------------------------------------------*/
-volatile 	err_t 			res 			= ERR_OK;
+
 /*----------------------- Functions -----------------------------------------------------------------*/
-void startNetClientTask(void const * argument);
+void startNetClientTask(void const * argument);		// Network task function
 /*---------------------------------------------------------------------------------------------------*/
 /**
  * Read local IP address of device in char array format
- * input: buffer of char for IP address
- * 				length of buffer is IP4ADDR_STRLEN_MAX = 16
- * 				from ip4_addr.h
- * 				if ipStr[0] = 0x00, initialization havn't finished
+ * Input: 	buffer of char for IP address
+ * 					length of buffer is IP4ADDR_STRLEN_MAX = 16
+ * 					from ip4_addr.h
+ * 					if ipStr[0] = 0x00, initialization havn't finished
+ * Output:	none
  */
-void cETHgetStrIP( char* ipStr )
+void cSERVERgetStrIP( char* ipStr )
 {
-	uint8_t i = 0U;
-	char*   pointer = ip4addr_ntoa( &gnetif.ip_addr );
+	uint8_t i 			= 0U;
+	char* 	pointer = ip4addr_ntoa( &gnetif.ip_addr );
 
 	for( i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
 	{
 		ipStr[i] = pointer[i];
 	}
-
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Waiting the end of server initialization.
+ * IP address available after the end of this function.
+ * Run it one time after MX_LWIP_Init().
+ * Input: 	none
+ * Output:	none
+ */
 void vSERVERinit( void )
 {
-	while ( gnetif.ip_addr.addr == 0U ) osDelay(1);		// Wait the ip to reach the structure
+	while ( gnetif.ip_addr.addr == 0U )
+	{
+		osDelay(1);		// Wait the ip to reach the structure
+	}
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
- * Open 80 port and start listen it
+ * Start server. Open 80 port and start listen it.
+ * Run it one time to start.
+ * Input:		none
+ * Output:	server error code
  */
 SERVER_ERROR eSERVERstart( void )
 {
@@ -83,6 +96,11 @@ SERVER_ERROR eSERVERstart( void )
 	return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Stop server connection
+ * Input: 	none
+ * Output:	server error code
+ */
 SERVER_ERROR eSERVERstop( void )
 {
 	SERVER_ERROR 	servRes 	= SERVER_OK;
@@ -97,14 +115,19 @@ SERVER_ERROR eSERVERstop( void )
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
- * Listen open port
+ * Routine handler of incoming packages.
+ * Listen 80 port. For all new connection
+ * create new task. Put it to the loop.
+ * Input:		none
+ * Output:	server error code
  */
 SERVER_ERROR eSERVERlistenRoutine( void )
 {
 	SERVER_ERROR 	servRes 	= SERVER_OK;
+	err_t 				netconRes = ERR_OK;
 
-	res = netconn_accept( nc, &in_nc );			// Grab new connection
-	if ( res != ERR_OK )										// Block until we get an incoming connection
+	netconRes = netconn_accept( nc, &in_nc );			// Grab new connection
+	if ( netconRes != ERR_OK )										// Block until we get an incoming connection
 	{
 		servRes = SERVER_ACCEPT_ERROR;
 	}
@@ -161,15 +184,17 @@ void startNetClientTask( void const * argument )
   				pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
   				for( i=0U; i<mesNum; i++ )
   				{
-  					strncpy( output, ( pchSt ), ( pchEn - pchSt ) );
-  				  pchSt  = pchEn;
-  				  pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
-  				  outlen = strlen(output);
-  				  if ( outlen > HTTP_OUTPUT_BUFFER_SIZE)
-  				  {
-  				  	outlen = HTTP_OUTPUT_BUFFER_SIZE;
-  				  }
-  				  netconn_write( netcon, output, outlen, NETCONN_COPY );
+  					if ( strncpy( output, ( pchSt ), ( pchEn - pchSt ) ) != NULL )
+  					{
+  						pchSt  = pchEn;
+  						pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
+  						outlen = strlen(output);
+  						if ( outlen > HTTP_OUTPUT_BUFFER_SIZE)
+  						{
+  							outlen = HTTP_OUTPUT_BUFFER_SIZE;
+  						}
+  						netconn_write( netcon, output, outlen, NETCONN_COPY );
+  					}
   				}
   			}
   		}

@@ -9,26 +9,24 @@
 #define INC_HTTP_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
-
-
 /*------------------------ Define --------------------------------------*/
-#define		CR_HEX								0x0D
-#define		LF_HEX								0x0A
+#define		CR_HEX								0x0DU
+#define		LF_HEX								0x0AU
 
-#define		DATE_LENGTH						29
-#define		SERVER_LENGTH					21
-#define		CONTENT_TYPE_LENGTH		9
+#define		DATE_LENGTH						29U
+#define		SERVER_LENGTH					21U
+#define		CONTENT_TYPE_LENGTH		9U
 
-#define		HTTP_PATH_LENGTH			30
-#define		WEB_PAGE_SIZE					60
+#define		HTTP_PATH_LENGTH			30U
+#define		WEB_PAGE_SIZE					60U
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
-	//HTTP_STATUS_CONTINUE 						= 100,
-	//HTTP_STATUS_SWITCHING_PROTOCOLS = 101,
-	HTTP_STATUS_OK									= 200,
-	HTTP_STATUS_BAD_REQUEST					= 400,
-	HTTP_STATUS_NON_CONNECT					= 404
+	//HTTP_STATUS_CONTINUE 						= 100U,
+	//HTTP_STATUS_SWITCHING_PROTOCOLS = 101U,
+	HTTP_STATUS_OK									= 200U,
+	HTTP_STATUS_BAD_REQUEST					= 400U,
+	HTTP_STATUS_NON_CONNECT					= 404U
 } HTTP_STATUS;
 /*------------------------- Methods -----------------------------------*/
 #define		HTTP_METHOD_NUM							4U
@@ -60,7 +58,6 @@ typedef enum
 /*------------------------ Cache control -------------------------------*/
 #define	HTTP_CACHE_STR_NO_CACHE		"no-cache"
 #define	HTTP_CACHE_STR_NO_STORE		"no-store"
-
 
 typedef enum
 {
@@ -142,7 +139,7 @@ typedef struct
 #define		HTTP_STATUS_GATEWAY_TIMEOUT									"504"
 #define		HTTP_STATUS_HTTP_VERSION_NOT_SUPPORTED			"505"
 */
-/*------------------------ Tempaltes ----------------------------------*/
+/*------------------------ Templates ----------------------------------*/
 #define		HTTP_END_LINE								"\r\n"
 #define		HTTP_SERVER_NAME						"EMBmss/0.0.1"
 
@@ -159,9 +156,9 @@ typedef struct
 #define		HTTP_CONTENT_LINE						"Content-Type: "
 #define		HTTP_CACHE_CONTROL					"Cache-Control: "
 /*----------------------- Functions ------------------------------------*/
-HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request );
-HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response );
-HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response );
+HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request );							// Parsing data from request text
+HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response );	// Build response in response structure
+HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response );						// Make string response from response structure
 /*----------------------------------------------------------------------*/
 #endif /* INC_HTTP_H_ */
 

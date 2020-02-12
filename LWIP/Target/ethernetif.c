@@ -80,7 +80,7 @@ osSemaphoreId s_xSemaphore = NULL;
 ETH_HandleTypeDef heth;
 
 /* USER CODE BEGIN 3 */
-
+osThreadId_t ethernetifHandle;
 /* USER CODE END 3 */
 
 /* Private functions ---------------------------------------------------------*/

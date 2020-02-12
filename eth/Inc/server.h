@@ -23,12 +23,10 @@ typedef enum
 #define	HTTP_INPUT_BUFFER_SIZE		512U
 #define	HTTP_OUTPUT_BUFFER_SIZE		256U
 /*----------------------------- Functions ------------------------------------*/
-
-void 					cETHgetStrIP( char* ipStr );
-
-void 					vSERVERinit( void );
-SERVER_ERROR 	eSERVERstart( void );
-SERVER_ERROR 	eSERVERstop( void );
-SERVER_ERROR 	eSERVERlistenRoutine( void );
+void 					cSERVERgetStrIP( char* ipStr );		// Read local IP address of device in char array format
+void 					vSERVERinit( void );							// Waiting the end of server initialization
+SERVER_ERROR 	eSERVERstart( void );							// Start server. Open 80 port and start listen it
+SERVER_ERROR 	eSERVERstop( void );							// Stop server connection
+SERVER_ERROR 	eSERVERlistenRoutine( void );			// Routine handler of incoming packages.
 /*----------------------------------------------------------------------------*/
 #endif /* INC_SERVER_H_ */

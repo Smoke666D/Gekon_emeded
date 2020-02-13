@@ -18,6 +18,10 @@ typedef enum
 	SERVER_LISTEN_ERROR,
 	SERVER_CLOSE_ERROR,
 	SERVER_ACCEPT_ERROR,
+	SERVER_DNS_ERROR,
+	SERVER_REMOTE_CONNECT_ERROR,
+	SERVER_WRITE_ERROR,
+	SERVER_RECEIVE_ERROR,
 } SERVER_ERROR;
 /*------------------------------ Default -------------------------------------*/
 #define	HTTP_INPUT_BUFFER_SIZE		512U
@@ -28,5 +32,7 @@ void 					vSERVERinit( void );							// Waiting the end of server initialization
 SERVER_ERROR 	eSERVERstart( void );							// Start server. Open 80 port and start listen it
 SERVER_ERROR 	eSERVERstop( void );							// Stop server connection
 SERVER_ERROR 	eSERVERlistenRoutine( void );			// Routine handler of incoming packages.
+
+SERVER_ERROR 	eHTTPsendRequest( char* httpStr, char* hostName );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_SERVER_H_ */

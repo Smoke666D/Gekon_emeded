@@ -82,6 +82,10 @@ typedef struct
 {
 		HTTP_METHOD		method;
 		char					path[HTTP_PATH_LENGTH];
+		char					host[HTTP_PATH_LENGTH];
+		HTTP_CONTENT	contetntType;
+		HTTP_CONNECT	connect;
+		HTTP_CACHE		cache;
 } HTTP_REQUEST;
 
 typedef struct
@@ -146,6 +150,7 @@ typedef struct
 #define		HTTP_OK_STATUS_LINE					"HTTP/1.1 200 OK"
 #define		HTTP_NOT_FOUND_STATUS_LINE	"HTTP/1.1 400 Not Found"
 
+#define		HTTP_HOST_LINE							"Host: "
 #define		HTTP_DATE_LINE							"Date: "
 #define		HTTP_SERVER_LINE						"Server: "
 #define		HTTP_MODIF_LINE							"Last-Modified: "
@@ -159,6 +164,10 @@ typedef struct
 HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request );							// Parsing data from request text
 HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response );	// Build response in response structure
 HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response );						// Make string response from response structure
+
+HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST request );
+HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST request );
+HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE *response );
 /*----------------------------------------------------------------------*/
 #endif /* INC_HTTP_H_ */
 

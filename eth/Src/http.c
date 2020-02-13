@@ -4,7 +4,6 @@
  *  Created on: Feb 6, 2020
  *      Author: mikhail.mikhailov
  */
-
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "http.h"
 // Site
@@ -22,7 +21,9 @@ const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD
 void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );					// Clean request structure
 void 		vHTTPCleanResponse( HTTP_RESPONSE *response );					// Clean response structure
 uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );	// Get the string of line from multiline text.
-void 		eHTTPbuildGet( char* path, HTTP_RESPONSE *response );		// Build get response in response structure
+void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );		// Build get response in response structure
+
+char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -153,13 +154,50 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE *response  )
+{
+	HTTP_STATUS 	res 	 = HTTP_STATUS_BAD_REQUEST;
+	char* 				pchSt  = NULL;
+	char* 				pchEn  = NULL;
+	char					buffer[5];
+
+	vHTTPCleanResponse( response );
+	pchSt = strchr( input, ' ')  + 1U;
+	if ( pchSt != NULL )
+	{
+		pchEn = strchr( pchSt, ' ' );
+		if ( pchEn != NULL )
+		{
+			if ( strncpy( buffer, pchSt, ( pchEn - pchSt ) ) != NULL )
+			{
+				response->status = atoi( buffer );
+				if ( response->status == HTTP_STATUS_OK )
+				{
+					res = HTTP_STATUS_OK;
+					pchSt = strstr( input, "\r\n\r\n" ) + 4U;
+					if ( pchSt != NULL )
+					{
+						pchEn = strcpy( data, pchSt );
+						if ( pchEn == NULL )
+						{
+							res = HTTP_STATUS_BAD_REQUEST;
+						}
+					}
+					else res = HTTP_STATUS_BAD_REQUEST;
+				}
+			}
+		}
+	}
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Build get response in response structure
  * Input:		path 			- url to the file from request
  * 					response	- structure of response
  * Output:	none
  */
-void eHTTPbuildGet( char* path, HTTP_RESPONSE *response)
+void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 {
 	char *res;
 
@@ -206,7 +244,7 @@ HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
 			break;
 		case HTTP_METHOD_GET:
 			response->method = HTTP_METHOD_GET;
-			eHTTPbuildGet( request.path, response );
+			eHTTPbuildGetResponse( request.path, response );
 			res = HTTP_STATUS_OK;
 			break;
 		case HTTP_METHOD_POST:
@@ -222,6 +260,59 @@ HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
 			res = HTTP_STATUS_BAD_REQUEST;
 			break;
 	}
+
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST request )
+{
+	HTTP_STATUS res = HTTP_STATUS_OK;
+	switch ( request.method )
+	{
+		case HTTP_METHOD_NO:
+			res = HTTP_STATUS_BAD_REQUEST;
+			break;
+		case HTTP_METHOD_GET:
+			//eHTTPbuildGetRequest( request );
+			res = HTTP_STATUS_OK;
+			break;
+		case HTTP_METHOD_POST:
+			res = HTTP_STATUS_BAD_REQUEST;
+			break;
+		case HTTP_METHOD_HEAD:
+			res = HTTP_STATUS_BAD_REQUEST;
+			break;
+		case HTTP_METHOD_OPTION:
+			res = HTTP_STATUS_BAD_REQUEST;
+			break;
+		default:
+			res = HTTP_STATUS_BAD_REQUEST;
+			break;
+	}
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST request )
+{
+	HTTP_STATUS res = HTTP_STATUS_OK;
+	char				*strRes;
+
+	strRes = strcpy( httpStr, "GET " );
+	strRes = strcat( httpStr, request.path );
+	strRes = strcat( httpStr, " HTTP/1.1" );
+	strRes = strcat( httpStr, HTTP_END_LINE );
+
+
+
+	strRes = strcat( httpStr, HTTP_HOST_LINE );
+	strRes = strcat( httpStr, request.host );
+	strRes = strcat( httpStr, HTTP_END_LINE );
+
+	strRes = strcat( httpStr, HTTP_CONN_LINE );
+	strRes = strcat( httpStr, HTTP_END_LINE );
+
+	strRes = vHTTPaddCache( httpStr, request.cache );
+	strRes = strcat( httpStr, HTTP_END_LINE );
 
 	return res;
 }
@@ -310,7 +401,33 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+char* vHTTPaddCache( char* httpStr, HTTP_CACHE cache)
+{
+	char *strRes;
 
+	strRes = strcat( httpStr, HTTP_CACHE_CONTROL );
+	switch ( cache )
+	{
+		case HTTP_CACHE_NO_CACHE:
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			break;
+		case HTTP_CACHE_NO_STORE:
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			break;
+		case HTTP_CACHE_NO_CACHE_STORE:
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			strRes = strcat( httpStr, "," );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			break;
+		default:
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+			strRes = strcat( httpStr, "," );
+			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+			break;
+	}
+	strRes = strcat( httpStr, HTTP_END_LINE );
+	return strRes;
+}
 
 
 

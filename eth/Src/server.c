@@ -83,15 +83,9 @@ SERVER_ERROR eSERVERstart( void )
 				servRes = SERVER_LISTEN_ERROR;
 			}
 		}
-		else
-		{
-			servRes = SERVER_BIND_ERROR;
-		}
+		else servRes = SERVER_BIND_ERROR;
 	}
-	else
-	{
-		servRes = SERVER_NEW_CONNECT_ERROR;
-	}
+	else servRes = SERVER_NEW_CONNECT_ERROR;
 
 	return servRes;
 }
@@ -103,13 +97,13 @@ SERVER_ERROR eSERVERstart( void )
  */
 SERVER_ERROR eSERVERstop( void )
 {
-	SERVER_ERROR 	servRes 	= SERVER_OK;
+	SERVER_ERROR 	servRes 	= SERVER_CLOSE_ERROR;
 	err_t 				netconRes = ERR_OK;
 
 	netconRes = netconn_close( nc );
-	if ( netconRes != ERR_OK )
+	if ( netconRes == ERR_OK )
 	{
-		servRes = SERVER_CLOSE_ERROR;
+		netconRes = netconn_delete( nc );
 	}
 	return servRes;
 }
@@ -210,4 +204,66 @@ void startNetClientTask( void const * argument )
   }
 }
 /*---------------------------------------------------------------------------------------------------*/
+SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
+{
+	SERVER_ERROR 	res     = SERVER_OK;
+	struct 				netconn * ncr;
+	struct 				netbuf  * nbr;
+	char* 				IPstr;
+	ip_addr_t 		remote_ip;
+	uint16_t 			len;
+
+	if ( netconn_gethostbyname( hostName, &remote_ip ) == ERR_OK )
+	{
+		IPstr = ip4addr_ntoa( &remote_ip );
+		ip4addr_aton( IPstr, &remote_ip );
+		ncr = netconn_new( NETCONN_TCP );
+		if ( ncr != NULL )
+		{
+			if ( netconn_bind( ncr, &gnetif.ip_addr, 0U ) == ERR_OK )
+			{
+				if ( netconn_connect( ncr, &remote_ip, 80U ) == ERR_OK )
+				{
+					if ( netconn_write( ncr, httpStr, strlen( httpStr ), NETCONN_COPY ) == ERR_OK )
+					{
+						if ( netconn_recv( ncr, &nbr ) == ERR_OK )
+						{
+							len = netbuf_len( nbr );
+							netbuf_copy( nbr, httpStr, len );
+							netbuf_delete( nbr );
+							httpStr[len] = 0;
+
+						}
+					}
+					else res = SERVER_WRITE_ERROR;
+				}
+				else res = SERVER_REMOTE_CONNECT_ERROR;
+			}
+			else res = SERVER_BIND_ERROR;
+		}
+		else res = SERVER_NEW_CONNECT_ERROR;
+	}
+	else res = SERVER_DNS_ERROR;
+/*
+	if ( netconn_close( ncr ) != ERR_OK )
+	{
+		res = SERVER_CLOSE_ERROR;
+	}
+	netconn_delete( ncr );
+*/
+	//vSYSSerial( httpStr );
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
+
 

@@ -9,6 +9,9 @@
 
 #include "u8g2.h"
 
+#include "server.h"
+#include "rtc.h"
+
 
 #define home18_width 18
 #define home18_height 18
@@ -256,7 +259,7 @@ void LCD_Redraw()
 	}
 	if (LCD_REDRAW_FLAG ==1)
 	{
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_SET);
+	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
 	  LCD_WriteCommand(0x3E);
 	  for (i=0;i<8;i++)
 	  {
@@ -277,7 +280,7 @@ void LCD_Redraw()
 		   	  ptr += 16;
 		  }
 	  }
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_RESET);
+	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
       LCD_REDRAW_FLAG ==0;
 	}
 }
@@ -386,10 +389,10 @@ uint8_t u8x8_stm32_gpio_and_delay(U8X8_UNUSED u8x8_t *u8x8,
         __asm__("nop");
         break;
   case U8X8_MSG_GPIO_DC:
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, arg_int);
+    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
     break;
   case U8X8_MSG_GPIO_RESET:
-   // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, arg_int);
+   // HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int);
     break;
   }
   return 1;
@@ -405,16 +408,16 @@ uint8_t u8x8_byte_STM_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
    // Delay1us(72);
     break;
   case U8X8_MSG_BYTE_INIT:
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, arg_int);
+    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
     break;
   case U8X8_MSG_BYTE_SET_DC:
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, arg_int);
+    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
     break;
   case U8X8_MSG_BYTE_START_TRANSFER:
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_SET);
+    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
     break;
   case U8X8_MSG_BYTE_END_TRANSFER:
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
     break;
   default:
     return 0;
@@ -624,8 +627,14 @@ void IncData()
 			u8g2_DrawUTF8(&u8g2, 22, 12, "время");
 			u8g2_DrawUTF8(&u8g2, 21, 37, "напряжение   v");
 			u8g2_SetFont(&u8g2, u8g2_font_5x8_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 61, 12, "12:54:12");
-			u8g2_DrawUTF8(&u8g2, 26, 25, "192:168:255:255");
+			//u8g2_DrawUTF8(&u8g2, 61, 12, "12:54:12");
+			char time[9] = {' ',' ',' ',' ',' ',' ',' ',' ',' '};
+			eRTCgetTime( time );
+			u8g2_DrawUTF8(&u8g2, 61, 12, time);
+			char ipStr[16];
+			cSERVERgetStrIP( ipStr );
+			u8g2_DrawUTF8(&u8g2, 26, 25, ipStr);
+
 			u8g2_DrawUTF8(&u8g2, 84, 37, "200");
 			SS++;
 								if (SS==5) SS=0;

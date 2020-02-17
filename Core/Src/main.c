@@ -29,6 +29,8 @@
 #include "server.h"
 #include "http.h"
 #include "rtc.h"
+
+#include "lcd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +50,11 @@
 /* Private variables ---------------------------------------------------------*/
 RTC_HandleTypeDef hrtc;
 
+SPI_HandleTypeDef hspi1;
+DMA_HandleTypeDef hdma_spi1_tx;
+
+TIM_HandleTypeDef htim7;
+
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -66,6 +73,25 @@ const osThreadAttr_t netTask_attributes = {
   .priority = (osPriority_t) osPriorityBelowNormal,
   .stack_size = 4096
 };
+/* Definitions for lcdTask */
+osThreadId_t lcdTaskHandle;
+const osThreadAttr_t lcdTask_attributes = {
+  .name = "lcdTask",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 1024
+};
+/* Definitions for lcdRedrawTask */
+osThreadId_t lcdRedrawTaskHandle;
+const osThreadAttr_t lcdRedrawTask_attributes = {
+  .name = "lcdRedrawTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 1024
+};
+/* Definitions for xLCDDelaySemph */
+osSemaphoreId_t xLCDDelaySemphHandle;
+const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
+  .name = "xLCDDelaySemph"
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -73,11 +99,16 @@ const osThreadAttr_t netTask_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_TIM7_Init(void);
+static void MX_SPI1_Init(void);
 void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
+void StartLcdTask(void *argument);
+extern void StartLcdRedrawTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -117,10 +148,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_RTC_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_LWIP_Init();
+  MX_TIM7_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   vSYSInitSerial();
   vRTCgetTimer( &hrtc );
@@ -132,6 +166,10 @@ int main(void)
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of xLCDDelaySemph */
+  xLCDDelaySemphHandle = osSemaphoreNew(1, 1, &xLCDDelaySemph_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -152,8 +190,14 @@ int main(void)
   /* creation of netTask */
   netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
 
+  /* creation of lcdTask */
+  lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
+
+  /* creation of lcdRedrawTask */
+  lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+  vLCDInit( xLCDDelaySemphHandle );
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -282,6 +326,82 @@ static void MX_RTC_Init(void)
 }
 
 /**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief TIM7 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM7_Init(void)
+{
+
+  /* USER CODE BEGIN TIM7_Init 0 */
+
+  /* USER CODE END TIM7_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM7_Init 1 */
+
+  /* USER CODE END TIM7_Init 1 */
+  htim7.Instance = TIM7;
+  htim7.Init.Prescaler = 60;
+  htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim7.Init.Period = 20;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM7_Init 2 */
+
+  /* USER CODE END TIM7_Init 2 */
+
+}
+
+/**
   * @brief USART3 Initialization Function
   * @param None
   * @retval None
@@ -348,6 +468,22 @@ static void MX_USB_OTG_FS_PCD_Init(void)
 
 }
 
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+
+}
+
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -370,6 +506,9 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : USER_Btn_Pin */
   GPIO_InitStruct.Pin = USER_Btn_Pin;
@@ -397,6 +536,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : LCD_RST_Pin */
+  GPIO_InitStruct.Pin = LCD_RST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LCD_RST_GPIO_Port, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -417,7 +563,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
   	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
-  	osDelay(100);
+  	osDelay( 100U );
   }
   /* USER CODE END 5 */ 
 }
@@ -449,7 +595,7 @@ void StartNetTask(void *argument)
 	}
 	else
 	{
-		char buffer[40];
+		char buffer[40U];
 		vSYSSerial( "done!");
 		vSYSSerial( "\n\r" );
 		RTC_TimeTypeDef 	t;
@@ -466,7 +612,7 @@ void StartNetTask(void *argument)
 	if ( eSERVERstart() != SERVER_OK )
 	{
 		vSYSSerial( "fail!\n\r" );
-		while( 1 ) osDelay( 1 );
+		while( 1U ) osDelay( 1U );
 	}
 	vSYSSerial( "done!\n\r" );
 	vSYSSerial( ">>Server ready and listen port 80!\n\r" );
@@ -481,9 +627,29 @@ void StartNetTask(void *argument)
     {
     	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
     }
-    osDelay(10);
+    osDelay( 10U );
   }
   /* USER CODE END StartNetTask */
+}
+
+/* USER CODE BEGIN Header_StartLcdTask */
+/**
+* @brief Function implementing the lcdTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartLcdTask */
+void StartLcdTask(void *argument)
+{
+  /* USER CODE BEGIN StartLcdTask */
+	vLCD_Init();
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay( 2000U );
+    IncData();
+  }
+  /* USER CODE END StartLcdTask */
 }
 
 /**

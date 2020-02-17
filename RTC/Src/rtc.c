@@ -94,8 +94,8 @@ RTC_STATUS eRTCgetHttpTime( void )
 	RTC_STATUS				rtcRes 	= RTC_OK;
 	RTC_TimeTypeDef 	t;
 	RTC_DateTypeDef		d;
-	char*							buffer = pvPortMalloc(HTTP_BUFER_SIZE);
-	char*							data   = pvPortMalloc(200U);
+	char*							buffer = pvPortMalloc( HTTP_BUFER_SIZE );
+	char*							data   = pvPortMalloc( 200U );
 	HTTP_RESPONSE			response;
 
 	HTTP_REQUEST request = {
@@ -180,7 +180,6 @@ RTC_STATUS eRTCdatetimeParser( char* input, RTC_TimeTypeDef *sTime, RTC_DateType
 	RTC_STATUS	rtcRes 	= RTC_ERROR;
 
 	/*	2020-02-12T15:07:06.182854+03:00  */
-	uint8_t temp 		= strlen( input );
 	sDate->Year 		= eRTCgetInt( input, 2U,  2U);
 	sDate->Month 		= eRTCgetInt( input, 5U,  2U );
 	sDate->Date 		= eRTCgetInt( input, 8U,  2U );

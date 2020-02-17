@@ -29,7 +29,7 @@ uint8_t 					utc_offset;
 SIGN 							utc_offset_sign;
 uint8_t						day_of_week;
 TIME_API_LOCATION	location;
-//HAL_StatusTypeDef	halRes;
+char time[8];
 /*----------------------- Functions -----------------------------------------------------------------*/
 RTC_STATUS 	eRTCtxtTimeParser( char* input, char *header, char* output );
 RTC_STATUS 	eRTCdatetimeParser( char* input, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate );
@@ -88,14 +88,27 @@ RTC_STATUS eRTCgetDateForHttp( char* date )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+RTC_STATUS eRTCgetTime( char* out )
+{
+	RTC_STATUS				rtcRes 	= RTC_OK;
+	uint8_t i = 0U;
+
+	for( i=0U; i<8; i++ )
+	{
+		out[i] = time[i];
+	}
+
+	return rtcRes;
+}
+/*---------------------------------------------------------------------------------------------------*/
 RTC_STATUS eRTCgetHttpTime( void )
 {
 	HTTP_STATUS 			httpRes	= HTTP_STATUS_BAD_REQUEST;
 	RTC_STATUS				rtcRes 	= RTC_OK;
 	RTC_TimeTypeDef 	t;
 	RTC_DateTypeDef		d;
-	char*							buffer = pvPortMalloc(HTTP_BUFER_SIZE);
-	char*							data   = pvPortMalloc(200U);
+	char*							buffer = pvPortMalloc( HTTP_BUFER_SIZE );
+	char*							data   = pvPortMalloc( 200U );
 	HTTP_RESPONSE			response;
 
 	HTTP_REQUEST request = {
@@ -113,6 +126,7 @@ RTC_STATUS eRTCgetHttpTime( void )
 	{
 
 		rtcRes = eRTCparsingHttpTime( data, &t, &d );
+		sprintf( time, "%02d:%02d:%02d", t.Hours, t.Minutes, t.Seconds );
 		if ( HAL_RTC_SetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
 		{
 			if ( HAL_RTC_SetDate( rtc, &d, RTC_FORMAT_BCD ) != HAL_OK )
@@ -180,7 +194,6 @@ RTC_STATUS eRTCdatetimeParser( char* input, RTC_TimeTypeDef *sTime, RTC_DateType
 	RTC_STATUS	rtcRes 	= RTC_ERROR;
 
 	/*	2020-02-12T15:07:06.182854+03:00  */
-	uint8_t temp 		= strlen( input );
 	sDate->Year 		= eRTCgetInt( input, 2U,  2U);
 	sDate->Month 		= eRTCgetInt( input, 5U,  2U );
 	sDate->Date 		= eRTCgetInt( input, 8U,  2U );

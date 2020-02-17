@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "tcp.h"
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
@@ -29,6 +28,7 @@
 #include "sys.h"
 #include "server.h"
 #include "http.h"
+#include "rtc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +46,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+RTC_HandleTypeDef hrtc;
+
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -62,7 +64,7 @@ osThreadId_t neyTaskHandle;
 const osThreadAttr_t neyTask_attributes = {
   .name = "neyTask",
   .priority = (osPriority_t) osPriorityBelowNormal,
-  .stack_size = 512
+  .stack_size = 4096
 };
 /* USER CODE BEGIN PV */
 
@@ -71,6 +73,7 @@ const osThreadAttr_t neyTask_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_RTC_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 void StartDefaultTask(void *argument);
@@ -114,11 +117,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_RTC_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_LWIP_Init();
   /* USER CODE BEGIN 2 */
   vSYSInitSerial();
+  vRTCgetTimer( &hrtc );
+  vSYSSerial( "***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();
@@ -174,10 +180,12 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -203,6 +211,74 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+  /** Initialize RTC Only 
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+    
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date 
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
@@ -340,7 +416,6 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
   	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
   	osDelay(100);
   }
@@ -358,19 +433,44 @@ void StartNetTask(void *argument)
 {
   /* USER CODE BEGIN StartNetTask */
 	char ipaddr[16];
-
+	vSYSSerial( ">>DHCP: ");
 	vSERVERinit();
-
-	if ( eSERVERstart() != SERVER_OK )
-	{
-		while( 1 ) osDelay( 1 );
-	}
-
+	vSYSSerial( "done!\n\r");
 	cSERVERgetStrIP( ipaddr );
-	vSYSSerial( ">>LwIP ready and listen port 80!\n\r" );
 	vSYSSerial( ">>IP address: ");
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
+
+	vSYSSerial( ">>RTC: ");
+	if ( eRTCgetHttpTime() == RTC_ERROR )
+	{
+		vSYSSerial( "server fail!");
+		vSYSSerial("\n\r");
+	}
+	else
+	{
+		char buffer[40];
+		vSYSSerial( "done!");
+		vSYSSerial( "\n\r" );
+		RTC_TimeTypeDef 	t;
+		RTC_DateTypeDef		d;
+		HAL_RTC_GetTime( &hrtc, &t, RTC_FORMAT_BCD );
+		HAL_RTC_GetDate( &hrtc, &d, RTC_FORMAT_BCD );
+		sprintf( buffer, ">>Current time: %d.%d.20%d  %d:%d:%d   ", d.Date, d.Month, d.Year, t.Hours, t.Minutes, t.Seconds );
+		vSYSSerial( buffer );
+		vSYSSerial( "\r\n" );
+	}
+
+
+	vSYSSerial( ">>TCP: " );
+	if ( eSERVERstart() != SERVER_OK )
+	{
+		vSYSSerial( "fail!\n\r" );
+		while( 1 ) osDelay( 1 );
+	}
+	vSYSSerial( "done!\n\r" );
+	vSYSSerial( ">>Server ready and listen port 80!\n\r" );
+
 	HAL_GPIO_WritePin( GPIOB, LD2_Pin, GPIO_PIN_SET );
 
   /* Infinite loop */

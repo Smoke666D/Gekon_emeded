@@ -59,10 +59,10 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 512
 };
-/* Definitions for neyTask */
-osThreadId_t neyTaskHandle;
-const osThreadAttr_t neyTask_attributes = {
-  .name = "neyTask",
+/* Definitions for netTask */
+osThreadId_t netTaskHandle;
+const osThreadAttr_t netTask_attributes = {
+  .name = "netTask",
   .priority = (osPriority_t) osPriorityBelowNormal,
   .stack_size = 4096
 };
@@ -149,8 +149,8 @@ int main(void)
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of neyTask */
-  neyTaskHandle = osThreadNew(StartNetTask, NULL, &neyTask_attributes);
+  /* creation of netTask */
+  netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */

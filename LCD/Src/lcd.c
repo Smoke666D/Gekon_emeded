@@ -233,6 +233,7 @@ static SemaphoreHandle_t  xSemaphore = NULL;
 void vLCDInit(SemaphoreHandle_t temp)
 {
 	 xSemaphore = temp;
+	 return;
 }
 
 
@@ -243,46 +244,47 @@ extern SPI_HandleTypeDef hspi1;
 static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
 
 //Процедура обновления индикатора
-void LCD_Redraw()
+void LCD_Redraw( void )
 {
-
 	uint16_t i=0;
-	uint8_t x, y, c, j;
+	uint8_t  x, y, c, j;
 	uint8_t *ptr;
-	for (i=0;i<LCD_DATA_BUFFER_SIZE;i++)
+
+	for ( i=0U; i<LCD_DATA_BUFFER_SIZE;i ++ )
 	{
-		if (LCD_Buffer[i]!=u8g2.tile_buf_ptr[i])
+		if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
 		{
-			LCD_Buffer[i]=u8g2.tile_buf_ptr[i];
-			LCD_REDRAW_FLAG =1;
+			LCD_Buffer[i]		= u8g2.tile_buf_ptr[i];
+			LCD_REDRAW_FLAG = 1U;
 		}
 	}
-	if (LCD_REDRAW_FLAG ==1)
+	if ( LCD_REDRAW_FLAG == 1U )
 	{
 	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
-	  LCD_WriteCommand(0x3E);
-	  for (i=0;i<8;i++)
+	  LCD_WriteCommand( 0x3EU );
+	  for ( i=0U; i<8U; i++ )
 	  {
 		  y = i;
-		  y*=8;
-		  x = 0;
-		  if ( y >= 32 )	/* this is the adjustment for 128x64 displays */
+		  y*= 8U;
+		  x = 0U;
+		  if ( y >= 32U )	/* this is the adjustment for 128x64 displays */
 		  {
-		  	  y-=32;
-		  	  x+=8;
+		  	  y -= 32U;
+		  	  x += 8U;
 		  }
-		  ptr = &LCD_Buffer[i*128];	/* data ptr to the tiles */
-		  for( j = 0; j < 8; j++ )
+		  ptr = &LCD_Buffer[i * 128U];	/* data ptr to the tiles */
+		  for( j=0U; j<8U; j++ )
 		  {
-		  	  LCD_WriteCommand(0x080 | (y+j) );
-		  	  LCD_WriteCommand(0x080 | x);
+		  	  LCD_WriteCommand( 0x080U | (y+j) );
+		  	  LCD_WriteCommand( 0x080U | x);
 		   	  LCD_Send16Data(ptr);
-		   	  ptr += 16;
+		   	  ptr += 16U;
 		  }
 	  }
 	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
-      LCD_REDRAW_FLAG ==0;
+      LCD_REDRAW_FLAG == 0U;	// Что это???
 	}
+	return;
 }
 
 
@@ -292,7 +294,7 @@ void StartLcdRedrawTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(200);
+    osDelay( 200U );
     LCD_Redraw();
   }
   /* USER CODE END StartLCDRedraw */
@@ -301,147 +303,142 @@ void StartLcdRedrawTask(void *argument)
 
 
 
-void LCD_Clear()
+void LCD_Clear( void )
 {
- LCD_WriteCommand(0x38);
- LCD_WriteCommand(0x01);
-  osDelay(2U);
+ LCD_WriteCommand( 0x38U );
+ LCD_WriteCommand( 0x01U );
+ osDelay( 2U );
+ return;
 }
 
 //LCD Write Command
-inline void LCD_WriteCommand(uint8_t com)
+inline void LCD_WriteCommand( uint8_t com )
 {
-	uint8_t Data[3];
-	Data[0]=0xF8;
-	Data[1]=0xF0 & com;
-    Data[2]=0xF0 & (com<<4);
-    HAL_SPI_Transmit_DMA(&hspi1, &Data, 3);
-    HAL_TIM_Base_Start_IT(&htim7);
-    xSemaphoreTake( xSemaphore, portMAX_DELAY );
+	uint8_t Data[3U];
+	Data[0U] = 0xF8U;
+	Data[1U] = 0xF0U & com;
+  Data[2U] = 0xF0U & ( com << 4U );
+  HAL_SPI_Transmit_DMA( &hspi1, &Data, 3U );
+  HAL_TIM_Base_Start_IT( &htim7 );
+  xSemaphoreTake( xSemaphore, portMAX_DELAY );
+  return;
 }
 
 
-void LCD_Delay()
+void LCD_Delay( void )
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
 
- if (hspi1.State != HAL_SPI_STATE_BUSY_TX)
- {
-	  HAL_TIM_Base_Stop_IT(&htim7);
+  if ( hspi1.State != HAL_SPI_STATE_BUSY_TX )
+  {
+	  HAL_TIM_Base_Stop_IT( &htim7 );
 	  xHigherPriorityTaskWoken = pdFALSE;
-	  xSemaphoreGiveFromISR(xSemaphore,&xHigherPriorityTaskWoken );
+	  xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
 	  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
-
- }
-
+  }
+  return;
 }
 
-
-
-
-
-inline void LCD_Send16Data( uint8_t *arg_prt)
+inline void LCD_Send16Data( uint8_t *arg_prt )
 {
 	  uint8_t *data;
 	  uint8_t b;
 	  uint8_t i;
-	  uint8_t Data[33];
-	  Data[0]=0xFA;
+	  uint8_t Data[33U];
+
+	  Data[0U] = 0xFAU;
 	  data = (uint8_t *)arg_prt;
-	  for (i=0;i<16;i++)
+	  for ( i=0U; i<16U; i++ )
 	  {
 	   b = *data++;
-	   Data[i*2+1]= b & 0x0f0;
-	   Data[i*2+2]= b<<4;
+	   Data[i * 2U + 1U]= b & 0x0f0U;
+	   Data[i * 2U + 2U]= b << 4U;
 	  }
-	  HAL_SPI_Transmit_DMA(&hspi1, &Data, 33);
-	  HAL_TIM_Base_Start_IT(&htim7);
+	  HAL_SPI_Transmit_DMA( &hspi1, &Data, 33U );
+	  HAL_TIM_Base_Start_IT( &htim7 );
 	  xSemaphoreTake( xSemaphore, portMAX_DELAY );
 }
-
-
 //LCD Reset
-void LCD_Reset(void)
+void LCD_Reset( void )
 {
-	HAL_GPIO_WritePin(LCD_RST_GPIO_Port,LCD_RST_Pin,GPIO_PIN_SET);
-	//HAL_Delay(100);
-	osDelay(10U);
-	HAL_GPIO_WritePin(LCD_RST_GPIO_Port,LCD_RST_Pin,GPIO_PIN_RESET);
-	osDelay(10U);
-	//HAL_Delay(100);
-	HAL_GPIO_WritePin(LCD_RST_GPIO_Port,LCD_RST_Pin,GPIO_PIN_SET);
-	//HAL_Delay(100);
-	osDelay(600U);
+	HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
+	osDelay( 10U );
+	HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET );
+	osDelay( 10U );
+	HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
+	osDelay( 600U );
+	return;
 }
 
-
-
-uint8_t u8x8_stm32_gpio_and_delay(U8X8_UNUSED u8x8_t *u8x8,
-    U8X8_UNUSED uint8_t msg, U8X8_UNUSED uint8_t arg_int,
-    U8X8_UNUSED void *arg_ptr)
+uint8_t u8x8_stm32_gpio_and_delay( U8X8_UNUSED u8x8_t *u8x8,
+																	 U8X8_UNUSED uint8_t msg,
+																	 U8X8_UNUSED uint8_t arg_int,
+																	 U8X8_UNUSED void *arg_ptr )
 {
-  switch (msg)
+  switch ( msg )
   {
-  case U8X8_MSG_DELAY_MILLI:
-    HAL_Delay(arg_int);
-    break;
- case U8X8_MSG_DELAY_100NANO:
-        __asm__("nop");
-        break;
-  case U8X8_MSG_GPIO_DC:
-    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
-    break;
-  case U8X8_MSG_GPIO_RESET:
-   // HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int);
-    break;
+  	case U8X8_MSG_DELAY_MILLI:
+  		HAL_Delay( arg_int );
+  		break;
+  	case U8X8_MSG_DELAY_100NANO:
+  		__asm__( "nop" );
+      break;
+  	case U8X8_MSG_GPIO_DC:
+  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
+  		break;
+  	case U8X8_MSG_GPIO_RESET:
+  		// HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int);
+  		break;
   }
-  return 1;
+  return 1U;
 }
 
-uint8_t u8x8_byte_STM_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
-    void *arg_ptr)
+uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
+    void *arg_ptr )
 {
-  switch (msg)
+	uint8_t res = 0U;
+
+  switch ( msg )
   {
-  case U8X8_MSG_BYTE_SEND:
-    HAL_SPI_Transmit(&hspi1, (uint8_t *) arg_ptr, arg_int, 10000);
-   // Delay1us(72);
-    break;
-  case U8X8_MSG_BYTE_INIT:
-    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
-    break;
-  case U8X8_MSG_BYTE_SET_DC:
-    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
-    break;
-  case U8X8_MSG_BYTE_START_TRANSFER:
-    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
-    break;
-  case U8X8_MSG_BYTE_END_TRANSFER:
-	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
-    break;
-  default:
-    return 0;
+  	case U8X8_MSG_BYTE_SEND:
+  		HAL_SPI_Transmit(&hspi1, (uint8_t *) arg_ptr, arg_int, 10000);
+  		// Delay1us(72);
+  		break;
+  	case U8X8_MSG_BYTE_INIT:
+  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
+  		break;
+  	case U8X8_MSG_BYTE_SET_DC:
+  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
+  		break;
+  	case U8X8_MSG_BYTE_START_TRANSFER:
+  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+  		break;
+  	case U8X8_MSG_BYTE_END_TRANSFER:
+  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+  		break;
+  	default:
+  		res = 0U;
+  		break;
   }
-  return 1;
+  res = 1U;
+  return res;
 }
 
-
-
-static char str[2]={'0',0};
+static char str[2]={ '0' , 0U };
 void vLCD_Init()
 {
-
-	u8g2_Setup_st7920_s_128x64_f(&u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay);
-    u8g2_InitDisplay(&u8g2);
-    u8g2_SetPowerSave(&u8g2, 0);
+	u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay );
+  u8g2_InitDisplay( &u8g2 );
+  u8g2_SetPowerSave( &u8g2, 0U );
+  return;
 }
 
-static uint8_t x =10;
-static uint8_t y =10;
-static uint8_t x_dir=0;
-static uint8_t y_dir=0;
-static uint8_t demo_step=22,dl=0,SS=0;
-void IncData()
+static uint8_t x = 10U;
+static uint8_t y = 10U;
+static uint8_t x_dir = 0U;
+static uint8_t y_dir = 0U;
+static uint8_t demo_step = 22U, dl = 0U, SS = 0U;
+void IncData( void )
 {
 	/*u8g2_font_4x6_t_cyrillic
 	u8g2_font_5x7_t_cyrillic
@@ -472,175 +469,207 @@ void IncData()
 	switch (demo_step)
 	{
 		case 1:
+			break;
 		case 2:
+			break;
 		case 3:
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 10, "font_4x6");
-			u8g2_SetFont(&u8g2, u8g2_font_4x6_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 20, "Ф Ж Щ ф ж щ ш 123456dtr");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 30, "font_5x7");
-			u8g2_SetFont(&u8g2, u8g2_font_5x7_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0,40, "Ф Ж Щ ф ж щ ш 123456drt");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 50, "font_5x8");
-			u8g2_SetFont(&u8g2, u8g2_font_5x8_t_cyrillic);
-     	u8g2_DrawUTF8(&u8g2, 0, 60, "Ф Ж Щ ф ж щ ш 123456dtr");
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 10U, "font_4x6" );
+			u8g2_SetFont( &u8g2, u8g2_font_4x6_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 20U, "Ф Ж Щ ф ж щ ш 123456dtr" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_5x7" );
+			u8g2_SetFont( &u8g2, u8g2_font_5x7_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 40U, "Ф Ж Щ ф ж щ ш 123456drt" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 50U, "font_5x8" );
+			u8g2_SetFont( &u8g2, u8g2_font_5x8_t_cyrillic );
+     	u8g2_DrawUTF8( &u8g2, 0U, 60U, "Ф Ж Щ ф ж щ ш 123456dtr" );
 			break;
 		case 4:
-	    case 5:
-	    case 6:
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 10, "font_6x12");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 20, "ФЖЩфжщш 123drt");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 30, "font_6x13");
-			u8g2_SetFont(&u8g2, u8g2_font_6x13_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 40, "ФЖЩфжщш 123drt");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 52, "font_6x13b");
-			u8g2_SetFont(&u8g2, u8g2_font_6x13B_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 62, "ФЖЩфжщш 123drt");
+			break;
+	  case 5:
+	  	break;
+	  case 6:
+			u8g2_SetDrawColor (&u8g2, 1U );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 10U, "font_6x12" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 20U, "ФЖЩфжщш 123drt" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_6x13" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x13_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 40U, "ФЖЩфжщш 123drt" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 52U, "font_6x13b" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x13B_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 62U, "ФЖЩфжщш 123drt" );
 			break;
 		case 7:
+			break;
 		case 8:
+			break;
 		case 9:
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 10, "font_7x13");
-			u8g2_SetFont(&u8g2, u8g2_font_7x13_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 20, "ФЖЩфжщш");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 30, "font_8x13");
-			u8g2_SetFont(&u8g2, u8g2_font_8x13_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 00, 40, "ФЖЩфжщш1234567890-квпкы");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 52, "font_9x15");
-			u8g2_SetFont(&u8g2, u8g2_font_9x15_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 00,63, "ФЖЩфжщш");
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 10U, "font_7x13" );
+			u8g2_SetFont( &u8g2, u8g2_font_7x13_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 20U, "ФЖЩфжщш" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_8x13" );
+			u8g2_SetFont( &u8g2, u8g2_font_8x13_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 40U, "ФЖЩфжщш1234567890-квпкы" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 52U, "font_9x15" );
+			u8g2_SetFont( &u8g2, u8g2_font_9x15_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 63U, "ФЖЩфжщш" );
 			break;
 		case 10:
+			break;
 		case 11:
+			break;
 		case 12:
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 12, "font_10x20");
-			u8g2_SetFont(&u8g2, u8g2_font_10x20_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 30, "ФЖЩфжщш 123");
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 42, "font_cur12");
-			u8g2_SetFont(&u8g2, u8g2_font_cu12_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 60, "ФЖЩфжщш 123");
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 12U, "font_10x20" );
+			u8g2_SetFont( &u8g2, u8g2_font_10x20_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 30U, "ФЖЩфжщш 123" );
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 42U, "font_cur12" );
+			u8g2_SetFont( &u8g2, u8g2_font_cu12_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 60U, "ФЖЩфжщш 123" );
 			break;
 		case 13:
+			break;
 		case 14:
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 7, "font_unifont");
-			u8g2_SetFont(&u8g2, u8g2_font_unifont_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 00, 20, "ФЖЩфжщш 123try");
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 30, "font_inr24");
-			u8g2_SetFont(&u8g2, u8g2_font_inr24_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 00, 60, "ФЖЩфж");
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 7U, "font_unifont" );
+			u8g2_SetFont( &u8g2, u8g2_font_unifont_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 20U, "ФЖЩфжщш 123try" );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_inr24" );
+			u8g2_SetFont( &u8g2, u8g2_font_inr24_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 60U, "ФЖЩфж" );
 			break;
 		case 15:
+			break;
 		case 16:
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetFont(&u8g2, u8g2_font_6x12_te);
-			u8g2_DrawUTF8(&u8g2, 0, 12, "font_inr27");
-			u8g2_SetFont(&u8g2, u8g2_font_inr27_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 0, 55, "фжщш");
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
+			u8g2_DrawUTF8( &u8g2, 0U, 12U, "font_inr27" );
+			u8g2_SetFont( &u8g2, u8g2_font_inr27_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 0U, 55U, "фжщш" );
 			break;
 		case 17:
+			break;
 		case 18:
+			break;
 		case 19:
-
-			u8g2_SetDrawColor(&u8g2,1);
-				u8g2_SetBitmapMode(&u8g2,1);
-				u8g2_DrawXBM(&u8g2, 0, 0, light_footer_logo_energan_spb_width,light_footer_logo_energan_spb_height, light_footer_logo_energan_spb_bits);
-
-				if (SS==0)
-				{
-					u8g2_DrawRBox(&u8g2, 19,36,22,22, 3);
-				}
-				else
-				   u8g2_DrawRFrame(&u8g2, 19, 36,22,22, 3);
-				u8g2_SetDrawColor(&u8g2,SS==0?0:1);
-				u8g2_DrawXBM(&u8g2, 20, 37, icons8_width, icons8_height, icons8_bits);
-
-
-				u8g2_SetDrawColor(&u8g2,1);
-				if (SS==1)
-						u8g2_DrawRBox(&u8g2, 55, 36,22,22, 3);
-					else
-						u8g2_DrawRFrame(&u8g2, 55, 36,22,22, 3);
-
-				u8g2_SetDrawColor(&u8g2,SS==1?0:1);
-				u8g2_DrawXBM(&u8g2, 56, 37, icons8_width, icons8_height, icons8_1_bits);
-
-				u8g2_SetDrawColor(&u8g2,1);
-				if (SS==2)
-					u8g2_DrawRBox(&u8g2, 89, 36,22,22, 3);
-				else
-					u8g2_DrawRFrame(&u8g2, 89, 36,22,22, 3);
-
-				u8g2_SetDrawColor(&u8g2,SS==2?0:1);
-				u8g2_DrawXBM(&u8g2, 90, 37, icons8_width, icons8_height, icons8_2_bits);
-				SS++;
-					if (SS==3) SS=0;
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetBitmapMode (&u8g2, 1U );
+			u8g2_DrawXBM( &u8g2, 0U, 0U, light_footer_logo_energan_spb_width, light_footer_logo_energan_spb_height, light_footer_logo_energan_spb_bits );
+			if ( SS == 0U )
+			{
+				u8g2_DrawRBox( &u8g2, 19U, 36U, 22U, 22U, 3U );
+			}
+			else
+			{
+				u8g2_DrawRFrame( &u8g2, 19U, 36U, 22U, 22U, 3U );
+			}
+			u8g2_SetDrawColor( &u8g2, SS==0U?0U:1U );
+			u8g2_DrawXBM( &u8g2, 20U, 37U, icons8_width, icons8_height, icons8_bits );
+			u8g2_SetDrawColor( &u8g2, 1U );
+			if ( SS == 1U )
+			{
+				u8g2_DrawRBox( &u8g2, 55U, 36U, 22U, 22U, 3U );
+			}
+			else
+			{
+				u8g2_DrawRFrame( &u8g2, 55U, 36U, 22U, 22U, 3U );
+			}
+			u8g2_SetDrawColor( &u8g2, SS==1U?0U:1U);
+			u8g2_DrawXBM( &u8g2, 56U, 37U, icons8_width, icons8_height, icons8_1_bits );
+			u8g2_SetDrawColor( &u8g2, 1U );
+			if ( SS == 2U )
+			{
+				u8g2_DrawRBox( &u8g2, 89U, 36U, 22U, 22U, 3U );
+			}
+			else
+			{
+				u8g2_DrawRFrame( &u8g2, 89U, 36U, 22U, 22U, 3U );
+			}
+			u8g2_SetDrawColor( &u8g2, SS==2U?0U:1U );
+			u8g2_DrawXBM( &u8g2, 90U, 37U, icons8_width, icons8_height, icons8_2_bits );
+			SS++;
+			if ( SS == 3U )
+			{
+				SS = 0U;
+			}
 			break;
 		case 20:
+			break;
 		case 21:
+			break;
 		case 22:
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_SetBitmapMode(&u8g2,1);
-			if (SS==0)
-				u8g2_DrawRBox(&u8g2, 0,0,20,20, 3);
-			u8g2_SetDrawColor(&u8g2,SS==0?0:1);
-			u8g2_DrawXBM(&u8g2, 0, 0, icons8_height, icons8_height, home_bits);
-			u8g2_SetDrawColor(&u8g2,1);
-			if (SS==1)
-				u8g2_DrawRBox(&u8g2, 0,21,20,20, 3);
-			u8g2_SetDrawColor(&u8g2,SS==1?0:1);
-			u8g2_DrawXBM(&u8g2, 0, 21, icons8_width, icons8_height, icons8_1_bits);
-			if (SS==2)
-				u8g2_DrawRBox(&u8g2, 0,41,20,20, 3);
-			u8g2_SetDrawColor(&u8g2,SS==2?0:1);
-			u8g2_DrawXBM(&u8g2, 0, 41, icons8_width, icons8_height, icons8_2_bits);
-			if (SS==3)
-				u8g2_DrawRBox(&u8g2, 106,0,20,20, 3);
-			u8g2_SetDrawColor(&u8g2,SS==3?0:1);
-			u8g2_DrawXBM(&u8g2, 106, 0, icons8_width, icons8_height, icons8_bits);
-
-			if (SS==4)
-				u8g2_DrawRBox(&u8g2, 106,21,20,20, 3);
-			u8g2_SetDrawColor(&u8g2,SS==4?0:1);
-			u8g2_DrawXBM(&u8g2, 106, 21, icons8_width, icons8_height, akk_bits);
-			u8g2_SetDrawColor(&u8g2,1);
-			u8g2_DrawXBM(&u8g2, 60, 42, icons8_width, icons8_height, fac_bits);
-			u8g2_SetFont(&u8g2, u8g2_font_6x13_t_cyrillic);
-			u8g2_DrawUTF8(&u8g2, 22, 12, "время");
-			u8g2_DrawUTF8(&u8g2, 21, 37, "напряжение   v");
-			u8g2_SetFont(&u8g2, u8g2_font_5x8_t_cyrillic);
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_SetBitmapMode( &u8g2, 1U );
+			if ( SS == 0U )
+			{
+				u8g2_DrawRBox( &u8g2, 0U, 0U, 20U, 20U, 3U );
+			}
+			u8g2_SetDrawColor( &u8g2, SS==0U?0U:1U );
+			u8g2_DrawXBM( &u8g2, 0U, 0U, icons8_height, icons8_height, home_bits );
+			u8g2_SetDrawColor( &u8g2, 1U );
+			if ( SS == 1U )
+			{
+				u8g2_DrawRBox( &u8g2, 0U, 21U, 20U, 20U, 3U);
+			}
+			u8g2_SetDrawColor( &u8g2, SS==1U?0U:1U );
+			u8g2_DrawXBM( &u8g2, 0U, 21U, icons8_width, icons8_height, icons8_1_bits );
+			if ( SS == 2U )
+			{
+				u8g2_DrawRBox( &u8g2, 0U, 41U, 20U, 20U, 3U );
+			}
+			u8g2_SetDrawColor( &u8g2, SS==2U?0U:1U );
+			u8g2_DrawXBM( &u8g2, 0U, 41U, icons8_width, icons8_height, icons8_2_bits );
+			if ( SS == 3U )
+			{
+				u8g2_DrawRBox( &u8g2, 106U, 0U, 20U, 20U, 3U );
+			}
+			u8g2_SetDrawColor( &u8g2, SS==3U?0U:1U );
+			u8g2_DrawXBM( &u8g2, 106U, 0U, icons8_width, icons8_height, icons8_bits );
+			if ( SS == 4U )
+			{
+				u8g2_DrawRBox( &u8g2, 106U, 21U, 20U, 20U, 3U );
+			}
+			u8g2_SetDrawColor( &u8g2, SS==4U?0U:1U );
+			u8g2_DrawXBM( &u8g2, 106U, 21U, icons8_width, icons8_height, akk_bits );
+			u8g2_SetDrawColor( &u8g2, 1U );
+			u8g2_DrawXBM( &u8g2, 60U, 42U, icons8_width, icons8_height, fac_bits );
+			u8g2_SetFont( &u8g2, u8g2_font_6x13_t_cyrillic );
+			u8g2_DrawUTF8( &u8g2, 22U, 12U, "время" );
+			u8g2_DrawUTF8( &u8g2, 21U, 37U, "напряжение   v" );
+			u8g2_SetFont( &u8g2, u8g2_font_5x8_t_cyrillic );
 			//u8g2_DrawUTF8(&u8g2, 61, 12, "12:54:12");
 			char time[9] = {' ',' ',' ',' ',' ',' ',' ',' ',' '};
 			eRTCgetTime( time );
-			u8g2_DrawUTF8(&u8g2, 61, 12, time);
+			u8g2_DrawUTF8( &u8g2, 61U, 12U, time );
 			char ipStr[16];
 			cSERVERgetStrIP( ipStr );
-			u8g2_DrawUTF8(&u8g2, 26, 25, ipStr);
+			u8g2_DrawUTF8( &u8g2, 26U, 25U, ipStr );
 
-			u8g2_DrawUTF8(&u8g2, 84, 37, "200");
+			u8g2_DrawUTF8( &u8g2, 84U, 37U, "200" );
 			SS++;
-								if (SS==5) SS=0;
+			if ( SS == 5U )
+			{
+				SS = 0U;
+			}
 			break;
 		default:
-			demo_step=0;
+			demo_step = 0U;
 			break;
 	}
 	//demo_step++;

@@ -25,10 +25,10 @@
 #define LCD_DMA2D_HANDLER hdma2d
 
 //Pin Definition
-#define LCD_RST_PORT GPIOG
-#define LCD_BL_PORT GPIOG
-#define LCD_RST GPIO_PIN_3
-#define LCD_BL GPIO_PIN_4
+#define LCD_RST_PORT 	GPIOG
+#define LCD_BL_PORT 	GPIOG
+#define LCD_RST 			GPIO_PIN_3
+#define LCD_BL 				GPIO_PIN_4
 
 
 //Маски команд ST7920
@@ -51,18 +51,18 @@
 
 
 //Function declaration
-void LCD_Reset(void);
-void vLCD_Init(void);
+void LCD_Reset( void );
+void vLCD_Init( void );
 
-void IncData();
+void IncData( void );
 void LCD_WriteData(uint8_t data);
 void LCD_WriteCommand(uint8_t data);
 void LCD_SendData(uint8_t arg_int, uint8_t *arg_prt);
 void LCD_Send16Data( uint8_t *arg_prt);
-void LCD_Clear();
-void LCD_Redraw();
-void LCD_Delay();
-void StartDelay();
+void LCD_Clear( void );
+void LCD_Redraw( void );
+void LCD_Delay( void );
+void StartDelay( void );
 void StartLcdRedrawTask(void *argument);
 void vLCDInit(SemaphoreHandle_t temp);
 

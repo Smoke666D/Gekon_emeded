@@ -6,11 +6,8 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "server.h"
-#include "http.h"
 #include "sys.h"
-
 #include "cmsis_os.h"
-
 #include "lwip.h"
 #include "api.h"
 #include "string.h"
@@ -162,12 +159,7 @@ void startNetClientTask( void const * argument )
   		netbuf_copy( nb, input, len );
   		netbuf_delete( nb );
   		input[len] = 0U;
-
-  		eHTTPparsingRequest( input, &request );
-  		eHTTPbuildResponse( request, &response );
-  		eHTTPmakeResponse( output, response );
-
-
+  		eHTTPresponse( input, &request, &response, output );
   		if ( response.method != HTTP_METHOD_NO )
   		{
   			netconn_write( netcon, output, strlen(output), NETCONN_COPY );
@@ -255,8 +247,47 @@ SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Send request, get and parsing response
+ * input:		request 	- input request structure
+ * 					response 	- output response structure
+ * 					output 		- buffer for parsed data of response
+ * output:	status of operation
+ */
+HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+{
+	HTTP_STATUS res    = HTTP_STATUS_BAD_REQUEST;
+	char*				buffer = pvPortMalloc( HTTP_BUFER_SIZE );
 
+	if ( eHTTPmakeRequest( buffer, request ) == HTTP_STATUS_OK )
+	{
+		if ( eHTTPsendRequest( buffer, request->host ) == SERVER_OK )
+		{
+			res = eHTTPparsingResponse( buffer, output, &response );
+		}
+	}
+	vPortFree( buffer );
 
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Make response for input request
+ * input:		input    - input http string
+ * 					request  - output structure after parsing
+ * 					response - output structure
+ * 					output   - response string
+ * output:	none
+ */
+void eHTTPresponse( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+{
+	eHTTPparsingRequest( input, request );
+	eHTTPbuildResponse( request, response );
+	eHTTPmakeResponse( output, response );
+	return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 
 
 

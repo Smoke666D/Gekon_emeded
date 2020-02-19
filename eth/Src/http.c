@@ -6,11 +6,11 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "http.h"
-// Site
 #include "index.h"
-// Common
 #include "string.h"
 #include "stdio.h"
+#include "stdlib.h"
+#include "cmsis_os.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -18,12 +18,11 @@ const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );					// Clean request structure
-void 		vHTTPCleanResponse( HTTP_RESPONSE *response );					// Clean response structure
-uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );	// Get the string of line from multiline text.
-void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );		// Build get response in response structure
-
-char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);
+void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );									/* Clean request structure */
+void 		vHTTPCleanResponse( HTTP_RESPONSE *response );									/* Clean response structure */
+uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );					/* Get the string of line from multiline text */
+void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );		/* Build get response in response structure */
+char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);								/* Add cache string to http */
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -35,10 +34,18 @@ void vHTTPcleanRequest( HTTP_REQUEST *request )
 	uint8_t i = 0U;
 
 	request->method = HTTP_METHOD_NO;
-	for( i=0U; i<HTTP_PATH_LENGTH; i++)
+	for ( i=0U; i<HTTP_PATH_LENGTH; i++)
 	{
 		request->path[i] = 0x00U;
 	}
+	for ( i=0U; i<HTTP_PATH_LENGTH; i++)
+	{
+		request->host[i] = 0x00U;
+	}
+	request->contetntType = HTTP_CONTENT_HTML;
+	request->connect			= HTTP_CONNECT_CLOSED;
+	request->cache				= HTTP_CACHE_NO_CACHE;
+
 	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -53,21 +60,24 @@ void vHTTPCleanResponse( HTTP_RESPONSE *response )
 
 	response->status = HTTP_STATUS_BAD_REQUEST;
 	response->method = HTTP_METHOD_NO;
-	for( i=0U; i<DATE_LENGTH; i++ )
+	for ( i=0U; i<DATE_LENGTH; i++ )
 	{
 		response->date[i] = 0x00U;
 	}
-	for( i=0U; i<SERVER_LENGTH; i++)
+	for ( i=0U; i<SERVER_LENGTH; i++)
 	{
 		response->server[i] = 0x00U;
 	}
-	for( i=0U; i<DATE_LENGTH; i++)
+	for ( i=0U; i<DATE_LENGTH; i++)
 	{
 		response->modified[i] = 0x00U;
 	}
 	response->contentLength = 0U;
 	response->contetntType  = HTTP_CONTENT_HTML;
 	response->connect 			= HTTP_CONNECT_CLOSED;
+	response->cache					= HTTP_CACHE_NO_CACHE;
+
+	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -86,12 +96,11 @@ uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
 	char*			start = input;
 	char*			end   = strchr( input, LF_HEX );
 
-	for( i=0U; i<num; i++ )
+	for ( i=0U; i<num; i++ )
 	{
 		start = strchr( ( end ), LF_HEX ) + 1U;
 		end   = strchr( start, LF_HEX );
 	}
-
 	if ( start && end)
 	{
 		res = 1U;
@@ -107,10 +116,10 @@ uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
 /*
  * Parsing data from request text
  * Input:		req 		- pointer to char array with input request in text form
- * 					request	- pointer to the ouyput request structure
+ * 					request	- pointer to the output request structure
  * Output:	HTTP status
  */
-HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
+HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request )
 {
 	HTTP_STATUS 	res 	 = HTTP_STATUS_BAD_REQUEST;
 	uint8_t 			i      = 0U;
@@ -118,7 +127,7 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 	char* 				pchEnd = NULL;
 	char					line[50];
 
-	if ( uHTTPgetLine( req, 0, line ) > 0U)
+	if ( uHTTPgetLine( req, 0, line ) > 0U )
 	{
 		res 	 = HTTP_STATUS_OK;
 		vHTTPcleanRequest( request );
@@ -154,7 +163,13 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST *request )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE *response  )
+/*
+ * Parsing data from response text
+ * Input:		req 		- pointer to char array with input request in text form
+ * 					request	- pointer to the output response structure
+ * Output:	HTTP status
+ */
+HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* response  )
 {
 	HTTP_STATUS 	res 	 = HTTP_STATUS_BAD_REQUEST;
 	char* 				pchSt  = NULL;
@@ -203,7 +218,6 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 
 	res = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
 	response->cache = HTTP_CACHE_NO_CACHE_STORE;
-
 	response->connect = HTTP_CONNECT_CLOSED;
 	if( path[0U] == 0x00U )
 	{
@@ -230,21 +244,21 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
  * 					response	- structure of response
  * Output:	HTTP status
  */
-HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
+HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response)
 {
 	HTTP_STATUS res = HTTP_STATUS_OK;
 
 	vHTTPCleanResponse( response );
 	response->method = HTTP_METHOD_NO;
 
-	switch ( request.method )
+	switch ( request->method )
 	{
 		case HTTP_METHOD_NO:
 			res = HTTP_STATUS_BAD_REQUEST;
 			break;
 		case HTTP_METHOD_GET:
 			response->method = HTTP_METHOD_GET;
-			eHTTPbuildGetResponse( request.path, response );
+			eHTTPbuildGetResponse( request->path, response );
 			res = HTTP_STATUS_OK;
 			break;
 		case HTTP_METHOD_POST:
@@ -264,10 +278,15 @@ HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST request, HTTP_RESPONSE *response)
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST request )
+/*
+ * Build request structure
+ * Input:		request		- structure of request
+ * Output:	HTTP status
+ */
+HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST* request )
 {
 	HTTP_STATUS res = HTTP_STATUS_OK;
-	switch ( request.method )
+	switch ( request->method )
 	{
 		case HTTP_METHOD_NO:
 			res = HTTP_STATUS_BAD_REQUEST;
@@ -292,28 +311,50 @@ HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST request )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST request )
+/*
+ * Make string request from request structure
+ * Input:		httpStr  - pointer to char array of output buffer for response string
+ *  				response - response structure
+ * Output:	HTTP_STATUS
+ */
+HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST* request )
 {
-	HTTP_STATUS res = HTTP_STATUS_OK;
-	char				*strRes;
+	HTTP_STATUS res = HTTP_STATUS_BAD_REQUEST;
 
-	strRes = strcpy( httpStr, "GET " );
-	strRes = strcat( httpStr, request.path );
-	strRes = strcat( httpStr, " HTTP/1.1" );
-	strRes = strcat( httpStr, HTTP_END_LINE );
-
-
-
-	strRes = strcat( httpStr, HTTP_HOST_LINE );
-	strRes = strcat( httpStr, request.host );
-	strRes = strcat( httpStr, HTTP_END_LINE );
-
-	strRes = strcat( httpStr, HTTP_CONN_LINE );
-	strRes = strcat( httpStr, HTTP_END_LINE );
-
-	strRes = vHTTPaddCache( httpStr, request.cache );
-	strRes = strcat( httpStr, HTTP_END_LINE );
-
+	if ( strcpy( httpStr, "GET " ) != NULL )
+	{
+		if ( strcat( httpStr, request->path ) != NULL )
+		{
+			if( strcat( httpStr, " HTTP/1.1" ) != NULL )
+			{
+				if( strcat( httpStr, HTTP_END_LINE ) != NULL )
+				{
+					if( strcat( httpStr, HTTP_HOST_LINE ) != NULL )
+					{
+						if( strcat( httpStr, request->host ) != NULL )
+						{
+							if( strcat( httpStr, HTTP_END_LINE ) != NULL )
+							{
+								if( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
+								{
+									if( strcat( httpStr, HTTP_END_LINE ) != NULL )
+									{
+										if( vHTTPaddCache( httpStr, request->cache ) != NULL )
+										{
+											if( strcat( httpStr, HTTP_END_LINE ) != NULL )
+											{
+												res = HTTP_STATUS_OK;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -323,14 +364,14 @@ HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST request )
  *  				response - response structure
  * Output:	HTTP_STATUS
  */
-HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
+HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 {
 	HTTP_STATUS 	res = HTTP_STATUS_OK;
 	char					buffer[30];
 	char					*strRes;
 
 	// STATUS
-	switch( response.status )
+	switch( response->status )
 	{
 		case HTTP_STATUS_OK:
 			strRes = strcpy( httpStr, HTTP_OK_STATUS_LINE );
@@ -345,16 +386,16 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	// DATE
 	strRes = strcat( httpStr, HTTP_DATE_LINE );
-	strRes = strcat( httpStr, response.date );
+	strRes = strcat( httpStr, response->date );
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	// LENGTH
 	strRes = strcat( httpStr, HTTP_LENGTH_LINE );
-	strRes = sprintf( buffer, "%lu", response.contentLength );
+	strRes = sprintf( buffer, "%lu", response->contentLength );
 	strRes = strcat( httpStr, buffer );
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	// CONTENT TYPE
 	strRes = strcat( httpStr, HTTP_CONTENT_LINE );
-	switch ( response.contetntType )
+	switch ( response->contetntType )
 	{
 		case HTTP_CONTENT_HTML:
 			strRes = strcat( httpStr, HTTP_CONTENT_STR_HTML );
@@ -372,26 +413,7 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	// CACHE
 	strRes = strcat( httpStr, HTTP_CACHE_CONTROL );
-	switch ( response.cache )
-	{
-		case HTTP_CACHE_NO_CACHE:
-			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
-			break;
-		case HTTP_CACHE_NO_STORE:
-			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
-			break;
-		case HTTP_CACHE_NO_CACHE_STORE:
-			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
-			strRes = strcat( httpStr, "," );
-			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
-			break;
-		default:
-			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
-			strRes = strcat( httpStr, "," );
-			strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
-			break;
-	}
-	strRes = strcat( httpStr, HTTP_END_LINE );
+	strRes = vHTTPaddCache( httpStr, response->cache );
 	// CONNECTION
 	strRes = strcat( httpStr, HTTP_CONN_LINE );
 	strRes = strcat( httpStr, HTTP_END_LINE );
@@ -401,6 +423,12 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE response )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Add cache string to http
+ * input:		httpStr - pointer to output http string
+ * 					cache		- cache type to add
+ * output:	result of operation
+ */
 char* vHTTPaddCache( char* httpStr, HTTP_CACHE cache)
 {
 	char *strRes;
@@ -428,7 +456,7 @@ char* vHTTPaddCache( char* httpStr, HTTP_CACHE cache)
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	return strRes;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 
 
 

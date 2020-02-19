@@ -15,7 +15,6 @@
 
 #define		TIME_API_SIZE							10U
 #define		TIME_API_BUFFER_SIZE			32U
-#define		HTTP_BUFER_SIZE						600U
 #define		HTTP_DATE_LENGTH					29U
 #define		TIME_API_LOCATION_STR 		"abbreviation"
 #define		TIME_API_DATETIME_STR 		"datetime"
@@ -55,10 +54,10 @@ typedef enum
 #define		TIME_API_WEEK_NUMBER_STR 	"week_number"
 */
 /*----------------------- Functions ------------------------------------*/
-void				vRTCgetTimer( RTC_HandleTypeDef *hrtc );
-RTC_STATUS	eRTCgetHttpTime( void );
-RTC_STATUS 	eRTCgetDateForHttp( char* date );
+void				vRTCputTimer( RTC_HandleTypeDef *hrtc );	/* Get the pointer to the current RTC structure */
+RTC_STATUS	eRTCgetExtrenalTime( void );							/* Get time from time server */
+RTC_STATUS 	eRTCgetDateForHttp( char* date );					/* Get the date string for HTTP requests */
 
-RTC_STATUS 	eRTCgetTime( char* time );
+RTC_STATUS 	eRTCgetTime( char* time );								/* Get simple time string */
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

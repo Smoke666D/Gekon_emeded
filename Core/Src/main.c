@@ -156,8 +156,10 @@ int main(void)
   MX_TIM7_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  vSYSInitSerial();
-  vRTCgetTimer( &hrtc );
+  vSYSInitSerial();				/* Debug serial interface */
+  vRTCputTimer( &hrtc );	/* RTC structure */
+
+
   vSYSSerial( "***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
@@ -598,7 +600,7 @@ void StartNetTask(void *argument)
 	vSYSSerial("\n\r");
 
 	vSYSSerial( ">>RTC: ");
-	if ( eRTCgetHttpTime() == RTC_ERROR )
+	if ( eRTCgetExtrenalTime() == RTC_ERROR )
 	{
 		vSYSSerial( "server fail!");
 		vSYSSerial("\n\r");

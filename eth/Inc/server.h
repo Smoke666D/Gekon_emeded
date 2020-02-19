@@ -9,6 +9,7 @@
 #define INC_SERVER_H_
 /*----------------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#include "http.h"
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -34,5 +35,8 @@ SERVER_ERROR 	eSERVERstop( void );							// Stop server connection
 SERVER_ERROR 	eSERVERlistenRoutine( void );			// Routine handler of incoming packages.
 
 SERVER_ERROR 	eHTTPsendRequest( char* httpStr, char* hostName );
+
+HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );								/* Send request, get and parsing response */
+void  			eHTTPresponse( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );	/* Make response for input request */
 /*----------------------------------------------------------------------------*/
 #endif /* INC_SERVER_H_ */

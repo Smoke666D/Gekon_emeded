@@ -176,8 +176,8 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
 	char* 				pchEn  = NULL;
 	char					buffer[5];
 
-	vHTTPCleanResponse( response );
-	pchSt = strchr( input, ' ')  + 1U;
+
+	pchSt = strchr( input, ' ') + 1U;
 	if ( pchSt != NULL )
 	{
 		pchEn = strchr( pchSt, ' ' );

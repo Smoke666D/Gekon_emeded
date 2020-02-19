@@ -224,7 +224,6 @@ SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
 							netbuf_copy( nbr, httpStr, len );
 							netbuf_delete( nbr );
 							httpStr[len] = 0;
-
 						}
 					}
 					else res = SERVER_WRITE_ERROR;
@@ -258,7 +257,7 @@ SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
 HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
 {
 	HTTP_STATUS res    = HTTP_STATUS_BAD_REQUEST;
-	char*				buffer = pvPortMalloc( HTTP_BUFER_SIZE );
+	char				buffer[HTTP_BUFER_SIZE];
 
 	if ( eHTTPmakeRequest( buffer, request ) == HTTP_STATUS_OK )
 	{
@@ -267,7 +266,7 @@ HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* 
 			res = eHTTPparsingResponse( buffer, output, &response );
 		}
 	}
-	vPortFree( buffer );
+	//vPortFree( buffer );
 
 	return res;
 }

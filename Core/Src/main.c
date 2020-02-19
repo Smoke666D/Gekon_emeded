@@ -29,7 +29,6 @@
 #include "server.h"
 #include "http.h"
 #include "rtc.h"
-
 #include "lcd.h"
 /* USER CODE END Includes */
 

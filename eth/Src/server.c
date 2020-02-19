@@ -19,7 +19,8 @@ static 		osThreadId_t 	netClientHandle;					// Network task handle
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void startNetClientTask(void const * argument);		// Network task function
+void 					startNetClientTask(void const * argument);					// Network task function
+SERVER_ERROR 	eHTTPsendRequest( char* httpStr, char* hostName );
 /*---------------------------------------------------------------------------------------------------*/
 /**
  * Read local IP address of device in char array format
@@ -263,10 +264,9 @@ HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* 
 	{
 		if ( eHTTPsendRequest( buffer, request->host ) == SERVER_OK )
 		{
-			res = eHTTPparsingResponse( buffer, output, &response );
+			res = eHTTPparsingResponse( buffer, output, response );
 		}
 	}
-	//vPortFree( buffer );
 
 	return res;
 }

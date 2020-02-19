@@ -57,15 +57,19 @@ typedef enum
 	HTTP_METHOD_OPTION	= 0x05U
 } HTTP_METHOD;
 /*----------------------- Content type ---------------------------------*/
-#define	HTTP_CONTENT_STR_HTML	"text/html"
-#define	HHTP_CONTENT_STR_CSS	"text/css"
-#define HTTP_CONTENT_STR_JS		"text/javascript"
+#define	HTTP_CONTENT_STR_HTML		"text/html"
+#define	HHTP_CONTENT_STR_CSS		"text/css"
+#define HTTP_CONTENT_STR_JS			"text/javascript"
+#define HTTP_CONTENT_STR_JSON		"application/json"
+#define HTTP_CONTENT_STR_XML		"text/xml"
 
 typedef enum
 {
 	HTTP_CONTENT_HTML,
 	HTTP_CONTENT_CSS,
-	HTTP_CONTENT_JS
+	HTTP_CONTENT_JS,
+	HTTP_CONTENT_JSON,
+	HTTP_CONTENT_XML,
 } HTTP_CONTENT;
 /*------------------------ Cache control -------------------------------*/
 #define	HTTP_CACHE_STR_NO_CACHE		"no-cache"

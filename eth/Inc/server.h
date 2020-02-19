@@ -25,18 +25,15 @@ typedef enum
 	SERVER_RECEIVE_ERROR,
 } SERVER_ERROR;
 /*------------------------------ Default -------------------------------------*/
-#define	HTTP_INPUT_BUFFER_SIZE		512U
-#define	HTTP_OUTPUT_BUFFER_SIZE		256U
+#define				HTTP_INPUT_BUFFER_SIZE		512U
+#define				HTTP_OUTPUT_BUFFER_SIZE		256U
 /*----------------------------- Functions ------------------------------------*/
 void 					cSERVERgetStrIP( char* ipStr );		// Read local IP address of device in char array format
 void 					vSERVERinit( void );							// Waiting the end of server initialization
 SERVER_ERROR 	eSERVERstart( void );							// Start server. Open 80 port and start listen it
 SERVER_ERROR 	eSERVERstop( void );							// Stop server connection
 SERVER_ERROR 	eSERVERlistenRoutine( void );			// Routine handler of incoming packages.
-
-SERVER_ERROR 	eHTTPsendRequest( char* httpStr, char* hostName );
-
-HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );								/* Send request, get and parsing response */
-void  			eHTTPresponse( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );	/* Make response for input request */
+HTTP_STATUS 	eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );								/* Send request, get and parsing response */
+void  				eHTTPresponse( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );	/* Make response for input request */
 /*----------------------------------------------------------------------------*/
 #endif /* INC_SERVER_H_ */

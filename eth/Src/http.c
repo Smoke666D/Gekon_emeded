@@ -23,6 +23,7 @@ void 		vHTTPCleanResponse( HTTP_RESPONSE *response );									/* Clean response 
 uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );					/* Get the string of line from multiline text */
 void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );		/* Build get response in response structure */
 char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);								/* Add cache string to http */
+void 		vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type );
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -394,23 +395,7 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 	strRes = strcat( httpStr, buffer );
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	// CONTENT TYPE
-	strRes = strcat( httpStr, HTTP_CONTENT_LINE );
-	switch ( response->contetntType )
-	{
-		case HTTP_CONTENT_HTML:
-			strRes = strcat( httpStr, HTTP_CONTENT_STR_HTML );
-			break;
-		case HTTP_CONTENT_CSS:
-			strRes = strcat( httpStr, HHTP_CONTENT_STR_CSS );
-			break;
-		case HTTP_CONTENT_JS:
-			strRes = strcat( httpStr, HTTP_CONTENT_STR_JS );
-			break;
-		default:
-			strRes = strcat( httpStr, "Error" );
-			break;
-	}
-	strRes = strcat( httpStr, HTTP_END_LINE );
+	vHTTPaddContetntType( httpStr, response->contetntType );
 	// CACHE
 	strRes = strcat( httpStr, HTTP_CACHE_CONTROL );
 	strRes = vHTTPaddCache( httpStr, response->cache );
@@ -457,6 +442,33 @@ char* vHTTPaddCache( char* httpStr, HTTP_CACHE cache)
 	return strRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
-
+void vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type )
+{
+	char* strRes;
+	strRes = strcat( httpStr, HTTP_CONTENT_LINE );
+	switch ( type )
+	{
+		case HTTP_CONTENT_HTML:
+			strRes = strcat( httpStr, HTTP_CONTENT_STR_HTML );
+			break;
+		case HTTP_CONTENT_CSS:
+			strRes = strcat( httpStr, HHTP_CONTENT_STR_CSS );
+			break;
+		case HTTP_CONTENT_JS:
+			strRes = strcat( httpStr, HTTP_CONTENT_STR_JS );
+			break;
+		case HTTP_CONTENT_JSON:
+			strRes = strcat( httpStr, HTTP_CONTENT_STR_JSON );
+			break;
+		case HTTP_CONTENT_XML:
+			strRes = strcat( httpStr, HTTP_CONTENT_STR_XML );
+			break;
+		default:
+			strRes = strcat( httpStr, "Error" );
+			break;
+	}
+	strRes = strcat( httpStr, HTTP_END_LINE );
+	return;
+}
 
 

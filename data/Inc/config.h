@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-02-21 08:00:54
+ * Make time: 2020-02-21 11:19:44
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -10,6 +10,18 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             3U
 #define   SETTING_REGISTER_NUMBER      79U
+
+#define   CONFIG_REG_PAGE_STR          "page"
+#define   CONFIG_REG_ADR_STR           "adr"
+#define   CONFIG_REG_SCALE_STR         "scale"
+#define   CONFIG_REG_VALUE_STR         "value"
+#define   CONFIG_REG_MIN_STR           "min"
+#define   CONFIG_REG_MAX_STR           "max"
+#define   CONFIG_REG_UNITS_STR         "units"
+#define   CONFIG_REG_TYPE_STR          "type"
+#define   CONFIG_REG_LEN_STR           "len"
+#define   CONFIG_REG_BIT_MAP_SIZE_STR  "bitMapSize"
+#define   CONFIG_REG_BIT_MAP_STR       "bit"
 /*----------------------- Structures -----------------------------------*/
 typedef struct
 {

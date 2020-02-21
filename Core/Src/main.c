@@ -30,6 +30,9 @@
 #include "http.h"
 #include "rtc.h"
 #include "lcd.h"
+
+#include "rest.h"
+#include "config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,7 +46,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+static char rest[200U];
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -159,6 +162,15 @@ int main(void)
   vRTCputTimer( &hrtc );	/* RTC structure */
 
 
+  vSYSSerial( "***********************\n\r");
+
+  for(uint16_t i=0U; i<200; i++)
+  {
+  	rest[i] = ' ';
+  }
+  uRESTmakeConfig( rest, &moduleSetup );
+  HAL_UART_Transmit(&huart3, (uint8_t*)rest, 500U, 0xFFFF);
+  vSYSSerial( "\n\r");
   vSYSSerial( "***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */

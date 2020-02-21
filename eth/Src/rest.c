@@ -68,10 +68,12 @@ uint32_t uRESTmakeBitMap( char* output, eConfigBitMap* bitMap, RESTrecordPos las
 uint32_t uRESTmakeBitMapArray( char* output, uint8_t len, eConfigBitMap* bitMap )
 {
 	uint8_t 	i 				= 0U;
-	uint32_t 	position 	= 1U;
+	uint32_t 	position 	= 0U;
 
-	output[0U] = '[';
-	for ( i=0U; i<(len - 1U ); i++ )
+	position += uRESTmakeStartRecord( output, CONFIG_REG_BIT_MAP_STR );
+	output[position] = '[';
+	position++;
+	for ( i=0U; i<( len - 1U ); i++ )
 	{
 		position += uRESTmakeBitMap( &output[position], &bitMap[i], REST_CONT_RECORD );
 	}

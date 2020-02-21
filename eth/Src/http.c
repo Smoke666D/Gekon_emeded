@@ -218,15 +218,16 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
  */
 void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 {
-	char 					*res    = NULL;
+	char					*res    = NULL;
 	char 					*strStr = NULL;
-	char 					*strMid = NULL;
-	char 					*strEnd = NULL;
 	uint8_t				i       = 0U;
 	uint16_t			adr     = 0xFFFFU;
 	RESTrequests	request = 0U;
 	uint32_t			length  = 0U;
-	char					buffer[10];
+	char					buffer[5] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
+
+	uint8_t				p1 = 0U;
+	uint8_t				j = 0U;
 
 	res = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
 	response->cache = HTTP_CACHE_NO_CACHE_STORE;
@@ -257,21 +258,29 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 		else
 		{
 			request = i - 1U;
-			strEnd = strchr( strStr, ' ' );
-			strMid = strchr( strStr, '/' );
-			if ( strEnd[2] != '.')
+			length = strlen( strStr );
+			for( i=0U; i<length; i++ )
 			{
-				if ( strncpy( buffer, strMid, ( strEnd - strMid ) ) != NULL )
+				if ( p1 > 0U )
 				{
-					adr = atoi( buffer );
+					buffer[j] = strStr[i];
+					j++;
+				}
+				if ( strStr[i] == '/' )
+				{
+					if ( p1 == 0U )
+					{
+						p1 = i;
+					}
 				}
 			}
+			adr = atoi( buffer );
 			switch ( request )
 			{
 				case REST_CONFIGS:
 					if ( adr != 0xFFFFU )
 					{
-						length = uRESTmakeConfig( restBuffer, configReg[adr] );
+						length = uRESTmakeConfig( restBuffer, configReg[1] );
 					}
 					response->contetntType 	= HTTP_CONTENT_HTML;
 					response->status 				= HTTP_STATUS_OK;

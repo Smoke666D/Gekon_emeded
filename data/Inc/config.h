@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-02-21 11:19:44
+ * Make time: 2020-02-21 11:54:22
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -22,6 +22,11 @@
 #define   CONFIG_REG_LEN_STR           "len"
 #define   CONFIG_REG_BIT_MAP_SIZE_STR  "bitMapSize"
 #define   CONFIG_REG_BIT_MAP_STR       "bit"
+
+#define   BIT_MAP_MASK_STR             "mask"
+#define   BIT_MAP_SHIFT_STR            "shift"
+#define   BIT_MAP_MIN_STR              "min"
+#define   BIT_MAP_MAX_STR              "max"
 /*----------------------- Structures -----------------------------------*/
 typedef struct
 {
@@ -147,5 +152,7 @@ extern eConfigReg maintenanceAlarms;
 extern eConfigReg maintenanceAlarmOilEngineRunTime;
 extern eConfigReg maintenanceAlarmAirEngineRunTime;
 extern eConfigReg maintenanceAlarmFuelEngineRunTime;
+
+extern eConfigReg* configReg[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

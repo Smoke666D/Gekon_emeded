@@ -11,12 +11,15 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "cmsis_os.h"
+
+#include "rest.h"
+#include "config.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
 /*----------------------- Variables -----------------------------------------------------------------*/
-
+static char restBuffer[REST_BUFFER_SIZE];
 /*----------------------- Functions -----------------------------------------------------------------*/
 void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );									/* Clean request structure */
 void 		vHTTPCleanResponse( HTTP_RESPONSE *response );									/* Clean response structure */
@@ -215,7 +218,15 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
  */
 void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 {
-	char *res;
+	char 					*res    = NULL;
+	char 					*strStr = NULL;
+	char 					*strMid = NULL;
+	char 					*strEnd = NULL;
+	uint8_t				i       = 0U;
+	uint16_t			adr     = 0xFFFFU;
+	RESTrequests	request = 0U;
+	uint32_t			length  = 0U;
+	char					buffer[10];
 
 	res = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
 	response->cache = HTTP_CACHE_NO_CACHE_STORE;
@@ -229,7 +240,50 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 	}
 	else if ( path[0U] > 0U )
 	{
-
+		while( strStr == NULL )
+		{
+			strStr = strstr( path, restRequeststr[i] );
+			i++;
+			if ( i >= REST_REQUEST_NUMBER )
+			{
+				break;
+			}
+		}
+		if ( strStr == NULL )
+		{
+			response->status 				= HTTP_STATUS_BAD_REQUEST;
+			response->contentLength = 0U;
+		}
+		else
+		{
+			request = i - 1U;
+			strEnd = strchr( strStr, ' ' );
+			strMid = strchr( strStr, '/' );
+			if ( strEnd[2] != '.')
+			{
+				if ( strncpy( buffer, strMid, ( strEnd - strMid ) ) != NULL )
+				{
+					adr = atoi( buffer );
+				}
+			}
+			switch ( request )
+			{
+				case REST_CONFIGS:
+					if ( adr != 0xFFFFU )
+					{
+						length = uRESTmakeConfig( restBuffer, configReg[adr] );
+					}
+					response->contetntType 	= HTTP_CONTENT_HTML;
+					response->status 				= HTTP_STATUS_OK;
+					response->contentLength = length;
+					response->data 					= restBuffer;
+					break;
+				default:
+					response->status 				= HTTP_STATUS_BAD_REQUEST;
+					response->contentLength = 0U;
+					break;
+			}
+		}
 	}
 	else
 	{
@@ -391,7 +445,8 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	// LENGTH
 	strRes = strcat( httpStr, HTTP_LENGTH_LINE );
-	strRes = sprintf( buffer, "%lu", response->contentLength );
+	itoa( response->contentLength, buffer, 10U );
+	//strRes = sprintf( buffer, "%lu", response->contentLength );
 	strRes = strcat( httpStr, buffer );
 	strRes = strcat( httpStr, HTTP_END_LINE );
 	// CONTENT TYPE

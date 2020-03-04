@@ -58,7 +58,7 @@ typedef enum
 void				vRTCgetTimer( RTC_HandleTypeDef *hrtc );
 RTC_STATUS	eRTCgetHttpTime( void );
 RTC_STATUS 	eRTCgetDateForHttp( char* date );
-
+void vRTCGetTime(char * Time);
 RTC_STATUS 	eRTCgetTime( char* time );
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

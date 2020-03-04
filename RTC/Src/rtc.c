@@ -41,6 +41,22 @@ void vRTCgetTimer( RTC_HandleTypeDef *hrtc )
 	rtc = hrtc;
 	return;
 }
+
+void vRTCGetTime(char * Time)
+{
+	RTC_STATUS 				res = RTC_OK;
+	RTC_TimeTypeDef 	t;
+	if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+	{
+		itoa( t.Hours, &Time[0U], 10U );
+	    Time[2] = ':';
+		itoa( t.Minutes, &Time[3U], 10U );
+		Time[5U] = ':';
+		itoa( t.Seconds, &Time[6U], 10U );
+		Time[8U] = 0;
+	}
+}
+
 /*---------------------------------------------------------------------------------------------------*/
 RTC_STATUS eRTCgetDateForHttp( char* date )
 {

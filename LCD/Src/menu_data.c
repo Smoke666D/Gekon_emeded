@@ -6,9 +6,12 @@
  */
 #include "menu.h"
 #include "rtc.h"
+#include "data_manager.h"
 
 extern xScreenSetObject xGeneratorMenu;
 extern xScreenSetObject xEngineMenu;
+
+extern void xInputScreenKeyCallBack(xScreenSetObject * menu, char key);
 
 #define MENU_LEVEL1_COUNT 10
 #define MENU_LEVEL2_COUNT 7
@@ -19,16 +22,16 @@ extern xScreenSetObject xEngineMenu;
 #define LINE4_HIGTH    64/4
 #define LINE5_HIGTH    64/5
 
-
+static uint8_t BufferString[30];
 static uint8_t HeaderParam[]={0,0,CENTER_ALIGN};
 static uint8_t HeaderParam1[]={0,0,RIGTH_ALIGN};
 static uint8_t HeaderParam2[]={1,0,LEFT_ALIGN};
-
+static uint8_t InputParam[]={0,0,CENTER_ALIGN,0};
 
 
 extern void GetTime(char * Data);
-
-
+extern void GetInt(char * Data);
+extern void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString);
 
 static char HEADERSTRINGS[HEAD_STRINGS_COUNT][MAX_HEADER_STRING_SIZE]=
 {
@@ -53,10 +56,10 @@ static char HEADERSTRINGS[HEAD_STRINGS_COUNT][MAX_HEADER_STRING_SIZE]=
 };
 
 static xScreenObjet ScreenLev1_1[]=
-{  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[0],NULL,NULL},
-   {0,0,LINE4_HIGTH+1,128,LINE4_HIGTH,DATA_STRING,HeaderParam,NULL,&GetTime,NULL},
-   {0,0,2*(LINE4_HIGTH+1),128,LINE4_HIGTH,DATA_STRING,HeaderParam1,NULL,&GetTime,NULL},
-   {0,0,3*(LINE4_HIGTH+1),128,LINE4_HIGTH,DATA_STRING,HeaderParam2,NULL,&GetTime,NULL},
+{  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[0],NULL,0},
+   {0,0,LINE4_HIGTH+1,128,LINE4_HIGTH,DATA_STRING,HeaderParam,NULL,&vdmGetData,ID_TEST_DATA },
+   {0,0,2*(LINE4_HIGTH+1),128,LINE4_HIGTH,INPUT_DATA_STRING,InputParam,BufferString,&vdmGetData,ID_TEST_DATA },
+   {0,0,3*(LINE4_HIGTH+1),128,LINE4_HIGTH,DATA_STRING,HeaderParam2,NULL,&vdmGetData,ID_RTC_DATA },
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_2[]=
@@ -69,7 +72,8 @@ static xScreenObjet ScreenLev1_2[]=
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_3[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[2],NULL,NULL},
+{  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[2],NULL,NULL},
+  //  {0,0,2*(LINE4_HIGTH+1),128,LINE4_HIGTH,INPUT_DATA_STRING,InputParam,BufferString,&GetTime,NULL},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_4[]=
@@ -131,7 +135,7 @@ static xScreenObjet ScreenLev2_7[]=
 
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
-		{ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,NULL},
+		{ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
 		{ScreenLev1_2,NULL,NULL,NOT_ACTIVE,0,0,NULL},
 		{ScreenLev1_3,NULL,NULL,NOT_ACTIVE,0,0,NULL},
 		{ScreenLev1_4,NULL,NULL,NOT_ACTIVE,0,0,NULL},

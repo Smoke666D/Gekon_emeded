@@ -58,8 +58,8 @@ typedef struct
   OBJECT_TYPE xType;
   uint8_t * ObjectParamert;
   uint8_t * pStringParametr;
-  void (*GetDtaFunction)(uint8_t *);
-  void (*SetDataFunction)(uint8_t *);
+  void (*GetDtaFunction)(uint8_t, uint16_t, uint8_t *);
+  uint16_t DataID;
 } xScreenObjet;
 
 

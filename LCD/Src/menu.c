@@ -34,6 +34,12 @@ extern xScreenSetObject xEngineMenu;
 
 
 
+ void xInputScreenKeyCallBack(xScreenSetObject * menu, char key)
+ {
+
+ }
+
+
 
 
 void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
@@ -84,7 +90,6 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 
 
 }
-
 
 //Обявдение объека-карусели экранов верхнего уровня
 xScreenSetObject xGeneratorMenu=
@@ -142,41 +147,60 @@ void vMenuInit(u8g2_t * temp)
 	pCurrMenu =&xGeneratorMenu;
 }
 
-static uint8_t chKey=1;
 static uint8_t index=0;
+static uint8_t key[10]={1,2,1,2,1,2,1,2,1,2};
 
 void vMenuTask()
 {
-     index++;
 
-   if (index==2)
-   {
-     chKey=2;
-     index=0;
-    }
-    else
-      chKey=1;
     //Блок обработки нажатий на клавиши
-    pCurrMenu->pFunc(pCurrMenu,chKey);
-	u8g2_ClearBuffer(u8g2);
+    pCurrMenu->pFunc(pCurrMenu,key[index]);
+
 	//Блок отрисовки экранов
 	DrawObject(pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets);
+	index++;
+	if (index>=10) index=0;
 }
 
+static xScreenObjet * pCurDrawScreen=NULL;
 
 void DrawObject( xScreenObjet * pScreenObjects)
 {
    uint8_t * TEXT;
    uint8_t Text[9]={' ',' ',' ',' ',' ',' ',' ',' ',' '};
    uint8_t i, x_offset,y_offset;
-   for (i=0;i<MAX_SCREEN_OBJECT;i++)
+   uint8_t Redraw=0;
+   //Проверяем, какой экран необходимо перерисовать
+   if (pCurDrawScreen != pScreenObjects)  //Если экран изменился
    {
-	 if  (pScreenObjects[i].last) break;
-	 switch (pScreenObjects[i].xType)
-	 {
+	   pCurDrawScreen = pScreenObjects;
+	   Redraw=1;
+   }
+   else       							//Если тот же самый экран
+   {
+	   for (i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
+	   {
+		   if  (pScreenObjects[i].last) break;
+		   if ((pScreenObjects[i].xType == DATA_STRING) ||  (pScreenObjects[i].xType == INPUT_DATA_STRING))
+		   {
+			Redraw =1;
+			break;
+		   }
+	   }
+   }
+
+   if (Redraw)   //Если экран нужно перерисовывать
+   {
+	   u8g2_ClearBuffer(u8g2);
+	   for (i=0;i<MAX_SCREEN_OBJECT;i++)
+	   {
+		   if  (pScreenObjects[i].last) break;
+		   switch (pScreenObjects[i].xType)
+		   {
 	 	 	 //Если текущий объект - строка
 	 	 	 case STRING:
 	 	 	 case DATA_STRING:
+	 	     case INPUT_DATA_STRING:
 	 	 		 u8g2_SetFontMode(u8g2,pScreenObjects[i].ObjectParamert[0]);
 	 	 		 if (pScreenObjects[i].ObjectParamert[0]==0)
 	 	 			 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[0]?0:1);
@@ -184,11 +208,13 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 		 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[0]);
 	 	 		 switch(pScreenObjects[i].xType)
 	 	 		 {
+
 	 	 		 	 case STRING:
 	 	 		 		TEXT = pScreenObjects[i].pStringParametr;
 	 	 		 		break;
 	 	 		 	 case DATA_STRING:
-	 	 		 		 pScreenObjects[i].GetDtaFunction(&Text);
+	 	 		 	 case INPUT_DATA_STRING:
+	 	 		 		 pScreenObjects[i].GetDtaFunction(READ_COMMNAD, pScreenObjects[i].DataID, &Text);
 	 	 		 		 TEXT = Text;
 	 	 		 		 break;
 	 	 		 }
@@ -207,14 +233,24 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 		 }
 	 	 		 y_offset =  pScreenObjects[i].y + pScreenObjects[i].Height/2 + u8g2_GetAscent(u8g2)/2;
 	 	 		 u8g2_DrawUTF8( u8g2,x_offset, y_offset, TEXT);
-	 	 		 break;
+
+
+	 	    	 break;
+
 	 	 	 default:
 	 	 		 break;
-	 }
+		   }
+	   }
    }
-
 }
 
+void GetInt(char * Data)
+{
+	Data[0]='0';
+	Data[1]='0';
+	Data[2]='1';
+	Data[3]=0;
+}
 
 void GetTime(char * Data)
 {

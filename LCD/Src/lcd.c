@@ -249,19 +249,31 @@ void LCD_Redraw( void )
 	uint16_t i=0;
 	uint8_t  x, y, c, j;
 	uint8_t *ptr;
+    uint8_t y_start,y_end;
+
+
 
 	for ( i=0U; i<LCD_DATA_BUFFER_SIZE;i ++ )
 	{
 		if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
 		{
 			LCD_Buffer[i]		= u8g2.tile_buf_ptr[i];
-			LCD_REDRAW_FLAG = 1U;
+			if (LCD_REDRAW_FLAG ==0)
+			{
+				LCD_REDRAW_FLAG = 1U;
+				y_start=i;
+			}
+			else
+				y_end=i;
 		}
 	}
 	if ( LCD_REDRAW_FLAG == 1U )
 	{
 	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
 	  LCD_WriteCommand( 0x3EU );
+	  y_start = y_start/128;
+	  y_end = y_end/128+1;
+	//  for ( i=y_start; i<y_end; i++ )
 	  for ( i=0U; i<8U; i++ )
 	  {
 		  y = i;
@@ -427,9 +439,10 @@ uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
 static char str[2]={ '0' , 0U };
 void vLCD_Init()
 {
-	u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay );
+  u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay );
   u8g2_InitDisplay( &u8g2 );
   u8g2_SetPowerSave( &u8g2, 0U );
+   vMenuInit(&u8g2);
   return;
 }
 
@@ -438,265 +451,18 @@ static uint8_t y = 10U;
 static uint8_t x_dir = 0U;
 static uint8_t y_dir = 0U;
 static uint8_t demo_step = 22U, dl = 0U, SS = 0U;
-void IncData( void )
+
+
+
+void IncData()
 {
-	/*u8g2_font_4x6_t_cyrillic
-	u8g2_font_5x7_t_cyrillic
-	u8g2_font_5x8_t_cyrillic
-	u8g2_font_6x12_t_cyrillic
-	u8g2_font_6x13_t_cyrillic
-	u8g2_font_6x13B_t_cyrillic
-	u8g2_font_7x13_t_cyrillic
-	u8g2_font_8x13_t_cyrillic
-	u8g2_font_9x15_t_cyrillic
-	u8g2_font_10x20_t_cyrillic
-	u8g2_font_cu12_t_cyrillic
-	u8g2_font_unifont_t_cyrillic
-	u8g2_font_haxrcorp4089_t_cyrillic
-	u8g2_font_inr24_t_cyrillic
-	u8g2_font_inr27_t_cyrillic
-	u8g2_font_inr30_t_cyrillic
-	u8g2_font_inr33_t_cyrillic
-	u8g2_font_inr38_t_cyrillic
-	u8g2_font_inr42_t_cyrillic
-	u8g2_font_inr46_t_cyrillic
-	u8g2_font_inr49_t_cyrillic
-	u8g2_font_inr53_t_cyrillic
-	*/
 
-	//Демонтсрация шрифтов.
-	u8g2_ClearBuffer(&u8g2);
-	switch (demo_step)
-	{
-		case 1:
-			break;
-		case 2:
-			break;
-		case 3:
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 10U, "font_4x6" );
-			u8g2_SetFont( &u8g2, u8g2_font_4x6_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 20U, "Ф Ж Щ ф ж щ ш 123456dtr" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_5x7" );
-			u8g2_SetFont( &u8g2, u8g2_font_5x7_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 40U, "Ф Ж Щ ф ж щ ш 123456drt" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 50U, "font_5x8" );
-			u8g2_SetFont( &u8g2, u8g2_font_5x8_t_cyrillic );
-     	u8g2_DrawUTF8( &u8g2, 0U, 60U, "Ф Ж Щ ф ж щ ш 123456dtr" );
-			break;
-		case 4:
-			break;
-	  case 5:
-	  	break;
-	  case 6:
-			u8g2_SetDrawColor (&u8g2, 1U );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 10U, "font_6x12" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 20U, "ФЖЩфжщш 123drt" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_6x13" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x13_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 40U, "ФЖЩфжщш 123drt" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 52U, "font_6x13b" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x13B_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 62U, "ФЖЩфжщш 123drt" );
-			break;
-		case 7:
-			break;
-		case 8:
-			break;
-		case 9:
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 10U, "font_7x13" );
-			u8g2_SetFont( &u8g2, u8g2_font_7x13_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 20U, "ФЖЩфжщш" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_8x13" );
-			u8g2_SetFont( &u8g2, u8g2_font_8x13_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 40U, "ФЖЩфжщш1234567890-квпкы" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 52U, "font_9x15" );
-			u8g2_SetFont( &u8g2, u8g2_font_9x15_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 63U, "ФЖЩфжщш" );
-			break;
-		case 10:
-			break;
-		case 11:
-			break;
-		case 12:
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 12U, "font_10x20" );
-			u8g2_SetFont( &u8g2, u8g2_font_10x20_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 30U, "ФЖЩфжщш 123" );
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 42U, "font_cur12" );
-			u8g2_SetFont( &u8g2, u8g2_font_cu12_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 60U, "ФЖЩфжщш 123" );
-			break;
-		case 13:
-			break;
-		case 14:
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 7U, "font_unifont" );
-			u8g2_SetFont( &u8g2, u8g2_font_unifont_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 20U, "ФЖЩфжщш 123try" );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 30U, "font_inr24" );
-			u8g2_SetFont( &u8g2, u8g2_font_inr24_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 60U, "ФЖЩфж" );
-			break;
-		case 15:
-			break;
-		case 16:
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetFont( &u8g2, u8g2_font_6x12_te );
-			u8g2_DrawUTF8( &u8g2, 0U, 12U, "font_inr27" );
-			u8g2_SetFont( &u8g2, u8g2_font_inr27_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 0U, 55U, "фжщш" );
-			break;
-		case 17:
-			break;
-		case 18:
-			break;
-		case 19:
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetBitmapMode (&u8g2, 1U );
-			u8g2_DrawXBM( &u8g2, 0U, 0U, light_footer_logo_energan_spb_width, light_footer_logo_energan_spb_height, light_footer_logo_energan_spb_bits );
-			if ( SS == 0U )
-			{
-				u8g2_DrawRBox( &u8g2, 19U, 36U, 22U, 22U, 3U );
-			}
-			else
-			{
-				u8g2_DrawRFrame( &u8g2, 19U, 36U, 22U, 22U, 3U );
-			}
-			u8g2_SetDrawColor( &u8g2, SS==0U?0U:1U );
-			u8g2_DrawXBM( &u8g2, 20U, 37U, icons8_width, icons8_height, icons8_bits );
-			u8g2_SetDrawColor( &u8g2, 1U );
-			if ( SS == 1U )
-			{
-				u8g2_DrawRBox( &u8g2, 55U, 36U, 22U, 22U, 3U );
-			}
-			else
-			{
-				u8g2_DrawRFrame( &u8g2, 55U, 36U, 22U, 22U, 3U );
-			}
-			u8g2_SetDrawColor( &u8g2, SS==1U?0U:1U);
-			u8g2_DrawXBM( &u8g2, 56U, 37U, icons8_width, icons8_height, icons8_1_bits );
-			u8g2_SetDrawColor( &u8g2, 1U );
-			if ( SS == 2U )
-			{
-				u8g2_DrawRBox( &u8g2, 89U, 36U, 22U, 22U, 3U );
-			}
-			else
-			{
-				u8g2_DrawRFrame( &u8g2, 89U, 36U, 22U, 22U, 3U );
-			}
-			u8g2_SetDrawColor( &u8g2, SS==2U?0U:1U );
-			u8g2_DrawXBM( &u8g2, 90U, 37U, icons8_width, icons8_height, icons8_2_bits );
-			SS++;
-			if ( SS == 3U )
-			{
-				SS = 0U;
-			}
-			break;
-		case 20:
-			break;
-		case 21:
-			break;
-		case 22:
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_SetBitmapMode( &u8g2, 1U );
-			if ( SS == 0U )
-			{
-				u8g2_DrawRBox( &u8g2, 0U, 0U, 20U, 20U, 3U );
-			}
-			u8g2_SetDrawColor( &u8g2, SS==0U?0U:1U );
-			u8g2_DrawXBM( &u8g2, 0U, 0U, icons8_height, icons8_height, home_bits );
-			u8g2_SetDrawColor( &u8g2, 1U );
-			if ( SS == 1U )
-			{
-				u8g2_DrawRBox( &u8g2, 0U, 21U, 20U, 20U, 3U);
-			}
-			u8g2_SetDrawColor( &u8g2, SS==1U?0U:1U );
-			u8g2_DrawXBM( &u8g2, 0U, 21U, icons8_width, icons8_height, icons8_1_bits );
-			if ( SS == 2U )
-			{
-				u8g2_DrawRBox( &u8g2, 0U, 41U, 20U, 20U, 3U );
-			}
-			u8g2_SetDrawColor( &u8g2, SS==2U?0U:1U );
-			u8g2_DrawXBM( &u8g2, 0U, 41U, icons8_width, icons8_height, icons8_2_bits );
-			if ( SS == 3U )
-			{
-				u8g2_DrawRBox( &u8g2, 106U, 0U, 20U, 20U, 3U );
-			}
-			u8g2_SetDrawColor( &u8g2, SS==3U?0U:1U );
-			u8g2_DrawXBM( &u8g2, 106U, 0U, icons8_width, icons8_height, icons8_bits );
-			if ( SS == 4U )
-			{
-				u8g2_DrawRBox( &u8g2, 106U, 21U, 20U, 20U, 3U );
-			}
-			u8g2_SetDrawColor( &u8g2, SS==4U?0U:1U );
-			u8g2_DrawXBM( &u8g2, 106U, 21U, icons8_width, icons8_height, akk_bits );
-			u8g2_SetDrawColor( &u8g2, 1U );
-			u8g2_DrawXBM( &u8g2, 60U, 42U, icons8_width, icons8_height, fac_bits );
-			u8g2_SetFont( &u8g2, u8g2_font_6x13_t_cyrillic );
-			u8g2_DrawUTF8( &u8g2, 22U, 12U, "время" );
-			u8g2_DrawUTF8( &u8g2, 21U, 37U, "напряжение   v" );
-			u8g2_SetFont( &u8g2, u8g2_font_5x8_t_cyrillic );
-			//u8g2_DrawUTF8(&u8g2, 61, 12, "12:54:12");
-			char time[9] = {' ',' ',' ',' ',' ',' ',' ',' ',' '};
-			eRTCgetTime( time );
-			u8g2_DrawUTF8( &u8g2, 61U, 12U, time );
-			char ipStr[16];
-			cSERVERgetStrIP( ipStr );
-			u8g2_DrawUTF8( &u8g2, 26U, 25U, ipStr );
-
-			u8g2_DrawUTF8( &u8g2, 84U, 37U, "200" );
-			SS++;
-			if ( SS == 5U )
-			{
-				SS = 0U;
-			}
-			break;
-		default:
-			demo_step = 0U;
-			break;
-	}
-	//demo_step++;
-
-
-
-
-	//u8g2_DrawCircle(&u8g2, x, y, 10, U8G2_DRAW_ALL);
-
-
-	/*if (x_dir==0)
-		x++;
-	else
-		x--;
-    if (x>=128-10) x_dir=1;
-	if (x<=10) x_dir=0;
-
-	if (y_dir==0)
-			y++;
-		else
-			y--;
-	if (y>=64-10) y_dir=1;
-	if (y<=10) y_dir=0;
-*/
-
+	vMenuTask();
 
 }
+
+
+
 
 
 

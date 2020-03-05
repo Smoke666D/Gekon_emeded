@@ -15,11 +15,11 @@
 #include "rest.h"
 #include "config.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-
+static char restBuffer[REST_BUFFER_SIZE];
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
 /*----------------------- Variables -----------------------------------------------------------------*/
-static char restBuffer[REST_BUFFER_SIZE];
+
 /*----------------------- Functions -----------------------------------------------------------------*/
 void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );									/* Clean request structure */
 void 		vHTTPCleanResponse( HTTP_RESPONSE *response );									/* Clean response structure */
@@ -278,9 +278,9 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 			switch ( request )
 			{
 				case REST_CONFIGS:
-					if ( adr != 0xFFFFU )
+					if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
 					{
-						length = uRESTmakeConfig( restBuffer, configReg[1] );
+						length = uRESTmakeConfig( restBuffer, configReg[adr] );
 					}
 					response->contetntType 	= HTTP_CONTENT_HTML;
 					response->status 				= HTTP_STATUS_OK;

@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-02-21 11:54:22
+ * Make time: 2020-03-05 09:59:41
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -8,8 +8,8 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
-#define   MAX_UNITS_LENGTH             3U
-#define   SETTING_REGISTER_NUMBER      79U
+#define   MAX_UNITS_LENGTH             4U
+#define   SETTING_REGISTER_NUMBER      103U
 
 #define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"
@@ -40,7 +40,7 @@ typedef struct
 {
   uint16_t         page;
   uint16_t         adr;
-  float            scale;
+  signed char      scale;
   uint16_t         value;
   uint16_t         min;
   uint16_t         max;
@@ -53,18 +53,26 @@ typedef struct
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg moduleSetup;
 extern eConfigReg oilPressureSetup;
+extern eConfigReg oilPressureAlarmLevel;
+extern eConfigReg oilPressurePreAlarmLevel;
 extern eConfigReg coolantTempSetup;
-extern eConfigReg fuelLevelAlarms;
+extern eConfigReg coolantHightTempAlarmLevel;
+extern eConfigReg coolantHightTempPreAlarmLevel;
+extern eConfigReg coolantTempHeaterOffLevel;
+extern eConfigReg coolantTempHeaterOnLevel;
+extern eConfigReg coolantTempCoolerOffLevel;
+extern eConfigReg coolantTempCoolerOnLevel;
+extern eConfigReg fuelLevelSetup;
 extern eConfigReg fuelLevelLowAlarmLevel;
 extern eConfigReg fuelLevelLowAlarmDelay;
-extern eConfigReg fuelLevelLowPreAlarmLevelTrip;
-extern eConfigReg fuelLevelLowPreAlarmLevelReturn;
-extern eConfigReg fuelLevelLowPreAlarmLevelDelay;
-extern eConfigReg fuelLevelHightPreAlarmLevelReturn;
-extern eConfigReg fuelFueLevelHightPreAlarmLevelTrip;
-extern eConfigReg fuelLevelHightPreAlarmLevelDelay;
+extern eConfigReg fuelLevelLowPreAlarmLevel;
+extern eConfigReg fuelLevelLowPreAlarmDelay;
+extern eConfigReg fuelLevelHightPreAlarmLevel;
+extern eConfigReg fuelLevelHightPreAlarmDelay;
 extern eConfigReg fuelLevelHightAlarmLevel;
 extern eConfigReg fuelLevelHightAlarmDelay;
+extern eConfigReg fuelPumpOnLevel;
+extern eConfigReg fuelPumpOffLevel;
 extern eConfigReg diaSetup;
 extern eConfigReg diaDelay;
 extern eConfigReg dibSetup;
@@ -73,15 +81,16 @@ extern eConfigReg dicSetup;
 extern eConfigReg dicDelay;
 extern eConfigReg didSetup;
 extern eConfigReg didDelay;
-extern eConfigReg diabType;
-extern eConfigReg dicdType;
-extern eConfigReg dirfType;
+extern eConfigReg doSetup;
+extern eConfigReg doabType;
+extern eConfigReg dodType;
+extern eConfigReg doefType;
 extern eConfigReg timerMainsTransientDelay;
 extern eConfigReg timerStartDelay;
-extern eConfigReg timerDelayCrank;
-extern eConfigReg timerCranling;
-extern eConfigReg timerSmokeLimit;
-extern eConfigReg timerSmokeLimitOff;
+extern eConfigReg timerCranking;
+extern eConfigReg timerCrankDelay;
+extern eConfigReg timerStartupIdleTime;
+extern eConfigReg timerNominalRPMDelay;
 extern eConfigReg timerSafetyOnDelay;
 extern eConfigReg timerWarming;
 extern eConfigReg timerTransferDelay;
@@ -92,67 +101,59 @@ extern eConfigReg timerCooling;
 extern eConfigReg timerCoolingIdle;
 extern eConfigReg timerSolenoidHold;
 extern eConfigReg timerFailStopDelay;
-extern eConfigReg timergenTransientDelay;
+extern eConfigReg timerGenTransientDelay;
 extern eConfigReg genSetup;
-extern eConfigReg genAlarms;
-extern eConfigReg genUnderVoltageAlarmTrip;
-extern eConfigReg genUnderVoltagepreAlarmTrip;
-extern eConfigReg genVoltageLoad;
-extern eConfigReg genVoltageNominal;
-extern eConfigReg genOverVoltagePreAlarmReturn;
-extern eConfigReg genOverVoltagePreAlarmTrip;
-extern eConfigReg genOverVoltageShutdownTrip;
-extern eConfigReg genUnderFrequencyAlrmTrip;
-extern eConfigReg genUnderFrequencyPreAlrmTrip;
-extern eConfigReg genFrequencyLoad;
-extern eConfigReg genFrequencyNominal;
-extern eConfigReg genOverFrequencyPreAlrmReturn;
-extern eConfigReg genOverFrequencyPreAlrmTrip;
-extern eConfigReg genOverFrequencyShutdownTrip;
+extern eConfigReg genRatedActivePower;
+extern eConfigReg genRatedReactivePower;
+extern eConfigReg genRatedApparentPower;
+extern eConfigReg genRatedFrequency;
 extern eConfigReg genCurrentPrimary;
 extern eConfigReg genCurrentFullLoadRating;
+extern eConfigReg genAlarms;
+extern eConfigReg genUnderVoltageAlarmLevel;
+extern eConfigReg genUnderVoltagePreAlarmLevel;
+extern eConfigReg genOverVoltagePreAlarmLevel;
+extern eConfigReg genOverVoltageAlarmLevel;
+extern eConfigReg genUnderFrequencyAlrmLevel;
+extern eConfigReg genUnderFrequencyPreAlrmLevel;
+extern eConfigReg genOverFrequencyPreAlrmLevel;
+extern eConfigReg genOverFrequencyAlrmLevel;
+extern eConfigReg genOverCurrentThermalProtectionLevel;
+extern eConfigReg genOverCurrentCutoffLevel;
+extern eConfigReg genOverCurrentAlarmLevel;
 extern eConfigReg genOverCurrentAlarmDelay;
-extern eConfigReg genOverCurrentAlarmTrip;
-extern eConfigReg genCurrentRating;
-extern eConfigReg genCurrentOverloadProtectionTrip;
+extern eConfigReg genCurrentOverloadProtectionLevel;
 extern eConfigReg genCurrentOverloadProtectionDelay;
+extern eConfigReg genCurrentOverPhaseImbalanceLevel;
+extern eConfigReg genCurrentOverPhaseImbalanceDelay;
 extern eConfigReg mainsSetup;
 extern eConfigReg mainsAlarms;
-extern eConfigReg mainsUnderVoltageAlarmTrip;
-extern eConfigReg mainsUnderVoltageAlarmReturn;
-extern eConfigReg mainsOverVoltageAlarmReturn;
-extern eConfigReg mainsOverVoltageAlarmTrip;
-extern eConfigReg mainsUnderFrequencyAlarmTrip;
-extern eConfigReg mainsUnderFrequencyAlarmReturn;
-extern eConfigReg mainsOverFrequencyAlarmReturn;
-extern eConfigReg mainsOverFrequencyAlarmTrip;
+extern eConfigReg mainsUnderVoltageAlarmLevel;
+extern eConfigReg mainsOverVoltageAlarmLevel;
+extern eConfigReg mainsUnderFrequencyAlarmLevel;
+extern eConfigReg mainsOverFrequencyAlarmLevel;
 extern eConfigReg engineSetup;
 extern eConfigReg enginePreHeatOn;
 extern eConfigReg enginePreHeatDuration;
 extern eConfigReg enginePostHeatOn;
 extern eConfigReg enginePostHeatDuration;
 extern eConfigReg crankSetup;
-extern eConfigReg crankDisconnectgenFreq;
-extern eConfigReg crankDisconnectEngineSpeed;
-extern eConfigReg crankDisconnectOilPressure;
-extern eConfigReg crankDisconnectOilPressureDelay;
-extern eConfigReg crankDisconnectChargeAlternator;
+extern eConfigReg crankDisconnectgenFreqLevel;
+extern eConfigReg crankDisconnectOilPressureLevel;
+extern eConfigReg crankDisconnectChargeAlternatorLevel;
 extern eConfigReg batteryAlarms;
-extern eConfigReg batteryUnderVoltageWarning;
-extern eConfigReg batteryUnderVoltageReturn;
+extern eConfigReg batteryUnderVoltageLevel;
 extern eConfigReg batteryUnderVoltageDelay;
-extern eConfigReg batteryOverVoltageReturn;
-extern eConfigReg batteryOverVoltageWarning;
+extern eConfigReg batteryOverVoltageLevel;
 extern eConfigReg batteryOverVoltageDelay;
-extern eConfigReg batteryChargeShutdownTrip;
+extern eConfigReg batteryChargeShutdownLevel;
 extern eConfigReg batteryChargeShutdownDelay;
-extern eConfigReg batteryChargeWarningTrip;
+extern eConfigReg batteryChargeWarningLevel;
 extern eConfigReg batteryChargeWarningDelay;
 extern eConfigReg maintenanceAlarms;
 extern eConfigReg maintenanceAlarmOilEngineRunTime;
 extern eConfigReg maintenanceAlarmAirEngineRunTime;
 extern eConfigReg maintenanceAlarmFuelEngineRunTime;
-
 extern eConfigReg* configReg[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

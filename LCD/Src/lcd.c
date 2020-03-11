@@ -229,6 +229,9 @@ static uint8_t LCD_REDRAW_FLAG = 0;
 
 static SemaphoreHandle_t  xSemaphore = NULL;
 
+
+
+
 //Функция инициализации драйвера LCD
 void vLCDInit(SemaphoreHandle_t temp)
 {
@@ -247,17 +250,14 @@ static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
 void LCD_Redraw( void )
 {
 	uint16_t i=0;
-	uint8_t  x, y, c, j;
-	uint8_t *ptr;
-    uint8_t y_start,y_end;
-
-
-
+	uint8_t  x, y;
+    uint16_t y_start,y_end;
+    uint8_t k;
 	for ( i=0U; i<LCD_DATA_BUFFER_SIZE;i ++ )
 	{
 		if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
 		{
-			LCD_Buffer[i]		= u8g2.tile_buf_ptr[i];
+			LCD_Buffer[i]	= u8g2.tile_buf_ptr[i];
 			if (LCD_REDRAW_FLAG ==0)
 			{
 				LCD_REDRAW_FLAG = 1U;
@@ -271,30 +271,26 @@ void LCD_Redraw( void )
 	{
 	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
 	  LCD_WriteCommand( 0x3EU );
-	  y_start = y_start/128;
-	  y_end = y_end/128+1;
-	//  for ( i=y_start; i<y_end; i++ )
-	  for ( i=0U; i<8U; i++ )
+	  y_start = y_start/16;
+	  y_end = y_end/16+1;
+	  for ( k=y_start; k<y_end; k++ )
 	  {
-		  y = i;
-		  y*= 8U;
-		  x = 0U;
-		  if ( y >= 32U )	/* this is the adjustment for 128x64 displays */
+		  if (k>=32)
 		  {
-		  	  y -= 32U;
-		  	  x += 8U;
+			 x=8;
+			 y=k-32;
 		  }
-		  ptr = &LCD_Buffer[i * 128U];	/* data ptr to the tiles */
-		  for( j=0U; j<8U; j++ )
+		  else
 		  {
-		  	  LCD_WriteCommand( 0x080U | (y+j) );
-		  	  LCD_WriteCommand( 0x080U | x);
-		   	  LCD_Send16Data(ptr);
-		   	  ptr += 16U;
+			 x=0;
+			 y=k;
 		  }
+		  LCD_WriteCommand( 0x080U | y);
+		  LCD_WriteCommand( 0x080U | x);
+		  LCD_Send16Data(&LCD_Buffer[k*16]);
 	  }
 	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
-      LCD_REDRAW_FLAG == 0U;	// Что это???
+      LCD_REDRAW_FLAG = 0U;	// Что это???
 	}
 	return;
 }
@@ -446,8 +442,8 @@ void vLCD_Init()
   return;
 }
 
-static uint8_t x = 10U;
-static uint8_t y = 10U;
+
+
 static uint8_t x_dir = 0U;
 static uint8_t y_dir = 0U;
 static uint8_t demo_step = 22U, dl = 0U, SS = 0U;

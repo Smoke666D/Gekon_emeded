@@ -233,14 +233,13 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 		 }
 	 	 		 y_offset =  pScreenObjects[i].y + pScreenObjects[i].Height/2 + u8g2_GetAscent(u8g2)/2;
 	 	 		 u8g2_DrawUTF8( u8g2,x_offset, y_offset, TEXT);
-
-
 	 	    	 break;
 
 	 	 	 default:
 	 	 		 break;
 		   }
 	   }
+	   //LCD_Redraw();
    }
 }
 

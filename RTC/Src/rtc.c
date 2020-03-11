@@ -48,12 +48,15 @@ void vRTCGetTime(char * Time)
 	RTC_TimeTypeDef 	t;
 	if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
 	{
-		itoa( t.Hours, &Time[0U], 10U );
+		Time[0]= t.Hours/10+'0';
+		Time[1]= t.Hours%10+'0';
 	    Time[2] = ':';
-		itoa( t.Minutes, &Time[3U], 10U );
-		Time[5U] = ':';
-		itoa( t.Seconds, &Time[6U], 10U );
-		Time[8U] = 0;
+	    Time[3]= t.Minutes/10+'0';
+	    Time[4]= t.Minutes%10+'0';
+	    Time[5] = ':';
+	    Time[6]= t.Seconds/10+'0';
+	    Time[7]= t.Seconds%10+'0';
+	    Time[8] = 0;
 	}
 }
 

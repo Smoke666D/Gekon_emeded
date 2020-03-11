@@ -10,6 +10,10 @@
 
 
 #define READ_COMMNAD  0x00
+#define INC_COMMAND   0x01
+#define DEC_COMMNAD   0x02
+#define ENTER_COMMAND 0x03
+#define ESC_COMMNAD	  0x04
 
 #define ID_TEST_DATA   0
 #define ID_RTC_DATA    1

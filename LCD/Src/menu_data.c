@@ -73,7 +73,7 @@ static xScreenObjet ScreenLev1_2[]=
 
 static xScreenObjet ScreenLev1_3[]=
 {  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[2],NULL,NULL},
-  //  {0,0,2*(LINE4_HIGTH+1),128,LINE4_HIGTH,INPUT_DATA_STRING,InputParam,BufferString,&GetTime,NULL},
+   {0,0,2*(LINE4_HIGTH+1),128,LINE4_HIGTH,INPUT_DATA_STRING,InputParam,BufferString,&vdmGetData,ID_TEST_DATA },
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_4[]=
@@ -158,3 +158,7 @@ static xScreenType  xScreensLev2_1[MENU_LEVEL2_COUNT]=
 		{ScreenLev2_7,NULL,NULL,NOT_ACTIVE,0,0,NULL},
 
 };
+
+
+
+

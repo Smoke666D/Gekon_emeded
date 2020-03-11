@@ -7,10 +7,11 @@
 #include "main.h"
 #include "data_manager.h"
 #include "rtc.h"
+static uint16_t uiDataID_Temp =0;
 
 void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString)
 {
-	uint8_t temp[9];
+  uint8_t temp[9];
   switch (command)
   {
   	  case READ_COMMNAD:
@@ -31,24 +32,28 @@ void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString)
   			  switch (DataID)
   			  {
   			    case ID_RTC_DATA:
-
   			    	vRTCGetTime(temp);
   			    	for (uint8_t i=0;i<9;i++)
   			    		pchTextString[i]=temp[i];
-  			    	 //eRTCgetTime
-  			    	//pchTextString
-
   			    	break;
   			    default:
   			    	break;
-
-
   			  }
   		  break;
-  	  default:
-  		  break;
-
-
+  	  case INC_COMMAND:
+  		uiDataID_Temp = DataID;
+  		break;
+  	  case DEC_COMMNAD:
+  		uiDataID_Temp = DataID;
+  		break;
+  	  case ENTER_COMMAND:
+  		uiDataID_Temp = 0;
+  		 break;
+  	  case ESC_COMMNAD:
+  		uiDataID_Temp = 0;
+  		break;
+  	 default:
+  	   break;
   }
 
 }

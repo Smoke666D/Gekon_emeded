@@ -147,8 +147,9 @@ void vMenuInit(u8g2_t * temp)
 	pCurrMenu =&xGeneratorMenu;
 }
 
+#define MAX_KEY_PRESS  10
 static uint8_t index=0;
-static uint8_t key[10]={1,2,1,2,1,2,1,2,1,2};
+static uint8_t key[MAX_KEY_PRESS]={1,1,1,1,1,2,2,2,2,2};
 
 void vMenuTask()
 {
@@ -159,7 +160,7 @@ void vMenuTask()
 	//Блок отрисовки экранов
 	DrawObject(pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets);
 	index++;
-	if (index>=10) index=0;
+	if (index>=MAX_KEY_PRESS) index=0;
 }
 
 static xScreenObjet * pCurDrawScreen=NULL;

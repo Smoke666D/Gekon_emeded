@@ -38,6 +38,7 @@ typedef enum
 #define	QUOTES_ANCII						0x22U
 
 #define	REST_BUFFER_SIZE				700U
+#define	REST_DIGIT_BUFFER_SIZE	6U
 
 #define	REST_REQUEST_NUMBER			1U
 #define	REST_REQUEST_CONFIGS		"configs"

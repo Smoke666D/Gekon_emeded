@@ -108,6 +108,7 @@ REST_ERROR eRESTpareingRecord(  const char* input, const char* header, char* dat
 	REST_ERROR 	res = REST_OK;
 	char*				pchSt;
 	char*				pchEn;
+	char*				pchQ;
 	uint8_t			calcLength = 0U;
 
 	pchSt = strstr( input, header );
@@ -120,7 +121,12 @@ REST_ERROR eRESTpareingRecord(  const char* input, const char* header, char* dat
 		}
 		if ( pchEn != NULL )
 		{
-			pchSt += strlen( header ) + 2;
+			pchSt += strlen( header ) + 2U;
+			if ( pchSt[0] == '"' )
+			{
+				pchSt += 1U;
+				pchEn -= 1U;
+			}
 			calcLength = pchEn - pchSt;
 			if ( calcLength > 0 )
 			{
@@ -138,11 +144,10 @@ REST_ERROR eRESTpareingRecord(  const char* input, const char* header, char* dat
 REST_ERROR eRESTparsingBitMapArray( const char* input, const char* header, eConfigBitMap* bitMap, uint8_t size )
 {
 	REST_ERROR 			res = REST_OK;
+	uint8_t					i   = 0U;
 	eConfigBitMap*	bitPointer;
 	char*						pchSt;
-	char*						pchEn;
 	char* 					pchAr;
-	uint8_t					count = 1U;
 
 	pchSt = strstr( input, header );
 	if ( pchSt != NULL )
@@ -150,40 +155,38 @@ REST_ERROR eRESTparsingBitMapArray( const char* input, const char* header, eConf
 		pchSt = strchr( pchSt, '[' );
 		if ( pchSt != NULL )
 		{
-			pchEn = strchr( pchSt, ']' );
-			if ( pchEn != NULL )
+			pchAr = pchSt;
+			if ( strchr( pchSt, ']' ) != NULL )
 			{
-				pchAr = strchr( pchSt, '{' );
-				while ( ( pchAr != NULL ) && ( pchAr < pchEn ) )
+				for ( i=0U; i<size; i++ )
 				{
-					bitPointer = &bitMap[count];
-					res = eRESTparsingDigRecord( pchAr, BIT_MAP_MASK_STR, bitPointer->mask );
-					if ( res == REST_OK )
+					pchAr = strchr( pchAr, '{' );
+					if ( pchAr != NULL )
 					{
-						res = eRESTparsingDigRecord( pchAr, BIT_MAP_SHIFT_STR, bitPointer->shift );
+						bitPointer = &bitMap[i];
+						pchAr += 1U;
+						res = eRESTparsingDigRecord( pchAr, BIT_MAP_MASK_STR, bitPointer->mask );
 						if ( res == REST_OK )
 						{
-							res = eRESTparsingDigRecord( pchAr, BIT_MAP_MIN_STR, bitPointer->min );
+							res = eRESTparsingDigRecord( pchAr, BIT_MAP_SHIFT_STR, bitPointer->shift );
 							if ( res == REST_OK )
 							{
-								res = eRESTparsingDigRecord( pchAr, BIT_MAP_MAX_STR, bitPointer->max );
+								res = eRESTparsingDigRecord( pchAr, BIT_MAP_MIN_STR, bitPointer->min );
 								if ( res == REST_OK )
 								{
-									pchAr = strchr( pchSt, '{' );
-									count++;
+									res = eRESTparsingDigRecord( pchAr, BIT_MAP_MAX_STR, bitPointer->max );
+									if ( res != REST_OK )
+									{
+										break;
+									}
 								} else break;
 							} else break;
 						} else break;
 					} else break;
-				} // while
-				if ( ( count - 1 ) > size )
-				{
-					res = REST_RECORD_ARRAY_SIZE_ERROR;
 				}
 			} else res = REST_RECORD_ARRAY_FORMAT_ERROR;
 		} else res = REST_RECORD_ARRAY_FORMAT_ERROR;
 	} else res = REST_RECORD_LOST_ERROR;
-
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -191,7 +194,7 @@ REST_ERROR eRESTparsingStrRecord( const char* input, const char* header, char* d
 {
 	REST_ERROR 	res        = REST_OK;
 	uint8_t			calcLength = 0U;
-	char				buffer[6U];
+	char				buffer[6U] = { 0U, 0U, 0U, 0U, 0U, 0U };
 
 	res = eRESTpareingRecord( input, header, buffer );
 	if ( res == REST_OK )
@@ -211,13 +214,24 @@ REST_ERROR eRESTparsingStrRecord( const char* input, const char* header, char* d
 /*---------------------------------------------------------------------------------------------------*/
 REST_ERROR eRESTparsingDigRecord( const char* input, const char* header, uint16_t data )
 {
-	REST_ERROR 	res = REST_OK;
-	char				buffer[6U];
+	REST_ERROR 	res    = REST_OK;
+	char*				pchStr = NULL;
+	uint8_t			round  = 0U;
+	char				buffer[REST_DIGIT_BUFFER_SIZE];
 
 	res = eRESTpareingRecord( input, header, buffer );
 	if ( res == REST_OK )
 	{
-		data = atoi( buffer );
+		pchStr = strchr( buffer, '.' );
+		if ( pchStr != NULL )
+		{
+			if ( pchStr[1] > 5U )
+			{
+				round = 1U;
+			}
+			pchStr[0] = 0U;
+		}
+		data = atoi( buffer ) + round;
 	}
 
 	return res;
@@ -289,8 +303,8 @@ uint8_t uRESTmakeStartRecord( char* output, const char* header )
 	}
 	output[shift + 1U] = QUOTES_ANCII;
 	output[shift + 2U] = ':';
-	output[shift + 3U] = ' ';
-	return ( shift  + 4U );
+	//output[shift + 3U] = ' ';
+	return ( shift  + 3U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t uRESTmakeSignedRecord( char* output, const char* header, signed char data, RESTrecordPos last )

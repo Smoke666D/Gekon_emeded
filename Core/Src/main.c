@@ -156,10 +156,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   vSYSInitSerial();				/* Debug serial interface */
   vRTCputTimer( &hrtc );	/* RTC structure */
-
-
-
-  vSYSSerial( "***********************\n\r");
+  vSYSSerial("***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();

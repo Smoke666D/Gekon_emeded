@@ -24,6 +24,7 @@
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
+	HTTP_STATUS_ERROR										= 0U,
 	HTTP_STATUS_OK											= 200U,
 	HTTP_STATUS_CREATED									= 201U,		/* Код состояния является ответом на POST, который приводит к созданию */
 	HTTP_STATUS_NO											= 204U,		/* Нет содержимого. Это ответ на успешный запрос, который не будет возвращать тело */
@@ -39,7 +40,7 @@ typedef enum
 	HTTP_STATUS_TOO_MANY_REQUESTS				= 429U,		/* Когда запрос отклоняется из-за ограничения скорости */
 } HTTP_STATUS;
 /*------------------------- Methods -----------------------------------*/
-#define		HTTP_METHOD_NUM							4U
+#define		HTTP_METHOD_NUM							5U
 
 #define		HTTP_METHOD_STR_GET					"GET"
 #define		HTTP_METHOD_STR_POST				"POST"
@@ -102,6 +103,7 @@ typedef struct
 		HTTP_CONTENT	contetntType;
 		HTTP_CONNECT	connect;
 		HTTP_CACHE		cache;
+		char*					content;
 } HTTP_REQUEST;
 
 typedef struct
@@ -161,6 +163,7 @@ typedef struct
 */
 /*------------------------ Templates ----------------------------------*/
 #define		HTTP_END_LINE								"\r\n"
+#define		HTTP_END_HEADER							"\r\n\r\n"
 #define		HTTP_SERVER_NAME						"EMBmss/0.0.1"
 
 #define		HTTP_OK_STATUS_LINE					"HTTP/1.1 200 OK"
@@ -178,7 +181,7 @@ typedef struct
 #define		HTTP_CACHE_CONTROL					"Cache-Control: "
 /*----------------------- Functions ------------------------------------*/
 HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request );										/* Parsing data from request text */
-HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response );				/* Build response in response structure */
+void		 		vHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response );				/* Build response in response structure */
 HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response );								/* Make string response from response structure */
 HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST* request );																	/* Build request structure */
 HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST* request );										/* Make string request from request structure */

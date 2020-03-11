@@ -24,8 +24,15 @@ typedef enum
 	SERVER_WRITE_ERROR,
 	SERVER_RECEIVE_ERROR,
 } SERVER_ERROR;
+
+typedef enum
+{
+	RECEIVE_MESSAGE_COMPLETE,
+	RECEIVE_MESSAGE_CONTINUES,
+	RECEIVE_MESSAGE_ERROR,
+} RECEIVE_MESSAGE;
 /*------------------------------ Default -------------------------------------*/
-#define				HTTP_INPUT_BUFFER_SIZE		512U
+#define				HTTP_INPUT_BUFFER_SIZE		2048U
 #define				HTTP_OUTPUT_BUFFER_SIZE		256U
 /*----------------------------- Functions ------------------------------------*/
 void 					cSERVERgetStrIP( char* ipStr );		// Read local IP address of device in char array format

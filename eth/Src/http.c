@@ -17,7 +17,7 @@
 /*----------------------- Structures ----------------------------------------------------------------*/
 static char restBuffer[REST_BUFFER_SIZE];
 /*----------------------- Constant ------------------------------------------------------------------*/
-const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
+const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_PUT, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -102,7 +102,7 @@ uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
 
 	for ( i=0U; i<num; i++ )
 	{
-		start = strchr( ( end ), LF_HEX ) + 1U;
+		start = strchr( end, LF_HEX ) + 1U;
 		end   = strchr( start, LF_HEX );
 	}
 	if ( start && end)
@@ -149,9 +149,10 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request )
 		{
 			res = HTTP_STATUS_BAD_REQUEST;
 		}
-		/* Parsing HTTP path  */
+		/*-----------------------------------------------------------------------------*/
 		if ( res == HTTP_STATUS_OK )
 		{
+			/* Parsing HTTP path  */
 			pchSt  = strchr( line, '/' );
 			pchEnd = strchr( pchSt, ' ' );
 			if ( ( pchEnd - pchSt ) > 2U )
@@ -161,7 +162,14 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request )
 					res = HTTP_STATUS_BAD_REQUEST;
 				}
 			}
+			/* Parsing Content */
+			pchSt  = strstr( req, HTTP_END_HEADER );
+			if ( pchSt != NULL )
+			{
+				request->content = pchSt + strlen( HTTP_END_HEADER );
+			}
 		}
+
 	}
 
 	return res;
@@ -210,6 +218,84 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
+{
+	char 					*strStr   = NULL;
+	uint8_t				i         = 0U;
+	uint16_t			adr       = 0xFFFFU;
+	RESTrequests	request   = 0U;
+	uint32_t			length    = 0U;
+	char					buffer[5] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
+	uint8_t				p1        = 0U;
+	uint8_t				j         = 0U;
+
+	strStr = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
+	response->cache = HTTP_CACHE_NO_CACHE_STORE;
+	response->connect = HTTP_CONNECT_CLOSED;
+	if( path[0U] == 0x00U )
+	{
+		response->status 				= HTTP_STATUS_BAD_REQUEST;
+		response->contentLength = 0U;
+	}
+	else if ( path[0U] > 0U )
+	{
+		strStr = NULL;
+		while( strStr == NULL )
+		{
+			strStr = strstr( path, restRequeststr[i] );
+			i++;
+			if ( i >= REST_REQUEST_NUMBER )
+			{
+				break;
+			}
+		}
+		if ( strStr == NULL )
+		{
+			response->status 				= HTTP_STATUS_BAD_REQUEST;
+			response->contentLength = 0U;
+		}
+		else
+		{
+			request = i - 1U;
+			length = strlen( strStr );
+			for( i=0U; i<length; i++ )
+			{
+				if ( p1 > 0U )
+				{
+					buffer[j] = strStr[i];
+					j++;
+				}
+				if ( strStr[i] == '/' )
+				{
+					if ( p1 == 0U )
+					{
+						p1 = i;
+					}
+				}
+			}
+			adr = atoi( buffer );
+			response->status 				= HTTP_STATUS_BAD_REQUEST;
+			response->contentLength = 0U;
+			switch ( request )
+			{
+				case REST_CONFIGS:
+					if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
+					{
+						if ( eRESTparsingConfig( content, configReg[adr] ) == REST_OK )
+						{
+							response->contetntType 	= HTTP_CONTENT_JSON;
+							response->status 				= HTTP_STATUS_OK;
+							response->contentLength = 0;
+						}
+					}
+					break;
+				default:
+					break;
+			}
+		}
+	}
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Build get response in response structure
  * Input:		path 			- url to the file from request
@@ -218,7 +304,6 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
  */
 void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 {
-	char					*res    = NULL;
 	char 					*strStr = NULL;
 	uint8_t				i       = 0U;
 	uint16_t			adr     = 0xFFFFU;
@@ -229,7 +314,7 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 	uint8_t				p1 = 0U;
 	uint8_t				j = 0U;
 
-	res = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
+	strStr = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
 	response->cache = HTTP_CACHE_NO_CACHE_STORE;
 	response->connect = HTTP_CONNECT_CLOSED;
 	if( path[0U] == 0x00U )
@@ -241,6 +326,7 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 	}
 	else if ( path[0U] > 0U )
 	{
+		strStr = NULL;
 		while( strStr == NULL )
 		{
 			strStr = strstr( path, restRequeststr[i] );
@@ -282,7 +368,7 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 					{
 						length = uRESTmakeConfig( restBuffer, configReg[adr] );
 					}
-					response->contetntType 	= HTTP_CONTENT_HTML;
+					response->contetntType 	= HTTP_CONTENT_JSON;
 					response->status 				= HTTP_STATUS_OK;
 					response->contentLength = length;
 					response->data 					= restBuffer;
@@ -308,38 +394,35 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
  * 					response	- structure of response
  * Output:	HTTP status
  */
-HTTP_STATUS eHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response)
+void vHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response)
 {
-	HTTP_STATUS res = HTTP_STATUS_OK;
-
 	vHTTPCleanResponse( response );
-	response->method = HTTP_METHOD_NO;
+	response->status = HTTP_STATUS_BAD_REQUEST;
 
 	switch ( request->method )
 	{
 		case HTTP_METHOD_NO:
-			res = HTTP_STATUS_BAD_REQUEST;
 			break;
 		case HTTP_METHOD_GET:
 			response->method = HTTP_METHOD_GET;
 			eHTTPbuildGetResponse( request->path, response );
-			res = HTTP_STATUS_OK;
 			break;
 		case HTTP_METHOD_POST:
-			res = HTTP_STATUS_BAD_REQUEST;
+			response->method = HTTP_METHOD_POST;
+			break;
+		case HTTP_METHOD_PUT:
+			response->method = HTTP_METHOD_PUT;
+			eHTTPbuildPutResponse( request->path, response, request->content );
 			break;
 		case HTTP_METHOD_HEAD:
-			res = HTTP_STATUS_BAD_REQUEST;
 			break;
 		case HTTP_METHOD_OPTION:
-			res = HTTP_STATUS_BAD_REQUEST;
 			break;
 		default:
-			res = HTTP_STATUS_BAD_REQUEST;
 			break;
 	}
 
-	return res;
+	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*

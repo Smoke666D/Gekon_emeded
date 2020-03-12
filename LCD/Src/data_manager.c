@@ -8,6 +8,7 @@
 #include "data_manager.h"
 #include "rtc.h"
 #include "stdio.h"
+#include "fix16.h"
 static uint16_t uiDataID_Temp =0;
 static uint16_t test_data = 100;
 
@@ -24,7 +25,7 @@ DataDescriptor  OutputData[]=
 //Функция преобразования данных типа DataRecord в строку
 
 
-
+static fix16_t DataBuffer;
 
 
 void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString)

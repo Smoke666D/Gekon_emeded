@@ -9,17 +9,18 @@
 #include "rtc.h"
 #include "stdio.h"
 #include "fix16.h"
-static uint16_t uiDataID_Temp =0;
+static fix16_t uiDataID_Temp =0;
 static uint16_t test_data = 100;
 
 
+#define DATA_DISCRIPTOR_COUNT 2
 
-DataDescriptor  OutputData[]=
+DataDescriptor  OutputData[DATA_DISCRIPTOR_COUNT]=
 {
-		{ ID_TEST_DATA,UINTEGER,&test_data},
-		{ ID_RTC_DATA,TIME,NULL},
-		{0,NO_DATA,NULL},
+		{FIX_POINT,&test_data}
+		{TIME,NULL},
 };
+
 
 
 //Функция преобразования данных типа DataRecord в строку
@@ -34,13 +35,11 @@ void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString)
   switch (command)
   {
   	  case READ_COMMNAD:
+
   		  if (DataID == ID_TEST_DATA)
   		  {
 
-  			pchTextString[0]=test_data/100+'0';
-  			pchTextString[1]=(test_data&100)/10+'0';
-  			pchTextString[2]=(test_data&100)%10+'0';
-  			pchTextString[3]=0;
+
   		  }
   		  else
   			  switch (DataID)
@@ -52,7 +51,7 @@ void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString)
   			    	break;
   			    default:
   			    	break;
-  			  }
+  		  }
   		  break;
   	  case INC_COMMAND:
   		if (uiDataID_Temp != DataID);

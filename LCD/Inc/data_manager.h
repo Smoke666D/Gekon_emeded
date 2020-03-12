@@ -15,14 +15,17 @@
 #define ENTER_COMMAND 0x03
 #define ESC_COMMNAD	  0x04
 
+
 #define ID_TEST_DATA   1
 #define ID_RTC_DATA    2
+
 
 
 
 //Возмонжные типы данных
 typedef enum
 {
+  FIX_POINT,
   CONFIG_DATA,
   TIME_DATA,
   UINTEGER,

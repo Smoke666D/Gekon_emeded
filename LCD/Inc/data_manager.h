@@ -15,8 +15,40 @@
 #define ENTER_COMMAND 0x03
 #define ESC_COMMNAD	  0x04
 
-#define ID_TEST_DATA   0
-#define ID_RTC_DATA    1
+#define ID_TEST_DATA   1
+#define ID_RTC_DATA    2
+
+
+
+//Возмонжные типы данных
+typedef enum
+{
+  CONFIG_DATA,
+  TIME_DATA,
+  UINTEGER,
+  TIME,
+  NO_DATA,
+} DATA_TYPE;
+
+//Дискриптор данных для вывода
+typedef struct
+{
+    uint16_t DataID;
+	DATA_TYPE Type;
+	void * pDataPointer;
+} DataDescriptor;
+
+
+#define MAX_NUMBER_STRING_LEN 10
+//Структура для хранения данных
+typedef struct
+{
+   uint16_t Number;
+   uint16_t Factor;
+   uint8_t Sign;
+} DataRecord;
+
+
 
 
 void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString);

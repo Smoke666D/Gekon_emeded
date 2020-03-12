@@ -33,7 +33,7 @@ extern void GetTime(char * Data);
 extern void GetInt(char * Data);
 extern void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString);
 
-static char HEADERSTRINGS[HEAD_STRINGS_COUNT][MAX_HEADER_STRING_SIZE]=
+static uint8_t HEADERSTRINGS[HEAD_STRINGS_COUNT][MAX_HEADER_STRING_SIZE]=
 {
 		{"НАПРЯЖ. ГЕН. И СЕТИ"}, //1
 		{"ПРИБОРЫ ГЕНЕРАТОРА"},  //2
@@ -64,72 +64,72 @@ static xScreenObjet ScreenLev1_1[]=
 
 static xScreenObjet ScreenLev1_2[]=
 {
-   {0,0,0,128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,NULL},
-   {0,0,LINE5_HIGTH+1,128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,NULL},
-   {0,0,2*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,NULL},
-   {0,0,3*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,NULL},
-   {0,0,4*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,NULL},
+   {0,0,0,128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
+   {0,0,LINE5_HIGTH+1,128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
+   {0,0,2*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
+   {0,0,3*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
+   {0,0,4*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_3[]=
-{  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[2],NULL,NULL},
+{  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[2],NULL,0},
    {0,0,2*(LINE4_HIGTH+1),128,LINE4_HIGTH,INPUT_DATA_STRING,InputParam,BufferString,&vdmGetData,ID_TEST_DATA },
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_4[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[3],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[3],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_5[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[4],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[4],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_6[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[5],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[5],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_7[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[6],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[6],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_8[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[7],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[7],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_9[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[8],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[8],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_10[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[9],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[9],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev2_1[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[10],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[10],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev2_2[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[11],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[11],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev2_3[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[12],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[12],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev2_4[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[13],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[13],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev2_5[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[14],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[14],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev2_6[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[15],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[15],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev2_7[]=
-{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[16],NULL,NULL},
+{  {0,0,0,128,16,STRING,HeaderParam,HEADERSTRINGS[16],NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 

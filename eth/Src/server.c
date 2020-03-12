@@ -211,27 +211,30 @@ void startNetClientTask( void const * argument )
   {
   	if( netconn_recv( netcon, &nb ) == ERR_OK )
   	{
-  		len = netbuf_len( nb );
-  		netbuf_copy( nb, endInput, len );
-  		netbuf_delete( nb );
-  		endInput[len] = 0U;
-  		endMessage = eSERVERanalizMessage( input, len );
-
+  		/*-------------------- Input message --------------------*/
+  		len = netbuf_len( nb );														// Get length of input message
+  		netbuf_copy( nb, endInput, len );									// Copy message from net buffer to local buffer
+  		netbuf_delete( nb );															// Delete net buffer
+  		endInput[len] = 0U;																// Mark end of string
+  		endMessage = eSERVERanalizMessage( input, len );	// Analysis is the message have been ended
+  		/*------------------- Analysis Message -------------------*/
   		if ( endMessage == RECEIVE_MESSAGE_COMPLETE )
   		{
-  			endInput = input;
-  			eHTTPresponse( input, &request, &response, output );
+  			endInput = input;																					// Return pointer to the start of the local buffer
+  			eHTTPresponse( input, &request, &response, output );			// Parsing request and prepare the response
+  		/*-------------------- Send response ---------------------*/
   			if ( response.status != HTTP_STATUS_ERROR )
   			{
-  			  netconn_write( netcon, output, strlen(output), NETCONN_COPY );
-  			  if ( response.contentLength > 0U )
+  			  netconn_write( netcon, output, strlen(output), NETCONN_COPY );											// Send header of the response
+  			  if ( response.contentLength > 0U )																									// There is content
   			  {
-  			  	mesNum = ( uint32_t )( response.contentLength / HTTP_OUTPUT_BUFFER_SIZE ) + 1U;
-  			  	pchSt  = response.data;
-  			  	pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
+  		/*--------------------- Send content ---------------------*/
+  			  	mesNum = ( uint32_t )( response.contentLength / HTTP_OUTPUT_BUFFER_SIZE ) + 1U;		// Calculate the number of content packages
+  			  	pchSt  = response.data;																														// Get start pointer of first package
+  			  	pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;																					// Get end pointer of first package
   			  	for( i=0U; i<mesNum; i++ )
   			  	{
-  			  		if ( strncpy( output, ( pchSt ), ( pchEn - pchSt ) ) != NULL )
+  			  		if ( strncpy( output, ( pchSt ), ( pchEn - pchSt ) ) != NULL )									// Copy current package to output buffer
   			  		{
   			  			pchSt  = pchEn;
   			  			pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;

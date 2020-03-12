@@ -31,6 +31,58 @@ REST_ERROR eRESTparsingSignedRecord( const char* input, const char* header, sign
 REST_ERROR eRESTparsingStrRecord( const char* input, const char* header, char* data, uint8_t length );
 REST_ERROR eRESTparsingBitMapArray( const char* input, const char* header, eConfigBitMap* bitMap, uint8_t size );
 /*---------------------------------------------------------------------------------------------------*/
+REST_ADDRESS eRESTgetRequest( char* path, REST_REQUEST* request, uint16_t* adr )
+{
+	char*   			pchStr 		 = NULL;
+	uint8_t 			i      		 = 0U;
+	REST_ADDRESS 	res 	 		 = REST_NO_ADR;
+	uint32_t			length     = 0U;
+	uint8_t				p1       	 = 0U;
+	uint8_t				j        	 = 0U;
+	char					buffer[5U] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
+
+	while( pchStr == NULL )
+	{
+		pchStr = strstr( path, restRequeststr[i] );
+		i++;
+		if ( i >= REST_REQUEST_NUMBER )
+		{
+			break;
+		}
+	}
+	if ( pchStr != NULL )
+	{
+		*request = i - 1U;
+		length  = strlen( pchStr );
+		for( i=0U; i<length; i++ )
+		{
+			if ( p1 > 0U )
+			{
+				buffer[j] = pchStr[i];
+				j++;
+			}
+			if ( pchStr[i] == '/' )
+			{
+				if ( p1 == 0U )
+				{
+					p1 = i;
+				}
+			}
+		}
+		if ( buffer[0U] > 0U )
+		{
+			*adr = atoi( buffer );
+			res = REST_YES_ADR;
+		}
+	}
+	else
+	{
+		*request = REST_REQUEST_ERROR;
+	}
+
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 uint32_t uRESTmakeConfig( char* output, eConfigReg* reg )
 {
 	uint32_t 	position = 1U;

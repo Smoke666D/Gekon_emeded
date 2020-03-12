@@ -26,7 +26,7 @@ void 		vHTTPCleanResponse( HTTP_RESPONSE *response );									/* Clean response 
 uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );					/* Get the string of line from multiline text */
 void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );		/* Build get response in response structure */
 char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);								/* Add cache string to http */
-void 		vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type );
+char*		vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type );
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -119,8 +119,8 @@ uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Parsing data from request text
- * Input:		req 		- pointer to char array with input request in text form
- * 					request	- pointer to the output request structure
+ * Input:		req 		- pointer to a char array with input request in text form
+ * 					request	- pointer to a the output request structure
  * Output:	HTTP status
  */
 HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request )
@@ -129,7 +129,7 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request )
 	uint8_t 			i      = 0U;
 	char* 				pchSt  = NULL;
 	char* 				pchEnd = NULL;
-	char					line[50];
+	char					line[50U];
 
 	if ( uHTTPgetLine( req, 0, line ) > 0U )
 	{
@@ -177,8 +177,8 @@ HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request )
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Parsing data from response text
- * Input:		req 		- pointer to char array with input request in text form
- * 					request	- pointer to the output response structure
+ * Input:		req 		- pointer to a char array with input request in text form
+ * 					request	- pointer to a output response structure
  * Output:	HTTP status
  */
 HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* response  )
@@ -186,8 +186,7 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
 	HTTP_STATUS 	res 	 = HTTP_STATUS_BAD_REQUEST;
 	char* 				pchSt  = NULL;
 	char* 				pchEn  = NULL;
-	char					buffer[5];
-
+	char					buffer[5U];
 
 	pchSt = strchr( input, ' ') + 1U;
 	if ( pchSt != NULL )
@@ -218,82 +217,47 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Build put response in to response structure
+ * Input:		path 			- url to the file from the request
+ * 					response	- structure of the response
+ * 					content   - content of the request
+ * Output:	none
+ */
 void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
 {
-	char 					*strStr   = NULL;
-	uint8_t				i         = 0U;
 	uint16_t			adr       = 0xFFFFU;
-	RESTrequests	request   = 0U;
-	uint32_t			length    = 0U;
-	char					buffer[5] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
-	uint8_t				p1        = 0U;
-	uint8_t				j         = 0U;
+	REST_REQUEST	request   = 0U;
+	REST_ADDRESS	adrFlag		= REST_NO_ADR;
 
-	strStr = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
-	response->cache = HTTP_CACHE_NO_CACHE_STORE;
-	response->connect = HTTP_CONNECT_CLOSED;
-	if( path[0U] == 0x00U )
+	strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
+	response->cache         = HTTP_CACHE_NO_CACHE_STORE;
+	response->connect       = HTTP_CONNECT_CLOSED;
+	response->status 				= HTTP_STATUS_BAD_REQUEST;
+	response->contentLength = 0U;
+	if ( path[0U] > 0U )
 	{
-		response->status 				= HTTP_STATUS_BAD_REQUEST;
-		response->contentLength = 0U;
-	}
-	else if ( path[0U] > 0U )
-	{
-		strStr = NULL;
-		while( strStr == NULL )
+		adrFlag = eRESTgetRequest( path, &request, &adr );
+		switch ( request )
 		{
-			strStr = strstr( path, restRequeststr[i] );
-			i++;
-			if ( i >= REST_REQUEST_NUMBER )
-			{
+			case REST_CONFIGS:
+				if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+				{
+					if ( eRESTparsingConfig( content, configReg[adr] ) == REST_OK )
+					{
+						response->contetntType 	= HTTP_CONTENT_JSON;
+						response->status 				= HTTP_STATUS_OK;
+						response->contentLength = 0;
+					}
+				}
 				break;
-			}
-		}
-		if ( strStr == NULL )
-		{
-			response->status 				= HTTP_STATUS_BAD_REQUEST;
-			response->contentLength = 0U;
-		}
-		else
-		{
-			request = i - 1U;
-			length = strlen( strStr );
-			for( i=0U; i<length; i++ )
-			{
-				if ( p1 > 0U )
-				{
-					buffer[j] = strStr[i];
-					j++;
-				}
-				if ( strStr[i] == '/' )
-				{
-					if ( p1 == 0U )
-					{
-						p1 = i;
-					}
-				}
-			}
-			adr = atoi( buffer );
-			response->status 				= HTTP_STATUS_BAD_REQUEST;
-			response->contentLength = 0U;
-			switch ( request )
-			{
-				case REST_CONFIGS:
-					if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
-					{
-						if ( eRESTparsingConfig( content, configReg[adr] ) == REST_OK )
-						{
-							response->contetntType 	= HTTP_CONTENT_JSON;
-							response->status 				= HTTP_STATUS_OK;
-							response->contentLength = 0;
-						}
-					}
-					break;
-				default:
-					break;
-			}
+			case REST_REQUEST_ERROR:
+				break;
+			default:
+				break;
 		}
 	}
+	return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -304,66 +268,44 @@ void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
  */
 void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 {
-	char 					*strStr = NULL;
-	uint8_t				i       = 0U;
-	uint16_t			adr     = 0xFFFFU;
-	RESTrequests	request = 0U;
-	uint32_t			length  = 0U;
-	char					buffer[5] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
-
-	uint8_t				p1 = 0U;
-	uint8_t				j = 0U;
-
+	char 					*strStr   = NULL;
+	uint16_t			adr       = 0xFFFFU;
+	REST_REQUEST	request   = REST_REQUEST_ERROR;
+	REST_ADDRESS	adrFlag		= REST_NO_ADR;
+	uint32_t			length    = 0U;
+	/*----------------- Common header -----------------*/
 	strStr = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
-	response->cache = HTTP_CACHE_NO_CACHE_STORE;
-	response->connect = HTTP_CONNECT_CLOSED;
-	if( path[0U] == 0x00U )
+	response->cache         = HTTP_CACHE_NO_CACHE_STORE;
+	response->connect       = HTTP_CONNECT_CLOSED;
+	response->status 				= HTTP_STATUS_BAD_REQUEST;
+	response->contentLength = 0U;
+	/*----------------- Parsing path -----------------*/
+	/*------------------ INDEX.HTML ------------------*/
+	strStr = strstr(path, "index" );
+	if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
 	{
 		response->contetntType 	= HTTP_CONTENT_HTML;
 		response->status 				= HTTP_STATUS_OK;
 		response->contentLength = HTML_LENGTH;
 		response->data 					= data__index_html;
 	}
+	/*--------------------- REST ---------------------*/
 	else if ( path[0U] > 0U )
 	{
-		strStr = NULL;
-		while( strStr == NULL )
+		adrFlag = eRESTgetRequest( path, &request, &adr );
+		switch ( request )
 		{
-			strStr = strstr( path, restRequeststr[i] );
-			i++;
-			if ( i >= REST_REQUEST_NUMBER )
-			{
-				break;
-			}
-		}
-		if ( strStr == NULL )
-		{
-			response->status 				= HTTP_STATUS_BAD_REQUEST;
-			response->contentLength = 0U;
-		}
-		else
-		{
-			request = i - 1U;
-			length = strlen( strStr );
-			for( i=0U; i<length; i++ )
-			{
-				if ( p1 > 0U )
+			case REST_CONFIGS:
+				if ( adrFlag == REST_NO_ADR )
 				{
-					buffer[j] = strStr[i];
-					j++;
+					//length = uRESTmakeConfig( restBuffer, configReg[adr] );
+					response->contetntType 	= HTTP_CONTENT_JSON;
+					response->status 				= HTTP_STATUS_OK;
+					//response->contentLength = length;
+					//response->data 					= restBuffer;
 				}
-				if ( strStr[i] == '/' )
+				else
 				{
-					if ( p1 == 0U )
-					{
-						p1 = i;
-					}
-				}
-			}
-			adr = atoi( buffer );
-			switch ( request )
-			{
-				case REST_CONFIGS:
 					if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
 					{
 						length = uRESTmakeConfig( restBuffer, configReg[adr] );
@@ -372,12 +314,14 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 					response->status 				= HTTP_STATUS_OK;
 					response->contentLength = length;
 					response->data 					= restBuffer;
-					break;
-				default:
-					response->status 				= HTTP_STATUS_BAD_REQUEST;
-					response->contentLength = 0U;
-					break;
-			}
+				}
+				break;
+			case REST_REQUEST_ERROR:
+				break;
+			default:
+				response->status 				= HTTP_STATUS_BAD_REQUEST;
+				response->contentLength = 0U;
+				break;
 		}
 	}
 	else
@@ -513,7 +457,7 @@ HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST* request )
  */
 HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 {
-	HTTP_STATUS 	res = HTTP_STATUS_OK;
+	HTTP_STATUS 	res = HTTP_STATUS_ERROR;
 	char					buffer[30];
 	char					*strRes;
 
@@ -530,28 +474,55 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 			strRes = strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
 			break;
 	}
-	strRes = strcat( httpStr, HTTP_END_LINE );
-	// DATE
-	strRes = strcat( httpStr, HTTP_DATE_LINE );
-	strRes = strcat( httpStr, response->date );
-	strRes = strcat( httpStr, HTTP_END_LINE );
-	// LENGTH
-	strRes = strcat( httpStr, HTTP_LENGTH_LINE );
-	itoa( response->contentLength, buffer, 10U );
-	//strRes = sprintf( buffer, "%lu", response->contentLength );
-	strRes = strcat( httpStr, buffer );
-	strRes = strcat( httpStr, HTTP_END_LINE );
-	// CONTENT TYPE
-	vHTTPaddContetntType( httpStr, response->contetntType );
-	// CACHE
-	strRes = strcat( httpStr, HTTP_CACHE_CONTROL );
-	strRes = vHTTPaddCache( httpStr, response->cache );
-	// CONNECTION
-	strRes = strcat( httpStr, HTTP_CONN_LINE );
-	strRes = strcat( httpStr, HTTP_END_LINE );
-
-	strRes = strcat( httpStr, HTTP_END_LINE );
-
+	if ( strRes != NULL )
+	{
+		if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+		{
+			// DATE
+			if ( strcat( httpStr, HTTP_DATE_LINE ) != NULL )
+			{
+				if ( strcat( httpStr, response->date ) != NULL )
+				{
+					if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+					{
+						// LENGTH
+						if ( strcat( httpStr, HTTP_LENGTH_LINE ) != NULL )
+						{
+							itoa( response->contentLength, buffer, 10U );
+							if ( strcat( httpStr, buffer ) != NULL )
+							{
+								if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+								{
+									// CONTENT TYPE
+									if ( vHTTPaddContetntType( httpStr, response->contetntType ) != NULL )
+									{
+										// CACHE
+										if ( strcat( httpStr, HTTP_CACHE_CONTROL ) != NULL )
+										{
+											if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
+											{
+												// CONNECTION
+												if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
+												{
+													if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+													{
+														if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+														{
+															res = HTTP_STATUS_OK;
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -586,12 +557,20 @@ char* vHTTPaddCache( char* httpStr, HTTP_CACHE cache)
 			break;
 	}
 	strRes = strcat( httpStr, HTTP_END_LINE );
+
 	return strRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type )
+/*
+ * Add type of the content to a string
+ * input:		httpStr - target string
+ * 					type		- type of content
+ * output:	none
+ */
+char* vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type )
 {
-	char* strRes;
+	char* strRes = NULL;
+
 	strRes = strcat( httpStr, HTTP_CONTENT_LINE );
 	switch ( type )
 	{
@@ -615,7 +594,8 @@ void vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type )
 			break;
 	}
 	strRes = strcat( httpStr, HTTP_END_LINE );
-	return;
+
+	return strRes;
 }
 
 

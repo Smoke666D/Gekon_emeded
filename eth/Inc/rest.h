@@ -32,8 +32,15 @@ typedef enum
 
 typedef enum
 {
-	REST_CONFIGS = 0x00U,
-} RESTrequests;
+	REST_CONFIGS       = 0x00,
+	REST_REQUEST_ERROR = 0xFF,
+} REST_REQUEST;
+
+typedef enum
+{
+	REST_NO_ADR,
+	REST_YES_ADR,
+} REST_ADDRESS;
 /*------------------------------ Default -------------------------------------*/
 #define	QUOTES_ANCII						0x22U
 
@@ -45,8 +52,9 @@ typedef enum
 /*------------------------------ Extern --------------------------------------*/
 extern const char 	*restRequeststr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/
-uint32_t 		uRESTmakeConfig( char* output, eConfigReg* reg );
-REST_ERROR 	eRESTparsingConfig( char* input, eConfigReg* reg );
+uint32_t 			uRESTmakeConfig( char* output, eConfigReg* reg );
+REST_ERROR 		eRESTparsingConfig( char* input, eConfigReg* reg );
+REST_ADDRESS 	eRESTgetRequest( char* path, REST_REQUEST* request, uint16_t* adr );
 /*---------------------------------------------------------------------------------------------------*/
 
 #endif /* INC_REST_H_ */

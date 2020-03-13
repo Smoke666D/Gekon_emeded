@@ -656,7 +656,7 @@ void StartLcdTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay( 2000U );
+
     IncData();
   }
   /* USER CODE END StartLcdTask */

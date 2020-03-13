@@ -14,6 +14,7 @@
 
 #include "http.h"
 #include "server.h"
+#include "data_type.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -42,23 +43,84 @@ void vRTCgetTimer( RTC_HandleTypeDef *hrtc )
 	return;
 }
 
-void vRTCGetTime(char * Time)
+void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time)
 {
-	RTC_STATUS 				res = RTC_OK;
 	RTC_TimeTypeDef 	t;
-	if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+	Time[0]= 0;
+	switch (cmd)
 	{
-		Time[0]= t.Hours/10+'0';
-		Time[1]= t.Hours%10+'0';
-	    Time[2] = ':';
-	    Time[3]= t.Minutes/10+'0';
-	    Time[4]= t.Minutes%10+'0';
-	    Time[5] = ':';
-	    Time[6]= t.Seconds/10+'0';
-	    Time[7]= t.Seconds%10+'0';
-	    Time[8] = 0;
+	case READ:
+
+		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+		{
+			Time[0]= (t.Hours>>4)+'0';
+			Time[1]= (t.Hours & 0x0F)+'0';
+			Time[2] = ':';
+			Time[3]= (t.Minutes>>4)+'0';
+			Time[4]= (t.Minutes & 0x0F)+'0';
+			Time[5] = ':';
+			Time[6]= (t.Seconds>>4)+'0';
+			Time[7]= (t.Seconds & 0x0F)+'0';
+			Time[8] = 0;
+		}
+	default:
+		break;
 	}
 }
+
+void vRTCGetSec(DATA_COMMNAD_TYPE cmd, char * Time)
+{
+	RTC_TimeTypeDef 	t;
+	Time[0]= 0;
+	switch (cmd)
+	{
+	case READ:
+		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+		{
+			Time[0]= (t.Seconds>>4)+'0';
+			Time[1]= (t.Seconds & 0x0F)+'0';
+			Time[2] = 0;
+		}
+	default:
+		break;
+	}
+}
+
+void vRTCGetMin(DATA_COMMNAD_TYPE cmd, char * Time)
+{
+	RTC_TimeTypeDef 	t;
+	Time[0]= 0;
+	switch (cmd)
+	{
+	case READ:
+		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+		{
+			Time[0]= (t.Minutes>>4)+'0';
+			Time[1]= (t.Minutes & 0x0F)+'0';
+			Time[2] = 0;
+		}
+	default:
+		break;
+	}
+}
+void vRTCGetHour(DATA_COMMNAD_TYPE cmd, char * Time)
+{
+	RTC_TimeTypeDef 	t;
+	Time[0]= 0;
+	switch (cmd)
+	{
+	case READ:
+		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+		{
+			Time[0]= (t.Hours>>4)+'0';
+			Time[1]= (t.Hours & 0x0F)+'0';
+			Time[2] = 0;
+		}
+	default:
+		break;
+	}
+}
+
 
 /*---------------------------------------------------------------------------------------------------*/
 RTC_STATUS eRTCgetDateForHttp( char* date )

@@ -303,7 +303,7 @@ void StartLcdRedrawTask(void *argument)
   for(;;)
   {
     osDelay( 200U );
-    LCD_Redraw();
+   // LCD_Redraw();
   }
   /* USER CODE END StartLCDRedraw */
 }
@@ -438,7 +438,10 @@ void vLCD_Init()
   u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay );
   u8g2_InitDisplay( &u8g2 );
   u8g2_SetPowerSave( &u8g2, 0U );
-   vMenuInit(&u8g2);
+  vMenuInit(&u8g2);
+  for (uint16_t i=0;i<LCD_DATA_BUFFER_SIZE;i++)
+	  LCD_Buffer[i]=0xFF;
+ // LCD_Clear(  );
   return;
 }
 

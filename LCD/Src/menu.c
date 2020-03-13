@@ -10,7 +10,7 @@
 #include "lcd.h"
 #include "u8g2.h"
 #include "keyboard.h"
-
+#include "data_type.h"
 
 
 
@@ -36,7 +36,38 @@ extern xScreenSetObject xEngineMenu;
 
  void xInputScreenKeyCallBack(xScreenSetObject * menu, char key)
  {
+	 switch (key)
+	 		{
+	 	 	 	case KEY_UP:
 
+	 	 	 		break;
+	 	 	 	case KEY_DOWN:
+	 	 	 		break;
+	 			case KEY_RIGTH:
+	 				break;
+	 			case KEY_LEFT:
+	 				break;
+	 			case KEY_ENTER:
+	 				for (i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
+	 				{
+	 					if  (pScreenObjects[i].last) break;
+	 					switch (pScreenObjects[i].xType)
+	 				    {
+	 						    case INPUT_HW_DATA:
+	 						    	pScreenObjects[i].pStringParametr[];
+	 						   	    break;
+	 						   	 default:
+	 							    break;
+	 						   }
+
+	 				break;
+	 			case KEY_EXIT:
+	         	 //Есди текущий Screen конечный, то делаем его активным
+	         	    menu->pHomeMenu[index].xScreenStatus=NOT_ACTIVE;
+	         	    break;
+	 			default:
+	         	break;
+	 		}
  }
 
 
@@ -66,8 +97,11 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         		if (menu->pHomeMenu[index].pDownScreenSet!=NULL)
         			pCurrMenu = menu->pHomeMenu[index].pDownScreenSet;
         		else
-        	//Есди текущий Screen конечный, то делаем его активным
-        		   menu->pHomeMenu[index].xScreenStatus=ACTIVE;
+        		{
+        			//Есди текущий Screen конечный, то делаем его активным, это позволит перенапрявлять назажите клавиш в обработчик экрана
+        			menu->pHomeMenu[index].xScreenStatus=ACTIVE;
+
+        		}
         		break;
 			case KEY_EXIT:
         	//Если текущий Screen являтется ScreenSet то переводи глобальный указатель на меню нижнего уровня
@@ -85,6 +119,7 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 	else
 	{
 			if (menu->pHomeMenu[index].pFunc!=NULL)
+
 				menu->pHomeMenu[index].pFunc(&menu->pHomeMenu[index],key);
 	}
 
@@ -149,18 +184,27 @@ void vMenuInit(u8g2_t * temp)
 
 #define MAX_KEY_PRESS  10
 static uint8_t index=0;
-static uint8_t key[MAX_KEY_PRESS]={1,1,1,1,1,2,2,2,2,2};
-
+static uint8_t key[MAX_KEY_PRESS]={1,2,1,2,1,2,1,2,1,2};
+static uint8_t ii=0;
 void vMenuTask()
 {
 
     //Блок обработки нажатий на клавиши
-    pCurrMenu->pFunc(pCurrMenu,key[index]);
 
+
+	osDelay( 200U );
 	//Блок отрисовки экранов
 	DrawObject(pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets);
-	index++;
-	if (index>=MAX_KEY_PRESS) index=0;
+	LCD_Redraw();
+	ii++;
+	if (ii==5)
+	{
+		pCurrMenu->pFunc(pCurrMenu,key[index]);
+		ii=0;
+		index++;
+		if (index>=MAX_KEY_PRESS) index=0;
+
+	}
 }
 
 static xScreenObjet * pCurDrawScreen=NULL;
@@ -182,14 +226,18 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	   for (i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
 	   {
 		   if  (pScreenObjects[i].last) break;
-		   if ((pScreenObjects[i].xType == DATA_STRING) ||  (pScreenObjects[i].xType == INPUT_DATA_STRING))
+		   switch (pScreenObjects[i].xType)
 		   {
-			Redraw =1;
-			break;
+		   	   	   case HW_DATA:
+		   	   	   case INPUT_HW_DATA:
+		   	   		   	  Redraw =1;
+		   	   			  break;
+		   	   	   default:
+				  	  break;
 		   }
+		   if (Redraw) break;
 	   }
    }
-
    if (Redraw)   //Если экран нужно перерисовывать
    {
 	   u8g2_ClearBuffer(u8g2);
@@ -200,24 +248,24 @@ void DrawObject( xScreenObjet * pScreenObjects)
 		   {
 	 	 	 //Если текущий объект - строка
 	 	 	 case STRING:
-	 	 	 case DATA_STRING:
-	 	     case INPUT_DATA_STRING:
+	 	     case HW_DATA:
+	 	     case INPUT_HW_DATA:
 	 	 		 u8g2_SetFontMode(u8g2,pScreenObjects[i].ObjectParamert[0]);
-	 	 		 if (pScreenObjects[i].ObjectParamert[0]==0)
-	 	 			 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[0]?0:1);
+	 	 		 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?0:1);
 	 	 		 u8g2_DrawBox( u8g2, pScreenObjects[i].x, pScreenObjects[i].y,pScreenObjects[i].Width,pScreenObjects[i].Height);
-	 	 		 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[0]);
+	 	 		 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]);
 	 	 		 switch(pScreenObjects[i].xType)
 	 	 		 {
 
 	 	 		 	 case STRING:
 	 	 		 		TEXT = pScreenObjects[i].pStringParametr;
 	 	 		 		break;
-	 	 		 	 case DATA_STRING:
-	 	 		 	 case INPUT_DATA_STRING:
-	 	 		 		 pScreenObjects[i].GetDtaFunction(READ_COMMNAD, pScreenObjects[i].DataID, &Text);
+	 	 		 	case HW_DATA:
+	 	 		 	case INPUT_HW_DATA:
+	 	 		 		 pScreenObjects[i].GetDtaFunction(READ, &Text);
 	 	 		 		 TEXT = Text;
 	 	 		 		 break;
+
 	 	 		 }
 	 	 		 u8g2_SetFont( u8g2, FONT_TYPE4);
 	 	 		 switch (pScreenObjects[i].ObjectParamert[2])
@@ -240,7 +288,7 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 		 break;
 		   }
 	   }
-	   //LCD_Redraw();
+
    }
 }
 

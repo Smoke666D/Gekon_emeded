@@ -9,6 +9,7 @@
 #define INC_RTC_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#include "data_type.h"
 /*------------------------ Define --------------------------------------*/
 #define		TIME_HOST									"worldtimeapi.org"
 #define		TIME_PATH									"/api/ip.txt"
@@ -58,7 +59,10 @@ typedef enum
 void				vRTCgetTimer( RTC_HandleTypeDef *hrtc );
 RTC_STATUS	eRTCgetHttpTime( void );
 RTC_STATUS 	eRTCgetDateForHttp( char* date );
-void vRTCGetTime(char * Time);
+void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time);
+void vRTCGetSec(DATA_COMMNAD_TYPE cmd, char * Time);
+void vRTCGetHour(DATA_COMMNAD_TYPE cmd, char * Time);
+void vRTCGetMin(DATA_COMMNAD_TYPE cmd, char * Time);
 RTC_STATUS 	eRTCgetTime( char* time );
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

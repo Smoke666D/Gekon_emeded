@@ -45,7 +45,9 @@ typedef enum
 	STRING,
 	NEGATIVE_STRING,
 	DATA_STRING,
-	INPUT_DATA_STRING
+	INPUT_DATA_STRING,
+	HW_DATA,
+	INPUT_HW_DATA,
 } OBJECT_TYPE;
 
 typedef struct
@@ -58,7 +60,7 @@ typedef struct
   OBJECT_TYPE xType;
   uint8_t * ObjectParamert;
   uint8_t * pStringParametr;
-  void (*GetDtaFunction)(uint8_t, uint16_t, uint8_t *);
+  void (*GetDtaFunction)();
   uint16_t DataID;
 } xScreenObjet;
 

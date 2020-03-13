@@ -15,11 +15,6 @@ static uint16_t test_data = 100;
 
 #define DATA_DISCRIPTOR_COUNT 2
 
-DataDescriptor  OutputData[DATA_DISCRIPTOR_COUNT]=
-{
-		{FIX_POINT,&test_data}
-		{TIME,NULL},
-};
 
 
 
@@ -45,7 +40,7 @@ void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString)
   			  switch (DataID)
   			  {
   			    case ID_RTC_DATA:
-  			    	vRTCGetTime(temp);
+  			    	//vRTCGetTime(temp);
   			    	for (uint8_t i=0;i<9;i++)
   			    		pchTextString[i]=temp[i];
   			    	break;

@@ -1,6 +1,8 @@
 settings/
 Debug/
 
+.settings/language.settings.xml
+
 
 # Compiled Binaries
 *.bin

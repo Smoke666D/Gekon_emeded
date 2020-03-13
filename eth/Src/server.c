@@ -201,6 +201,7 @@ void startNetClientTask( void const * argument )
 	HTTP_RESPONSE 	response;
 	HTTP_REQUEST		request;
 	uint32_t 				len         = 0U;
+	STREAM_STATUS		status      = STREAM_CONTINUES;
 
   for(;;)
   {
@@ -221,9 +222,22 @@ void startNetClientTask( void const * argument )
   			if ( response.status != HTTP_STATUS_ERROR )
   			{
   			  netconn_write( netcon, output, strlen(output), NETCONN_COPY );									// Send header of the response
+  		/*-------------------- Send content ----------------------*/
   			  if ( response.contentLength > 0U )																							// There is content
   			  {
-  			  	netconn_write( netcon, response.data, response.contentLength, NETCONN_COPY );	// Send content
+  			  	while ( status == STREAM_CONTINUES )
+  			  	{
+  			  		status = response.callBack( &response.stream );
+  			  		if ( status != STREAM_ERROR )
+  			  		{
+  			  			netconn_write( netcon, response.stream.content, response.stream.length, NETCONN_COPY );	// Send content
+  			  		}
+  			  		else
+  			  		{
+  			  			break;
+  			  		}
+  			  	}
+  			  	status = STREAM_CONTINUES;
   			  }
   			}
   		}

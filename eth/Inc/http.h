@@ -13,7 +13,7 @@
 #define		CR_HEX								0x0DU
 #define		LF_HEX								0x0AU
 
-#define		DATE_LENGTH						29U
+#define		HEADER_LENGTH					29U
 #define		SERVER_LENGTH					21U
 #define		CONTENT_TYPE_LENGTH		9U
 
@@ -92,8 +92,15 @@ typedef enum
 /*----------------------------------------------------------------------*/
 typedef enum
 {
-	HTTP_CONNECT_CLOSED
+	HTTP_CONNECT_CLOSED,
 }HTTP_CONNECT;
+
+typedef enum
+{
+	STREAM_END,
+	STREAM_CONTINUES,
+	STREAM_ERROR,
+} STREAM_STATUS;
 /*----------------------- Structures -----------------------------------*/
 typedef struct
 {
@@ -108,16 +115,30 @@ typedef struct
 
 typedef struct
 {
-		HTTP_STATUS		status;
-		HTTP_METHOD		method;
-		char 					date[DATE_LENGTH];
-		char					server[SERVER_LENGTH];
-		char					modified[DATE_LENGTH];
-		uint32_t			contentLength;
-		HTTP_CONTENT	contetntType;
-		HTTP_CONNECT	connect;
-		char* 				data;
-		HTTP_CACHE		cache;
+	STREAM_STATUS		status;		/* Status of stream operation */
+	uint32_t				size;			/* Size in indexes of data for transfer */
+	uint16_t 				index;		/* Current index in data array */
+	char* 					content;	/* Pointer to current package of data*/
+	uint32_t				length;		/* Length of current data package */
+} HTTP_STREAM;
+
+typedef STREAM_STATUS ( *streamCallBack )( HTTP_STREAM* stream );	/* Stream call back type */
+
+typedef struct
+{
+		HTTP_STATUS			status;
+		HTTP_METHOD			method;
+		/* Header data */
+		char 						header[HEADER_LENGTH];
+		HTTP_CONTENT		contetntType;
+		HTTP_CONNECT		connect;
+		HTTP_CACHE			cache;
+		/* Content */
+		uint32_t				contentLength;
+		char* 					data;
+		/* Stream */
+		HTTP_STREAM			stream;
+		streamCallBack	callBack;
 } HTTP_RESPONSE;
 /* HHTP status-codes ---------------------------------------------------*/
 /*
@@ -179,6 +200,7 @@ typedef struct
 #define		HTTP_CONN_LINE							"Connection: keep-alive"//"Connection: closed"
 #define		HTTP_CONTENT_LINE						"Content-Type: "
 #define		HTTP_CACHE_CONTROL					"Cache-Control: "
+#define		HTTP_ENCODING_LINE					"Content-Encoding: "
 /*----------------------- Functions ------------------------------------*/
 HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request );										/* Parsing data from request text */
 void		 		vHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response );				/* Build response in response structure */

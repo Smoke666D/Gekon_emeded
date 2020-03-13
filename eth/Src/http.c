@@ -27,6 +27,9 @@ uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );					/* Get the st
 void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );		/* Build get response in response structure */
 char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);								/* Add cache string to http */
 char*		vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type );
+
+STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* );							/* Stream call back for file transfer */
+STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* );					/* Stream call back for configuration data transfer */
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -64,17 +67,9 @@ void vHTTPCleanResponse( HTTP_RESPONSE *response )
 
 	response->status = HTTP_STATUS_BAD_REQUEST;
 	response->method = HTTP_METHOD_NO;
-	for ( i=0U; i<DATE_LENGTH; i++ )
+	for ( i=0U; i<HEADER_LENGTH; i++ )
 	{
-		response->date[i] = 0x00U;
-	}
-	for ( i=0U; i<SERVER_LENGTH; i++)
-	{
-		response->server[i] = 0x00U;
-	}
-	for ( i=0U; i<DATE_LENGTH; i++)
-	{
-		response->modified[i] = 0x00U;
+		response->header[i] = 0x00U;
 	}
 	response->contentLength = 0U;
 	response->contetntType  = HTTP_CONTENT_HTML;
@@ -230,7 +225,7 @@ void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
 	REST_REQUEST	request   = 0U;
 	REST_ADDRESS	adrFlag		= REST_NO_ADR;
 
-	strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
+	strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
 	response->cache         = HTTP_CACHE_NO_CACHE_STORE;
 	response->connect       = HTTP_CONNECT_CLOSED;
 	response->status 				= HTTP_STATUS_BAD_REQUEST;
@@ -273,8 +268,10 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 	REST_REQUEST	request   = REST_REQUEST_ERROR;
 	REST_ADDRESS	adrFlag		= REST_NO_ADR;
 	uint32_t			length    = 0U;
+	HTTP_STREAM  	*stream   = NULL;
+	uint32_t			i         = 0U;
 	/*----------------- Common header -----------------*/
-	strStr = strcpy( response->date, "Thu, 06 Feb 2020 15:11:53 GMT" );
+	strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
 	response->cache         = HTTP_CACHE_NO_CACHE_STORE;
 	response->connect       = HTTP_CONNECT_CLOSED;
 	response->status 				= HTTP_STATUS_BAD_REQUEST;
@@ -284,10 +281,15 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 	strStr = strstr(path, "index" );
 	if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
 	{
+		stream = &(response->stream);
+		stream->size            = 1U;
+		stream->index           = 0U;
+		stream->content         = data__index_html;
+		stream->length          = HTML_LENGTH;
+		response->callBack      = cHTTPstreamFile;
 		response->contetntType 	= HTTP_CONTENT_HTML;
 		response->status 				= HTTP_STATUS_OK;
 		response->contentLength = HTML_LENGTH;
-		response->data 					= data__index_html;
 	}
 	/*--------------------- REST ---------------------*/
 	else if ( path[0U] > 0U )
@@ -296,25 +298,34 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 		switch ( request )
 		{
 			case REST_CONFIGS:
+				/*------------------ Broadcast -------------------*/
 				if ( adrFlag == REST_NO_ADR )
 				{
-					length = uRESTmakeConfig( restBuffer, configReg[0] );
-					length += uRESTmakeConfig( &restBuffer[length], configReg[1] );
+					stream = &(response->stream);
+					stream->size       = SETTING_REGISTER_NUMBER;
+					stream->index      = 0U;
+					response->callBack = cHTTPstreamConfigs;
+					for( i=0U; i<stream->size; i++ )
+					{
+						response->contentLength += uRESTmakeConfig( restBuffer, configReg[i] );
+					}
 					response->contetntType 	= HTTP_CONTENT_JSON;
 					response->status 				= HTTP_STATUS_OK;
-					response->contentLength = length;
 					response->data 					= restBuffer;
 				}
+				/*------------- Specific address ------------------*/
 				else
 				{
 					if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
 					{
-						length = uRESTmakeConfig( restBuffer, configReg[adr] );
+						response->contentLength = uRESTmakeConfig( restBuffer, configReg[adr] );
 					}
+					stream = &(response->stream);
+					stream->size            = adr + 1U;
+					stream->index           = adr;
+					response->callBack      = cHTTPstreamConfigs;
 					response->contetntType 	= HTTP_CONTENT_JSON;
 					response->status 				= HTTP_STATUS_OK;
-					response->contentLength = length;
-					response->data 					= restBuffer;
 				}
 				break;
 			case REST_REQUEST_ERROR:
@@ -482,7 +493,7 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 			// DATE
 			if ( strcat( httpStr, HTTP_DATE_LINE ) != NULL )
 			{
-				if ( strcat( httpStr, response->date ) != NULL )
+				if ( strcat( httpStr, response->header ) != NULL )
 				{
 					if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
 					{
@@ -598,5 +609,48 @@ char* vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type )
 
 	return strRes;
 }
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Stream call back for file transfer
+ */
+STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* stream )
+{
+	stream->status = STREAM_END;
+	stream->index++;
+	return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Stream call back for configuration data transfer
+ */
+STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* stream )
+{
+	stream->length = uRESTmakeConfig( restBuffer, configReg[stream->index] );
+	if ( stream->length == 0U )
+	{
+		stream->status = STREAM_ERROR;
+	}
+	else
+	{
+		stream->index++;
+		restBuffer[stream->length] = 0U;
+		stream->content = restBuffer;
+		stream->status  = STREAM_CONTINUES;
+	}
+	if ( stream->index >= stream->size )
+	{
+		stream->status = STREAM_END;
+	}
+
+	return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+
+
+
+
+
+
+
 
 

@@ -83,6 +83,12 @@ REST_ADDRESS eRESTgetRequest( char* path, REST_REQUEST* request, uint16_t* adr )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Make response content for GET request
+ * input:		output - output string buffer for content
+ * 					reg    - pointer to the configuration register
+ * output:	length of the content
+ */
 uint32_t uRESTmakeConfig( char* output, eConfigReg* reg )
 {
 	uint32_t 	position = 1U;

@@ -28,6 +28,8 @@ void vMenuTask();
 #define KEY_LEFT   2
 #define KEY_ENTER  3
 #define KEY_EXIT   4
+#define KEY_DOWN   5
+#define KEY_UP	   6
 
 
 

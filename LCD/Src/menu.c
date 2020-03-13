@@ -48,7 +48,7 @@ extern xScreenSetObject xEngineMenu;
 	 			case KEY_LEFT:
 	 				break;
 	 			case KEY_ENTER:
-	 				for (i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
+	 			/*	for (i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
 	 				{
 	 					if  (pScreenObjects[i].last) break;
 	 					switch (pScreenObjects[i].xType)
@@ -59,11 +59,11 @@ extern xScreenSetObject xEngineMenu;
 	 						   	 default:
 	 							    break;
 	 						   }
-
+*/
 	 				break;
 	 			case KEY_EXIT:
 	         	 //Есди текущий Screen конечный, то делаем его активным
-	         	    menu->pHomeMenu[index].xScreenStatus=NOT_ACTIVE;
+	         	   // menu->pHomeMenu[index].xScreenStatus=NOT_ACTIVE;
 	         	    break;
 	 			default:
 	         	break;

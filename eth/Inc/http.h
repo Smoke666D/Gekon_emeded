@@ -81,14 +81,23 @@ typedef enum
 	HTTP_CACHE_NO_CACHE,
 	HTTP_CACHE_NO_STORE,
 	HTTP_CACHE_NO_CACHE_STORE,
-	/*
-	HTTP_CACHE_NO_TRANSFORM,
-	HTTP_CACHE_ONLY_IF_CACHED,
-	HTTP_CACHE_MAX_AGE,
-	HTTP_CACHE_MAX_STALE,
-	HTTP_CACHE_MIN_FRESH
-	*/
 } HTTP_CACHE;
+/*-------------------------- Encoding ----------------------------------*/
+#define	HTTP_CONTENT_ENCODING_GZIP			"gzip"
+#define	HTTP_CONTENT_ENCODING_COMPRESS	"compress"
+#define	HTTP_CONTENT_ENCODING_DEFLATE		"deflate"
+#define	HTTP_CONTENT_ENCODING_INDENTITY	"identity"
+#define	HTTP_CONTENT_ENCODING_BR				"br"
+
+typedef enum
+{
+	HTTP_ENCODING_NO,
+	HTTP_ENCODING_GZIP,
+	HTTP_ENCODING_COMPRESS,
+	HTTP_ENCODING_DEFLATE,
+	HTTP_ENCODING_INDENTITY,
+	HTTP_ENCODING_BR,
+} HTTP_ENCODING;
 /*----------------------------------------------------------------------*/
 typedef enum
 {
@@ -133,6 +142,7 @@ typedef struct
 		HTTP_CONTENT		contetntType;
 		HTTP_CONNECT		connect;
 		HTTP_CACHE			cache;
+		HTTP_ENCODING		encoding;
 		/* Content */
 		uint32_t				contentLength;
 		char* 					data;

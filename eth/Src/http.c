@@ -21,15 +21,16 @@ const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );									/* Clean request structure */
-void 		vHTTPCleanResponse( HTTP_RESPONSE *response );									/* Clean response structure */
-uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );					/* Get the string of line from multiline text */
-void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );		/* Build get response in response structure */
-char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);								/* Add cache string to http */
+void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );										/* Clean request structure */
+void 		vHTTPCleanResponse( HTTP_RESPONSE *response );										/* Clean response structure */
+uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );						/* Get the string of line from multiline text */
+void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );			/* Build get response in response structure */
+char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);									/* Add cache string to http */
 char*		vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type );
+char* 	vHTTPaddContentEncoding( char* httpStr, HTTP_ENCODING encoding );	/* Add encoding string to http  */
 
 STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* );							/* Stream call back for file transfer */
-STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* );					/* Stream call back for configuration data transfer */
+STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* );						/* Stream call back for configuration data transfer */
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -75,6 +76,7 @@ void vHTTPCleanResponse( HTTP_RESPONSE *response )
 	response->contetntType  = HTTP_CONTENT_HTML;
 	response->connect 			= HTTP_CONNECT_CLOSED;
 	response->cache					= HTTP_CACHE_NO_CACHE;
+	response->encoding			= HTTP_ENCODING_NO;
 
 	return;
 }
@@ -276,6 +278,7 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 	response->connect       = HTTP_CONNECT_CLOSED;
 	response->status 				= HTTP_STATUS_BAD_REQUEST;
 	response->contentLength = 0U;
+	response->encoding      = HTTP_ENCODING_NO;
 	/*----------------- Parsing path -----------------*/
 	/*------------------ INDEX.HTML ------------------*/
 	strStr = strstr(path, "index" );
@@ -290,6 +293,10 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 		response->contetntType 	= HTTP_CONTENT_HTML;
 		response->status 				= HTTP_STATUS_OK;
 		response->contentLength = HTML_LENGTH;
+		if ( HTML_ENCODING > 0U )
+		{
+			response->encoding = HTTP_ENCODING_GZIP;
+		}
 	}
 	/*--------------------- REST ---------------------*/
 	else if ( path[0U] > 0U )
@@ -508,19 +515,23 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 									// CONTENT TYPE
 									if ( vHTTPaddContetntType( httpStr, response->contetntType ) != NULL )
 									{
-										// CACHE
-										if ( strcat( httpStr, HTTP_CACHE_CONTROL ) != NULL )
+										// ENCODING
+										if ( vHTTPaddContentEncoding ( httpStr, response->encoding ) != NULL )
 										{
-											if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
+											// CACHE
+											if ( strcat( httpStr, HTTP_CACHE_CONTROL ) != NULL )
 											{
-												// CONNECTION
-												if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
+												if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
 												{
-													if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+													// CONNECTION
+													if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
 													{
 														if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
 														{
-															res = HTTP_STATUS_OK;
+															if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+															{
+																res = HTTP_STATUS_OK;
+															}
 														}
 													}
 												}
@@ -607,6 +618,41 @@ char* vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type )
 	}
 	strRes = strcat( httpStr, HTTP_END_LINE );
 
+	return strRes;
+}
+
+char* vHTTPaddContentEncoding( char* httpStr, HTTP_ENCODING encoding )
+{
+	char* strRes = NULL;
+	if ( encoding != HTTP_ENCODING_NO )
+	{
+		strRes = strcat( httpStr, HTTP_ENCODING_LINE );
+		switch ( encoding )
+		{
+			case HTTP_ENCODING_NO:
+				break;
+			case HTTP_ENCODING_GZIP:
+				strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_GZIP );
+				break;
+			case HTTP_ENCODING_COMPRESS:
+				strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_COMPRESS );
+				break;
+			case HTTP_ENCODING_DEFLATE:
+				strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_DEFLATE );
+				break;
+			case HTTP_ENCODING_INDENTITY:
+				strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_INDENTITY );
+				break;
+			case HTTP_ENCODING_BR:
+				strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_BR );
+				break;
+		}
+		strRes = strcat( httpStr, HTTP_END_LINE );
+	}
+	else
+	{
+		strRes = httpStr;
+	}
 	return strRes;
 }
 /*---------------------------------------------------------------------------------------------------*/

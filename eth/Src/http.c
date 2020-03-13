@@ -298,11 +298,12 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 			case REST_CONFIGS:
 				if ( adrFlag == REST_NO_ADR )
 				{
-					//length = uRESTmakeConfig( restBuffer, configReg[adr] );
+					length = uRESTmakeConfig( restBuffer, configReg[0] );
+					length += uRESTmakeConfig( &restBuffer[length], configReg[1] );
 					response->contetntType 	= HTTP_CONTENT_JSON;
 					response->status 				= HTTP_STATUS_OK;
-					//response->contentLength = length;
-					//response->data 					= restBuffer;
+					response->contentLength = length;
+					response->data 					= restBuffer;
 				}
 				else
 				{

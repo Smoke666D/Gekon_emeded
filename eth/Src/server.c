@@ -201,11 +201,6 @@ void startNetClientTask( void const * argument )
 	HTTP_RESPONSE 	response;
 	HTTP_REQUEST		request;
 	uint32_t 				len         = 0U;
-	uint32_t				mesNum			= 0U;
-	char*						pchSt;
-	char*						pchEn;
-	uint32_t				i 					= 0U;
-	uint16_t 				outlen  		= 0;
 
   for(;;)
   {
@@ -225,41 +220,22 @@ void startNetClientTask( void const * argument )
   		/*-------------------- Send response ---------------------*/
   			if ( response.status != HTTP_STATUS_ERROR )
   			{
-  			  netconn_write( netcon, output, strlen(output), NETCONN_COPY );											// Send header of the response
-  			  if ( response.contentLength > 0U )																									// There is content
+  			  netconn_write( netcon, output, strlen(output), NETCONN_COPY );									// Send header of the response
+  			  if ( response.contentLength > 0U )																							// There is content
   			  {
-  		/*--------------------- Send content ---------------------*/
-  			  	mesNum = ( uint32_t )( response.contentLength / HTTP_OUTPUT_BUFFER_SIZE ) + 1U;		// Calculate the number of content packages
-  			  	pchSt  = response.data;																														// Get start pointer of first package
-  			  	pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;																					// Get end pointer of first package
-  			  	for( i=0U; i<mesNum; i++ )
-  			  	{
-  			  		if ( strncpy( output, ( pchSt ), ( pchEn - pchSt ) ) != NULL )									// Copy current package to output buffer
-  			  		{
-  			  			pchSt  = pchEn;
-  			  			pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
-  			  			outlen = strlen(output);
-  			  			if ( outlen > HTTP_OUTPUT_BUFFER_SIZE)
-  			  			{
-  			  				outlen = HTTP_OUTPUT_BUFFER_SIZE;
-  			  			}
-  			  			netconn_write( netcon, output, outlen, NETCONN_COPY );
-  			  		}
-  			  	}
+  			  	netconn_write( netcon, response.data, response.contentLength, NETCONN_COPY );	// Send content
   			  }
   			}
   		}
+  		/*-------------------- Continue message --------------------*/
   		else if ( endMessage == RECEIVE_MESSAGE_CONTINUES )
   		{
   			endInput = &endInput[len];
   		}
   	}
+  	/*--------------------- Close connection ---------------------*/
   	else
   	{
-  		if ( response.status == HTTP_STATUS_BAD_REQUEST )
-  		{
-  			vSYSSerial("Close\n\r");
-  		}
   		netconn_close( netcon );
   		netconn_delete( netcon );
   		vPortFree( input );
@@ -318,7 +294,6 @@ SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
 	//vSYSSerial( httpStr );
 	return res;
 }
-/*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Send request, get and parsing response

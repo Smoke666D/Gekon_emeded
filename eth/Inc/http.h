@@ -176,7 +176,7 @@ typedef struct
 #define		HTTP_ETAG_LINE							"ETag: "
 #define		HTTP_RANGE_LINE							"Accept-Ranges: bytes"
 #define		HTTP_LENGTH_LINE						"Content-Length: "
-#define		HTTP_CONN_LINE							"Connection: closed"
+#define		HTTP_CONN_LINE							"Connection: keep-alive"//"Connection: closed"
 #define		HTTP_CONTENT_LINE						"Content-Type: "
 #define		HTTP_CACHE_CONTROL					"Cache-Control: "
 /*----------------------- Functions ------------------------------------*/

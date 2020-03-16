@@ -143,7 +143,7 @@
 									<listOptionValue builtIn="false" value="../u8g2/src/clib"/>
 									<listOptionValue builtIn="false" value="../system/Inc"/>
 									<listOptionValue builtIn="false" value="../Middlewares/Third_Party/LwIP/src/include/netif"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/energan_emb/libfixmath-master/libfixmath}&quot;"/>
+									<listOptionValue builtIn="false" value="../energan_emb/libfixmath-master/libfixmath"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1082997242" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

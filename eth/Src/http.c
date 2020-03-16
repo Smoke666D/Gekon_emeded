@@ -311,11 +311,13 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 					stream = &(response->stream);
 					stream->size       = SETTING_REGISTER_NUMBER;
 					stream->index      = 0U;
+					stream->start      = 0U;
 					response->callBack = cHTTPstreamConfigs;
 					for( i=0U; i<stream->size; i++ )
 					{
 						response->contentLength += uRESTmakeConfig( restBuffer, configReg[i] );
 					}
+					response->contentLength += 1U + stream->size;		/* '[' + ']' + ',' */
 					response->contetntType 	= HTTP_CONTENT_JSON;
 					response->status 				= HTTP_STATUS_OK;
 					response->data 					= restBuffer;
@@ -329,7 +331,8 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 					}
 					stream = &(response->stream);
 					stream->size            = adr + 1U;
-					stream->index           = adr;
+					stream->start           = adr;
+					stream->index           = 0U;
 					response->callBack      = cHTTPstreamConfigs;
 					response->contetntType 	= HTTP_CONTENT_JSON;
 					response->status 				= HTTP_STATUS_OK;
@@ -671,7 +674,18 @@ STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* stream )
  */
 STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* stream )
 {
-	stream->length = uRESTmakeConfig( restBuffer, configReg[stream->index] );
+	uint32_t length = stream->size - stream->start;
+
+	if ( ( stream->index == 0U ) && ( length > 1U ) )
+	{
+		restBuffer[0U] = '[';
+		stream->length = uRESTmakeConfig( &restBuffer[1U], configReg[stream->start + stream->index] ) + 1U;
+	}
+	else
+	{
+		stream->length = uRESTmakeConfig( restBuffer, configReg[stream->start + stream->index] );
+	}
+
 	if ( stream->length == 0U )
 	{
 		stream->status = STREAM_ERROR;
@@ -679,13 +693,26 @@ STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* stream )
 	else
 	{
 		stream->index++;
+		if ( ( stream->start + stream->index ) >= stream->size )
+		{
+			if ( length > 1U )
+			{
+				restBuffer[stream->length] = ']';
+			}
+			stream->length++;
+			stream->status = STREAM_END;
+		}
+		else
+		{
+			if ( length > 1U )
+			{
+				restBuffer[stream->length] = ',';
+			}
+			stream->length++;
+			stream->status  = STREAM_CONTINUES;
+		}
 		restBuffer[stream->length] = 0U;
 		stream->content = restBuffer;
-		stream->status  = STREAM_CONTINUES;
-	}
-	if ( stream->index >= stream->size )
-	{
-		stream->status = STREAM_END;
 	}
 
 	return stream->status;

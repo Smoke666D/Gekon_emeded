@@ -126,7 +126,8 @@ typedef struct
 {
 	STREAM_STATUS		status;		/* Status of stream operation */
 	uint32_t				size;			/* Size in indexes of data for transfer */
-	uint16_t 				index;		/* Current index in data array */
+	uint32_t				start;		/* Start address of data */
+	uint32_t 				index;		/* Current index in data array */
 	char* 					content;	/* Pointer to current package of data*/
 	uint32_t				length;		/* Length of current data package */
 } HTTP_STREAM;

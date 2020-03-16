@@ -9,6 +9,8 @@
 #define INC_SYS_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+/*------------------------- Macros -------------------------------------*/
+#define	BUILD_BUG_OR_ZERO(e)		sizeof(struct { int: -!!(e); }))
 /*----------------------- Functions ------------------------------------*/
 void vSYSInitSerial( void );
 void vSYSSerial( char* msg );

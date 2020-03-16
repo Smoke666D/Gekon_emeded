@@ -16,7 +16,6 @@
 
 #define		TIME_API_SIZE							10U
 #define		TIME_API_BUFFER_SIZE			32U
-#define		HTTP_BUFER_SIZE						600U
 #define		HTTP_DATE_LENGTH					29U
 #define		TIME_API_LOCATION_STR 		"abbreviation"
 #define		TIME_API_DATETIME_STR 		"datetime"

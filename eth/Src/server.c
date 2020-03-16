@@ -6,11 +6,8 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "server.h"
-#include "http.h"
 #include "sys.h"
-
 #include "cmsis_os.h"
-
 #include "lwip.h"
 #include "api.h"
 #include "string.h"
@@ -22,7 +19,9 @@ static 		osThreadId_t 	netClientHandle;					// Network task handle
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void startNetClientTask(void const * argument);		// Network task function
+void 						startNetClientTask(void const * argument);							// Network task function
+SERVER_ERROR 		eHTTPsendRequest( char* httpStr, char* hostName );
+RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length );
 /*---------------------------------------------------------------------------------------------------*/
 /**
  * Read local IP address of device in char array format
@@ -137,62 +136,118 @@ SERVER_ERROR eSERVERlistenRoutine( void )
 	return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length )
+{
+	RECEIVE_MESSAGE res   = RECEIVE_MESSAGE_ERROR;
+	char*						pchSt;
+	char*						pchEn;
+	char						buffer[5] = { 0U, 0U, 0U, 0U, 0U };
+	uint32_t				contentLengthHeader = 0U;
+	uint32_t				contetnLengthRead   = 0U;
+
+	pchSt = strstr( message, "PUT" );
+	if ( ( pchSt != NULL ) && ( pchSt[0] < 0x7F ) )
+	{
+		pchSt = strstr( message, HTTP_LENGTH_LINE );
+		if ( ( pchSt != NULL) && ( pchSt[0] < 0x7F ) )
+		{
+			pchSt += strlen( HTTP_LENGTH_LINE );
+			pchEn = strchr( pchSt, LF_HEX );
+			if ( pchEn != NULL )
+			{
+				pchEn -= 1U;
+				strncpy( buffer, pchSt, ( pchEn - pchSt ) );
+				contentLengthHeader = atoi( buffer );
+				if ( contentLengthHeader > 0U )
+				{
+					pchSt = strstr( message, HTTP_END_HEADER );
+					if ( pchSt != NULL )
+					{
+						pchSt += strlen( HTTP_END_HEADER );
+						contetnLengthRead = strlen( pchSt ) - length;
+						if ( contetnLengthRead < contentLengthHeader )
+						{
+							res = RECEIVE_MESSAGE_COMPLETE;
+						}
+						else
+						{
+							res = RECEIVE_MESSAGE_CONTINUES;
+						}
+					}
+				}
+				else if ( message[length - 1] == CR_HEX )
+				{
+					res = RECEIVE_MESSAGE_COMPLETE;
+				}
+			}
+		}
+	}
+	else
+	{
+		res = RECEIVE_MESSAGE_COMPLETE;
+	}
+
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void startNetClientTask( void const * argument )
 {
-	struct 				netconn * netcon = ( struct netconn * )argument;
-	struct 				netbuf  * nb;
-	char*					input       = pvPortMalloc( HTTP_INPUT_BUFFER_SIZE );
-	char*					output			= pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
-	HTTP_RESPONSE response;
-	HTTP_REQUEST	request;
-	uint32_t 			len         = 0U;
-
-	uint32_t			mesNum			= 0U;
-	char*					pchSt;
-	char*					pchEn;
-	uint32_t			i 					= 0U;
-
-	uint16_t 			outlen  		= 0;
+	struct 					netconn * netcon = ( struct netconn * )argument;
+	struct 					netbuf  * nb;
+	char*						input       = pvPortMalloc( HTTP_INPUT_BUFFER_SIZE );
+	char*						endInput    = input;
+	RECEIVE_MESSAGE	endMessage  = RECEIVE_MESSAGE_CONTINUES;
+	char*						output			= pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
+	HTTP_RESPONSE 	response;
+	HTTP_REQUEST		request;
+	uint32_t 				len         = 0U;
+	STREAM_STATUS		status      = STREAM_CONTINUES;
 
   for(;;)
   {
   	if( netconn_recv( netcon, &nb ) == ERR_OK )
   	{
-  		len = netbuf_len( nb );
-  		netbuf_copy( nb, input, len );
-  		netbuf_delete( nb );
-  		input[len] = 0U;
-
-  		eHTTPparsingRequest( input, &request );
-  		eHTTPbuildResponse( request, &response );
-  		eHTTPmakeResponse( output, response );
-
-
-  		if ( response.method != HTTP_METHOD_NO )
+  		/*-------------------- Input message --------------------*/
+  		len = netbuf_len( nb );														// Get length of input message
+  		netbuf_copy( nb, endInput, len );									// Copy message from net buffer to local buffer
+  		netbuf_delete( nb );															// Delete net buffer
+  		endInput[len] = 0U;																// Mark end of string
+  		endMessage = eSERVERanalizMessage( input, len );	// Analysis is the message have been ended
+  		/*------------------- Analysis Message -------------------*/
+  		if ( endMessage == RECEIVE_MESSAGE_COMPLETE )
   		{
-  			netconn_write( netcon, output, strlen(output), NETCONN_COPY );
-  			if ( response.contentLength != 0U )
+  			endInput = input;																					// Return pointer to the start of the local buffer
+  			eHTTPresponse( input, &request, &response, output );			// Parsing request and prepare the response
+  		/*-------------------- Send response ---------------------*/
+  			if ( response.status != HTTP_STATUS_ERROR )
   			{
-  				mesNum = ( uint32_t )( response.contentLength / HTTP_OUTPUT_BUFFER_SIZE ) + 1U;
-  				pchSt  = response.data;
-  				pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
-  				for( i=0U; i<mesNum; i++ )
-  				{
-  					if ( strncpy( output, ( pchSt ), ( pchEn - pchSt ) ) != NULL )
-  					{
-  						pchSt  = pchEn;
-  						pchEn  = pchSt + HTTP_OUTPUT_BUFFER_SIZE;
-  						outlen = strlen(output);
-  						if ( outlen > HTTP_OUTPUT_BUFFER_SIZE)
-  						{
-  							outlen = HTTP_OUTPUT_BUFFER_SIZE;
-  						}
-  						netconn_write( netcon, output, outlen, NETCONN_COPY );
-  					}
-  				}
+  			  netconn_write( netcon, output, strlen(output), NETCONN_COPY );									// Send header of the response
+  		/*-------------------- Send content ----------------------*/
+  			  if ( response.contentLength > 0U )																							// There is content
+  			  {
+  			  	while ( status == STREAM_CONTINUES )
+  			  	{
+  			  		status = response.callBack( &response.stream );
+  			  		if ( status != STREAM_ERROR )
+  			  		{
+  			  			netconn_write( netcon, response.stream.content, response.stream.length, NETCONN_COPY );	// Send content
+  			  		}
+  			  		else
+  			  		{
+  			  			break;
+  			  		}
+  			  	}
+  			  	status = STREAM_CONTINUES;
+  			  }
   			}
   		}
+  		/*-------------------- Continue message --------------------*/
+  		else if ( endMessage == RECEIVE_MESSAGE_CONTINUES )
+  		{
+  			endInput = &endInput[len];
+  		}
   	}
+  	/*--------------------- Close connection ---------------------*/
   	else
   	{
   		netconn_close( netcon );
@@ -232,7 +287,6 @@ SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
 							netbuf_copy( nbr, httpStr, len );
 							netbuf_delete( nbr );
 							httpStr[len] = 0;
-
 						}
 					}
 					else res = SERVER_WRITE_ERROR;
@@ -255,8 +309,45 @@ SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Send request, get and parsing response
+ * input:		request 	- input request structure
+ * 					response 	- output response structure
+ * 					output 		- buffer for parsed data of response
+ * output:	status of operation
+ */
+HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+{
+	HTTP_STATUS res    = HTTP_STATUS_BAD_REQUEST;
+	char				buffer[HTTP_BUFER_SIZE];
 
+	if ( eHTTPmakeRequest( buffer, request ) == HTTP_STATUS_OK )
+	{
+		if ( eHTTPsendRequest( buffer, request->host ) == SERVER_OK )
+		{
+			res = eHTTPparsingResponse( buffer, output, response );
+		}
+	}
 
+	return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Make response for input request
+ * input:		input    - input http string
+ * 					request  - output structure after parsing
+ * 					response - output structure
+ * 					output   - response string
+ * output:	none
+ */
+void eHTTPresponse( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+{
+	eHTTPparsingRequest( input, request );
+	vHTTPbuildResponse( request, response );
+	eHTTPmakeResponse( output, response );
+	return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 
 
 

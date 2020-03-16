@@ -29,7 +29,6 @@
 #include "server.h"
 #include "http.h"
 #include "rtc.h"
-
 #include "lcd.h"
 /* USER CODE END Includes */
 
@@ -44,7 +43,6 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -156,9 +154,9 @@ int main(void)
   MX_TIM7_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  vSYSInitSerial();
-  vRTCgetTimer( &hrtc );
-  vSYSSerial( "***********************\n\r");
+  vSYSInitSerial();				/* Debug serial interface */
+  vRTCputTimer( &hrtc );	/* RTC structure */
+  vSYSSerial("***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();
@@ -598,7 +596,7 @@ void StartNetTask(void *argument)
 	vSYSSerial("\n\r");
 
 	vSYSSerial( ">>RTC: ");
-	if ( eRTCgetHttpTime() == RTC_ERROR )
+	if ( eRTCgetExtrenalTime() == RTC_ERROR )
 	{
 		vSYSSerial( "server fail!");
 		vSYSSerial("\n\r");

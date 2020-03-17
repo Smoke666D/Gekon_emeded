@@ -228,7 +228,7 @@ static u8g2_t u8g2;
 static uint8_t LCD_REDRAW_FLAG = 0;
 
 static SemaphoreHandle_t  xSemaphore = NULL;
-
+static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
 
 
 
@@ -236,7 +236,8 @@ static SemaphoreHandle_t  xSemaphore = NULL;
 void vLCDInit(SemaphoreHandle_t temp)
 {
 	 xSemaphore = temp;
-	 return;
+
+
 }
 
 
@@ -244,7 +245,7 @@ void vLCDInit(SemaphoreHandle_t temp)
 extern TIM_HandleTypeDef htim7;
 extern SPI_HandleTypeDef hspi1;
 
-static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
+
 
 //Процедура обновления индикатора
 void LCD_Redraw( void )
@@ -439,9 +440,11 @@ void vLCD_Init()
   u8g2_InitDisplay( &u8g2 );
   u8g2_SetPowerSave( &u8g2, 0U );
   vMenuInit(&u8g2);
+  u8g2_ClearBuffer(&u8g2);
   for (uint16_t i=0;i<LCD_DATA_BUFFER_SIZE;i++)
 	  LCD_Buffer[i]=0xFF;
- // LCD_Clear(  );
+  LCD_Clear();
+
   return;
 }
 

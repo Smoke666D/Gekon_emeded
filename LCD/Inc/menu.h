@@ -38,6 +38,7 @@ typedef enum
 {
 	ACTIVE,
 	NOT_ACTIVE,
+	PASSIVE,
 
 } SCREEN_STATUS;
 

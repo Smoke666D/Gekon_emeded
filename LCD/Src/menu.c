@@ -32,38 +32,75 @@ extern xScreenSetObject xEngineMenu;
 
 
 
-
+ static xScreenObjet * pCurObject=NULL;
 
  void xInputScreenKeyCallBack(xScreenSetObject * menu, char key)
  {
+	 xScreenObjet * pObjects =menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets;
+	 uint8_t ActiveObjectCount=0;
 	 switch (key)
 	 		{
 	 	 	 	case KEY_UP:
-
+	 	 	 		if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(INC, NULL);
 	 	 	 		break;
 	 	 	 	case KEY_DOWN:
+	 	 	 		if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(DEC, NULL);
 	 	 	 		break;
 	 			case KEY_RIGTH:
+	 				if (menu->pHomeMenu[menu->pCurrIndex].pCurrIndex <  menu->pHomeMenu[menu->pCurrIndex].pMaxIndex)
+	 				{
+	 					menu->pHomeMenu[menu->pCurrIndex].pCurrIndex++;
+	 					for (uint8_t i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
+	 					{
+	 						if (pObjects[i].xType == INPUT_HW_DATA)
+	 						{
+	 							ActiveObjectCount++;
+	 							if (ActiveObjectCount ==(menu->pHomeMenu[menu->pCurrIndex].pCurrIndex-1))
+	 						    {
+	 								pObjects[i].ObjectParamert[3]=0;
+	 					        }
+	 							if (ActiveObjectCount == menu->pHomeMenu[menu->pCurrIndex].pCurrIndex)
+	 						    {
+	 							    pObjects[i].ObjectParamert[3]=1;
+	 							    pCurObject =&pObjects[i];
+	 							    break;
+	 							}
+	 						}
+	 					}
+	 				}
 	 				break;
 	 			case KEY_LEFT:
+	 				if (menu->pHomeMenu[menu->pCurrIndex].pCurrIndex > 0)
+	 				{
+	 					menu->pHomeMenu[menu->pCurrIndex].pCurrIndex--;
+	 					for (uint8_t i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
+	 					{
+	 						 	if (pObjects[i].xType == INPUT_HW_DATA)
+	 						 	{
+	 						 			ActiveObjectCount++;
+	 						 			if (ActiveObjectCount ==(menu->pHomeMenu[menu->pCurrIndex].pCurrIndex+1))
+	 						 			{
+	 						 				pObjects[i].ObjectParamert[3]=0;
+	 						 				break;
+	 						 			}
+	 						 			if (ActiveObjectCount == menu->pHomeMenu[menu->pCurrIndex].pCurrIndex)
+	 						 		    {
+	 						 			    pObjects[i].ObjectParamert[3]=1;
+	 						 			    pCurObject = &pObjects[i];
+	 						 			}
+	 						   }
+	 					}
+	 				}
 	 				break;
 	 			case KEY_ENTER:
-	 			/*	for (i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
-	 				{
-	 					if  (pScreenObjects[i].last) break;
-	 					switch (pScreenObjects[i].xType)
-	 				    {
-	 						    case INPUT_HW_DATA:
-	 						    	pScreenObjects[i].pStringParametr[];
-	 						   	    break;
-	 						   	 default:
-	 							    break;
-	 						   }
-*/
-	 				break;
+	 				//Если на экране есть объект с редактируемым полем, то оправлем команду на запись текущего значения
+	 				if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(SAVE, NULL);
+	 				//Если на экране только один объект редактирования или его вообще нет, то выполняются дейтсвия по выходу из экрана
+	 				if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex>1) break;
 	 			case KEY_EXIT:
-	         	 //Есди текущий Screen конечный, то делаем его активным
-	         	   // menu->pHomeMenu[index].xScreenStatus=NOT_ACTIVE;
+	         	   //Выходи из активного экрана, для этого меняем его статус и также освобождаем редактируемый объект
+	         	    menu->pHomeMenu[menu->pCurrIndex].xScreenStatus=NOT_ACTIVE;
+	         	    if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(ESC, NULL);
 	         	    break;
 	 			default:
 	         	break;
@@ -76,7 +113,7 @@ extern xScreenSetObject xEngineMenu;
 void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 {
 	uint8_t index=menu->pCurrIndex;
-	if (menu->pHomeMenu[index].xScreenStatus==NOT_ACTIVE)
+	if (menu->pHomeMenu[index].xScreenStatus!=ACTIVE)
 	{
 		switch (key)
 		{
@@ -99,8 +136,39 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         		else
         		{
         			//Есди текущий Screen конечный, то делаем его активным, это позволит перенапрявлять назажите клавиш в обработчик экрана
-        			menu->pHomeMenu[index].xScreenStatus=ACTIVE;
+        			if (menu->pHomeMenu[index].xScreenStatus==NOT_ACTIVE)
+        			{
+        				menu->pHomeMenu[index].xScreenStatus=ACTIVE;
+        				menu->pHomeMenu[index].pCurrIndex =0;
+        				//Для ускорения работы выясняем кол-во редактируемых объектов на экране, если кол-во не задана при инициализации
+        				if (menu->pHomeMenu[index].pMaxIndex==0)
+        				for (uint8_t i=0;i<MAX_SCREEN_OBJECT;i++)
+        				{
+        				  if  (menu->pHomeMenu[index].pScreenCurObjets[i].last) break;
+        			      switch (menu->pHomeMenu[index].pScreenCurObjets[i].xType)
+        				  {
+        					  case INPUT_HW_DATA:
+        						  menu->pHomeMenu[index].pMaxIndex++;
 
+        					 	  break;
+        					  default:
+        					  	  break;
+        				   }
+        				}
+        				if (menu->pHomeMenu[index].pMaxIndex>1)
+        				{
+        					for (uint8_t i=0;i<MAX_SCREEN_OBJECT;i++)
+        					{
+        					  if  (menu->pHomeMenu[index].pScreenCurObjets[i].last) break;
+        					  if  (menu->pHomeMenu[index].pScreenCurObjets[i].xType ==INPUT_HW_DATA)
+        					  {
+        						  menu->pHomeMenu[index].pScreenCurObjets[i].ObjectParamert[3]=1;
+        						  pCurObject= &menu->pHomeMenu[index].pScreenCurObjets[i];
+        						  break;
+        					  }
+        					}
+        				}
+        			}
         		}
         		break;
 			case KEY_EXIT:
@@ -109,7 +177,10 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         	 		pCurrMenu = menu->pHomeMenu[index].pUpScreenSet;
        		else
         	 //Есди текущий Screen конечный, то делаем его активным
-        	    menu->pHomeMenu[index].xScreenStatus=NOT_ACTIVE;
+       			if (menu->pHomeMenu[index].xScreenStatus==ACTIVE)
+       			{
+       				menu->pHomeMenu[index].xScreenStatus=NOT_ACTIVE;
+       			}
         	break;
 			default:
         	break;
@@ -120,7 +191,7 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 	{
 			if (menu->pHomeMenu[index].pFunc!=NULL)
 
-				menu->pHomeMenu[index].pFunc(&menu->pHomeMenu[index],key);
+				menu->pHomeMenu[index].pFunc(&menu,key);
 	}
 
 
@@ -175,34 +246,65 @@ void DrawMenu(uint8_t temp, uint8_t * data)
 
 }
 
+static QueueHandle_t pKeyboard;
 
 void vMenuInit(u8g2_t * temp)
 {
 	u8g2 = temp;
 	pCurrMenu =&xGeneratorMenu;
+	pKeyboard =GetKeyboardQueue();
+
 }
 
 #define MAX_KEY_PRESS  10
 static uint8_t index=0;
-static uint8_t key[MAX_KEY_PRESS]={1,2,1,2,1,2,1,2,1,2};
+static uint8_t key;
 static uint8_t ii=0;
+KeyEvent TempEvent;
+
 void vMenuTask()
 {
 
     //Блок обработки нажатий на клавиши
 
-
+	HAL_GPIO_WritePin(LD1_GPIO_Port,LD1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LD2_GPIO_Port,LD1_Pin,GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LD3_GPIO_Port,LD1_Pin,GPIO_PIN_RESET);
 	osDelay( 200U );
+	HAL_GPIO_WritePin(LD1_GPIO_Port,LD1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LD2_GPIO_Port,LD1_Pin,GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LD3_GPIO_Port,LD1_Pin,GPIO_PIN_SET);
 	//Блок отрисовки экранов
 	DrawObject(pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets);
 	LCD_Redraw();
-	ii++;
-	if (ii==5)
+
+    if (xQueueReceive( pKeyboard, &TempEvent, 0)== pdPASS )
 	{
-		pCurrMenu->pFunc(pCurrMenu,key[index]);
-		ii=0;
-		index++;
-		if (index>=MAX_KEY_PRESS) index=0;
+        key=0;
+        //Если зафиксировано нажатие клавиши
+        if (TempEvent.Status == MAKECODE)
+        {
+          switch (TempEvent.KeyCode)
+          {
+            case enter_key:
+              key = KEY_ENTER;
+              break;
+            case up_key:
+              key = KEY_UP;
+              break;
+            case down_key:
+              key = KEY_DOWN;
+              break;
+            case rigth_key:
+              key = KEY_RIGTH;
+              break;
+            case left_key:
+              key = KEY_LEFT;
+              break;
+
+          }
+        }
+		pCurrMenu->pFunc(pCurrMenu,key);
 
 	}
 }
@@ -262,7 +364,10 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 		 		break;
 	 	 		 	case HW_DATA:
 	 	 		 	case INPUT_HW_DATA:
-	 	 		 		 pScreenObjects[i].GetDtaFunction(READ, &Text);
+	 	 		 		 if (pScreenObjects[i].DataID)
+	 	 		 			pScreenObjects[i].GetDtaFunction(READ, &Text,pScreenObjects[i].DataID);
+	 	 		 		 else
+	 	 		 			pScreenObjects[i].GetDtaFunction(READ, &Text);
 	 	 		 		 TEXT = Text;
 	 	 		 		 break;
 

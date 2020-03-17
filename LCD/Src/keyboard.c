@@ -7,7 +7,14 @@
 #include "keyboard.h"
 #include "main.h"
 
-static xKeyPortStruct xKeyPortMass[KEYBOARD_COUNT];
+static xKeyPortStruct xKeyPortMass[KEYBOARD_COUNT]={
+		{SW0_GPIO_Port,SW0_Pin},
+		{SW1_GPIO_Port,SW1_Pin},
+		{SW2_GPIO_Port,SW2_Pin},
+		{SW3_GPIO_Port,SW3_Pin},
+		{SW4_GPIO_Port,SW4_Pin},
+};
+
 
 static unsigned char STATUS[KEYBOARD_COUNT]={0,0,0,0,0};
 static unsigned int COUNTERS[KEYBOARD_COUNT]={0,0,0,0,0};
@@ -16,35 +23,43 @@ static unsigned char CODES[KEYBOARD_COUNT]={up_key,down_key,left_key,enter_key,r
 static  unsigned long KeyNorPressTimeOut=0;
 static unsigned long KEY_TIME_OUT  = 60000;
 static char cKeyDelay =0;
-static QueueHandle_t xKeyboardQueue;
+
+
+static StaticQueue_t xKeyboardQueue;
+
+uint8_t KeyboardBuffer[ 16 * sizeof( KeyEvent ) ];
+
+static QueueHandle_t pKeyboardQueue;
+
 static EventGroupHandle_t pxKeyStatusFLag;
 
-
-void SetupKeyboard(QueueHandle_t KeyboardQueue)
+void SetupKeyboard()
 {
 
   pxKeyStatusFLag = xEventGroupCreate();
-  xKeyboardQueue= KeyboardQueue;
-
+  pKeyboardQueue =xQueueCreateStatic(16,sizeof(KeyEvent),KeyboardBuffer,&xKeyboardQueue);
+  vKeyboardInit(KEY_ON_MESSAGE);
 }
 
+QueueHandle_t GetKeyboardQueue()
+{
+	return pKeyboardQueue;
 
+}
 
 void vKeyboardInit(  uint32_t Message)
 {
   switch (Message)
   {
     case KEY_ON_MESSAGE:
-        vGPIOKeyBoardInit();
         cKeyDelay =0;
-        xQueueReset(xKeyboardQueue);
+        xQueueReset(pKeyboardQueue);
         xEventGroupSetBits(pxKeyStatusFLag,KEY_READY);
         break;
     case KEY_OFF_MESSAGE:
     default:
         xEventGroupClearBits(pxKeyStatusFLag,KEY_READY);
-        vGPIOKeyBoardDeinit();
-        xQueueReset(xKeyboardQueue);
+        xQueueReset(pKeyboardQueue);
         break;
   }
 }
@@ -55,8 +70,8 @@ void vKeyboardTask(void const * argument)
   KeyEvent TEvent;
   GPIO_PinState TK[KEYBOARD_COUNT];
 
-for(;;)
-{
+ for(;;)
+ {
   vTaskDelay(KEY_PEREOD/ portTICK_RATE_MS );
   //Задача ждет флага готовности KEY_READY,
   xEventGroupWaitBits(pxKeyStatusFLag,KEY_READY,pdFALSE,pdTRUE,portMAX_DELAY);
@@ -77,8 +92,8 @@ for(;;)
       COUNTERS[i]=0;      //Сбрасываем счетчик
       TEvent.KeyCode =CODES[i];
       TEvent.Status = BRAKECODE;
-      xQueueReset(xKeyboardQueue);
-      xQueueSend(xKeyboardQueue, &TEvent, portMAX_DELAY );
+      xQueueReset(pKeyboardQueue);
+      xQueueSend(pKeyboardQueue, &TEvent, portMAX_DELAY );
       KeyNorPressTimeOut =0;
     }
     else
@@ -94,7 +109,7 @@ for(;;)
         STATUS[i] = KEY_ON;
         TEvent.KeyCode =CODES[i];
         TEvent.Status = MAKECODE;
-        xQueueSend(xKeyboardQueue, &TEvent, portMAX_DELAY );
+        xQueueSend(pKeyboardQueue, &TEvent, portMAX_DELAY );
         KeyNorPressTimeOut =0;
      }
    }
@@ -112,7 +127,7 @@ for(;;)
              COUNTERS[i]=0; //?????????? ???????
              TEvent.KeyCode =CODES[i];
              TEvent.Status = MAKECODE;
-             xQueueSend(xKeyboardQueue, &TEvent, portMAX_DELAY );             //?????????? MAKE CODR
+             xQueueSend(pKeyboardQueue, &TEvent, portMAX_DELAY );             //?????????? MAKE CODR
              KeyNorPressTimeOut =0;
           }
           break;
@@ -123,7 +138,7 @@ for(;;)
              COUNTERS[i]=0;
              TEvent.KeyCode =CODES[i];
              TEvent.Status = MAKECODE;
-             xQueueSend(xKeyboardQueue, &TEvent, portMAX_DELAY );
+             xQueueSend(pKeyboardQueue, &TEvent, portMAX_DELAY );
              KeyNorPressTimeOut =0;
           }
         break;
@@ -136,7 +151,7 @@ for(;;)
   if (KeyNorPressTimeOut>=(KEY_TIME_OUT/(KEY_PEREOD / portTICK_RATE_MS)))
   {
     KeyNorPressTimeOut=0;
-    vMenuStop(cKeyDelay);
+   //	 vMenuStop(cKeyDelay);
     cKeyDelay++;
   }
 }

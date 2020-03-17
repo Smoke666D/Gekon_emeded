@@ -68,9 +68,9 @@ typedef struct
 unsigned long GetKeyTimeOut();
 void SetKeyTimeOut(unsigned long data);
 void vKeyboardTask(void const * argument);
-void SetupKeyboard(QueueHandle_t KeyboardQueue);
+void SetupKeyboard();
 void vKeyboardInit(  uint32_t Message);
-
+QueueHandle_t GetKeyboardQueue();
 
 
 #endif /* INC_KEYBOARD_H_ */

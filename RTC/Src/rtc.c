@@ -72,58 +72,102 @@ void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time)
 	}
 }
 
-void vRTCGetSec(DATA_COMMNAD_TYPE cmd, char * Time)
+static uint8_t CorrectData =0;
+static char buffer;
+static char MaxData;
+void vRTCCorrectTime(DATA_COMMNAD_TYPE cmd,char *Time, uint8_t TimePosition)
 {
+    uint8_t DataToRead=0;
 	RTC_TimeTypeDef 	t;
 	Time[0]= 0;
+	if (!CorrectData)
+		DataToRead =TimePosition;
 	switch (cmd)
 	{
 	case READ:
 		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
 		{
-			Time[0]= (t.Seconds>>4)+'0';
-			Time[1]= (t.Seconds & 0x0F)+'0';
-			Time[2] = 0;
+			switch (DataToRead)
+			{
+				case RTC_MIN:
+					Time[0]= (t.Minutes>>4)+'0';
+					Time[1]= (t.Minutes & 0x0F)+'0';
+					Time[2] = 0;
+					break;
+				case RTC_HOUR:
+					Time[0]= (t.Hours>>4)+'0';
+					Time[1]= (t.Hours & 0x0F)+'0';
+					Time[2] = 0;
+					break;
+				case RTC_SEC:
+					Time[0]= (t.Seconds>>4)+'0';
+					Time[1]= (t.Seconds & 0x0F)+'0';
+					Time[2] = 0;
+					break;
+				case 0:
+					Time[0]= (buffer>>4)+'0';
+					Time[1]= (buffer & 0x0F)+'0';
+					Time[2] = 0;
+					break;
+			}
 		}
+		break;
+	case INC:
+	case DEC:
+		if (!CorrectData)
+		{
+			CorrectData =1;
+			HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD );
+			switch (TimePosition)
+			{
+				case RTC_MIN:
+						buffer = t.Minutes;
+						MaxData = 59;
+						break;
+				case RTC_HOUR:
+						buffer =  t.Hours;
+						MaxData = 23;
+						break;
+				case RTC_SEC:
+					    buffer = t.Seconds;
+					    MaxData = 59;
+					    break;
+			}
+		}
+		switch (cmd)
+		{
+		  case INC:
+			  if (buffer<MaxData) buffer++;
+			  break;
+		  case DEC:
+			  if (buffer) buffer--;
+			  break;
+
+		}
+		break;
+	case SAVE:
+		HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD);
+		switch (TimePosition)
+		{
+				case RTC_MIN:
+					t.Minutes =buffer;
+				    break;
+				case RTC_HOUR:
+					t.Hours = buffer;
+					break;
+				case RTC_SEC:
+			        t.Seconds = buffer;
+					break;
+	    }
+		HAL_RTC_SetTime(rtc, &t,RTC_FORMAT_BCD);
 	default:
+		CorrectData =0;
+		buffer=0;
 		break;
 	}
+
 }
 
-void vRTCGetMin(DATA_COMMNAD_TYPE cmd, char * Time)
-{
-	RTC_TimeTypeDef 	t;
-	Time[0]= 0;
-	switch (cmd)
-	{
-	case READ:
-		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
-		{
-			Time[0]= (t.Minutes>>4)+'0';
-			Time[1]= (t.Minutes & 0x0F)+'0';
-			Time[2] = 0;
-		}
-	default:
-		break;
-	}
-}
-void vRTCGetHour(DATA_COMMNAD_TYPE cmd, char * Time)
-{
-	RTC_TimeTypeDef 	t;
-	Time[0]= 0;
-	switch (cmd)
-	{
-	case READ:
-		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
-		{
-			Time[0]= (t.Hours>>4)+'0';
-			Time[1]= (t.Hours & 0x0F)+'0';
-			Time[2] = 0;
-		}
-	default:
-		break;
-	}
-}
 
 
 /*---------------------------------------------------------------------------------------------------*/

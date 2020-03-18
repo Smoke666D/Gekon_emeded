@@ -27,7 +27,9 @@ static uint8_t HeaderParam[]={0,0,CENTER_ALIGN,0};
 static uint8_t HeaderParam1[]={0,0,RIGTH_ALIGN,0};
 static uint8_t HeaderParam2[]={1,0,LEFT_ALIGN,0};
 static uint8_t InputParam[]={0,1,CENTER_ALIGN,0};
-
+static uint8_t InputParam1[]={0,1,CENTER_ALIGN,0};
+static uint8_t InputParam2[]={0,1,CENTER_ALIGN,0};
+static uint8_t InputParam3[]={0,1,CENTER_ALIGN,0};
 
 extern void GetTime(char * Data);
 extern void GetInt(char * Data);
@@ -58,11 +60,11 @@ static uint8_t HEADERSTRINGS[HEAD_STRINGS_COUNT][MAX_HEADER_STRING_SIZE]=
 static xScreenObjet ScreenLev1_1[]=
 {  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[0],NULL,0},
    {0,0,LINE4_HIGTH+1,128,LINE4_HIGTH,HW_DATA,HeaderParam,NULL,&vRTCGetTime,0},
-   {0,10,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam,NULL,&vRTCCorrectTime,RTC_HOUR},
+   {0,10,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam1,NULL,&vRTCCorrectTime,RTC_HOUR},
    {0,25,2*(LINE4_HIGTH+1),9,LINE4_HIGTH,STRING,InputParam,":",NULL,0},
-   {0,35,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam,NULL,&vRTCCorrectTime,RTC_MIN},
+   {0,35,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam2,NULL,&vRTCCorrectTime,RTC_MIN},
    {0,50,2*(LINE4_HIGTH+1),9,LINE4_HIGTH,STRING,InputParam,":",NULL,0},
-   {0,60,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam,NULL,&vRTCCorrectTime,RTC_SEC},
+   {0,60,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,&vRTCCorrectTime,RTC_SEC},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_2[]=
@@ -152,13 +154,13 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 
 static xScreenType  xScreensLev2_1[MENU_LEVEL2_COUNT]=
 {
-		{ScreenLev2_1,NULL,NULL,PASSIVE,0,0,NULL},
-		{ScreenLev2_2,NULL,NULL,PASSIVE,0,0,NULL},
-		{ScreenLev2_3,NULL,NULL,PASSIVE,0,0,NULL},
-		{ScreenLev2_4,NULL,NULL,PASSIVE,0,0,NULL},
-		{ScreenLev2_5,NULL,NULL,PASSIVE,0,0,NULL},
-		{ScreenLev2_6,NULL,NULL,PASSIVE,0,0,NULL},
-		{ScreenLev2_7,NULL,NULL,PASSIVE,0,0,NULL},
+		{ScreenLev2_1,&xGeneratorMenu,NULL,PASSIVE,0,0,NULL},
+		{ScreenLev2_2,&xGeneratorMenu,NULL,PASSIVE,0,0,NULL},
+		{ScreenLev2_3,&xGeneratorMenu,NULL,PASSIVE,0,0,NULL},
+		{ScreenLev2_4,&xGeneratorMenu,NULL,PASSIVE,0,0,NULL},
+		{ScreenLev2_5,&xGeneratorMenu,NULL,PASSIVE,0,0,NULL},
+		{ScreenLev2_6,&xGeneratorMenu,NULL,PASSIVE,0,0,NULL},
+		{ScreenLev2_7,&xGeneratorMenu,NULL,PASSIVE,0,0,NULL},
 
 };
 

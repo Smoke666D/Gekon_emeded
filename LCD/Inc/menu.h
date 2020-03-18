@@ -24,12 +24,12 @@ void vMenuTask();
 #define NO_ALIGN     		 0
 
 //Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие
-#define KEY_RIGTH  1
-#define KEY_LEFT   2
-#define KEY_ENTER  3
-#define KEY_EXIT   4
-#define KEY_DOWN   5
-#define KEY_UP	   6
+#define KEY_UP    1
+#define KEY_DOWN   2
+#define KEY_STOP   3
+#define KEY_AUTO   4
+#define KEY_START   5
+#define KEY_EXIT    6
 
 
 

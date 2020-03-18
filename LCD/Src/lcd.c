@@ -443,7 +443,8 @@ void vLCD_Init()
   u8g2_ClearBuffer(&u8g2);
   for (uint16_t i=0;i<LCD_DATA_BUFFER_SIZE;i++)
 	  LCD_Buffer[i]=0xFF;
-  LCD_Clear();
+  LCD_Redraw();
+  //LCD_Clear();
 
   return;
 }

@@ -33,6 +33,7 @@ extern xScreenSetObject xEngineMenu;
 
 
  static xScreenObjet * pCurObject=NULL;
+static uint8_t CurObjectIndex=0;
 
  void xInputScreenKeyCallBack(xScreenSetObject * menu, char key)
  {
@@ -40,13 +41,13 @@ extern xScreenSetObject xEngineMenu;
 	 uint8_t ActiveObjectCount=0;
 	 switch (key)
 	 		{
-	 	 	 	case KEY_UP:
-	 	 	 		if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(INC, NULL);
+	 	 	 	case KEY_STOP:
+	 	 	 		pCurObject->GetDtaFunction(INC, NULL,pCurObject->DataID);
 	 	 	 		break;
-	 	 	 	case KEY_DOWN:
-	 	 	 		if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(DEC, NULL);
+	 	 	 	case KEY_START:
+	 	 	 		pCurObject->GetDtaFunction(DEC, NULL,pCurObject->DataID);
 	 	 	 		break;
-	 			case KEY_RIGTH:
+	 			case KEY_UP:
 	 				if (menu->pHomeMenu[menu->pCurrIndex].pCurrIndex <  menu->pHomeMenu[menu->pCurrIndex].pMaxIndex)
 	 				{
 	 					menu->pHomeMenu[menu->pCurrIndex].pCurrIndex++;
@@ -69,8 +70,8 @@ extern xScreenSetObject xEngineMenu;
 	 					}
 	 				}
 	 				break;
-	 			case KEY_LEFT:
-	 				if (menu->pHomeMenu[menu->pCurrIndex].pCurrIndex > 0)
+	 			case KEY_DOWN:
+	 				if (menu->pHomeMenu[menu->pCurrIndex].pCurrIndex > 1)
 	 				{
 	 					menu->pHomeMenu[menu->pCurrIndex].pCurrIndex--;
 	 					for (uint8_t i=0;i<MAX_SCREEN_OBJECT;i++) //Проверяем есть ли на экране динамические объекты
@@ -92,14 +93,15 @@ extern xScreenSetObject xEngineMenu;
 	 					}
 	 				}
 	 				break;
-	 			case KEY_ENTER:
+	 			case KEY_AUTO:
 	 				//Если на экране есть объект с редактируемым полем, то оправлем команду на запись текущего значения
-	 				if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(SAVE, NULL);
+	 				 pCurObject->GetDtaFunction(SAVE, NULL,pCurObject->DataID);
 	 				//Если на экране только один объект редактирования или его вообще нет, то выполняются дейтсвия по выходу из экрана
 	 				if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex>1) break;
 	 			case KEY_EXIT:
 	         	   //Выходи из активного экрана, для этого меняем его статус и также освобождаем редактируемый объект
 	         	    menu->pHomeMenu[menu->pCurrIndex].xScreenStatus=NOT_ACTIVE;
+	         	    pCurObject->ObjectParamert[3]=0;
 	         	    if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex) pCurObject->GetDtaFunction(ESC, NULL);
 	         	    break;
 	 			default:
@@ -117,19 +119,19 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 	{
 		switch (key)
 		{
-			case KEY_RIGTH:
+			case KEY_UP:
 				if (menu->pCurrIndex == menu->pMaxIndex)
 					menu->pCurrIndex=0;
 				else
 					menu->pCurrIndex++;
 				break;
-			case KEY_LEFT:
+			case KEY_DOWN:
 				if (menu->pCurrIndex==0)
 					menu->pCurrIndex=menu->pMaxIndex;
 				else
 					menu->pCurrIndex--;
 				break;
-			case KEY_ENTER:
+			case KEY_AUTO:
         	//Если текущий Screen являтется ScreenSet то переводи глобальный указатель на меню нижнего уровня
         		if (menu->pHomeMenu[index].pDownScreenSet!=NULL)
         			pCurrMenu = menu->pHomeMenu[index].pDownScreenSet;
@@ -149,7 +151,6 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         				  {
         					  case INPUT_HW_DATA:
         						  menu->pHomeMenu[index].pMaxIndex++;
-
         					 	  break;
         					  default:
         					  	  break;
@@ -163,6 +164,7 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         					  if  (menu->pHomeMenu[index].pScreenCurObjets[i].xType ==INPUT_HW_DATA)
         					  {
         						  menu->pHomeMenu[index].pScreenCurObjets[i].ObjectParamert[3]=1;
+        						  CurObjectIndex =i;
         						  pCurObject= &menu->pHomeMenu[index].pScreenCurObjets[i];
         						  break;
         					  }
@@ -191,7 +193,7 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 	{
 			if (menu->pHomeMenu[index].pFunc!=NULL)
 
-				menu->pHomeMenu[index].pFunc(&menu,key);
+				menu->pHomeMenu[index].pFunc(menu,key);
 	}
 
 
@@ -257,54 +259,65 @@ void vMenuInit(u8g2_t * temp)
 }
 
 #define MAX_KEY_PRESS  10
-static uint8_t index=0;
 static uint8_t key;
-static uint8_t ii=0;
 KeyEvent TempEvent;
-
+KeyEvent BufferEvent={0,0};
+uint8_t temp_counter=0;
 void vMenuTask()
 {
 
     //Блок обработки нажатий на клавиши
 
-	HAL_GPIO_WritePin(LD1_GPIO_Port,LD1_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LD2_GPIO_Port,LD1_Pin,GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LD3_GPIO_Port,LD1_Pin,GPIO_PIN_RESET);
+
 	osDelay( 200U );
-	HAL_GPIO_WritePin(LD1_GPIO_Port,LD1_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(LD2_GPIO_Port,LD1_Pin,GPIO_PIN_SET);
-	HAL_GPIO_WritePin(LD3_GPIO_Port,LD1_Pin,GPIO_PIN_SET);
+	temp_counter++;
+
 	//Блок отрисовки экранов
-	DrawObject(pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets);
-	LCD_Redraw();
+	if (temp_counter==2)
+	{
+		DrawObject(pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets);
+		LCD_Redraw();
+		temp_counter=0;
+	}
 
     if (xQueueReceive( pKeyboard, &TempEvent, 0)== pdPASS )
 	{
         key=0;
-        //Если зафиксировано нажатие клавиши
-        if (TempEvent.Status == MAKECODE)
-        {
-          switch (TempEvent.KeyCode)
-          {
-            case enter_key:
-              key = KEY_ENTER;
-              break;
-            case up_key:
-              key = KEY_UP;
-              break;
-            case down_key:
-              key = KEY_DOWN;
-              break;
-            case rigth_key:
-              key = KEY_RIGTH;
-              break;
-            case left_key:
-              key = KEY_LEFT;
-              break;
+        if (
+        		(TempEvent.Status==MAKECODE) && (BufferEvent.Status==MAKECODE) &&
+        		( ( TempEvent.KeyCode | BufferEvent.KeyCode)==0x03 )
+        		)
 
-          }
+        {
+        	key=KEY_EXIT;
         }
-		pCurrMenu->pFunc(pCurrMenu,key);
+        else
+        {
+        	 BufferEvent=TempEvent;
+        	//Если зафиксировано нажатие клавиши
+        	if (TempEvent.Status == MAKECODE)
+        	{
+        		switch (TempEvent.KeyCode)
+        		{
+        		case stop_key:
+        			key = KEY_STOP;
+        			break;
+        		case up_key:
+          	        key = KEY_UP;
+                    break;
+        		case down_key:
+             		key = KEY_DOWN;
+             		break;
+        		case start_key:
+        			key = KEY_START;
+        			break;
+        		case auto_key:
+        			key = KEY_AUTO;
+        			break;
+        		}
+        	}
+        }
+        if (key) pCurrMenu->pFunc(pCurrMenu,key);
 
 	}
 }
@@ -314,6 +327,7 @@ static xScreenObjet * pCurDrawScreen=NULL;
 void DrawObject( xScreenObjet * pScreenObjects)
 {
    uint8_t * TEXT;
+   uint8_t Insert =0;
    uint8_t Text[9]={' ',' ',' ',' ',' ',' ',' ',' ',' '};
    uint8_t i, x_offset,y_offset;
    uint8_t Redraw=0;
@@ -342,20 +356,30 @@ void DrawObject( xScreenObjet * pScreenObjects)
    }
    if (Redraw)   //Если экран нужно перерисовывать
    {
+
 	   u8g2_ClearBuffer(u8g2);
 	   for (i=0;i<MAX_SCREEN_OBJECT;i++)
 	   {
 		   if  (pScreenObjects[i].last) break;
+		   Insert =0;
 		   switch (pScreenObjects[i].xType)
 		   {
 	 	 	 //Если текущий объект - строка
-	 	 	 case STRING:
-	 	     case HW_DATA:
+
 	 	     case INPUT_HW_DATA:
+	 	    	  if (pScreenObjects[i].ObjectParamert[3]) Insert=1;
+	 	     case STRING:
+	 	     case HW_DATA:
 	 	 		 u8g2_SetFontMode(u8g2,pScreenObjects[i].ObjectParamert[0]);
-	 	 		 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?0:1);
+	 	 		 if (!Insert)
+	 	 			 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?0:1);
+	 	 		 else
+	 	 			u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?1:0);
 	 	 		 u8g2_DrawBox( u8g2, pScreenObjects[i].x, pScreenObjects[i].y,pScreenObjects[i].Width,pScreenObjects[i].Height);
-	 	 		 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]);
+	 	 		 if (!Insert)
+	 	 			u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]);
+	 	 		 else
+	 	 			u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?0:1);
 	 	 		 switch(pScreenObjects[i].xType)
 	 	 		 {
 

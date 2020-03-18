@@ -32,7 +32,7 @@
 #define KEY_ON_REPEAT  0x02
 
 #define KEY_PEREOD         25
-#define SWITCHONDELAY      100
+#define SWITCHONDELAY      50
 #define DefaultDelay       600
 #define DefaultRepeatRate  400
 #define BRAKECODE 2
@@ -40,12 +40,12 @@
 #define LINE  4
 #define ROW   5
 
-#define up_key  1
-#define down_key 2
-#define enter_key 3
-#define exit_key 4
-#define left_key 5
-#define rigth_key 6
+#define up_key  0x01
+#define down_key 0x02
+#define stop_key 0x04
+#define start_key 0x08
+#define auto_key 0x10
+
 
 
 typedef struct

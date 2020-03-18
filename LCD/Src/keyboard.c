@@ -18,7 +18,7 @@ static xKeyPortStruct xKeyPortMass[KEYBOARD_COUNT]={
 
 static unsigned char STATUS[KEYBOARD_COUNT]={0,0,0,0,0};
 static unsigned int COUNTERS[KEYBOARD_COUNT]={0,0,0,0,0};
-static unsigned char CODES[KEYBOARD_COUNT]={up_key,down_key,left_key,enter_key,rigth_key};
+static unsigned char CODES[KEYBOARD_COUNT]={up_key,down_key,stop_key,auto_key,start_key};
 
 static  unsigned long KeyNorPressTimeOut=0;
 static unsigned long KEY_TIME_OUT  = 60000;

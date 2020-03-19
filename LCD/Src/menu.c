@@ -323,7 +323,7 @@ void vMenuTask()
 }
 
 static xScreenObjet * pCurDrawScreen=NULL;
-
+static uint8_t Blink=0;
 void DrawObject( xScreenObjet * pScreenObjects)
 {
    uint8_t * TEXT;
@@ -367,19 +367,23 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 	 //Если текущий объект - строка
 
 	 	     case INPUT_HW_DATA:
-	 	    	  if (pScreenObjects[i].ObjectParamert[3]) Insert=1;
+	 	    	  if (pScreenObjects[i].ObjectParamert[3])
+	 	    	  {
+	 	    		  Insert=1;
+	 	    		  if (Blink) Blink=0; else Blink=1;
+	 	    	  }
 	 	     case STRING:
 	 	     case HW_DATA:
 	 	 		 u8g2_SetFontMode(u8g2,pScreenObjects[i].ObjectParamert[0]);
 	 	 		 if (!Insert)
 	 	 			 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?0:1);
 	 	 		 else
-	 	 			u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?1:0);
+	 	 			 u8g2_SetDrawColor(u8g2,Blink?0:1);
 	 	 		 u8g2_DrawBox( u8g2, pScreenObjects[i].x, pScreenObjects[i].y,pScreenObjects[i].Width,pScreenObjects[i].Height);
 	 	 		 if (!Insert)
 	 	 			u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]);
 	 	 		 else
-	 	 			u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?0:1);
+	 	 			u8g2_SetDrawColor(u8g2,Blink);
 	 	 		 switch(pScreenObjects[i].xType)
 	 	 		 {
 
@@ -417,7 +421,6 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 		 break;
 		   }
 	   }
-
    }
 }
 

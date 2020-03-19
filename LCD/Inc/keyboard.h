@@ -31,8 +31,8 @@
 #define KEY_ON    	   0X01
 #define KEY_ON_REPEAT  0x02
 
-#define KEY_PEREOD         25
-#define SWITCHONDELAY      50
+#define KEY_PEREOD         15
+#define SWITCHONDELAY      30
 #define DefaultDelay       600
 #define DefaultRepeatRate  400
 #define BRAKECODE 2

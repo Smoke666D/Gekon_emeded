@@ -22,8 +22,18 @@ extern void xInputScreenKeyCallBack(xScreenSetObject * menu, char key);
 #define LINE4_HIGTH    64/4
 #define LINE5_HIGTH    64/5
 
+
+#define LEFT_OFFSET  2
+#define LINE1  12
+#define LINE2  30
+#define LINE3  45
+#define LINE4  60
+
 static uint8_t BufferString[30];
-static uint8_t HeaderParam[]={0,0,CENTER_ALIGN,0};
+static uint8_t Header[]={0,1,CENTER_ALIGN};
+static uint8_t RigthText[]={0,1,RIGTH_ALIGN};
+static uint8_t LeftText[]= {0,1};
+static uint8_t HeaderParam[]={1,0,CENTER_ALIGN,0};
 static uint8_t HeaderParam1[]={0,0,RIGTH_ALIGN,0};
 static uint8_t HeaderParam2[]={1,0,LEFT_ALIGN,0};
 static uint8_t InputParam[]={0,1,CENTER_ALIGN,0};
@@ -34,13 +44,14 @@ static uint8_t InputParam3[]={0,1,CENTER_ALIGN,0};
 extern void GetTime(char * Data);
 extern void GetInt(char * Data);
 extern void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString);
+extern void vGetTestData(DATA_COMMNAD_TYPE cmd, char * Data, uint8_t ID);
 
 static uint8_t HEADERSTRINGS[HEAD_STRINGS_COUNT][MAX_HEADER_STRING_SIZE]=
 {
-		{"НАПРЯЖ. ГЕН. И СЕТИ"}, //1
-		{"ПРИБОРЫ ГЕНЕРАТОРА"},  //2
-		{"ПРИБОРЫ СЕТИ"},        //3
-		{"ПРИБОРЫ НАГР. СЕТИ"},  //4
+		{"ДВИГАТЕЛЬ - Сводные"}, //1
+		{"ГЕНЕРАТОР"},  //2
+		{"СЕТЬ - U лин."},        //3
+		{"CВЯЗЬ Ethenet"},  //4
 		{"ПРИБ. НАГР. И ТОКА"},  //5
 		{"ПРИБ. ДВИГАТЕЛЯ"},     //6
 		{"ИНФОРАЦИЯ О МОДУЛЕ"},  //7
@@ -55,6 +66,7 @@ static uint8_t HEADERSTRINGS[HEAD_STRINGS_COUNT][MAX_HEADER_STRING_SIZE]=
 		{"ДАВЛЕНИЕ МАСЛА"},      //16
 		{"УРОВЕНЬ ТОПЛИВА"},     //17
 		{"уровень топлива"},	 //18
+		{"ДВИГАТЕЛЬ - Сводные"},
 };
 
 static xScreenObjet ScreenLev1_1[]=
@@ -67,18 +79,34 @@ static xScreenObjet ScreenLev1_1[]=
    {0,60,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,&vRTCCorrectTime,RTC_SEC},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
-static xScreenObjet ScreenLev1_2[]=
+static xScreenObjet EngineMainScreen[]=
 {
-   {0,0,0,128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
-   {0,0,LINE5_HIGTH+1,128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
-   {0,0,2*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
-   {0,0,3*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
-   {0,0,4*(LINE5_HIGTH+1),128,LINE5_HIGTH,STRING,HeaderParam,HEADERSTRINGS[17],NULL,0},
+   {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"ДВИГАТЕЛЬ - Сводные",NULL,0},
+   {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
+   {0,LEFT_OFFSET,LINE2,0,0,TEXT_STRING,LeftText,"Давление",NULL,0},
+   {0,67,(LINE4_HIGTH+2),30,LINE4_HIGTH,HW_DATA,RigthText,NULL,&vGetTestData,1},
+   {0,105,LINE2,0,0,TEXT_STRING,LeftText,"Бар",NULL,0},
+   {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Температура",NULL,0},
+   {0,67,LINE2+2,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,&vGetTestData,2},
+   {0,105,LINE3,0,0,TEXT_STRING,LeftText,"гр.С",NULL,0},
+   {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Скорость",NULL,0},
+   {0,67,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,&vGetTestData,3},
+   {0,105,LINE4,0,0,TEXT_STRING,LeftText,"об/м",NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
-static xScreenObjet ScreenLev1_3[]=
-{  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[2],NULL,0},
-   {0,0,2*(LINE4_HIGTH+1),128,LINE4_HIGTH,INPUT_DATA_STRING,InputParam,BufferString,&vdmGetData,ID_TEST_DATA },
+static xScreenObjet GeneratiorMainScreen[]=
+{
+   {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"ГЕНЕРАТОР",NULL,0},
+   {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
+   {0,LEFT_OFFSET,LINE2,0,0,TEXT_STRING,LeftText,"Напряжение",NULL,0},
+   {0,65,LINE1+6,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,&vGetTestData,1},
+   {0,105,LINE2,0,0,TEXT_STRING,LeftText,"В",NULL,0},
+   {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Ток",NULL,0},
+   {0,65,LINE2+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,&vGetTestData,2},
+   {0,105,LINE3,0,0,TEXT_STRING,LeftText,"А",NULL,0},
+   {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Частота",NULL,0},
+   {0,65,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,&vGetTestData,3},
+   {0,105,LINE4,0,0,TEXT_STRING,LeftText,"Гц",NULL,0},
    {1,0,0,0,0,STRING,NULL,NULL}	};
 
 static xScreenObjet ScreenLev1_4[]=
@@ -141,8 +169,8 @@ static xScreenObjet ScreenLev2_7[]=
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
 		{ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
-		{ScreenLev1_2,NULL,NULL,PASSIVE,0,0,NULL},
-		{ScreenLev1_3,NULL,NULL,PASSIVE,0,0,NULL},
+		{EngineMainScreen,NULL,NULL,PASSIVE,0,0,NULL},
+		{GeneratiorMainScreen,NULL,NULL,PASSIVE,0,0,NULL},
 		{ScreenLev1_4,NULL,NULL,PASSIVE,0,0,NULL},
 		{ScreenLev1_5,NULL,NULL,PASSIVE,0,0,NULL},
 		{ScreenLev1_6,(void *)&xGeneratorMenu,(void *)&xEngineMenu,PASSIVE,0,0,NULL},

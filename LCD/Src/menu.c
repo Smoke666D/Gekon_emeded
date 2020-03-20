@@ -365,7 +365,11 @@ void DrawObject( xScreenObjet * pScreenObjects)
 		   switch (pScreenObjects[i].xType)
 		   {
 	 	 	 //Если текущий объект - строка
+		     case LINE:
+		    	 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]);
 
+		    	 u8g2_DrawLine( u8g2, pScreenObjects[i].x, pScreenObjects[i].y,pScreenObjects[i].Width,pScreenObjects[i].Height);
+		    	 break;
 	 	     case INPUT_HW_DATA:
 	 	    	  if (pScreenObjects[i].ObjectParamert[3])
 	 	    	  {
@@ -374,12 +378,13 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	    	  }
 	 	     case STRING:
 	 	     case HW_DATA:
-	 	 		 u8g2_SetFontMode(u8g2,pScreenObjects[i].ObjectParamert[0]);
 	 	 		 if (!Insert)
 	 	 			 u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]?0:1);
 	 	 		 else
 	 	 			 u8g2_SetDrawColor(u8g2,Blink?0:1);
 	 	 		 u8g2_DrawBox( u8g2, pScreenObjects[i].x, pScreenObjects[i].y,pScreenObjects[i].Width,pScreenObjects[i].Height);
+	 	    case TEXT_STRING:
+	 	    	 u8g2_SetFontMode(u8g2,pScreenObjects[i].ObjectParamert[0]);
 	 	 		 if (!Insert)
 	 	 			u8g2_SetDrawColor(u8g2,pScreenObjects[i].ObjectParamert[1]);
 	 	 		 else
@@ -388,6 +393,7 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 		 {
 
 	 	 		 	 case STRING:
+	 	 		 	 case TEXT_STRING:
 	 	 		 		TEXT = pScreenObjects[i].pStringParametr;
 	 	 		 		break;
 	 	 		 	case HW_DATA:
@@ -401,20 +407,25 @@ void DrawObject( xScreenObjet * pScreenObjects)
 
 	 	 		 }
 	 	 		 u8g2_SetFont( u8g2, FONT_TYPE4);
-	 	 		 switch (pScreenObjects[i].ObjectParamert[2])
+	 	 		 if (pScreenObjects[i].xType!=TEXT_STRING)
 	 	 		 {
-	 	 		 	 case RIGTH_ALIGN:
-	 	 		 		 x_offset =  pScreenObjects[i].x + (pScreenObjects[i].Width - u8g2_GetUTF8Width(u8g2,TEXT))-1;
-	 	 		 		 break;
-	 	 		 	 case LEFT_ALIGN:
-	 	 		 		 x_offset =  pScreenObjects[i].x+1;
-	 	 		 		 break;
-	 	 		 	 default:
-	 	 		 		 x_offset =  pScreenObjects[i].x + (pScreenObjects[i].Width - u8g2_GetUTF8Width(u8g2,TEXT))/2;
-	 	 		 		 break;
+	 	 			 switch (pScreenObjects[i].ObjectParamert[2])
+	 	 			 {
+	 	 		 	 	 case RIGTH_ALIGN:
+	 	 		 	 		 x_offset =  pScreenObjects[i].x + (pScreenObjects[i].Width - u8g2_GetUTF8Width(u8g2,TEXT))-1;
+	 	 		 	 		 break;
+	 	 		 	 	 case LEFT_ALIGN:
+	 	 		 	 		 x_offset =  pScreenObjects[i].x+1;
+	 	 		 	 		 break;
+	 	 		 	 	 default:
+	 	 		 	 		 x_offset =  pScreenObjects[i].x + (pScreenObjects[i].Width - u8g2_GetUTF8Width(u8g2,TEXT))/2;
+	 	 		 	 		 break;
+	 	 			 }
+	 	 			y_offset =  pScreenObjects[i].y + pScreenObjects[i].Height/2 + u8g2_GetAscent(u8g2)/2;
+	 	 			u8g2_DrawUTF8( u8g2,x_offset, y_offset, TEXT);
 	 	 		 }
-	 	 		 y_offset =  pScreenObjects[i].y + pScreenObjects[i].Height/2 + u8g2_GetAscent(u8g2)/2;
-	 	 		 u8g2_DrawUTF8( u8g2,x_offset, y_offset, TEXT);
+	 	 		 else
+	 	 		    u8g2_DrawUTF8( u8g2,pScreenObjects[i].x,pScreenObjects[i].y, TEXT);
 	 	    	 break;
 
 	 	 	 default:
@@ -430,6 +441,34 @@ void GetInt(char * Data)
 	Data[1]='0';
 	Data[2]='1';
 	Data[3]=0;
+}
+
+void vGetTestData(DATA_COMMNAD_TYPE cmd, char * Data, uint8_t ID)
+{
+   switch (ID)
+   {
+       case 3:
+    	   Data[0]='1';
+    	   Data[1]='5';
+    	   Data[2]='0';
+    	   Data[3]='0';
+    	   Data[4]=0;
+    	   break;
+       case 2:
+    	   Data[0]='1';
+    	   Data[1]='0';
+    	   Data[2]='0';
+    	   Data[3]=0;
+    	   break;
+       case 1:
+           Data[0]='0';
+           Data[1]=',';
+           Data[2]='9';
+           Data[3]=0;
+           break;
+
+   }
+
 }
 
 void GetTime(char * Data)

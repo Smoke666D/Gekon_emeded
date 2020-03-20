@@ -45,7 +45,9 @@ typedef enum
 typedef enum
 {
 	ICON,
+	TEXT_STRING,
 	STRING,
+	LINE,
 	NEGATIVE_STRING,
 	DATA_STRING,
 	INPUT_DATA_STRING,
@@ -95,10 +97,9 @@ typedef struct
 
 
 #define MAX_SCREEN_COUNT 3
-#define MAX_SCREEN_OBJECT 10
+#define MAX_SCREEN_OBJECT 20
 
 
 void DrawObject( xScreenObjet * pScreenObjects);
-
 
 #endif /* INC_MENU_H_ */

@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-05 09:59:41
+ * Make time: 2020-03-19 17:22:54
  */
 #include   "config.h"
 
@@ -1292,7 +1292,7 @@ eConfigReg batteryUnderVoltageDelay =
    .scale      = 0U,
    .value      = 60U,
    .min        = 0U,
-   .max        = 86400U,
+   .max        = 65535U,
    .units      = {'s', ' ', ' ', ' '},
    .type       = 'U',
    .len        = 1U,
@@ -1316,7 +1316,7 @@ eConfigReg batteryOverVoltageDelay =
    .scale      = 0U,
    .value      = 60U,
    .min        = 0U,
-   .max        = 86400U,
+   .max        = 65535U,
    .units      = {'s', ' ', ' ', ' '},
    .type       = 'U',
    .len        = 1U,

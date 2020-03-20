@@ -216,142 +216,143 @@ HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* respon
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Build put response in to response structure
- * Input:		path 			- url to the file from the request
- * 					response	- structure of the response
- * 					content   - content of the request
- * Output:	none
+ * Input:  path     - url to the file from the request
+ *         response - structure of the response
+ *         content  - content of the request
+ * Output: none
  */
 void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
 {
-	uint16_t			adr       = 0xFFFFU;
-	REST_REQUEST	request   = 0U;
-	REST_ADDRESS	adrFlag		= REST_NO_ADR;
+  uint16_t      adr       = 0xFFFFU;
+  REST_REQUEST  request   = 0U;
+  REST_ADDRESS  adrFlag   = REST_NO_ADR;
 
-	strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
-	response->cache         = HTTP_CACHE_NO_CACHE_STORE;
-	response->connect       = HTTP_CONNECT_CLOSED;
-	response->status 				= HTTP_STATUS_BAD_REQUEST;
-	response->contentLength = 0U;
-	if ( path[0U] > 0U )
-	{
-		adrFlag = eRESTgetRequest( path, &request, &adr );
-		switch ( request )
-		{
-			case REST_CONFIGS:
-				if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
-				{
-					if ( eRESTparsingConfig( content, configReg[adr] ) == REST_OK )
-					{
-						response->contetntType 	= HTTP_CONTENT_JSON;
-						response->status 				= HTTP_STATUS_OK;
-						response->contentLength = 0;
-					}
-				}
-				break;
-			case REST_REQUEST_ERROR:
-				break;
-			default:
-				break;
-		}
-	}
-	return;
+  strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
+  response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
+  response->cache         = HTTP_CACHE_NO_CACHE_STORE;
+  response->connect       = HTTP_CONNECT_CLOSED;
+  response->status        = HTTP_STATUS_BAD_REQUEST;
+  response->contentLength = 0U;
+  if ( path[0U] > 0U )
+  {
+    adrFlag = eRESTgetRequest( path, &request, &adr );
+    switch ( request )
+    {
+      case REST_CONFIGS:
+        if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+        {
+          if ( eRESTparsingConfig( content, configReg[adr] ) == REST_OK )
+          {
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->contentLength = 0U;
+          }
+        }
+        break;
+      case REST_REQUEST_ERROR:
+        break;
+      default:
+        break;
+    }
+  }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Build get response in response structure
- * Input:		path 			- url to the file from request
- * 					response	- structure of response
- * Output:	none
+ * Input:   path     - url to the file from request
+ *          response - structure of response
+ * Output:  none
  */
 void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
 {
-	char 					*strStr   = NULL;
-	uint16_t			adr       = 0xFFFFU;
-	REST_REQUEST	request   = REST_REQUEST_ERROR;
-	REST_ADDRESS	adrFlag		= REST_NO_ADR;
-	uint32_t			length    = 0U;
-	HTTP_STREAM  	*stream   = NULL;
-	uint32_t			i         = 0U;
-	/*----------------- Common header -----------------*/
-	strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
-	response->cache         = HTTP_CACHE_NO_CACHE_STORE;
-	response->connect       = HTTP_CONNECT_CLOSED;
-	response->status 				= HTTP_STATUS_BAD_REQUEST;
-	response->contentLength = 0U;
-	response->encoding      = HTTP_ENCODING_NO;
-	/*----------------- Parsing path -----------------*/
-	/*------------------ INDEX.HTML ------------------*/
-	strStr = strstr(path, "index" );
-	if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
-	{
-		stream = &(response->stream);
-		stream->size            = 1U;
-		stream->index           = 0U;
-		stream->content         = data__index_html;
-		stream->length          = HTML_LENGTH;
-		response->callBack      = cHTTPstreamFile;
-		response->contetntType 	= HTTP_CONTENT_HTML;
-		response->status 				= HTTP_STATUS_OK;
-		response->contentLength = HTML_LENGTH;
-		if ( HTML_ENCODING > 0U )
-		{
-			response->encoding = HTTP_ENCODING_GZIP;
-		}
-	}
-	/*--------------------- REST ---------------------*/
-	else if ( path[0U] > 0U )
-	{
-		adrFlag = eRESTgetRequest( path, &request, &adr );
-		switch ( request )
-		{
-			case REST_CONFIGS:
-				/*------------------ Broadcast -------------------*/
-				if ( adrFlag == REST_NO_ADR )
-				{
-					stream = &(response->stream);
-					stream->size       = SETTING_REGISTER_NUMBER;
-					stream->index      = 0U;
-					stream->start      = 0U;
-					response->callBack = cHTTPstreamConfigs;
-					for( i=0U; i<stream->size; i++ )
-					{
-						response->contentLength += uRESTmakeConfig( restBuffer, configReg[i] );
-					}
-					response->contentLength += 1U + stream->size;		/* '[' + ']' + ',' */
-					response->contetntType 	= HTTP_CONTENT_JSON;
-					response->status 				= HTTP_STATUS_OK;
-					response->data 					= restBuffer;
-				}
-				/*------------- Specific address ------------------*/
-				else
-				{
-					if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
-					{
-						response->contentLength = uRESTmakeConfig( restBuffer, configReg[adr] );
-					}
-					stream = &(response->stream);
-					stream->size            = adr + 1U;
-					stream->start           = adr;
-					stream->index           = 0U;
-					response->callBack      = cHTTPstreamConfigs;
-					response->contetntType 	= HTTP_CONTENT_JSON;
-					response->status 				= HTTP_STATUS_OK;
-				}
-				break;
-			case REST_REQUEST_ERROR:
-				break;
-			default:
-				response->status 				= HTTP_STATUS_BAD_REQUEST;
-				response->contentLength = 0U;
-				break;
-		}
-	}
-	else
-	{
-		response->status 				= HTTP_STATUS_NON_CONNECT;
-		response->contentLength = 0U;
-	}
-	return;
+  char          *strStr = NULL;
+  uint16_t      adr     = 0xFFFFU;
+  REST_REQUEST  request = REST_REQUEST_ERROR;
+  REST_ADDRESS  adrFlag = REST_NO_ADR;
+  HTTP_STREAM   *stream = NULL;
+  uint32_t      i       = 0U;
+  /*----------------- Common header -----------------*/
+  strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
+  response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
+  response->cache         = HTTP_CACHE_NO_CACHE_STORE;
+  response->connect       = HTTP_CONNECT_CLOSED;
+  response->status        = HTTP_STATUS_BAD_REQUEST;
+  response->contentLength = 0U;
+  response->encoding      = HTTP_ENCODING_NO;
+  /*----------------- Parsing path -----------------*/
+  /*------------------ INDEX.HTML ------------------*/
+  strStr = strstr(path, "index" );
+  if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
+  {
+    stream = &(response->stream);
+    stream->size            = 1U;
+    stream->index           = 0U;
+    stream->content         = data__index_html;
+    stream->length          = HTML_LENGTH;
+    response->callBack      = cHTTPstreamFile;
+    response->contetntType 	= HTTP_CONTENT_HTML;
+    response->status        = HTTP_STATUS_OK;
+    response->contentLength = HTML_LENGTH;
+    if ( HTML_ENCODING > 0U )
+    {
+      response->encoding = HTTP_ENCODING_GZIP;
+    }
+  }
+  /*--------------------- REST ---------------------*/
+  else if ( path[0U] > 0U )
+  {
+    adrFlag = eRESTgetRequest( path, &request, &adr );
+    switch ( request )
+    {
+      case REST_CONFIGS:
+        /*------------------ Broadcast -------------------*/
+        if ( adrFlag == REST_NO_ADR )
+        {
+          stream = &(response->stream);
+          stream->size       = SETTING_REGISTER_NUMBER;
+          stream->index      = 0U;
+          stream->start      = 0U;
+          response->callBack = cHTTPstreamConfigs;
+          for( i=0U; i<stream->size; i++ )
+          {
+            response->contentLength += uRESTmakeConfig( restBuffer, configReg[i] );
+          }
+          response->contentLength += 1U + stream->size;		/* '[' + ']' + ',' */
+          response->contetntType   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_OK;
+          response->data           = restBuffer;
+        }
+        /*------------- Specific address ------------------*/
+        else
+        {
+          if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
+          {
+            response->contentLength = uRESTmakeConfig( restBuffer, configReg[adr] );
+          }
+          stream = &(response->stream);
+          stream->size            = adr + 1U;
+          stream->start           = adr;
+          stream->index           = 0U;
+          response->callBack      = cHTTPstreamConfigs;
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_OK;
+        }
+        break;
+      case REST_REQUEST_ERROR:
+        break;
+      default:
+        response->status        = HTTP_STATUS_BAD_REQUEST;
+        response->contentLength = 0U;
+        break;
+    }
+  }
+  else
+  {
+    response->status        = HTTP_STATUS_NON_CONNECT;
+    response->contentLength = 0U;
+  }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -473,17 +474,17 @@ HTTP_STATUS eHTTPmakeRequest ( char* httpStr, HTTP_REQUEST* request )
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Make string response from response structure
- * Input:		httpStr  - pointer to char array of output buffer for response string
- *  				response - response structure
- * Output:	HTTP_STATUS
+ * Input:   httpStr  - pointer to char array of output buffer for response string
+ *          response - response structure
+ * Output:  HTTP_STATUS
  */
 HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 {
-	HTTP_STATUS 	res = HTTP_STATUS_ERROR;
-	char					buffer[30];
-	char					*strRes;
+  HTTP_STATUS  res = HTTP_STATUS_ERROR;
+  char         buffer[30];
+  char*        strRes;
 
-	// STATUS
+  // STATUS
 	switch( response->status )
 	{
 		case HTTP_STATUS_OK:
@@ -522,19 +523,16 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
 										if ( vHTTPaddContentEncoding ( httpStr, response->encoding ) != NULL )
 										{
 											// CACHE
-											if ( strcat( httpStr, HTTP_CACHE_CONTROL ) != NULL )
+											if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
 											{
-												if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
+												// CONNECTION
+												if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
 												{
-													// CONNECTION
-													if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
+													if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
 													{
 														if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
 														{
-															if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
-															{
-																res = HTTP_STATUS_OK;
-															}
+															res = HTTP_STATUS_OK;
 														}
 													}
 												}

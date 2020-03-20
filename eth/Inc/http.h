@@ -13,7 +13,7 @@
 #define	 CR_HEX                0x0DU
 #define	 LF_HEX                0x0AU
 
-#define	 HEADER_LENGTH         29U
+#define	 HEADER_LENGTH         30U
 #define	 SERVER_LENGTH         21U
 #define	 CONTENT_TYPE_LENGTH   9U
 
@@ -208,7 +208,7 @@ typedef struct
 #define	 HTTP_ETAG_LINE              "ETag: "
 #define	 HTTP_RANGE_LINE             "Accept-Ranges: bytes"
 #define	 HTTP_LENGTH_LINE            "Content-Length: "
-#define	 HTTP_CONN_LINE              "Connection: keep-alive"//"Connection: closed"
+#define	 HTTP_CONN_LINE              "Connection: closed"//"Connection: keep-alive"
 #define	 HTTP_CONTENT_LINE           "Content-Type: "
 #define	 HTTP_CACHE_CONTROL          "Cache-Control: "
 #define	 HTTP_ENCODING_LINE          "Content-Encoding: "

@@ -67,6 +67,7 @@ static uint8_t CurObjectIndex=0;
 	 							    pCurObject =&pObjects[i];
 	 							    break;
 	 							}
+
 	 						}
 	 					}
 	 				}
@@ -147,7 +148,6 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         				if (menu->pHomeMenu[index].pMaxIndex==0)
         				for (uint8_t i=0;i<MAX_SCREEN_OBJECT;i++)
         				{
-        				  if  (menu->pHomeMenu[index].pScreenCurObjets[i].last) break;
         			      switch (menu->pHomeMenu[index].pScreenCurObjets[i].xType)
         				  {
         					  case INPUT_HW_DATA:
@@ -156,12 +156,13 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         					  default:
         					  	  break;
         				   }
+        			      if  (menu->pHomeMenu[index].pScreenCurObjets[i].last) break;
         				}
         				if (menu->pHomeMenu[index].pMaxIndex>1)
         				{
         					for (uint8_t i=0;i<MAX_SCREEN_OBJECT;i++)
         					{
-        					  if  (menu->pHomeMenu[index].pScreenCurObjets[i].last) break;
+
         					  if  (menu->pHomeMenu[index].pScreenCurObjets[i].xType ==INPUT_HW_DATA)
         					  {
         						  menu->pHomeMenu[index].pScreenCurObjets[i].ObjectParamert[3]=1;
@@ -169,6 +170,7 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
         						  pCurObject= &menu->pHomeMenu[index].pScreenCurObjets[i];
         						  break;
         					  }
+        					  if  (menu->pHomeMenu[index].pScreenCurObjets[i].last) break;
         					}
         				}
         			}
@@ -200,6 +202,54 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 
 }
 
+static uint8_t DownScreen=0;
+
+void xInfoScreenCallBack(xScreenSetObject * menu, char key)
+{
+	    uint8_t index=menu->pCurrIndex;
+	    xScreenSetObject * pMenu = menu;
+		switch (key)
+		{
+			case KEY_UP:
+				if (DownScreen)
+				{
+				  DownScreen =0;
+				  if (menu->pHomeMenu[index].pUpScreenSet!=NULL)
+				  {
+				      pCurrMenu = menu->pHomeMenu[index].pUpScreenSet;
+				      pMenu = pCurrMenu;
+
+				  }
+				}
+
+				if (pMenu->pCurrIndex == pMenu->pMaxIndex)
+					pMenu->pCurrIndex=0;
+				else
+					pMenu->pCurrIndex++;
+				break;
+			case KEY_DOWN:
+				if (DownScreen==0)
+				{
+					if (menu->pHomeMenu[index].pDownScreenSet!=NULL)
+					{
+						pCurrMenu = menu->pHomeMenu[index].pDownScreenSet;
+						DownScreen =1;
+						pCurrMenu->pCurrIndex=0;
+					}
+				}
+				else
+				{
+					if (menu->pCurrIndex == menu->pMaxIndex)
+						menu->pCurrIndex=0;
+				   else
+					   menu->pCurrIndex++;
+				}
+				break;
+			default:
+        	break;
+		}
+
+}
 
 
 
@@ -222,16 +272,6 @@ void InitMenu()
 
 }
 
-/*void DrawMenu(uint8_t temp, uint8_t * data)
-{
-  for (uint8_t i=0;i<MAX_HEADER_STRING_SIZE;i++)
-  {
-
-	 data[i]=HEADERSTRINGS[temp][i];
-	 if (HEADERSTRINGS[temp][i]==0) break;
-  }
-
-}*/
 
 static QueueHandle_t pKeyboard;
 
@@ -345,7 +385,6 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	   u8g2_ClearBuffer(u8g2);
 	   for (i=0;i<MAX_SCREEN_OBJECT;i++)
 	   {
-		   if  (pScreenObjects[i].last) break;
 		   Insert =0;
 		   switch (pScreenObjects[i].xType)
 		   {
@@ -416,6 +455,7 @@ void DrawObject( xScreenObjet * pScreenObjects)
 	 	 	 default:
 	 	 		 break;
 		   }
+		   if  (pScreenObjects[i].last) break;
 	   }
    }
 }
@@ -427,7 +467,7 @@ void DrawObject( xScreenObjet * pScreenObjects)
  		xScreensLev1,
  		MENU_LEVEL1_COUNT-1,
  		0,
- 		(void*)&xLineScreenKeyCallBack,
+ 		(void*)&xInfoScreenCallBack,
 
  };
 
@@ -436,7 +476,7 @@ void DrawObject( xScreenObjet * pScreenObjects)
  	xEngineScreens,
  	ENGINE_MENU_COUNT-1,
  	0,
- 	(void*)&xLineScreenKeyCallBack,
+	(void*)&xInfoScreenCallBack,
  };
 
  xScreenSetObject xGeneratorMenu=
@@ -444,7 +484,7 @@ void DrawObject( xScreenObjet * pScreenObjects)
  	xGeneratorScreens,
  	GENERATOR_MENU_COUNT-1,
  	0,
- 	(void*)&xLineScreenKeyCallBack,
+	(void*)&xInfoScreenCallBack,
  };
 
  xScreenSetObject xNetMenu=
@@ -452,18 +492,10 @@ void DrawObject( xScreenObjet * pScreenObjects)
  	xNetScreens,
  	NET_MENU_COUNT-1,
  	0,
- 	(void*)&xLineScreenKeyCallBack,
+	(void*)&xInfoScreenCallBack,
  };
 
 
-
-void GetInt(char * Data)
-{
-	Data[0]='0';
-	Data[1]='0';
-	Data[2]='1';
-	Data[3]=0;
-}
 
 void vGetTestData(DATA_COMMNAD_TYPE cmd, char * Data, uint8_t ID)
 {

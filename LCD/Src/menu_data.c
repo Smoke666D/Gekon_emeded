@@ -13,8 +13,35 @@ extern xScreenSetObject xGeneratorMenu;
 extern xScreenSetObject xEngineMenu;
 extern xScreenSetObject xNetMenu;
 
-
+extern void xInfoScreenCallBack(xScreenSetObject * menu, char key);
 extern void xInputScreenKeyCallBack(xScreenSetObject * menu, char key);
+
+
+
+static char EventLog[][44]=
+{
+  "Вспомог. входы",
+  "Аналог. вход",
+  "Аналог. вход высокий",
+  "Аналог. вход низкий",
+  "Размык. цепи",
+  "Ошибка запуска",
+  "Масло низк. дав.",
+  "Высокая темп. двиг.",
+  "Понижена скорость",
+  "Повышеная скорость",
+  "Сбой зарядки",
+  "Низка скорость вент.",
+  "Топливо низк. уров.",
+  "Топливо высок. уров.",
+  "Напряж. ген. низк",
+  "Напряж. ген. высок",
+  "Напряжение ген.",
+
+};
+
+
+
 
 #define MENU_LEVEL1_COUNT    8
 #define ENGINE_MENU_COUNT 	 3
@@ -77,8 +104,9 @@ static xScreenObjet EngineMainScreen[]=
    {0,FONT_SIZE*17,LINE3,0,0,TEXT_STRING,LeftText,"гр.С",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Скорость",NULL,0},
    {0,67,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3},
-   {0,FONT_SIZE*17,LINE4,0,0,TEXT_STRING,LeftText,"об/м",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*17,LINE4,0,0,TEXT_STRING,LeftText,"об/м",NULL,0}
+
+};
 
 static xScreenObjet Engine1Screen[]=
 {
@@ -92,8 +120,9 @@ static xScreenObjet Engine1Screen[]=
    {0,FONT_SIZE*20,LINE3,0,0,TEXT_STRING,LeftText,"В",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Уровень топлива",NULL,0},
    {0,FONT_SIZE*15,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13},
-   {0,FONT_SIZE*20,LINE4,0,0,TEXT_STRING,LeftText,"%",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*20,LINE4,0,0,TEXT_STRING,LeftText,"%",NULL,0}
+
+};
 
 static xScreenObjet Engine2Screen[]=
 {
@@ -106,8 +135,9 @@ static xScreenObjet Engine2Screen[]=
    {0,FONT_SIZE*16,LINE2+2,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,14},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Уровень топлива",NULL,0},
    {0,FONT_SIZE*15,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13},
-   {0,FONT_SIZE*20,LINE4,0,0,TEXT_STRING,LeftText,"%",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*20,LINE4,0,0,TEXT_STRING,LeftText,"%",NULL,0}
+
+};
 
 
 
@@ -123,8 +153,9 @@ static xScreenObjet GeneratorMainScreen[]=
    {0,FONT_SIZE*17,LINE3,0,0,TEXT_STRING,LeftText,"А",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Частота",NULL,0},
    {0,FONT_SIZE*11,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,5},
-   {0,FONT_SIZE*17,LINE4,0,0,TEXT_STRING,LeftText,"Гц",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*17,LINE4,0,0,TEXT_STRING,LeftText,"Гц",NULL,0}
+
+};
 
 
 static xScreenObjet Generator1Screen[]=
@@ -139,8 +170,8 @@ static xScreenObjet Generator1Screen[]=
    {0,FONT_SIZE*12,LINE3,0,0,TEXT_STRING,LeftText,"В",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"L3-L1 -",NULL,0},
    {0,FONT_SIZE*7,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4},
-   {0,FONT_SIZE*12,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*12,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0}
+};
 
 static xScreenObjet Generator2Screen[]=
 {
@@ -154,8 +185,9 @@ static xScreenObjet Generator2Screen[]=
   {0,FONT_SIZE*12,LINE3,0,0,TEXT_STRING,LeftText,"В",NULL,0},
   {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"L3-N -",NULL,0},
   {0,FONT_SIZE*6,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4},
-  {0,FONT_SIZE*12,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0},
-  {1,0,0,0,0,STRING,NULL,NULL}	};
+  {1,FONT_SIZE*12,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0}
+
+};
 
 static xScreenObjet Generator3Screen[]=
 {
@@ -169,8 +201,9 @@ static xScreenObjet Generator3Screen[]=
   {0,FONT_SIZE*9,LINE3,0,0,TEXT_STRING,LeftText,"А",NULL,0},
   {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"L3 -",NULL,0},
   {0,FONT_SIZE*5,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4},
-  {0,FONT_SIZE*9,LINE4,0,0,TEXT_STRING,LeftText,"А",NULL,0},
-  {1,0,0,0,0,STRING,NULL,NULL}	};
+  {1,FONT_SIZE*9,LINE4,0,0,TEXT_STRING,LeftText,"А",NULL,0}
+
+};
 
 static xScreenObjet Generator4Screen[]=
 {
@@ -184,8 +217,8 @@ static xScreenObjet Generator4Screen[]=
   {0,FONT_SIZE*9,LINE3,0,0,TEXT_STRING,LeftText,"кВт",NULL,0},
   {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"L3 -",NULL,0},
   {0,FONT_SIZE*5,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4},
-  {0,FONT_SIZE*9,LINE4,0,0,TEXT_STRING,LeftText,"кВт",NULL,0},
-  {1,0,0,0,0,STRING,NULL,NULL}	};
+  {1,FONT_SIZE*9,LINE4,0,0,TEXT_STRING,LeftText,"кВт",NULL,0}
+};
 
 
 static xScreenObjet Generator5Screen[]=
@@ -198,8 +231,9 @@ static xScreenObjet Generator5Screen[]=
    {0,FONT_SIZE*11,LINE2+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,2},
    {0,FONT_SIZE*17,LINE3,0,0,TEXT_STRING,LeftText,"кВт",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"cos f",NULL,0},
-   {0,FONT_SIZE*11,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*11,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3}
+
+};
 
 
 static xScreenObjet Generator6Screen[]=
@@ -207,8 +241,8 @@ static xScreenObjet Generator6Screen[]=
    {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"ГЕНЕРАТОР",NULL,0},
    {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
    {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Череование фаз:",NULL,0},
-   {0,FONT_SIZE*11,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*11,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3},
+};
 
 
 
@@ -224,8 +258,9 @@ static xScreenObjet NetMainScreen[]=
    {0,FONT_SIZE*11,LINE3,0,0,TEXT_STRING,LeftText,"В",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"L3-N - ",NULL,0},
    {0,FONT_SIZE*7,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,7},
-   {0,FONT_SIZE*11,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*11,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0}
+
+};
 
 static xScreenObjet Net1Screen[]=
 {
@@ -239,8 +274,8 @@ static xScreenObjet Net1Screen[]=
    {0,FONT_SIZE*12,LINE3,0,0,TEXT_STRING,LeftText,"В",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"L3-L1 - ",NULL,0},
    {0,FONT_SIZE*8,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4},
-   {0,FONT_SIZE*12,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*12,LINE4,0,0,TEXT_STRING,LeftText,"В",NULL,0}
+};
 
 static xScreenObjet Net2Screen[]=
 {
@@ -250,8 +285,8 @@ static xScreenObjet Net2Screen[]=
    {0,FONT_SIZE*10,LINE1+6,15,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,5},
    {0,FONT_SIZE*13,LINE2,0,0,TEXT_STRING,LeftText,"Гц",NULL,0},
    {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Чередование фаз:",NULL,0},
-   {0,LEFT_OFFSET,LINE3+3,50,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,16},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,LEFT_OFFSET,LINE3+3,50,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,16}
+};
 
 
 
@@ -264,20 +299,22 @@ static xScreenObjet LinkMainScreen[]=
    {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Маска",NULL,0},
    {0,FONT_SIZE*6,LINE2+3,100,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,9},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Шлюз",NULL,0},
-   {0,FONT_SIZE*6,LINE3+3,100,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,10},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,FONT_SIZE*6,LINE3+3,100,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,10}
+
+};
 
 static xScreenObjet AlarmMainScreen[]=
 {
    {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"АВАРИИ",NULL,0},
-   {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0}
+};
 
 static xScreenObjet EventMainScreen[]=
 {
    {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"ЖУРНАЛ СОБЫТИЙ №",NULL,0},
-   {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0}
+
+};
 
 static xScreenObjet InfoMainScreen[]=
 {
@@ -285,14 +322,16 @@ static xScreenObjet InfoMainScreen[]=
    {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
    {0,LEFT_OFFSET,LINE2,0,0,TEXT_STRING,LeftText,"ID",NULL,0},
    {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Тех.поддержка",NULL,0},
-   {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"www.energan.ru",NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"www.energan.ru",NULL,0}
+
+};
 
 static xScreenObjet StatusMainScreen[]=
 {
    {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"СТАТУС",NULL,0},
-   {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
-   {1,0,0,0,0,STRING,NULL,NULL}	};
+   {1,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0}
+
+};
 
 
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=

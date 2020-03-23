@@ -64,7 +64,7 @@ typedef struct
   uint8_t Height;
   OBJECT_TYPE xType;
   uint8_t * ObjectParamert;
-  uint8_t * pStringParametr;
+  char * pStringParametr;
   void (*GetDtaFunction)();
   uint16_t DataID;
 } xScreenObjet;

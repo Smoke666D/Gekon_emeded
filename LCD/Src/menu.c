@@ -15,12 +15,13 @@
 
 
 
-extern xScreenSetObject xGeneratorMenu;
-extern xScreenSetObject xEngineMenu;
 
 
 
  static xScreenSetObject *pCurrMenu;
+
+
+
 
 
 #include "menu_data.c"
@@ -199,23 +200,7 @@ void xLineScreenKeyCallBack(xScreenSetObject * menu, char key)
 
 }
 
-//Обявдение объека-карусели экранов верхнего уровня
-xScreenSetObject xGeneratorMenu=
-{
-		xScreensLev1,
-		9,
-		0,
-		&xLineScreenKeyCallBack,
 
-};
-
-xScreenSetObject xEngineMenu=
-{
-		xScreensLev2_1,
-		6,
-		0,
-		&xLineScreenKeyCallBack,
-};
 
 
 
@@ -237,7 +222,7 @@ void InitMenu()
 
 }
 
-void DrawMenu(uint8_t temp, uint8_t * data)
+/*void DrawMenu(uint8_t temp, uint8_t * data)
 {
   for (uint8_t i=0;i<MAX_HEADER_STRING_SIZE;i++)
   {
@@ -246,14 +231,14 @@ void DrawMenu(uint8_t temp, uint8_t * data)
 	 if (HEADERSTRINGS[temp][i]==0) break;
   }
 
-}
+}*/
 
 static QueueHandle_t pKeyboard;
 
 void vMenuInit(u8g2_t * temp)
 {
 	u8g2 = temp;
-	pCurrMenu =&xGeneratorMenu;
+	pCurrMenu =&xMainMenu;
 	pKeyboard =GetKeyboardQueue();
 
 }
@@ -328,7 +313,7 @@ void DrawObject( xScreenObjet * pScreenObjects)
 {
    uint8_t * TEXT;
    uint8_t Insert =0;
-   uint8_t Text[9]={' ',' ',' ',' ',' ',' ',' ',' ',' '};
+   uint8_t Text[16]={' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
    uint8_t i, x_offset,y_offset;
    uint8_t Redraw=0;
    //Проверяем, какой экран необходимо перерисовать
@@ -435,6 +420,43 @@ void DrawObject( xScreenObjet * pScreenObjects)
    }
 }
 
+
+//Обявдение объека-карусели экранов верхнего уровня
+ xScreenSetObject xMainMenu=
+ {
+ 		xScreensLev1,
+ 		MENU_LEVEL1_COUNT-1,
+ 		0,
+ 		(void*)&xLineScreenKeyCallBack,
+
+ };
+
+ xScreenSetObject xEngineMenu=
+ {
+ 	xEngineScreens,
+ 	ENGINE_MENU_COUNT-1,
+ 	0,
+ 	(void*)&xLineScreenKeyCallBack,
+ };
+
+ xScreenSetObject xGeneratorMenu=
+ {
+ 	xGeneratorScreens,
+ 	GENERATOR_MENU_COUNT-1,
+ 	0,
+ 	(void*)&xLineScreenKeyCallBack,
+ };
+
+ xScreenSetObject xNetMenu=
+ {
+ 	xNetScreens,
+ 	NET_MENU_COUNT-1,
+ 	0,
+ 	(void*)&xLineScreenKeyCallBack,
+ };
+
+
+
 void GetInt(char * Data)
 {
 	Data[0]='0';
@@ -447,6 +469,120 @@ void vGetTestData(DATA_COMMNAD_TYPE cmd, char * Data, uint8_t ID)
 {
    switch (ID)
    {
+
+       case 16:
+    	   Data[0]='L';
+    	   Data[1]='1';
+    	   Data[2]='-';
+    	   Data[3]='L';
+    	   Data[4]='2';
+    	   Data[5]='-';
+    	   Data[6]='L';
+    	   Data[7]='3';
+    	   Data[8]=0;
+    	   break;
+   	   case 15:
+          Data[0]='1';
+          Data[1]='2';
+          Data[2]='3';
+          Data[3]=',';
+          Data[4]='3';
+          Data[5]='0';
+          Data[6]=0;
+          break;
+      case 14:
+           Data[0]='2';
+           Data[1]='1';
+           Data[2]='5';
+           Data[3]=0;
+           break;
+      case 13:
+       	   Data[0]='1';
+       	   Data[1]='0';
+       	   Data[2]='0';
+       	   Data[3]=0;
+       	   break;
+       case 12:
+       	   Data[0]='1';
+       	   Data[1]='4';
+       	   Data[2]=',';
+       	   Data[3]='5';
+       	   Data[4]=0;
+       	   break;
+       case 11:
+      	   Data[0]='1';
+      	   Data[1]='3';
+      	   Data[2]=',';
+      	   Data[3]='6';
+      	   Data[4]=0;
+      	   break;
+        case 10:
+    	   Data[0]='1';
+    	   Data[1]='9';
+    	   Data[2]='2';
+    	   Data[3]='.';
+    	   Data[4]='1';
+    	   Data[5]='6';
+    	   Data[6]='8';
+    	   Data[7]='.';
+    	   Data[8]='1';
+    	   Data[9]='0';
+    	   Data[10]='0';
+    	   Data[11]='.';
+    	   Data[12]='5';
+    	   Data[13]=0;
+    	   break;
+       case 9:
+    	    Data[0]='2';
+    	    Data[1]='5';
+    	    Data[2]='5';
+    	    Data[3]='.';
+    	    Data[4]='2';
+    	    Data[5]='5';
+    	    Data[6]='5';
+    	    Data[7]='.';
+    	    Data[8]='2';
+    	    Data[9]='5';
+    	    Data[10]='5';
+    	    Data[11]='.';
+    	    Data[12]='0';
+    	    Data[13]=0;
+    	    break;
+       case 8:
+    	    Data[0]='1';
+    	  	Data[1]='9';
+    	  	Data[2]='2';
+    	  	Data[3]='.';
+    	  	Data[4]='1';
+    	  	Data[5]='6';
+    	  	Data[6]='8';
+      	  	Data[7]='.';
+       	  	Data[8]='1';
+        	Data[9]='0';
+        	Data[10]='0';
+        	Data[11]='.';
+        	Data[12]='1';
+        	Data[13]='2';
+           	Data[14]='1';
+    	  	Data[15]=0;
+    	  	break;
+   	   case 7:
+	   	   Data[0]='2';
+	       Data[1]='3';
+	       Data[2]='0';
+	       Data[3]=0;
+	      break;
+   	 case 5:
+    	   Data[0]='5';
+ 	       Data[1]='0';
+ 	       Data[2]=0;
+ 	      break;
+      case 4:
+   	       Data[0]='4';
+   	       Data[1]='0';
+   	       Data[2]='0';
+   	       Data[3]=0;
+   	       break;
        case 3:
     	   Data[0]='1';
     	   Data[1]='5';

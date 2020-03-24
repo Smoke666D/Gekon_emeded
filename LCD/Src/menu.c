@@ -308,42 +308,49 @@ void vMenuTask()
     if (xQueueReceive( pKeyboard, &TempEvent, 0)== pdPASS )
 	{
         key=0;
-        if (
+        if (TempEvent.KeyCode ==	time_out)
+        {
+        	pCurrMenu =&xMainMenu;
+        	pCurrMenu->pCurrIndex=0;
+        }
+        else
+        {
+        	if (
         		(TempEvent.Status==MAKECODE) && (BufferEvent.Status==MAKECODE) &&
         		( ( TempEvent.KeyCode | BufferEvent.KeyCode)==0x03 )
         		)
 
-        {
-        	key=KEY_EXIT;
-        }
-        else
-        {
-        	 BufferEvent=TempEvent;
-        	//Если зафиксировано нажатие клавиши
-        	if (TempEvent.Status == MAKECODE)
         	{
-        		switch (TempEvent.KeyCode)
+        		key=KEY_EXIT;
+        	}
+        	else
+        	{
+        		BufferEvent=TempEvent;
+        		//Если зафиксировано нажатие клавиши
+        		if (TempEvent.Status == MAKECODE)
         		{
-        		case stop_key:
-        			key = KEY_STOP;
-        			break;
-        		case up_key:
-          	        key = KEY_UP;
-                    break;
-        		case down_key:
-             		key = KEY_DOWN;
-             		break;
-        		case start_key:
-        			key = KEY_START;
-        			break;
-        		case auto_key:
-        			key = KEY_AUTO;
-        			break;
+        			switch (TempEvent.KeyCode)
+        			{
+        			case stop_key:
+        				key = KEY_STOP;
+        				break;
+        			case up_key:
+        				key = KEY_UP;
+        				break;
+        			case down_key:
+        				key = KEY_DOWN;
+        				break;
+        			case start_key:
+        				key = KEY_START;
+        				break;
+        			case auto_key:
+        				key = KEY_AUTO;
+        				break;
+        			}
         		}
         	}
+        	if (key) pCurrMenu->pFunc(pCurrMenu,key);
         }
-        if (key) pCurrMenu->pFunc(pCurrMenu,key);
-
 	}
 }
 

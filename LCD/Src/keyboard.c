@@ -21,7 +21,7 @@ static unsigned int COUNTERS[KEYBOARD_COUNT]={0,0,0,0,0};
 static unsigned char CODES[KEYBOARD_COUNT]={up_key,down_key,stop_key,auto_key,start_key};
 
 static  unsigned long KeyNorPressTimeOut=0;
-static unsigned long KEY_TIME_OUT  = 60000;
+static unsigned long KEY_TIME_OUT  = 6000;
 static char cKeyDelay =0;
 
 
@@ -151,6 +151,9 @@ void vKeyboardTask(void const * argument)
   if (KeyNorPressTimeOut>=(KEY_TIME_OUT/(KEY_PEREOD / portTICK_RATE_MS)))
   {
     KeyNorPressTimeOut=0;
+    TEvent.KeyCode =time_out;
+    TEvent.Status = MAKECODE;
+    xQueueSend(pKeyboardQueue, &TEvent, portMAX_DELAY );
    //	 vMenuStop(cKeyDelay);
     cKeyDelay++;
   }

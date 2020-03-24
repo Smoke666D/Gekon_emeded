@@ -116,10 +116,10 @@ static xScreenObjet Engine1Screen[]=
    {0,FONT_SIZE*15,(LINE4_HIGTH+2),30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,11},
    {0,FONT_SIZE*20,LINE2,0,0,TEXT_STRING,LeftText,"В",NULL,0},
    {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Напряж.зар.ген.",NULL,0},
-   {0,FONT_SIZE*15,LINE2+2,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,12},
+   {0,FONT_SIZE*15,LINE2+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,12},
    {0,FONT_SIZE*20,LINE3,0,0,TEXT_STRING,LeftText,"В",NULL,0},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Уровень топлива",NULL,0},
-   {0,FONT_SIZE*15,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13},
+   {0,FONT_SIZE*16,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13},
    {1,FONT_SIZE*20,LINE4,0,0,TEXT_STRING,LeftText,"%",NULL,0}
 
 };
@@ -132,9 +132,9 @@ static xScreenObjet Engine2Screen[]=
    {0,FONT_SIZE*14,(LINE4_HIGTH+2),30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,15},
    {0,FONT_SIZE*20,LINE2,0,0,TEXT_STRING,LeftText,"Ч",NULL,0},
    {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Кол-во запусков",NULL,0},
-   {0,FONT_SIZE*16,LINE2+2,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,14},
+   {0,FONT_SIZE*16,LINE2+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,14},
    {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Уровень топлива",NULL,0},
-   {0,FONT_SIZE*15,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13},
+   {0,FONT_SIZE*16,LINE3+3,20,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13},
    {1,FONT_SIZE*20,LINE4,0,0,TEXT_STRING,LeftText,"%",NULL,0}
 
 };
@@ -241,7 +241,7 @@ static xScreenObjet Generator6Screen[]=
    {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"ГЕНЕРАТОР",NULL,0},
    {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
    {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Череование фаз:",NULL,0},
-   {1,FONT_SIZE*11,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3},
+   {1,FONT_SIZE*11,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,16},
 };
 
 

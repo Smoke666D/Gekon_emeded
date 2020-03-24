@@ -45,6 +45,7 @@
 #define stop_key 0x04
 #define start_key 0x08
 #define auto_key 0x10
+#define time_out 0x20
 
 
 

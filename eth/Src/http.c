@@ -14,6 +14,7 @@
 
 #include "rest.h"
 #include "config.h"
+#include "chart.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static char restBuffer[REST_BUFFER_SIZE];
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -21,16 +22,17 @@ const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void 		vHTTPcleanRequest( HTTP_REQUEST *httpRequest );										/* Clean request structure */
-void 		vHTTPCleanResponse( HTTP_RESPONSE *response );										/* Clean response structure */
-uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );						/* Get the string of line from multiline text */
-void 		eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );			/* Build get response in response structure */
-char*		vHTTPaddCache( char* httpStr, HTTP_CACHE cache);									/* Add cache string to http */
-char*		vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type );
-char* 	vHTTPaddContentEncoding( char* httpStr, HTTP_ENCODING encoding );	/* Add encoding string to http  */
+void    vHTTPcleanRequest( HTTP_REQUEST *httpRequest );                     /* Clean request structure */
+void    vHTTPCleanResponse( HTTP_RESPONSE *response );                      /* Clean response structure */
+uint8_t	uHTTPgetLine( char* input, uint16_t num, char* line );              /* Get the string of line from multiline text */
+void    eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response );       /* Build get response in response structure */
+char*   vHTTPaddCache( char* httpStr, HTTP_CACHE cache);                    /* Add cache string to http */
+char*   vHTTPaddContetntType( char* httpStr, HTTP_CONTENT type );
+char*   vHTTPaddContentEncoding( char* httpStr, HTTP_ENCODING encoding );   /* Add encoding string to http  */
 
-STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* );							/* Stream call back for file transfer */
-STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* );						/* Stream call back for configuration data transfer */
+STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* );     /* Stream call back for file transfer */
+STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* );  /* Stream call back for configuration data transfer */
+STREAM_STATUS cHTTPstreamCharts( HTTP_STREAM* );
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -122,54 +124,53 @@ uint8_t uHTTPgetLine( char* input, uint16_t num, char* line )
  */
 HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request )
 {
-	HTTP_STATUS 	res 	 = HTTP_STATUS_BAD_REQUEST;
-	uint8_t 			i      = 0U;
-	char* 				pchSt  = NULL;
-	char* 				pchEnd = NULL;
-	char					line[50U];
+  HTTP_STATUS  res    = HTTP_STATUS_BAD_REQUEST;
+  uint8_t      i      = 0U;
+  char*        pchSt  = NULL;
+  char*        pchEnd = NULL;
+  char         line[50U];
 
-	if ( uHTTPgetLine( req, 0, line ) > 0U )
-	{
-		res 	 = HTTP_STATUS_OK;
-		vHTTPcleanRequest( request );
-		/* Parsing HTTP methods */
-		for( i=0U; i<HTTP_METHOD_NUM; i++)
-		{
-			pchSt = strstr( line, httpMethodsStr[i] );
-			if ( pchSt != NULL)
-			{
-				request->method = i + 1U;
-				break;
-			}
-		}
-		if ( request->method == HTTP_METHOD_NO )
-		{
-			res = HTTP_STATUS_BAD_REQUEST;
-		}
-		/*-----------------------------------------------------------------------------*/
-		if ( res == HTTP_STATUS_OK )
-		{
-			/* Parsing HTTP path  */
-			pchSt  = strchr( line, '/' );
-			pchEnd = strchr( pchSt, ' ' );
-			if ( ( pchEnd - pchSt ) > 2U )
-			{
-				if( strncpy( request->path, ( pchSt ), ( pchEnd - pchSt ) ) == NULL )
-				{
-					res = HTTP_STATUS_BAD_REQUEST;
-				}
-			}
-			/* Parsing Content */
-			pchSt  = strstr( req, HTTP_END_HEADER );
-			if ( pchSt != NULL )
-			{
-				request->content = pchSt + strlen( HTTP_END_HEADER );
-			}
-		}
+  if ( uHTTPgetLine( req, 0, line ) > 0U )
+  {
+    res 	 = HTTP_STATUS_OK;
+    vHTTPcleanRequest( request );
+    /*--------------------------- Parsing HTTP methods ---------------------------*/
+    for( i=0U; i<HTTP_METHOD_NUM; i++)
+    {
+      pchSt = strstr( line, httpMethodsStr[i] );
+      if ( pchSt != NULL)
+      {
+        request->method = i + 1U;
+        break;
+      }
+    }
+    if ( request->method == HTTP_METHOD_NO )
+    {
+      res = HTTP_STATUS_BAD_REQUEST;
+    }
+    /*-----------------------------------------------------------------------------*/
+    if ( res == HTTP_STATUS_OK )
+    {
+      /*--------------------------- Parsing HTTP path  ----------------------------*/
+      pchSt  = strchr( line, '/' );
+      pchEnd = strchr( pchSt, ' ' );
+      if ( ( pchEnd - pchSt ) > 2U )
+      {
+        if( strncpy( request->path, ( pchSt ), ( pchEnd - pchSt ) ) == NULL )
+        {
+          res = HTTP_STATUS_BAD_REQUEST;
+        }
+      }
+      /*----------------------------- Parsing Content -----------------------------*/
+      pchSt  = strstr( req, HTTP_END_HEADER );
+      if ( pchSt != NULL )
+      {
+    	request->content = pchSt + strlen( HTTP_END_HEADER );
+      }
+    }
+  }
 
-	}
-
-	return res;
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -249,6 +250,8 @@ void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
           }
         }
         break;
+      case REST_CHARTS:
+    	break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -302,6 +305,10 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
   /*--------------------- REST ---------------------*/
   else if ( path[0U] > 0U )
   {
+	if ( path[2U] == 'h')
+	{
+	  i = 0U;
+	}
     adrFlag = eRESTgetRequest( path, &request, &adr );
     switch ( request )
     {
@@ -339,6 +346,26 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
           response->status        = HTTP_STATUS_OK;
         }
         break;
+      case REST_CHARTS:
+    	  /*------------------ Broadcast -------------------*/
+    	  if ( adrFlag == REST_NO_ADR )
+    	  {
+    		  //uRESTmakeChart
+    		stream = &(response->stream);
+    		stream->size  = CHART_NUMBER;
+    		stream->index = 0U;
+    		stream->start = 0U;
+    		response->callBack = cHTTPstreamCharts;
+    		for( i=0U; i<stream->size; i++ )
+    		{
+    		  response->contentLength += uRESTmakeChart( restBuffer, charts[i] );
+    		}
+    		response->contentLength += 1U + stream->size;		/* '[' + ']' + ',' */
+    		response->contetntType   = HTTP_CONTENT_JSON;
+    		response->status         = HTTP_STATUS_OK;
+    		response->data           = restBuffer;
+    	  }
+    	break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -363,33 +390,31 @@ void eHTTPbuildGetResponse( char* path, HTTP_RESPONSE *response)
  */
 void vHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response)
 {
-	vHTTPCleanResponse( response );
-	response->status = HTTP_STATUS_BAD_REQUEST;
-
-	switch ( request->method )
-	{
-		case HTTP_METHOD_NO:
-			break;
-		case HTTP_METHOD_GET:
-			response->method = HTTP_METHOD_GET;
-			eHTTPbuildGetResponse( request->path, response );
-			break;
-		case HTTP_METHOD_POST:
-			response->method = HTTP_METHOD_POST;
-			break;
-		case HTTP_METHOD_PUT:
-			response->method = HTTP_METHOD_PUT;
-			eHTTPbuildPutResponse( request->path, response, request->content );
-			break;
-		case HTTP_METHOD_HEAD:
-			break;
-		case HTTP_METHOD_OPTION:
-			break;
-		default:
-			break;
-	}
-
-	return;
+  vHTTPCleanResponse( response );
+  response->status = HTTP_STATUS_BAD_REQUEST;
+  switch ( request->method )
+  {
+    case HTTP_METHOD_NO:
+      break;
+    case HTTP_METHOD_GET:
+      response->method = HTTP_METHOD_GET;
+      eHTTPbuildGetResponse( request->path, response );
+      break;
+    case HTTP_METHOD_POST:
+      response->method = HTTP_METHOD_POST;
+      break;
+    case HTTP_METHOD_PUT:
+      response->method = HTTP_METHOD_PUT;
+      eHTTPbuildPutResponse( request->path, response, request->content );
+      break;
+    case HTTP_METHOD_HEAD:
+      break;
+    case HTTP_METHOD_OPTION:
+      break;
+    default:
+      break;
+  }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -662,9 +687,9 @@ char* vHTTPaddContentEncoding( char* httpStr, HTTP_ENCODING encoding )
  */
 STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* stream )
 {
-	stream->status = STREAM_END;
-	stream->index++;
-	return stream->status;
+  stream->status = STREAM_END;
+  stream->index++;
+  return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -672,51 +697,96 @@ STREAM_STATUS cHTTPstreamFile( HTTP_STREAM* stream )
  */
 STREAM_STATUS cHTTPstreamConfigs( HTTP_STREAM* stream )
 {
-	uint32_t length = stream->size - stream->start;
+  uint32_t length = stream->size - stream->start;
 
-	if ( ( stream->index == 0U ) && ( length > 1U ) )
-	{
-		restBuffer[0U] = '[';
-		stream->length = uRESTmakeConfig( &restBuffer[1U], configReg[stream->start + stream->index] ) + 1U;
-	}
-	else
-	{
-		stream->length = uRESTmakeConfig( restBuffer, configReg[stream->start + stream->index] );
-	}
+  if ( ( stream->index == 0U ) && ( length > 1U ) )
+  {
+    restBuffer[0U] = '[';
+    stream->length = uRESTmakeConfig( &restBuffer[1U], configReg[stream->start + stream->index] ) + 1U;
+  }
+  else
+  {
+    stream->length = uRESTmakeConfig( restBuffer, configReg[stream->start + stream->index] );
+  }
+  if ( stream->length == 0U )
+  {
+    stream->status = STREAM_ERROR;
+  }
+  else
+  {
+    stream->index++;
+    if ( ( stream->start + stream->index ) >= stream->size )
+    {
+      if ( length > 1U )
+      {
+        restBuffer[stream->length] = ']';
+      }
+      stream->length++;
+      stream->status = STREAM_END;
+    }
+    else
+    {
+      if ( length > 1U )
+      {
+        restBuffer[stream->length] = ',';
+      }
+      stream->length++;
+      stream->status  = STREAM_CONTINUES;
+    }
+    restBuffer[stream->length] = 0U;
+    stream->content = restBuffer;
+  }
 
-	if ( stream->length == 0U )
-	{
-		stream->status = STREAM_ERROR;
-	}
-	else
-	{
-		stream->index++;
-		if ( ( stream->start + stream->index ) >= stream->size )
-		{
-			if ( length > 1U )
-			{
-				restBuffer[stream->length] = ']';
-			}
-			stream->length++;
-			stream->status = STREAM_END;
-		}
-		else
-		{
-			if ( length > 1U )
-			{
-				restBuffer[stream->length] = ',';
-			}
-			stream->length++;
-			stream->status  = STREAM_CONTINUES;
-		}
-		restBuffer[stream->length] = 0U;
-		stream->content = restBuffer;
-	}
-
-	return stream->status;
+  return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Stream call back for charts data transfer
+ */
+STREAM_STATUS cHTTPstreamCharts( HTTP_STREAM* stream )
+{
+  uint32_t length = stream->size - stream->start;
 
+  if ( ( stream->index == 0U ) && ( length > 1U ) )
+  {
+    restBuffer[0U] = '[';
+    stream->length = uRESTmakeChart( &restBuffer[1U], charts[stream->start + stream->index] ) + 1U;
+  }
+  else
+  {
+    stream->length = uRESTmakeChart( restBuffer, charts[stream->start + stream->index] );
+  }
+  if ( stream->length == 0U )
+  {
+    stream->status = STREAM_ERROR;
+  }
+  else
+  {
+    stream->index++;
+    if ( ( stream->start + stream->index ) >= stream->size )
+    {
+      if ( length > 1U )
+      {
+        restBuffer[stream->length] = ']';
+      }
+      stream->length++;
+      stream->status = STREAM_END;
+    }
+    else
+    {
+      if ( length > 1U )
+      {
+        restBuffer[stream->length] = ',';
+      }
+      stream->length++;
+      stream->status  = STREAM_CONTINUES;
+    }
+    restBuffer[stream->length] = 0U;
+    stream->content = restBuffer;
+  }
+
+  return stream->status;
+}
 
 
 

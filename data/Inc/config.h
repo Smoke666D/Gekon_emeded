@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-19 17:22:54
+ * Make time: 2020-03-25 12:07:22
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -9,7 +9,7 @@
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   SETTING_REGISTER_NUMBER      103U
+#define   SETTING_REGISTER_NUMBER      110U
 
 #define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"
@@ -51,6 +51,12 @@ typedef struct
   eConfigBitMap*   bitMap;
 } eConfigReg;
 /*------------------------- Extern -------------------------------------*/
+extern eConfigReg versionController;
+extern eConfigReg versionFirmware;
+extern eConfigReg serialNumber;
+extern eConfigReg displayBrightnesLevel;
+extern eConfigReg displayContarstLevel;
+extern eConfigReg displaySleepDelay;
 extern eConfigReg moduleSetup;
 extern eConfigReg oilPressureSetup;
 extern eConfigReg oilPressureAlarmLevel;
@@ -87,6 +93,7 @@ extern eConfigReg dodType;
 extern eConfigReg doefType;
 extern eConfigReg timerMainsTransientDelay;
 extern eConfigReg timerStartDelay;
+extern eConfigReg timerPreheating;
 extern eConfigReg timerCranking;
 extern eConfigReg timerCrankDelay;
 extern eConfigReg timerStartupIdleTime;
@@ -103,21 +110,21 @@ extern eConfigReg timerSolenoidHold;
 extern eConfigReg timerFailStopDelay;
 extern eConfigReg timerGenTransientDelay;
 extern eConfigReg genSetup;
-extern eConfigReg genRatedActivePower;
-extern eConfigReg genRatedReactivePower;
-extern eConfigReg genRatedApparentPower;
-extern eConfigReg genRatedFrequency;
-extern eConfigReg genCurrentPrimary;
-extern eConfigReg genCurrentFullLoadRating;
+extern eConfigReg genRatedActivePowerLevel;
+extern eConfigReg genRatedReactivePowerLevel;
+extern eConfigReg genRatedApparentPowerLevel;
+extern eConfigReg genRatedFrequencyLevel;
+extern eConfigReg genCurrentPrimaryLevel;
+extern eConfigReg genCurrentFullLoadRatingLevel;
 extern eConfigReg genAlarms;
 extern eConfigReg genUnderVoltageAlarmLevel;
 extern eConfigReg genUnderVoltagePreAlarmLevel;
 extern eConfigReg genOverVoltagePreAlarmLevel;
 extern eConfigReg genOverVoltageAlarmLevel;
-extern eConfigReg genUnderFrequencyAlrmLevel;
-extern eConfigReg genUnderFrequencyPreAlrmLevel;
-extern eConfigReg genOverFrequencyPreAlrmLevel;
-extern eConfigReg genOverFrequencyAlrmLevel;
+extern eConfigReg genUnderFrequencyAlarmLevel;
+extern eConfigReg genUnderFrequencyPreAlarmLevel;
+extern eConfigReg genOverFrequencyPreAlarmLevel;
+extern eConfigReg genOverFrequencyAlarmLevel;
 extern eConfigReg genOverCurrentThermalProtectionLevel;
 extern eConfigReg genOverCurrentCutoffLevel;
 extern eConfigReg genOverCurrentAlarmLevel;
@@ -133,10 +140,10 @@ extern eConfigReg mainsOverVoltageAlarmLevel;
 extern eConfigReg mainsUnderFrequencyAlarmLevel;
 extern eConfigReg mainsOverFrequencyAlarmLevel;
 extern eConfigReg engineSetup;
-extern eConfigReg enginePreHeatOn;
-extern eConfigReg enginePreHeatDuration;
-extern eConfigReg enginePostHeatOn;
-extern eConfigReg enginePostHeatDuration;
+extern eConfigReg enginePreHeatLevel;
+extern eConfigReg enginePreHeatDelay;
+extern eConfigReg enginePostHeatLevel;
+extern eConfigReg enginePostHeatDelay;
 extern eConfigReg crankSetup;
 extern eConfigReg crankDisconnectgenFreqLevel;
 extern eConfigReg crankDisconnectOilPressureLevel;
@@ -151,9 +158,9 @@ extern eConfigReg batteryChargeShutdownDelay;
 extern eConfigReg batteryChargeWarningLevel;
 extern eConfigReg batteryChargeWarningDelay;
 extern eConfigReg maintenanceAlarms;
-extern eConfigReg maintenanceAlarmOilEngineRunTime;
-extern eConfigReg maintenanceAlarmAirEngineRunTime;
-extern eConfigReg maintenanceAlarmFuelEngineRunTime;
+extern eConfigReg maintenanceAlarmOilTime;
+extern eConfigReg maintenanceAlarmAirTime;
+extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg* configReg[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

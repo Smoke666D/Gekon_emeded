@@ -61,7 +61,7 @@ typedef enum
 #define	HTTP_CONTENT_STR_HTML     "text/html"
 #define	HHTP_CONTENT_STR_CSS      "text/css"
 #define HTTP_CONTENT_STR_JS       "text/javascript"
-#define HTTP_CONTENT_STR_JSON     "application/json"
+#define HTTP_CONTENT_STR_JSON     "application/json; charset=windows-125"
 #define HTTP_CONTENT_STR_XML      "text/xml"
 
 typedef enum

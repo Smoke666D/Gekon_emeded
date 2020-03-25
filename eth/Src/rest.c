@@ -505,12 +505,20 @@ uint8_t uRESTmakeStrRecord( char* output, const char* header, char* data, uint8_
 {
 	uint8_t	shift   = uRESTmakeStartRecord( output, header );
 	uint8_t i       = 0U;
+	char    buf[2]  = {0x00, 0x00};
 
 	output[shift] = QUOTES_ANCII;
 	shift++;
+	output[shift + 0U] = '%';
+	output[shift + 1U] = 'D';
+	output[shift + 2U] = '0';
+	output[shift + 3U] = '%';
+	shift += 4U;
 	for ( i=0U; i<dataLen; i++ )
 	{
-		output[shift + i] = data[i];
+	  itoa((uint8_t)data[i], buf, 16U);
+	  output[shift + 2*i + 0U] = buf[0];
+	  output[shift + 2*i + 1U] = buf[1];
 	}
 	shift += dataLen;
 	output[shift] = QUOTES_ANCII;

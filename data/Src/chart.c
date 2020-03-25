@@ -9,9 +9,9 @@
 /*---------------------- Structures ------------------------------------*/
 eChartData oilSensorChart = {
   .xmin     = 0x00000000U,
-  .xmax     = 0x00100000U,
+  .xmax     = 0x05DC0000U,
   .ymin     = 0x00000000U,
-  .ymax     = 0x00100000U,
+  .ymax     = 0x000F0000U,
   .xunit    = {'О','м',' '},
   .yunit    = {'Б','а','р'},
   .size     = 2U,
@@ -22,16 +22,16 @@ eChartData oilSensorChart = {
   },
   .dots[1]  =
   {
-    .x = 0x00100000U,
-    .y = 0x00100000U,
+    .x = 0x05DC0000U,
+    .y = 0x000F0000U,
   },
 };
 
 eChartData coolantSensorChart = {
   .xmin     = 0x00000000U,
-  .xmax     = 0x00100000U,
+  .xmax     = 0x05DC0000U,
   .ymin     = 0x00000000U,
-  .ymax     = 0x00100000U,
+  .ymax     = 0x000F0000U,
   .xunit    = {'О','м',' '},
   .yunit    = {'Б','а','р'},
   .size     = 2U,
@@ -42,16 +42,16 @@ eChartData coolantSensorChart = {
   },
   .dots[1]  =
   {
-    .x = 0x00100000U,
-    .y = 0x00100000U,
+    .x = 0x05DC0000U,
+    .y = 0x000F0000U,
   },
 };
 
 eChartData fuelSensorChart = {
   .xmin     = 0x00000000U,
-  .xmax     = 0x00100000U,
+  .xmax     = 0x05DC0000U,
   .ymin     = 0x00000000U,
-  .ymax     = 0x00100000U,
+  .ymax     = 0x000F0000U,
   .xunit    = {'О','м',' '},
   .yunit    = {'Б','а','р'},
   .size     = 2U,
@@ -62,8 +62,8 @@ eChartData fuelSensorChart = {
   },
   .dots[1]  =
   {
-    .x = 0x00100000U,
-    .y = 0x00100000U,
+    .x = 0x05DC0000U,
+    .y = 0x000F0000U,
   },
 };
 

@@ -38,8 +38,8 @@ typedef struct
   fix16_t 	xmax;
   fix16_t 	ymin;
   fix16_t 	ymax;
-  char      xunit[CHART_UNIT_LENGTH];
-  char      yunit[CHART_UNIT_LENGTH];
+  uint16_t  xunit[CHART_UNIT_LENGTH];
+  uint16_t  yunit[CHART_UNIT_LENGTH];
   uint16_t	size;
   eChartDot	dots[CHART_CHART_MAX_SIZE];
 } eChartData;

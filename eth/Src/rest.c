@@ -21,7 +21,7 @@ uint8_t    uRESTmakeStartRecord( char* output, const char* header );
 uint8_t    uRESTmakeDigRecord( char* output, const char* header, uint16_t data, RESTrecordPos last );
 uint8_t    uRESTmake16FixDigRecord( char* output, const char* header, fix16_t data, RESTrecordPos last );
 uint8_t    uRESTmakeSignedRecord( char* output, const char* header, signed char data, RESTrecordPos last );
-uint8_t    uRESTmakeStrRecord( char* output, const char* header, char* data, uint8_t dataLen, RESTrecordPos last );
+uint8_t    uRESTmakeStrRecord( char* output, const char* header, uint16_t* data, uint8_t dataLen, RESTrecordPos last );
 
 uint32_t   uRESTmakeConfig( char* output, eConfigReg* reg );
 uint32_t   uRESTmakeBitMap( char* output, eConfigBitMap* bitMap, RESTrecordPos last );
@@ -501,33 +501,37 @@ uint8_t uRESTmake16FixDigRecord( char* output, const char* header, fix16_t data,
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uRESTmakeStrRecord( char* output, const char* header, char* data, uint8_t dataLen, RESTrecordPos last )
+uint8_t uRESTmakeStrRecord( char* output, const char* header, uint16_t* data, uint8_t dataLen, RESTrecordPos last )
 {
-	uint8_t	shift   = uRESTmakeStartRecord( output, header );
-	uint8_t i       = 0U;
-	char    buf[2]  = {0x00, 0x00};
+  uint8_t shift = uRESTmakeStartRecord( output, header );
+  uint8_t i     = 0U;
+  uint8_t len   = 0U;
 
-	output[shift] = QUOTES_ANCII;
-	shift++;
-	output[shift + 0U] = '%';
-	output[shift + 1U] = 'D';
-	output[shift + 2U] = '0';
-	output[shift + 3U] = '%';
-	shift += 4U;
-	for ( i=0U; i<dataLen; i++ )
+  output[shift] = QUOTES_ANCII;
+  shift++;
+  for ( i=0U; i<dataLen; i++ )
+  {
+	if ( data[i] > 0x00FF )
 	{
-	  itoa((uint8_t)data[i], buf, 16U);
-	  output[shift + 2*i + 0U] = buf[0];
-	  output[shift + 2*i + 1U] = buf[1];
+      sprintf( &output[shift], " %02X %02X", (uint8_t)((data[i]&0xFF00)>>8), (uint8_t)(data[i]&0x00FF));
+      output[shift]      = '%';
+      output[shift + 3U] = '%';
+      shift += 6U;
 	}
-	shift += dataLen;
-	output[shift] = QUOTES_ANCII;
-	shift++;
-	if ( last == REST_CONT_RECORD )
+	else
 	{
-		output[shift] = ',';
-		shift++;
+      sprintf( &output[shift], " %02X", (uint8_t)(data[i]&0x00FF) );
+      output[shift] = '%';
+	  shift += 3U;
 	}
-	return shift;
+  }
+  output[shift] = QUOTES_ANCII;
+  shift++;
+  if ( last == REST_CONT_RECORD )
+  {
+    output[shift] = ',';
+    shift++;
+  }
+  return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/

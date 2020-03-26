@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-25 12:07:22
+ * Make time: 2020-03-26 09:32:39
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -44,8 +44,8 @@ typedef struct
   uint16_t         value;
   uint16_t         min;
   uint16_t         max;
-  char             units[MAX_UNITS_LENGTH];
-  char             type;
+  uint16_t         units[MAX_UNITS_LENGTH];
+  uint16_t         type;
   uint8_t          len;
   uint8_t          bitMapSize;
   eConfigBitMap*   bitMap;

@@ -141,7 +141,6 @@ RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length )
   char*           pchEn;
   char            buffer[5] = { 0U, 0U, 0U, 0U, 0U };
   uint32_t        contentLengthHeader = 0U;
-  uint32_t        contetnLengthRead   = 0U;
 
   pchSt = strstr( message, "PUT" );
   if ( ( pchSt != NULL ) && ( pchSt[0] < 0x7F ) )
@@ -149,7 +148,7 @@ RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length )
     pchSt = strstr( message, HTTP_LENGTH_LINE );
     if ( ( pchSt != NULL) && ( pchSt[0] < 0x7F ) )
     {
-      pchSt += strlen( HTTP_LENGTH_LINE );
+      pchSt = &pchSt[strlen( HTTP_LENGTH_LINE )];
       pchEn = strchr( pchSt, LF_HEX );
       if ( pchEn != NULL )
       {
@@ -161,9 +160,8 @@ RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length )
           pchSt = strstr( message, HTTP_END_HEADER );
           if ( pchSt != NULL )
           {
-            pchSt += strlen( HTTP_END_HEADER );
-            contetnLengthRead = strlen( pchSt ) - length;
-            if ( contetnLengthRead < contentLengthHeader )
+            pchSt = &pchSt[strlen( HTTP_END_HEADER )];
+            if ( strlen( pchSt ) >= contentLengthHeader )
             {
               res = RECEIVE_MESSAGE_COMPLETE;
             }
@@ -190,69 +188,69 @@ RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length )
 /*---------------------------------------------------------------------------------------------------*/
 void startNetClientTask( void const * argument )
 {
-	struct 					netconn * netcon = ( struct netconn * )argument;
-	struct 					netbuf  * nb;
-	char*						input       = pvPortMalloc( HTTP_INPUT_BUFFER_SIZE );
-	char*						endInput    = input;
-	RECEIVE_MESSAGE	endMessage  = RECEIVE_MESSAGE_CONTINUES;
-	char*						output			= pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
-	HTTP_RESPONSE 	response;
-	HTTP_REQUEST		request;
-	uint32_t 				len         = 0U;
-	STREAM_STATUS		status      = STREAM_CONTINUES;
+  struct netconn * netcon      = ( struct netconn * )argument;
+  struct netbuf *  nb;
+  char*            input       = pvPortMalloc( HTTP_INPUT_BUFFER_SIZE );
+  char*            endInput    = input;
+  RECEIVE_MESSAGE  endMessage  = RECEIVE_MESSAGE_CONTINUES;
+  char*            output      = pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
+  HTTP_RESPONSE    response;
+  HTTP_REQUEST     request;
+  uint32_t         len         = 0U;
+  STREAM_STATUS    status      = STREAM_CONTINUES;
 
   for(;;)
   {
   	if( netconn_recv( netcon, &nb ) == ERR_OK )
   	{
-  		/*-------------------- Input message --------------------*/
-  		len = netbuf_len( nb );														// Get length of input message
-  		netbuf_copy( nb, endInput, len );									// Copy message from net buffer to local buffer
-  		netbuf_delete( nb );															// Delete net buffer
-  		endInput[len] = 0U;																// Mark end of string
-  		endMessage = eSERVERanalizMessage( input, len );	// Analysis is the message have been ended
-  		/*------------------- Analysis Message -------------------*/
-  		if ( endMessage == RECEIVE_MESSAGE_COMPLETE )
-  		{
-  			endInput = input;																					// Return pointer to the start of the local buffer
-  			eHTTPresponse( input, &request, &response, output );			// Parsing request and prepare the response
+      /*-------------------- Input message --------------------*/
+      len = netbuf_len( nb );                          // Get length of input message
+      netbuf_copy( nb, endInput, len );                // Copy message from net buffer to local buffer
+      netbuf_delete( nb );                             // Delete net buffer
+      endInput[len] = 0x00U;                           // Mark end of string
+      endMessage = eSERVERanalizMessage( input, len ); // Analysis is the message have been ended
+      /*------------------- Analysis Message -------------------*/
+      if ( endMessage == RECEIVE_MESSAGE_COMPLETE )
+      {
+        endInput = input;                                    // Return pointer to the start of the local buffer
+        eHTTPresponse( input, &request, &response, output ); // Parsing request and prepare the response
   		/*-------------------- Send response ---------------------*/
-  			if ( response.status != HTTP_STATUS_ERROR )
-  			{
-  			  netconn_write( netcon, output, strlen(output), NETCONN_COPY );									// Send header of the response
+        if ( response.status != HTTP_STATUS_ERROR )
+        {
+          netconn_write( netcon, output, strlen(output), NETCONN_COPY );									// Send header of the response
   		/*-------------------- Send content ----------------------*/
-  			  if ( response.contentLength > 0U )																							// There is content
-  			  {
-  			  	while ( status == STREAM_CONTINUES )
-  			  	{
-  			  		status = response.callBack( &response.stream );
-  			  		if ( status != STREAM_ERROR )
-  			  		{
-  			  			netconn_write( netcon, response.stream.content, response.stream.length, NETCONN_COPY );	// Send content
-  			  		}
-  			  		else
-  			  		{
-  			  			break;
-  			  		}
-  			  	}
-  			  	status = STREAM_CONTINUES;
-  			  }
-  			}
-  		}
-  		/*-------------------- Continue message --------------------*/
-  		else if ( endMessage == RECEIVE_MESSAGE_CONTINUES )
-  		{
-  			endInput = &endInput[len];
-  		}
-  	}
-  	/*--------------------- Close connection ---------------------*/
-  	else
-  	{
-  		netconn_close( netcon );
-  		netconn_delete( netcon );
-  		vPortFree( input );
-  		vPortFree( output );
-  		osThreadExit();
+          if ( response.contentLength > 0U )																							// There is content
+          {
+            while ( status == STREAM_CONTINUES )
+            {
+              status = response.callBack( &response.stream );
+              if ( status != STREAM_ERROR )
+              {
+                netconn_write( netcon, response.stream.content, response.stream.length, NETCONN_COPY );	// Send content
+              }
+              else
+              {
+                break;
+              }
+            }
+            status = STREAM_CONTINUES;
+          }
+        }
+      }
+      /*-------------------- Continue message --------------------*/
+      else if ( endMessage == RECEIVE_MESSAGE_CONTINUES )
+      {
+        endInput = &endInput[len];
+      }
+    }
+    /*--------------------- Close connection ---------------------*/
+    else
+    {
+      netconn_close( netcon );
+      netconn_delete( netcon );
+      vPortFree( input );
+      vPortFree( output );
+      osThreadExit();
   	}
   }
 }

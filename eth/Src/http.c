@@ -251,6 +251,15 @@ void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
         }
         break;
       case REST_CHARTS:
+    	if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+    	{
+          if ( eRESTparsingChart( content, charts[adr] ) == REST_OK )
+    	  {
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->contentLength = 0U;
+          }
+    	}
     	break;
       case REST_REQUEST_ERROR:
         break;

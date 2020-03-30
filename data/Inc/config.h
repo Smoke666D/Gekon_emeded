@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-26 09:32:39
+ * Make time: 2020-03-30 06:52:36
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -19,6 +19,7 @@
 #define   CONFIG_REG_MAX_STR           "max"
 #define   CONFIG_REG_UNITS_STR         "units"
 #define   CONFIG_REG_TYPE_STR          "type"
+#define   CONFIG_REG_RW_STATUS         "rw"
 #define   CONFIG_REG_LEN_STR           "len"
 #define   CONFIG_REG_BIT_MAP_SIZE_STR  "bitMapSize"
 #define   CONFIG_REG_BIT_MAP_STR       "bit"
@@ -28,6 +29,12 @@
 #define   BIT_MAP_MIN_STR              "min"
 #define   BIT_MAP_MAX_STR              "max"
 /*----------------------- Structures -----------------------------------*/
+typedef enum
+{
+  CONFIG_READ_ONLY,
+  CONFIG_READ_WRITE,
+} CONFIG_RW;
+
 typedef struct
 {
   uint16_t  mask;
@@ -46,6 +53,7 @@ typedef struct
   uint16_t         max;
   uint16_t         units[MAX_UNITS_LENGTH];
   uint16_t         type;
+  CONFIG_RW        rw;
   uint8_t          len;
   uint8_t          bitMapSize;
   eConfigBitMap*   bitMap;

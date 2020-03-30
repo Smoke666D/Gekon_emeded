@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-26 09:32:39
+ * Make time: 2020-03-30 06:52:36
  */
 #include   "config.h"
 
@@ -14,6 +14,7 @@ eConfigReg versionController =
    .max        = 0U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_ONLY,
    .len        = 1U,
 };
 eConfigReg versionFirmware =
@@ -26,6 +27,7 @@ eConfigReg versionFirmware =
    .max        = 0U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_ONLY,
    .len        = 1U,
 };
 eConfigReg serialNumber =
@@ -38,6 +40,7 @@ eConfigReg serialNumber =
    .max        = 0U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_ONLY,
    .len        = 6U,
 };
 eConfigReg displayBrightnesLevel =
@@ -50,6 +53,7 @@ eConfigReg displayBrightnesLevel =
    .max        = 100U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg displayContarstLevel =
@@ -62,6 +66,7 @@ eConfigReg displayContarstLevel =
    .max        = 100U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg displaySleepDelay =
@@ -74,6 +79,7 @@ eConfigReg displaySleepDelay =
    .max        = 600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap moduleSetupBitMap[2U] = 
@@ -91,6 +97,7 @@ eConfigReg moduleSetup =
    .max        = 3U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 2U,
    .bitMap     = moduleSetupBitMap
@@ -112,6 +119,7 @@ eConfigReg oilPressureSetup =
    .max        = 63U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = oilPressureSetupBitMap
@@ -126,6 +134,7 @@ eConfigReg oilPressureAlarmLevel =
    .max        = 103U,
    .units      = {'Б', 'а', 'р', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg oilPressurePreAlarmLevel =
@@ -138,6 +147,7 @@ eConfigReg oilPressurePreAlarmLevel =
    .max        = 103U,
    .units      = {'Б', 'а', 'р', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap coolantTempSetupBitMap[6U] = 
@@ -159,6 +169,7 @@ eConfigReg coolantTempSetup =
    .max        = 63U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 6U,
    .bitMap     = coolantTempSetupBitMap
@@ -173,6 +184,7 @@ eConfigReg coolantHightTempAlarmLevel =
    .max        = 250U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg coolantHightTempPreAlarmLevel =
@@ -185,6 +197,7 @@ eConfigReg coolantHightTempPreAlarmLevel =
    .max        = 250U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg coolantTempHeaterOffLevel =
@@ -197,6 +210,7 @@ eConfigReg coolantTempHeaterOffLevel =
    .max        = 250U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg coolantTempHeaterOnLevel =
@@ -209,6 +223,7 @@ eConfigReg coolantTempHeaterOnLevel =
    .max        = 250U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg coolantTempCoolerOffLevel =
@@ -221,6 +236,7 @@ eConfigReg coolantTempCoolerOffLevel =
    .max        = 250U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg coolantTempCoolerOnLevel =
@@ -233,6 +249,7 @@ eConfigReg coolantTempCoolerOnLevel =
    .max        = 250U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap fuelLevelSetupBitMap[8U] = 
@@ -256,6 +273,7 @@ eConfigReg fuelLevelSetup =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 8U,
    .bitMap     = fuelLevelSetupBitMap
@@ -270,6 +288,7 @@ eConfigReg fuelLevelLowAlarmLevel =
    .max        = 95U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelLevelLowAlarmDelay =
@@ -282,6 +301,7 @@ eConfigReg fuelLevelLowAlarmDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelLevelLowPreAlarmLevel =
@@ -294,6 +314,7 @@ eConfigReg fuelLevelLowPreAlarmLevel =
    .max        = 96U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelLevelLowPreAlarmDelay =
@@ -306,6 +327,7 @@ eConfigReg fuelLevelLowPreAlarmDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelLevelHightPreAlarmLevel =
@@ -318,6 +340,7 @@ eConfigReg fuelLevelHightPreAlarmLevel =
    .max        = 98U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelLevelHightPreAlarmDelay =
@@ -330,6 +353,7 @@ eConfigReg fuelLevelHightPreAlarmDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelLevelHightAlarmLevel =
@@ -342,6 +366,7 @@ eConfigReg fuelLevelHightAlarmLevel =
    .max        = 100U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelLevelHightAlarmDelay =
@@ -354,6 +379,7 @@ eConfigReg fuelLevelHightAlarmDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelPumpOnLevel =
@@ -366,6 +392,7 @@ eConfigReg fuelPumpOnLevel =
    .max        = 100U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg fuelPumpOffLevel =
@@ -378,6 +405,7 @@ eConfigReg fuelPumpOffLevel =
    .max        = 100U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap diaSetupBitMap[4U] = 
@@ -397,6 +425,7 @@ eConfigReg diaSetup =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = diaSetupBitMap
@@ -411,6 +440,7 @@ eConfigReg diaDelay =
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap dibSetupBitMap[4U] = 
@@ -430,6 +460,7 @@ eConfigReg dibSetup =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = dibSetupBitMap
@@ -444,6 +475,7 @@ eConfigReg dibDelay =
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap dicSetupBitMap[4U] = 
@@ -463,6 +495,7 @@ eConfigReg dicSetup =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = dicSetupBitMap
@@ -477,6 +510,7 @@ eConfigReg dicDelay =
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap didSetupBitMap[4U] = 
@@ -496,6 +530,7 @@ eConfigReg didSetup =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = didSetupBitMap
@@ -510,6 +545,7 @@ eConfigReg didDelay =
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap doSetupBitMap[6U] = 
@@ -531,6 +567,7 @@ eConfigReg doSetup =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 6U,
    .bitMap     = doSetupBitMap
@@ -550,6 +587,7 @@ eConfigReg doabType =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 2U,
    .bitMap     = doabTypeBitMap
@@ -569,6 +607,7 @@ eConfigReg dodType =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 2U,
    .bitMap     = dodTypeBitMap
@@ -588,6 +627,7 @@ eConfigReg doefType =
    .max        = 1023U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 2U,
    .bitMap     = doefTypeBitMap
@@ -602,6 +642,7 @@ eConfigReg timerMainsTransientDelay =
    .max        = 100U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerStartDelay =
@@ -614,6 +655,7 @@ eConfigReg timerStartDelay =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerPreheating =
@@ -626,6 +668,7 @@ eConfigReg timerPreheating =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerCranking =
@@ -638,6 +681,7 @@ eConfigReg timerCranking =
    .max        = 30U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerCrankDelay =
@@ -650,6 +694,7 @@ eConfigReg timerCrankDelay =
    .max        = 30U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerStartupIdleTime =
@@ -662,6 +707,7 @@ eConfigReg timerStartupIdleTime =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerNominalRPMDelay =
@@ -674,6 +720,7 @@ eConfigReg timerNominalRPMDelay =
    .max        = 30U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerSafetyOnDelay =
@@ -686,6 +733,7 @@ eConfigReg timerSafetyOnDelay =
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerWarming =
@@ -698,6 +746,7 @@ eConfigReg timerWarming =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerTransferDelay =
@@ -710,6 +759,7 @@ eConfigReg timerTransferDelay =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerBreakerTripPulse =
@@ -722,6 +772,7 @@ eConfigReg timerBreakerTripPulse =
    .max        = 50U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerBreakerClosePulse =
@@ -734,6 +785,7 @@ eConfigReg timerBreakerClosePulse =
    .max        = 50U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerReturnDelay =
@@ -746,6 +798,7 @@ eConfigReg timerReturnDelay =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerCooling =
@@ -758,6 +811,7 @@ eConfigReg timerCooling =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerCoolingIdle =
@@ -770,6 +824,7 @@ eConfigReg timerCoolingIdle =
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerSolenoidHold =
@@ -782,6 +837,7 @@ eConfigReg timerSolenoidHold =
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerFailStopDelay =
@@ -794,6 +850,7 @@ eConfigReg timerFailStopDelay =
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg timerGenTransientDelay =
@@ -806,6 +863,7 @@ eConfigReg timerGenTransientDelay =
    .max        = 100U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap genSetupBitMap[4U] = 
@@ -825,6 +883,7 @@ eConfigReg genSetup =
    .max        = 255U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = genSetupBitMap
@@ -839,6 +898,7 @@ eConfigReg genRatedActivePowerLevel =
    .max        = 10000U,
    .units      = {'к', 'В', 'т', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genRatedReactivePowerLevel =
@@ -851,6 +911,7 @@ eConfigReg genRatedReactivePowerLevel =
    .max        = 10000U,
    .units      = {'к', 'В', 'А', 'Р'},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genRatedApparentPowerLevel =
@@ -863,6 +924,7 @@ eConfigReg genRatedApparentPowerLevel =
    .max        = 10000U,
    .units      = {'к', 'В', 'А', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genRatedFrequencyLevel =
@@ -875,6 +937,7 @@ eConfigReg genRatedFrequencyLevel =
    .max        = 747U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genCurrentPrimaryLevel =
@@ -887,6 +950,7 @@ eConfigReg genCurrentPrimaryLevel =
    .max        = 8000U,
    .units      = {'А', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genCurrentFullLoadRatingLevel =
@@ -899,6 +963,7 @@ eConfigReg genCurrentFullLoadRatingLevel =
    .max        = 8000U,
    .units      = {'А', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap genAlarmsBitMap[12U] = 
@@ -926,6 +991,7 @@ eConfigReg genAlarms =
    .max        = 65535U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 12U,
    .bitMap     = genAlarmsBitMap
@@ -940,6 +1006,7 @@ eConfigReg genUnderVoltageAlarmLevel =
    .max        = 708U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genUnderVoltagePreAlarmLevel =
@@ -952,6 +1019,7 @@ eConfigReg genUnderVoltagePreAlarmLevel =
    .max        = 710U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverVoltagePreAlarmLevel =
@@ -964,6 +1032,7 @@ eConfigReg genOverVoltagePreAlarmLevel =
    .max        = 715U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverVoltageAlarmLevel =
@@ -976,6 +1045,7 @@ eConfigReg genOverVoltageAlarmLevel =
    .max        = 717U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genUnderFrequencyAlarmLevel =
@@ -988,6 +1058,7 @@ eConfigReg genUnderFrequencyAlarmLevel =
    .max        = 744U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genUnderFrequencyPreAlarmLevel =
@@ -1000,6 +1071,7 @@ eConfigReg genUnderFrequencyPreAlarmLevel =
    .max        = 745U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverFrequencyPreAlarmLevel =
@@ -1012,6 +1084,7 @@ eConfigReg genOverFrequencyPreAlarmLevel =
    .max        = 747U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverFrequencyAlarmLevel =
@@ -1024,6 +1097,7 @@ eConfigReg genOverFrequencyAlarmLevel =
    .max        = 749U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverCurrentThermalProtectionLevel =
@@ -1036,6 +1110,7 @@ eConfigReg genOverCurrentThermalProtectionLevel =
    .max        = 120U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverCurrentCutoffLevel =
@@ -1048,6 +1123,7 @@ eConfigReg genOverCurrentCutoffLevel =
    .max        = 120U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverCurrentAlarmLevel =
@@ -1060,6 +1136,7 @@ eConfigReg genOverCurrentAlarmLevel =
    .max        = 120U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genOverCurrentAlarmDelay =
@@ -1072,6 +1149,7 @@ eConfigReg genOverCurrentAlarmDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genCurrentOverloadProtectionLevel =
@@ -1084,6 +1162,7 @@ eConfigReg genCurrentOverloadProtectionLevel =
    .max        = 125U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genCurrentOverloadProtectionDelay =
@@ -1096,6 +1175,7 @@ eConfigReg genCurrentOverloadProtectionDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genCurrentOverPhaseImbalanceLevel =
@@ -1108,6 +1188,7 @@ eConfigReg genCurrentOverPhaseImbalanceLevel =
    .max        = 125U,
    .units      = {'%', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg genCurrentOverPhaseImbalanceDelay =
@@ -1120,6 +1201,7 @@ eConfigReg genCurrentOverPhaseImbalanceDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap mainsSetupBitMap[3U] = 
@@ -1138,6 +1220,7 @@ eConfigReg mainsSetup =
    .max        = 31U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 3U,
    .bitMap     = mainsSetupBitMap
@@ -1159,6 +1242,7 @@ eConfigReg mainsAlarms =
    .max        = 15U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = mainsAlarmsBitMap
@@ -1173,6 +1257,7 @@ eConfigReg mainsUnderVoltageAlarmLevel =
    .max        = 713U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg mainsOverVoltageAlarmLevel =
@@ -1185,6 +1270,7 @@ eConfigReg mainsOverVoltageAlarmLevel =
    .max        = 717U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg mainsUnderFrequencyAlarmLevel =
@@ -1197,6 +1283,7 @@ eConfigReg mainsUnderFrequencyAlarmLevel =
    .max        = 747U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg mainsOverFrequencyAlarmLevel =
@@ -1209,6 +1296,7 @@ eConfigReg mainsOverFrequencyAlarmLevel =
    .max        = 749U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap engineSetupBitMap[3U] = 
@@ -1227,6 +1315,7 @@ eConfigReg engineSetup =
    .max        = 63U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 3U,
    .bitMap     = engineSetupBitMap
@@ -1241,6 +1330,7 @@ eConfigReg enginePreHeatLevel =
    .max        = 100U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg enginePreHeatDelay =
@@ -1253,6 +1343,7 @@ eConfigReg enginePreHeatDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg enginePostHeatLevel =
@@ -1265,6 +1356,7 @@ eConfigReg enginePostHeatLevel =
    .max        = 100U,
    .units      = {'C', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg enginePostHeatDelay =
@@ -1277,6 +1369,7 @@ eConfigReg enginePostHeatDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap crankSetupBitMap[4U] = 
@@ -1296,6 +1389,7 @@ eConfigReg crankSetup =
    .max        = 7U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = crankSetupBitMap
@@ -1310,6 +1404,7 @@ eConfigReg crankDisconnectgenFreqLevel =
    .max        = 400U,
    .units      = {'Г', 'ц', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg crankDisconnectOilPressureLevel =
@@ -1322,6 +1417,7 @@ eConfigReg crankDisconnectOilPressureLevel =
    .max        = 40U,
    .units      = {'Б', 'а', 'р', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg crankDisconnectChargeAlternatorLevel =
@@ -1334,6 +1430,7 @@ eConfigReg crankDisconnectChargeAlternatorLevel =
    .max        = 400U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap batteryAlarmsBitMap[4U] = 
@@ -1353,6 +1450,7 @@ eConfigReg batteryAlarms =
    .max        = 15U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 4U,
    .bitMap     = batteryAlarmsBitMap
@@ -1367,6 +1465,7 @@ eConfigReg batteryUnderVoltageLevel =
    .max        = 397U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg batteryUnderVoltageDelay =
@@ -1379,6 +1478,7 @@ eConfigReg batteryUnderVoltageDelay =
    .max        = 65535U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg batteryOverVoltageLevel =
@@ -1391,6 +1491,7 @@ eConfigReg batteryOverVoltageLevel =
    .max        = 400U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg batteryOverVoltageDelay =
@@ -1403,6 +1504,7 @@ eConfigReg batteryOverVoltageDelay =
    .max        = 65535U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg batteryChargeShutdownLevel =
@@ -1415,6 +1517,7 @@ eConfigReg batteryChargeShutdownLevel =
    .max        = 388U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg batteryChargeShutdownDelay =
@@ -1427,6 +1530,7 @@ eConfigReg batteryChargeShutdownDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg batteryChargeWarningLevel =
@@ -1439,6 +1543,7 @@ eConfigReg batteryChargeWarningLevel =
    .max        = 390U,
    .units      = {'В', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg batteryChargeWarningDelay =
@@ -1451,6 +1556,7 @@ eConfigReg batteryChargeWarningDelay =
    .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 static eConfigBitMap maintenanceAlarmsBitMap[6U] = 
@@ -1472,6 +1578,7 @@ eConfigReg maintenanceAlarms =
    .max        = 63U,
    .units      = {' ', ' ', ' ', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
    .bitMapSize = 6U,
    .bitMap     = maintenanceAlarmsBitMap
@@ -1486,6 +1593,7 @@ eConfigReg maintenanceAlarmOilTime =
    .max        = 5000U,
    .units      = {'ч', 'а', 'с', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg maintenanceAlarmAirTime =
@@ -1498,6 +1606,7 @@ eConfigReg maintenanceAlarmAirTime =
    .max        = 5000U,
    .units      = {'ч', 'а', 'с', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 eConfigReg maintenanceAlarmFuelTime =
@@ -1510,6 +1619,7 @@ eConfigReg maintenanceAlarmFuelTime =
    .max        = 5000U,
    .units      = {'ч', 'а', 'с', ' '},
    .type       = 'U',
+   .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
 };
 

@@ -37,7 +37,7 @@ void vSYSgetUniqueID( uint32_t* id )
   id[0U] = GET_UNIQUE_ID0;
   id[1U] = GET_UNIQUE_ID1;
   id[2U] = GET_UNIQUE_ID2;
-	return;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 

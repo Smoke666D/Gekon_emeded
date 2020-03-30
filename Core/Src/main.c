@@ -156,8 +156,9 @@ int main(void)
   MX_TIM7_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  vSYSInitSerial( &huart3 );				/* Debug serial interface */
-  vRTCputTimer( &hrtc );	/* RTC structure */
+  vSYSInitSerial( &huart3 );    /* Debug serial interface */
+  vRTCputTimer( &hrtc );        /* RTC structure */
+  //vSYSgetUniqueID(&serialNumber.value);
   vSYSSerial("***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */

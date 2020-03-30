@@ -32,6 +32,7 @@ uint32_t   uRESTmakeDotArray( char* output, uint16_t len, eChartDot* dot );
 uint32_t   uRESTmakeDot( char* output, eChartDot* dot, RESTrecordPos last );
 
 REST_ERROR eRESTpareingRecord(  const char* input, const char* header, char* data );
+REST_ERROR eRESTparsingRwRecord( const char* input, CONFIG_RW* data, uint8_t length );
 REST_ERROR eRESTparsingDig16Record( const char* input, const char* header, uint16_t* data );
 REST_ERROR uRESTparsing16FixDigRecord( const char* input, const char* header, fix16_t* data );
 REST_ERROR eRESTparsingDig8Record( const char* input, const char* header, uint8_t* data );
@@ -219,50 +220,57 @@ REST_ERROR eRESTparsingChart( char* input, eChartData* chart )
   } else res = REST_MESSAGE_FORMAT_ERROR;
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 REST_ERROR eRESTparsingConfig( char* input, eConfigReg* reg )
 {
   REST_ERROR res = REST_OK;
   char*      pchSt;
-  uint8_t i  = 0U;
+  uint8_t    i  = 0U;
 
   pchSt = strchr( input, '{' );
   if (pchSt != NULL)
   {
-    res = eRESTparsingDig16Record( input, CONFIG_REG_PAGE_STR, &reg->page );
+	res = eRESTparsingDig16Record( input, CONFIG_REG_PAGE_STR, &reg->page );
     if ( res == REST_OK )
     {
       res = eRESTparsingDig16Record( input, CONFIG_REG_ADR_STR, &reg->adr );
-      if ( reg->adr == 13 )
+      for ( i =0U; i<SETTING_REGISTER_NUMBER; i++ )
       {
-    	i = 1U;
-      }
-      if ( res == REST_OK )
-      {
-        res = eRESTparsingSignedRecord( input, CONFIG_REG_SCALE_STR, &reg->scale );
-        if (res == REST_OK )
+        if ( configReg[i]->adr == reg->adr )
         {
-          res = eRESTparsingDig16Record( input, CONFIG_REG_VALUE_STR, &reg->value );
+          break;
+        }
+      }
+      if ( configReg[i]->rw == CONFIG_READ_WRITE )
+      {
+        if ( res == REST_OK )
+        {
+          res = eRESTparsingSignedRecord( input, CONFIG_REG_SCALE_STR, &reg->scale );
           if (res == REST_OK )
           {
-            res = eRESTparsingDig16Record( input, CONFIG_REG_MIN_STR, &reg->min );
+            res = eRESTparsingDig16Record( input, CONFIG_REG_VALUE_STR, &reg->value );
             if (res == REST_OK )
             {
-              res = eRESTparsingDig16Record( input, CONFIG_REG_MAX_STR, &reg->max );
+              res = eRESTparsingDig16Record( input, CONFIG_REG_MIN_STR, &reg->min );
               if (res == REST_OK )
               {
-                res = eRESTparsingStrRecord( input, CONFIG_REG_UNITS_STR, reg->units, MAX_UNITS_LENGTH );
-                if ( res == REST_OK )
+                res = eRESTparsingDig16Record( input, CONFIG_REG_MAX_STR, &reg->max );
+                if (res == REST_OK )
                 {
-                  res = eRESTparsingStrRecord( input, CONFIG_REG_TYPE_STR, &reg->type, 1U );
+                  res = eRESTparsingStrRecord( input, CONFIG_REG_UNITS_STR, reg->units, MAX_UNITS_LENGTH );
                   if ( res == REST_OK )
                   {
-                    res = eRESTparsingDig8Record( input, CONFIG_REG_LEN_STR, &reg->len );
+                    res = eRESTparsingStrRecord( input, CONFIG_REG_TYPE_STR, &reg->type, 1U );
                     if ( res == REST_OK )
                     {
-                      res = eRESTparsingDig8Record( input, CONFIG_REG_BIT_MAP_SIZE_STR, &reg->bitMapSize );
-                      if ( ( res == REST_OK ) && ( reg->bitMapSize > 0 ) )
+                      res = eRESTparsingDig8Record( input, CONFIG_REG_LEN_STR, &reg->len );
+                      if ( res == REST_OK )
                       {
-                        res = eRESTparsingBitMapArray( input, CONFIG_REG_BIT_MAP_STR, &reg->bitMap[0], reg->bitMapSize );
+                        res = eRESTparsingDig8Record( input, CONFIG_REG_BIT_MAP_SIZE_STR, &reg->bitMapSize );
+                        if ( ( res == REST_OK ) && ( reg->bitMapSize > 0 ) )
+                        {
+                          res = eRESTparsingBitMapArray( input, CONFIG_REG_BIT_MAP_STR, &reg->bitMap[0], reg->bitMapSize );
+                        }
                       }
                     }
                   }
@@ -272,7 +280,7 @@ REST_ERROR eRESTparsingConfig( char* input, eConfigReg* reg )
           }
         }
       }
-    }
+	}
   } else res = REST_MESSAGE_FORMAT_ERROR;
 
   return res;
@@ -410,13 +418,33 @@ REST_ERROR eRESTparsingBitMapArray( const char* input, const char* header, eConf
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+REST_ERROR eRESTparsingRwRecord( const char* input, CONFIG_RW* data, uint8_t length )
+{
+  REST_ERROR  res        = REST_OK;
+  char        buffer[2U] = {0U,0U};
+
+  res = eRESTpareingRecord( input, CONFIG_REG_RW_STATUS, buffer );
+  if ( res == REST_OK )
+  {
+    if ( ( buffer[0U] == 'r' ) && ( buffer[1U] == 'w' ) )
+    {
+      *data = CONFIG_READ_WRITE;
+    }
+    else
+    {
+      *data = CONFIG_READ_ONLY;
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 REST_ERROR eRESTparsingStrRecord( const char* input, const char* header, uint16_t* data, uint8_t length )
 {
   REST_ERROR  res         = REST_OK;
   uint8_t     i           = 0U;
   uint8_t     j           = 0U;
   char        buffer[24U] = {0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U};
-  char        cBuf[2]     = {0U,0U};
+  char        cBuf[2U]    = {0U,0U};
   uint8_t     hexBuf[8U]  = {0U,0U,0U,0U,0U,0U,0U,0U};
 
   res = eRESTpareingRecord( input, header, buffer );

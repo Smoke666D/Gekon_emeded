@@ -59,6 +59,7 @@ uint32_t     uRESTmakeConfig( char* output, eConfigReg* reg );
 uint32_t     uRESTmakeChart( char* output, eChartData* chart );
 REST_ERROR   eRESTparsingConfig( char* input, eConfigReg* reg );
 REST_ADDRESS eRESTgetRequest( char* path, REST_REQUEST* request, uint16_t* adr );
+REST_ERROR   eRESTparsingChart( char* input, eChartData* chart );
 /*---------------------------------------------------------------------------------------------------*/
 
 #endif /* INC_REST_H_ */

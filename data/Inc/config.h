@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-30 06:52:36
+ * Make time: 2020-03-30 16:08:24
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -48,7 +48,7 @@ typedef struct
   uint16_t         page;
   uint16_t         adr;
   signed char      scale;
-  uint16_t         value;
+  uint16_t*        value;
   uint16_t         min;
   uint16_t         max;
   uint16_t         units[MAX_UNITS_LENGTH];

@@ -30,6 +30,8 @@
 #include "http.h"
 #include "rtc.h"
 #include "lcd.h"
+#include "config.h"
+#include "version.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,7 +95,7 @@ const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
   .name = "xLCDDelaySemph"
 };
 /* USER CODE BEGIN PV */
-static uint32_t uniqueID[3U];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -131,7 +133,6 @@ int main(void)
   
 
   /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -156,9 +157,14 @@ int main(void)
   MX_TIM7_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+  /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );    /* Debug serial interface */
   vRTCputTimer( &hrtc );        /* RTC structure */
-  //vSYSgetUniqueID(&serialNumber.value);
+  /*-------------------- Version initialization ------------------------------*/
+  vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
+  versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
+  versionController.value[0U] = HARDWARE_VERSION;   /* Hardware version */
+  /*--------------------------------------------------------------------------*/
   vSYSSerial("***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
@@ -588,13 +594,12 @@ void StartDefaultTask(void *argument)
   uint8_t	temp = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
-  vSYSgetUniqueID( &uniqueID );
-  for ( i=0; i<3U; i++ )
+  for ( i=0; i<6U; i++ )
   {
-    for ( j=0U; j<4U; j++ )
+    for ( j=0U; j<2U; j++ )
     {
-      temp = (uint8_t)(uniqueID[i] << j*4U);
-      sprintf( &buf[12U*i + 3U*j], "%02X:", temp );
+      temp = (uint8_t)(serialNumber.value[i] << j*8U);
+      sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
     }
   }
   buf[35] = 0U;

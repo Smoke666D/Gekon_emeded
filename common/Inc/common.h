@@ -21,6 +21,7 @@
 /*----------------------- Functions ------------------------------------*/
 void vSYSInitSerial( UART_HandleTypeDef* uart );
 void vSYSSerial( char* msg );
-void vSYSgetUniqueID( uint32_t* id );
+void vSYSgetUniqueID32( uint32_t* id );
+void vSYSgetUniqueID16( uint16_t* id );
 /*----------------------------------------------------------------------*/
 #endif /* INC_COMMON_H_ */

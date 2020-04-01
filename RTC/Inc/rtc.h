@@ -55,13 +55,14 @@ typedef enum
 #define		TIME_API_WEEK_NUMBER_STR 	"week_number"
 */
 /*----------------------- Functions ------------------------------------*/
-void				vRTCgetTimer( RTC_HandleTypeDef *hrtc );
+void        vRTCgetTimer( RTC_HandleTypeDef *hrtc );
+void        vRTCputTimer( RTC_HandleTypeDef *hrtc );
 RTC_STATUS	eRTCgetHttpTime( void );
 RTC_STATUS 	eRTCgetDateForHttp( char* date );
-void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time);
-void vRTCGetSec(DATA_COMMNAD_TYPE cmd, char * Time);
-void vRTCGetHour(DATA_COMMNAD_TYPE cmd, char * Time);
-void vRTCGetMin(DATA_COMMNAD_TYPE cmd, char * Time);
+void        vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time);
+void        vRTCGetSec(DATA_COMMNAD_TYPE cmd, char * Time);
+void        vRTCGetHour(DATA_COMMNAD_TYPE cmd, char * Time);
+void        vRTCGetMin(DATA_COMMNAD_TYPE cmd, char * Time);
 RTC_STATUS 	eRTCgetTime( char* time );
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

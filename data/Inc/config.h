@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-05 09:59:41
+ * Make time: 2020-03-30 16:08:24
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -9,7 +9,7 @@
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   SETTING_REGISTER_NUMBER      103U
+#define   SETTING_REGISTER_NUMBER      110U
 
 #define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"
@@ -19,6 +19,7 @@
 #define   CONFIG_REG_MAX_STR           "max"
 #define   CONFIG_REG_UNITS_STR         "units"
 #define   CONFIG_REG_TYPE_STR          "type"
+#define   CONFIG_REG_RW_STATUS         "rw"
 #define   CONFIG_REG_LEN_STR           "len"
 #define   CONFIG_REG_BIT_MAP_SIZE_STR  "bitMapSize"
 #define   CONFIG_REG_BIT_MAP_STR       "bit"
@@ -28,6 +29,12 @@
 #define   BIT_MAP_MIN_STR              "min"
 #define   BIT_MAP_MAX_STR              "max"
 /*----------------------- Structures -----------------------------------*/
+typedef enum
+{
+  CONFIG_READ_ONLY,
+  CONFIG_READ_WRITE,
+} CONFIG_RW;
+
 typedef struct
 {
   uint16_t  mask;
@@ -41,16 +48,23 @@ typedef struct
   uint16_t         page;
   uint16_t         adr;
   signed char      scale;
-  uint16_t         value;
+  uint16_t*        value;
   uint16_t         min;
   uint16_t         max;
-  char             units[MAX_UNITS_LENGTH];
-  char             type;
+  uint16_t         units[MAX_UNITS_LENGTH];
+  uint16_t         type;
+  CONFIG_RW        rw;
   uint8_t          len;
   uint8_t          bitMapSize;
   eConfigBitMap*   bitMap;
 } eConfigReg;
 /*------------------------- Extern -------------------------------------*/
+extern eConfigReg versionController;
+extern eConfigReg versionFirmware;
+extern eConfigReg serialNumber;
+extern eConfigReg displayBrightnesLevel;
+extern eConfigReg displayContarstLevel;
+extern eConfigReg displaySleepDelay;
 extern eConfigReg moduleSetup;
 extern eConfigReg oilPressureSetup;
 extern eConfigReg oilPressureAlarmLevel;
@@ -87,6 +101,7 @@ extern eConfigReg dodType;
 extern eConfigReg doefType;
 extern eConfigReg timerMainsTransientDelay;
 extern eConfigReg timerStartDelay;
+extern eConfigReg timerPreheating;
 extern eConfigReg timerCranking;
 extern eConfigReg timerCrankDelay;
 extern eConfigReg timerStartupIdleTime;
@@ -103,21 +118,21 @@ extern eConfigReg timerSolenoidHold;
 extern eConfigReg timerFailStopDelay;
 extern eConfigReg timerGenTransientDelay;
 extern eConfigReg genSetup;
-extern eConfigReg genRatedActivePower;
-extern eConfigReg genRatedReactivePower;
-extern eConfigReg genRatedApparentPower;
-extern eConfigReg genRatedFrequency;
-extern eConfigReg genCurrentPrimary;
-extern eConfigReg genCurrentFullLoadRating;
+extern eConfigReg genRatedActivePowerLevel;
+extern eConfigReg genRatedReactivePowerLevel;
+extern eConfigReg genRatedApparentPowerLevel;
+extern eConfigReg genRatedFrequencyLevel;
+extern eConfigReg genCurrentPrimaryLevel;
+extern eConfigReg genCurrentFullLoadRatingLevel;
 extern eConfigReg genAlarms;
 extern eConfigReg genUnderVoltageAlarmLevel;
 extern eConfigReg genUnderVoltagePreAlarmLevel;
 extern eConfigReg genOverVoltagePreAlarmLevel;
 extern eConfigReg genOverVoltageAlarmLevel;
-extern eConfigReg genUnderFrequencyAlrmLevel;
-extern eConfigReg genUnderFrequencyPreAlrmLevel;
-extern eConfigReg genOverFrequencyPreAlrmLevel;
-extern eConfigReg genOverFrequencyAlrmLevel;
+extern eConfigReg genUnderFrequencyAlarmLevel;
+extern eConfigReg genUnderFrequencyPreAlarmLevel;
+extern eConfigReg genOverFrequencyPreAlarmLevel;
+extern eConfigReg genOverFrequencyAlarmLevel;
 extern eConfigReg genOverCurrentThermalProtectionLevel;
 extern eConfigReg genOverCurrentCutoffLevel;
 extern eConfigReg genOverCurrentAlarmLevel;
@@ -133,10 +148,10 @@ extern eConfigReg mainsOverVoltageAlarmLevel;
 extern eConfigReg mainsUnderFrequencyAlarmLevel;
 extern eConfigReg mainsOverFrequencyAlarmLevel;
 extern eConfigReg engineSetup;
-extern eConfigReg enginePreHeatOn;
-extern eConfigReg enginePreHeatDuration;
-extern eConfigReg enginePostHeatOn;
-extern eConfigReg enginePostHeatDuration;
+extern eConfigReg enginePreHeatLevel;
+extern eConfigReg enginePreHeatDelay;
+extern eConfigReg enginePostHeatLevel;
+extern eConfigReg enginePostHeatDelay;
 extern eConfigReg crankSetup;
 extern eConfigReg crankDisconnectgenFreqLevel;
 extern eConfigReg crankDisconnectOilPressureLevel;
@@ -151,9 +166,9 @@ extern eConfigReg batteryChargeShutdownDelay;
 extern eConfigReg batteryChargeWarningLevel;
 extern eConfigReg batteryChargeWarningDelay;
 extern eConfigReg maintenanceAlarms;
-extern eConfigReg maintenanceAlarmOilEngineRunTime;
-extern eConfigReg maintenanceAlarmAirEngineRunTime;
-extern eConfigReg maintenanceAlarmFuelEngineRunTime;
+extern eConfigReg maintenanceAlarmOilTime;
+extern eConfigReg maintenanceAlarmAirTime;
+extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg* configReg[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

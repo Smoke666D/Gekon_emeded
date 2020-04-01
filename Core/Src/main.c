@@ -25,11 +25,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "sys.h"
+#include "common.h"
 #include "server.h"
 #include "http.h"
 #include "rtc.h"
 #include "lcd.h"
+#include "config.h"
+#include "version.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,10 +41,12 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -129,7 +133,6 @@ int main(void)
   
 
   /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -154,8 +157,14 @@ int main(void)
   MX_TIM7_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  vSYSInitSerial();				/* Debug serial interface */
-  vRTCputTimer( &hrtc );	/* RTC structure */
+  /*-------------- Put hardware structures to external modules ---------------*/
+  vSYSInitSerial( &huart3 );    /* Debug serial interface */
+  vRTCputTimer( &hrtc );        /* RTC structure */
+  /*-------------------- Version initialization ------------------------------*/
+  vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
+  versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
+  versionController.value[0U] = HARDWARE_VERSION;   /* Hardware version */
+  /*--------------------------------------------------------------------------*/
   vSYSSerial("***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
@@ -579,7 +588,23 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-	vSYSSerial( ">>Start Default Task!\n\r" );
+  char 		buf[36];
+  uint8_t	i = 0U;
+  uint8_t	j = 0U;
+  uint8_t	temp = 0U;
+  vSYSSerial( ">>Start Default Task!\n\r" );
+  vSYSSerial( ">>Serial number: " );
+  for ( i=0; i<6U; i++ )
+  {
+    for ( j=0U; j<2U; j++ )
+    {
+      temp = (uint8_t)(serialNumber.value[i] << j*8U);
+      sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
+    }
+  }
+  buf[35] = 0U;
+  vSYSSerial( buf );
+  vSYSSerial( "\n\r" );
   /* Infinite loop */
   for(;;)
   {
@@ -607,7 +632,6 @@ void StartNetTask(void *argument)
 	vSYSSerial( ">>IP address: ");
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
-
 	vSYSSerial( ">>RTC: ");
 	if ( eRTCgetExtrenalTime() == RTC_ERROR )
 	{
@@ -627,8 +651,6 @@ void StartNetTask(void *argument)
 		vSYSSerial( buffer );
 		vSYSSerial( "\r\n" );
 	}
-
-
 	vSYSSerial( ">>TCP: " );
 	if ( eSERVERstart() != SERVER_OK )
 	{
@@ -667,7 +689,6 @@ void StartLcdTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
     IncData();
   }
   /* USER CODE END StartLcdTask */

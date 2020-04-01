@@ -24,12 +24,12 @@ void vMenuTask();
 #define NO_ALIGN     		 0
 
 //Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие
-#define KEY_RIGTH  1
-#define KEY_LEFT   2
-#define KEY_ENTER  3
-#define KEY_EXIT   4
-#define KEY_DOWN   5
-#define KEY_UP	   6
+#define KEY_UP    1
+#define KEY_DOWN   2
+#define KEY_STOP   3
+#define KEY_AUTO   4
+#define KEY_START   5
+#define KEY_EXIT    6
 
 
 
@@ -38,13 +38,16 @@ typedef enum
 {
 	ACTIVE,
 	NOT_ACTIVE,
+	PASSIVE,
 
 } SCREEN_STATUS;
 
 typedef enum
 {
 	ICON,
+	TEXT_STRING,
 	STRING,
+	LINE,
 	NEGATIVE_STRING,
 	DATA_STRING,
 	INPUT_DATA_STRING,
@@ -61,7 +64,7 @@ typedef struct
   uint8_t Height;
   OBJECT_TYPE xType;
   uint8_t * ObjectParamert;
-  uint8_t * pStringParametr;
+  char * pStringParametr;
   void (*GetDtaFunction)();
   uint16_t DataID;
 } xScreenObjet;
@@ -94,10 +97,9 @@ typedef struct
 
 
 #define MAX_SCREEN_COUNT 3
-#define MAX_SCREEN_OBJECT 10
+#define MAX_SCREEN_OBJECT 20
 
 
 void DrawObject( xScreenObjet * pScreenObjects);
-
 
 #endif /* INC_MENU_H_ */

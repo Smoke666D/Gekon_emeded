@@ -20,6 +20,10 @@
 #define		TIME_API_LOCATION_STR 		"abbreviation"
 #define		TIME_API_DATETIME_STR 		"datetime"
 #define		TIME_API_DAY_OF_WEEK_STR 	"day_of_week"
+#define     RTC_MIN 1
+#define 	RTC_HOUR 2
+#define     RTC_SEC 3
+
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -59,10 +63,8 @@ void        vRTCgetTimer( RTC_HandleTypeDef *hrtc );
 void        vRTCputTimer( RTC_HandleTypeDef *hrtc );
 RTC_STATUS	eRTCgetHttpTime( void );
 RTC_STATUS 	eRTCgetDateForHttp( char* date );
-void        vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time);
-void        vRTCGetSec(DATA_COMMNAD_TYPE cmd, char * Time);
-void        vRTCGetHour(DATA_COMMNAD_TYPE cmd, char * Time);
-void        vRTCGetMin(DATA_COMMNAD_TYPE cmd, char * Time);
+void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time);
+void vRTCCorrectTime(DATA_COMMNAD_TYPE cmd,char *Time, uint8_t TimePosition);
 RTC_STATUS 	eRTCgetTime( char* time );
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

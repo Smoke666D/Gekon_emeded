@@ -32,6 +32,7 @@
 #include "lcd.h"
 #include "config.h"
 #include "version.h"
+#include "keyboard.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,6 +96,12 @@ const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
   .name = "xLCDDelaySemph"
 };
 /* USER CODE BEGIN PV */
+osThreadId_t keyboardTaskHandle;
+const osThreadAttr_t keyboardTask_attributes = {
+  .name = "KeyboardTask",
+  .priority = (osPriority_t) osPriorityHigh,
+  .stack_size = 1024
+};
 
 /* USER CODE END PV */
 
@@ -113,7 +120,7 @@ void StartLcdTask(void *argument);
 extern void StartLcdRedrawTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+extern void vKeyboardTask(void const * argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -204,6 +211,9 @@ int main(void)
   lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+
+  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  SetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
   /* USER CODE END RTOS_THREADS */
 

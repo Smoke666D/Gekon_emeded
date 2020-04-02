@@ -7,6 +7,7 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "common.h"
 #include "string.h"
+#include "stdio.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static UART_HandleTypeDef*	debug_huart;
 /*---------------------------------------------------------------------------------------------------*/
@@ -51,4 +52,26 @@ void vSYSgetUniqueID16( uint16_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-
+uint8_t uEncodeURI( char* output, uint16_t* input, uint8_t length )
+{
+  uint8_t shift = 0U;
+  uint8_t i     = 0U;
+  for( i=0U; i<length; i++ )
+  {
+    if ( input[i] > 0x00FF )
+    {
+      sprintf( &output[shift], " %02X %02X", (uint8_t)((input[i]&0xFF00)>>8), (uint8_t)(input[i]&0x00FF));
+      output[shift]      = '%';
+      output[shift + 3U] = '%';
+      shift += 6U;
+    }
+    else
+    {
+      sprintf( &output[shift], " %02X", (uint8_t)(input[i]&0x00FF) );
+      output[shift] = '%';
+      shift += 3U;
+    }
+  }
+  return shift;
+}
+/*---------------------------------------------------------------------------------------------------*/

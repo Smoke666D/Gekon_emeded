@@ -10,6 +10,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "fix16.h"
+#include "common.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -762,6 +763,8 @@ uint8_t uRESTmakeStrRecord( char* output, const char* header, uint16_t* data, ui
 
   output[shift] = QUOTES_ANCII;
   shift++;
+  shift += uEncodeURI( &output[shift], data, dataLen);
+/*
   for ( i=0U; i<dataLen; i++ )
   {
 	if ( data[i] > 0x00FF )
@@ -778,6 +781,7 @@ uint8_t uRESTmakeStrRecord( char* output, const char* header, uint16_t* data, ui
 	  shift += 3U;
 	}
   }
+  */
   output[shift] = QUOTES_ANCII;
   shift++;
   if ( last == REST_CONT_RECORD )

@@ -66,5 +66,6 @@ RTC_STATUS 	eRTCgetDateForHttp( char* date );
 void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time);
 void vRTCCorrectTime(DATA_COMMNAD_TYPE cmd,char *Time, uint8_t TimePosition);
 RTC_STATUS 	eRTCgetTime( char* time );
+RTC_STATUS eRTCgetExtrenalTime( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

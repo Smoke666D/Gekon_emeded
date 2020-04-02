@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-03-30 16:08:24
+ * Make time: 2020-04-02 14:00:16
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -10,6 +10,7 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
 #define   SETTING_REGISTER_NUMBER      110U
+#define   FILDS_TO_WRITE_NUMBER        3U
 
 #define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"
@@ -34,6 +35,14 @@ typedef enum
   CONFIG_READ_ONLY,
   CONFIG_READ_WRITE,
 } CONFIG_RW;
+
+typedef enum
+{
+  CONFIG_NO    = 0x00U,
+  CONFIG_VALUE = 0x01U,
+  CONFIG_SCALE = 0x02U,
+  CONFIG_UNITS = 0x03U,
+} CONFIG_FILD;
 
 typedef struct
 {

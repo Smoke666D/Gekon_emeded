@@ -76,9 +76,9 @@ void vHTTPCleanResponse( HTTP_RESPONSE *response )
 	}
 	response->contentLength = 0U;
 	response->contetntType  = HTTP_CONTENT_HTML;
-	response->connect 			= HTTP_CONNECT_CLOSED;
-	response->cache					= HTTP_CACHE_NO_CACHE;
-	response->encoding			= HTTP_ENCODING_NO;
+	response->connect       = HTTP_CONNECT_CLOSED;
+	response->cache         = HTTP_CACHE_NO_CACHE;
+	response->encoding      = HTTP_ENCODING_NO;
 
 	return;
 }

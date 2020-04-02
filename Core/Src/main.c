@@ -225,6 +225,8 @@ int main(void)
   keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   SetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
+
+  vUSBinit( usbTaskHandle );
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */

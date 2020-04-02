@@ -23,7 +23,7 @@
 #include "usbd_custom_hid_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "usbhid.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,45 +92,26 @@
 __ALIGN_BEGIN static uint8_t CUSTOM_HID_ReportDesc_FS[USBD_CUSTOM_HID_REPORT_DESC_SIZE] __ALIGN_END =
 {
   /* USER CODE BEGIN 0 */
-		0x06, 0x00, 0xff,              // 	USAGE_PAGE (Generic Desktop)
-		    0x09, 0x01,                    // 	USAGE (Vendor Usage 1)
-		    // System Parameters
-		    0xa1, 0x01,                    // 	COLLECTION (Application)
-		    0x85, 0x01,                    //   REPORT_ID (1)
-		    0x09, 0x01,                    //   USAGE (Vendor Usage 1)
-		    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
-		    0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
-		    0x75, 0x08,                    //   REPORT_SIZE (8)
-		    0x95, 6, 	                   //   REPORT_COUNT (4)
-		    0xb1, 0x82,                    //   FEATURE (Data,Var,Abs,Vol)
-		    0x85, 0x01,                    //   REPORT_ID (1)
-		    0x09, 0x01,                    //   USAGE (Vendor Usage 1)
-		    0x91, 0x82,                    //   OUTPUT (Data,Var,Abs,Vol)
+  0x06, 0x00, 0xff,              // 	USAGE_PAGE (Generic Desktop)
+  0x09, 0x01,                    // 	USAGE (Vendor Usage 1)
+  // System Parameters
+  0xa1, 0x01,                    // 	COLLECTION (Application)
+  0x85, 0x01,                    //   REPORT_ID (1)
+  0x09, 0x01,                    //   USAGE (Vendor Usage 1)
+  0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+  0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
+  0x75, 0x08,                    //   REPORT_SIZE (8)
+  0x95, 0x07, 	                 //   REPORT_COUNT (7)
+  0xb1, 0x82,                    //   FEATURE (Data,Var,Abs,Vol)
+  0x85, 0x01,                    //   REPORT_ID (1)
+  0x09, 0x01,                    //   USAGE (Vendor Usage 1)
+  0x91, 0x82,                    //   OUTPUT (Data,Var,Abs,Vol)
 
-		    0x85, 0x02,                    //   REPORT_ID (4)
-		    0x09, 0x02,                    //   USAGE (Vendor Usage 4)
-		    0x75, 0x08,                    //   REPORT_SIZE (8)
-		    0x95, 6, 	                   //   REPORT_COUNT (4)
-		    0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)
-		/*
-  0x06U, 0x00U, 0xffU,    // USAGE_PAGE (Generic Desktop)
-  0x09U, 0x01U,           // USAGE (Pointer)
-  0xa1U, 0x01U,           // COLLECTION (Application)
-  0x85U, 0x01U,           //   REPORT_ID (1)
-  0x09U, 0x01U,           //   USAGE (Pointer)
-  0x15U, 0x00U,           //   LOGICAL_MINIMUM (0)
-  0x26U, 0xffU, 0x00U,    //   LOGICAL_MAXIMUM (255)
-  0x75U, 0x08U,           //   REPORT_SIZE (8)
-  0x95U, 0x05U,           //   REPORT_COUNT (5)
-  0x81U, 0x82U,           //   INPUT (Data,Var,Abs,Vol)
-  0x85U, 0x02U,           //   REPORT_ID (2)
-  0x09U, 0x01U,           //   USAGE (Undefined)
-  0x15U, 0x00U,           //   LOGICAL_MINIMUM (0)
-  0x26U, 0xffU, 0x00U,		//   LOGICAL_MAXIMUM (255)
-  0x75U, 0x08U,           //   REPORT_SIZE (8)
-  0x95U, 0x05U,           //   REPORT_COUNT (5)
-  0x91U, 0x82U,           //   OUTPUT (Data,Var,Abs,Vol)
-  */
+  0x85, 0x02,                    //   REPORT_ID (4)
+  0x09, 0x02,                    //   USAGE (Vendor Usage 4)
+  0x75, 0x08,                    //   REPORT_SIZE (8)
+  0x95, 0x07, 	                 //   REPORT_COUNT (7)
+  0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)
   /* USER CODE END 0 */
   0xC0    /*     END_COLLECTION	             */
 };
@@ -215,6 +196,7 @@ static int8_t CUSTOM_HID_DeInit_FS(void)
 static int8_t CUSTOM_HID_OutEvent_FS(uint8_t event_idx, uint8_t state)
 {
   /* USER CODE BEGIN 6 */
+  vUSBreceiveHandler();
   return (USBD_OK);
   /* USER CODE END 6 */
 }

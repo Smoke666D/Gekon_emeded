@@ -12,6 +12,9 @@
 #include "usbd_customhid.h"
 #include "usbd_def.h"
 #include "config.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "task.h"
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -44,7 +47,8 @@ typedef enum
   USB_PUT_CMD = 0x02U,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
-#define USB_REPORT_SIZE       7U
+#define USB_REPORT_SIZE       8U
+#define USB_QUEUE_SIZE        10U
 /*------------------------------ Report --------------------------------------*/
 /*
  * | 0  |  1  |  2   |  3   |  4   |  5   |   6   |   7   |
@@ -54,13 +58,20 @@ typedef enum
 #define USB_OUTPUT_REPORT_ID  0x02U    /* First byte in report */
 /*------------------------------ Macros --------------------------------------*/
 #define USB_GET_DIR_VAL(e)    ( e == USB_INPUT ) ? USB_INPUT_REPORT_ID : USB_OUTPUT_REPORT_ID
+#define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? USB_INPUT : USB_OUTPUT
 /*---------------------------- Structures ------------------------------------*/
+typedef struct
+{
+  uint8_t* data;
+} USBEvent;
+
 typedef struct
 {
   uint8_t      count;
   uint8_t      len;
   CONFIG_FILD  fild;
 } USB_ConfigControl;
+
 typedef struct
 {
   USB_ReportDir  dir;
@@ -74,9 +85,10 @@ typedef struct
 /*------------------------------ Extern --------------------------------------*/
 
 /*----------------------------- Functions ------------------------------------*/
-void               vUSBinit( void );
+void               vUSBinit( osThreadId_t taskHandle );
+void               StartUsbTask( void *argument );
+
 USB_StatusConnect  eUSBgetStatus( void );
 void               vUSBreceiveHandler( void );
-void               StartUsbTask( void *argument );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_USBHID_H_ */

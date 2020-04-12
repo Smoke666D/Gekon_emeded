@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-04-02 16:50:03
+ * Make time: 2020-04-11 14:19:18
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -12,6 +12,7 @@
 #define   SETTING_REGISTER_NUMBER      110U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
+#define   MAX_VALUE_LENGTH             6U
 
 #define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"

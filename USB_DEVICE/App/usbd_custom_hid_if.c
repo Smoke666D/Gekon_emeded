@@ -101,7 +101,7 @@ __ALIGN_BEGIN static uint8_t CUSTOM_HID_ReportDesc_FS[USBD_CUSTOM_HID_REPORT_DES
   0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
   0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
   0x75, 0x08,                    //   REPORT_SIZE (8)
-  0x95, 0x07, 	                 //   REPORT_COUNT (7)
+  0x95, 0x40, 	                 //   REPORT_COUNT (64)
   0xb1, 0x82,                    //   FEATURE (Data,Var,Abs,Vol)
   0x85, 0x01,                    //   REPORT_ID (1)
   0x09, 0x01,                    //   USAGE (Vendor Usage 1)
@@ -110,7 +110,7 @@ __ALIGN_BEGIN static uint8_t CUSTOM_HID_ReportDesc_FS[USBD_CUSTOM_HID_REPORT_DES
   0x85, 0x02,                    //   REPORT_ID (4)
   0x09, 0x02,                    //   USAGE (Vendor Usage 4)
   0x75, 0x08,                    //   REPORT_SIZE (8)
-  0x95, 0x07, 	                 //   REPORT_COUNT (7)
+  0x95, 0x40, 	                 //   REPORT_COUNT (64)
   0x81, 0x82,                    //   INPUT (Data,Var,Abs,Vol)
   /* USER CODE END 0 */
   0xC0    /*     END_COLLECTION	             */

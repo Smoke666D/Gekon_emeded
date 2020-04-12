@@ -47,48 +47,42 @@ typedef enum
   USB_PUT_CMD = 0x02U,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
-#define USB_REPORT_SIZE       8U
+#define USB_REPORT_SIZE       65U
 #define USB_QUEUE_SIZE        10U
 /*------------------------------ Report --------------------------------------*/
 /*
  * | 0  |  1  |  2   |  3   |  4   |  5   |   6   |   7   |
  * | ID | CMD | STAT | FILD | ADR1 | ADR0 | DATA1 | DATA0 |
  */
-#define USB_INPUT_REPORT_ID   0x01U    /* First byte in report */
-#define USB_OUTPUT_REPORT_ID  0x02U    /* First byte in report */
+#define USB_INPUT_REPORT_ID   0x01U    /* Direction - first byte in report */
+#define USB_OUTPUT_REPORT_ID  0x02U    /* Direction - first byte in report */
 /*------------------------------ Macros --------------------------------------*/
 #define USB_GET_DIR_VAL(e)    ( e == USB_INPUT ) ? USB_INPUT_REPORT_ID : USB_OUTPUT_REPORT_ID
 #define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? USB_INPUT : USB_OUTPUT
 /*---------------------------- Structures ------------------------------------*/
 typedef struct
 {
-  uint8_t* data;
-} USBEvent;
-
-typedef struct
-{
-  uint8_t      count;
-  uint8_t      len;
-  CONFIG_FILD  fild;
+  uint8_t      count;    /* */
+  uint8_t      len;      /* */
+  CONFIG_FILD  fild;     /* */
 } USB_ConfigControl;
 
 typedef struct
 {
-  USB_ReportDir  dir;
-  USB_ReportCmd  cmd;
-  USB_ReportStat stat;
-  CONFIG_FILD    fild;
-  uint16_t       adr;
-  uint16_t       data;
-  uint8_t*       buf;
+  USB_ReportDir  dir;    /* Direction of transaction */
+  USB_ReportCmd  cmd;    /* Command */
+  USB_ReportStat stat;   /* Status of transaction */
+  uint16_t       adr;    /* Address of register */
+  uint8_t*       data;   /* Data array */
+  uint8_t        length; /* Length of data array */
+  uint8_t*       buf;    /* Pointer to the IO buffer */
 } USB_REPORT;
 /*------------------------------ Extern --------------------------------------*/
 
 /*----------------------------- Functions ------------------------------------*/
-void               vUSBinit( osThreadId_t taskHandle );
-void               StartUsbTask( void *argument );
-
-USB_StatusConnect  eUSBgetStatus( void );
-void               vUSBreceiveHandler( void );
+void               vUSBinit( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
+void               StartUsbTask( void *argument );       /* Processing USB input task */
+USB_StatusConnect  eUSBgetStatus( void );                /* Get connection status of USB device */
+void               vUSBreceiveHandler( void );           /* Handler of USB input interrupt */
 /*----------------------------------------------------------------------------*/
 #endif /* INC_USBHID_H_ */

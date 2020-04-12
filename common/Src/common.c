@@ -75,3 +75,47 @@ uint8_t uEncodeURI( char* output, uint16_t* input, uint8_t length )
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
+{
+  uint8_t i          = 0U;
+  uint8_t j          = 0U;
+  char    cBuf[2U]   = {0U,0U};
+  uint8_t hexBuf[8U] = {0U,0U,0U,0U,0U,0U,0U,0U};
+
+  for( i=0; i<8U; i++ )
+  {
+    if ( input[j] == '%' )
+    {
+      cBuf[0U] = input[j + 1U];
+      cBuf[1U] = input[j + 2U];
+      hexBuf[i] = strtol( cBuf, NULL, 16U );
+      j += 3U;
+    }
+    else
+    {
+      hexBuf[i] = input[j];
+      j++;
+    }
+  }
+  j = 0U;
+  for( i=0; i<length; i++ )
+  {
+    if ( hexBuf[j] & 0x80U )
+    {
+      output[i] = ( ( ( uint16_t )hexBuf[j] ) << 8U ) | ( uint16_t )hexBuf[j + 1U];
+      j += 2U;
+    }
+    else
+    {
+      output[i] = ( uint16_t )hexBuf[j];
+      j++;
+    }
+  }
+
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+
+
+
+

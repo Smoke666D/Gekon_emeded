@@ -22,9 +22,11 @@ static osThreadId_t      usbHandle;
 void               vUSBmakeReport( USB_REPORT* report );                          /* Convert report structure to the output buffer */
 void               vUSBparseReport( USB_REPORT* report );                         /* Parse input buffer to the report structure */
 void               vUSBresetControl( USB_ConfigControl* control );                /* Clean control structure */
-void               eUSBConfigToReport( eConfigReg* config, USB_REPORT* report );  /* Transfer configuration register to the report structure */
+void               vUSBConfigToReport( eConfigReg* config, USB_REPORT* report );  /* Transfer configuration register to the report structure */
+USB_Status         eUSBReportToConfig( USB_REPORT* report );
 USBD_StatusTypeDef eUSBwrite( uint8_t* data );                                    /* Send data via USB */
 void               vUSBsendConfig( eConfigReg* config );                          /* Send configuration register via USB */
+void               vUSBgetConfig( USB_REPORT* report );                            /* Get configuration register via USB */
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Initialization device and control USB size of report descriptor
@@ -86,7 +88,7 @@ void vUSBresetControl( USB_ConfigControl* control )
  *         report  - output structure
  * output: status of operation
  */
-void eUSBConfigToReport( eConfigReg* config, USB_REPORT* report )
+void vUSBConfigToReport( eConfigReg* config, USB_REPORT* report )
 {
   uint8_t               i     = 0U;
   uint8_t               count = 0U;
@@ -118,6 +120,36 @@ void eUSBConfigToReport( eConfigReg* config, USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+USB_Status eUSBReportToConfig( USB_REPORT* report )
+{
+  USB_Status res    = USB_DONE;
+  uint8_t    count  = 0U;
+  uint8_t    i      = 0U;
+  uint8_t    length = 0U;
+  /*------------ Length validation ------------*/
+  for ( i=0U; i<( USB_REPORT_SIZE - BUFFER_DATA_SHIFT ); i++ )
+  {
+    if ( report->data != 0x00U )
+    {
+      length++;
+    } else break;
+  }
+  if ( length == report->length )
+  {
+    /*----------- Configuration value -----------*/
+    for ( i=0; i<configReg[report->adr]->len; i++ )
+    {
+      configReg[report->adr]->value[i] = ( uint16_t )( report->data[count + 2U * i + 1U] ) & ( ( uint16_t )( report->data[count + 2U * i] ) << 8U );
+    }
+    count += 2U * configReg[report->adr]->len;
+    /*----------- Configuration scale -----------*/
+    configReg[report->adr]->scale = ( signed char )( report->data[count++] );
+    /*----------- Configuration units -----------*/
+    vDecodeURI( ( char* )( &report->data[count] ), configReg[report->adr]->units, MAX_UNITS_LENGTH );
+  } else res = USB_ERROR_LENGTH;
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Convert report structure to the output buffer
  * input:  report structure
@@ -134,7 +166,7 @@ void vUSBmakeReport( USB_REPORT* report )
   report->buf[5U] = report->length;
   for( i=0; i<report->length; i++)
   {
-    report->buf[6U + i] = report->data[i];
+    report->buf[BUFFER_DATA_SHIFT + i] = report->data[i];
   }
   return;
 }
@@ -151,7 +183,7 @@ void vUSBparseReport( USB_REPORT* report )
   report->stat   = report->buf[2U];
   report->adr    = ( ( ( uint16_t )( report->buf[3U] ) ) << 8 ) | ( ( uint16_t )( report->buf[4U] ) );
   report->length = report->buf[5U];
-  report->data   = &(report->buf[6U]);
+  report->data   = &(report->buf[BUFFER_DATA_SHIFT]);
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -165,14 +197,38 @@ void vUSBsendConfig( eConfigReg* config )
   USB_REPORT report =
   {
     .buf  = usbBuffer,
-	.data = &usbBuffer[6U],
+	.data = &usbBuffer[BUFFER_DATA_SHIFT],
   };
 
-  eUSBConfigToReport( config, &report );
+  vUSBConfigToReport( config, &report );
   vUSBmakeReport( &report );
   while ( eUSBwrite( report.buf ) == USBD_BUSY )
   {
     osDelay( 2U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Get configuration register via USB
+ * input:  report of transaction
+ * output: none
+ */
+void vUSBgetConfig( USB_REPORT* report )
+{
+  USB_REPORT response =
+  {
+    .buf  = usbBuffer,
+    .data = &usbBuffer[BUFFER_DATA_SHIFT],
+  };
+
+  if ( eUSBReportToConfig( report ) == USB_DONE )
+  {
+	vUSBmakeReport( &response );
+	while ( eUSBwrite( response.buf ) == USBD_BUSY )
+	{
+	 osDelay( 2U );
+	}
   }
   return;
 }
@@ -235,6 +291,10 @@ void StartUsbTask( void *argument )
           }
           break;
         case USB_PUT_CMD:
+          if ( report.adr < SETTING_REGISTER_NUMBER )
+          {
+            vUSBgetConfig( &report );
+          }
           break;
         default:
           break;

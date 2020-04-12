@@ -24,5 +24,6 @@ void    vSYSSerial( char* msg );
 void    vSYSgetUniqueID32( uint32_t* id );
 void    vSYSgetUniqueID16( uint16_t* id );
 uint8_t uEncodeURI( char* output, uint16_t* input, uint8_t length );
+void    vDecodeURI( const char* input, uint16_t* output, uint8_t length );
 /*----------------------------------------------------------------------*/
 #endif /* INC_COMMON_H_ */

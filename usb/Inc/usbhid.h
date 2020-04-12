@@ -24,9 +24,9 @@ typedef enum
 
 typedef enum
 {
-  USB_TransactionDone,
-  USB_TransactionContin,
-} USB_StatusTransaction;
+  USB_DONE,
+  USB_ERROR_LENGTH,
+} USB_Status;
 
 typedef enum
 {
@@ -49,6 +49,7 @@ typedef enum
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U
 #define USB_QUEUE_SIZE        10U
+#define	BUFFER_DATA_SHIFT     6U
 /*------------------------------ Report --------------------------------------*/
 /*
  * | 0  |  1  |  2   |  3   |  4   |  5   |   6   |   7   |

@@ -764,24 +764,6 @@ uint8_t uRESTmakeStrRecord( char* output, const char* header, uint16_t* data, ui
   output[shift] = QUOTES_ANCII;
   shift++;
   shift += uEncodeURI( &output[shift], data, dataLen);
-/*
-  for ( i=0U; i<dataLen; i++ )
-  {
-	if ( data[i] > 0x00FF )
-	{
-      sprintf( &output[shift], " %02X %02X", (uint8_t)((data[i]&0xFF00)>>8), (uint8_t)(data[i]&0x00FF));
-      output[shift]      = '%';
-      output[shift + 3U] = '%';
-      shift += 6U;
-	}
-	else
-	{
-      sprintf( &output[shift], " %02X", (uint8_t)(data[i]&0x00FF) );
-      output[shift] = '%';
-	  shift += 3U;
-	}
-  }
-  */
   output[shift] = QUOTES_ANCII;
   shift++;
   if ( last == REST_CONT_RECORD )

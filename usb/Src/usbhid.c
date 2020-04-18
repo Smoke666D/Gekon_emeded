@@ -90,9 +90,9 @@ void vUSBresetControl( USB_ConfigControl* control )
  */
 void vUSBConfigToReport( eConfigReg* config, USB_REPORT* report )
 {
-  uint8_t               i     = 0U;
-  uint8_t               count = 0U;
-  uint8_t               shift = uEncodeURI( strBuffer, config->units, MAX_UNITS_LENGTH );
+  uint8_t i     = 0U;
+  uint8_t count = 0U;
+  uint8_t shift = uEncodeURI( strBuffer, config->units, MAX_UNITS_LENGTH );
 
   report->cmd  = USB_GET_CMD;
   report->dir  = USB_OUTPUT;
@@ -111,7 +111,6 @@ void vUSBConfigToReport( eConfigReg* config, USB_REPORT* report )
   for( i=0U; i<shift; i++ )
   {
     report->data[count + i] = ( uint8_t )( strBuffer[i] );
-	//report->data[count + i] = 0x20;
   }
   count += shift;
   /*-------------------------------------------*/

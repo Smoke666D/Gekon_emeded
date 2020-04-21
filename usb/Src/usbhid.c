@@ -125,27 +125,23 @@ USB_Status eUSBReportToConfig( USB_REPORT* report )
   uint8_t    count  = 0U;
   uint8_t    i      = 0U;
   uint8_t    length = 0U;
-  /*------------ Length validation ------------*/
-  for ( i=0U; i<( USB_REPORT_SIZE - BUFFER_DATA_SHIFT ); i++ )
-  {
-    if ( report->data != 0x00U )
-    {
-      length++;
-    } else break;
+  /*------------- Length control --------------*/
+  length = configReg[report->adr]->len * 2U + 1U + MAX_UNITS_LENGTH * 6U;
+  if ( length < report->length ) {
+	res = USB_ERROR_LENGTH;
   }
-  if ( length == report->length )
-  {
-    /*----------- Configuration value -----------*/
+  else {
+  /*----------- Configuration value -----------*/
     for ( i=0; i<configReg[report->adr]->len; i++ )
     {
       configReg[report->adr]->value[i] = ( uint16_t )( report->data[count + 2U * i + 1U] ) & ( ( uint16_t )( report->data[count + 2U * i] ) << 8U );
     }
     count += 2U * configReg[report->adr]->len;
-    /*----------- Configuration scale -----------*/
+  /*----------- Configuration scale -----------*/
     configReg[report->adr]->scale = ( signed char )( report->data[count++] );
-    /*----------- Configuration units -----------*/
+  /*----------- Configuration units -----------*/
     vDecodeURI( ( char* )( &report->data[count] ), configReg[report->adr]->units, MAX_UNITS_LENGTH );
-  } else res = USB_ERROR_LENGTH;
+  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -215,19 +211,29 @@ void vUSBsendConfig( eConfigReg* config )
  */
 void vUSBgetConfig( USB_REPORT* report )
 {
+  uint8_t i = 0U;
   USB_REPORT response =
   {
-    .buf  = usbBuffer,
-    .data = &usbBuffer[BUFFER_DATA_SHIFT],
+    .cmd    = USB_PUT_CMD,
+	.stat   = USB_OK_STAT,
+	.adr    = report->adr,
+	.length = 0U,
+    .buf    = usbBuffer,
+    .data   = &usbBuffer[BUFFER_DATA_SHIFT],
   };
 
-  if ( eUSBReportToConfig( report ) == USB_DONE )
+  if ( eUSBReportToConfig( report ) != USB_DONE )
   {
-	vUSBmakeReport( &response );
-	while ( eUSBwrite( response.buf ) == USBD_BUSY )
-	{
-	 osDelay( 2U );
-	}
+	response.stat = USB_BAD_REQ_STAT;
+  }
+  for( i=0U; i<USB_REPORT_SIZE; i++ )
+  {
+    usbBuffer[i] = 0U;
+  }
+  vUSBmakeReport( &response );
+  while ( eUSBwrite( response.buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
   }
   return;
 }

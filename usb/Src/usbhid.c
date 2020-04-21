@@ -134,7 +134,7 @@ USB_Status eUSBReportToConfig( USB_REPORT* report )
   /*----------- Configuration value -----------*/
     for ( i=0; i<configReg[report->adr]->len; i++ )
     {
-      configReg[report->adr]->value[i] = ( uint16_t )( report->data[count + 2U * i + 1U] ) & ( ( uint16_t )( report->data[count + 2U * i] ) << 8U );
+      configReg[report->adr]->value[i] = ( uint16_t )( report->data[count + 2U * i + 1U] ) | ( ( uint16_t )( report->data[count + 2U * i] ) << 8U );
     }
     count += 2U * configReg[report->adr]->len;
   /*----------- Configuration scale -----------*/

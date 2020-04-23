@@ -12,6 +12,7 @@
 #include "usbd_customhid.h"
 #include "usbd_def.h"
 #include "config.h"
+#include "chart.h"
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -43,8 +44,10 @@ typedef enum
 
 typedef enum
 {
-  USB_GET_CMD = 0x01U,
-  USB_PUT_CMD = 0x02U,
+  USB_GET_CONFIG_CMD = 0x01U,
+  USB_PUT_CONFIG_CMD = 0x02U,
+  USB_GET_CHART_CMD  = 0x03U,
+  USB_PUT_CHART_CMD  = 0x04U,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

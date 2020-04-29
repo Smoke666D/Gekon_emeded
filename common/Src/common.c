@@ -52,7 +52,7 @@ void vSYSgetUniqueID16( uint16_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uEncodeURI( char* output, uint16_t* input, uint8_t length )
+uint8_t uEncodeURI( const uint16_t* input, uint8_t length, char* output )
 {
   uint8_t shift = 0U;
   uint8_t i     = 0U;

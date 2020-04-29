@@ -48,14 +48,15 @@ typedef struct
 
 typedef struct
 {
-  fix16_t 	      xmin;
-  fix16_t 	      xmax;
-  fix16_t  	      ymin;
-  fix16_t 	      ymax;
-  uint16_t        xunit[CHART_UNIT_LENGTH];
-  uint16_t        yunit[CHART_UNIT_LENGTH];
-  uint16_t	      size;
-  eChartDot	      dots[CHART_CHART_MAX_SIZE];
+  fix16_t 	      xmin;								/* 4 bytes */
+  fix16_t 	      xmax;								/* 4 bytes */
+  fix16_t  	      ymin;								/* 4 bytes */
+  fix16_t 	      ymax;								/* 4 bytes */
+  uint16_t        xunit[CHART_UNIT_LENGTH];			/* 2 * 3 = 6 bytes */
+  uint16_t        yunit[CHART_UNIT_LENGTH];			/* 2 * 3 = 6 bytes */
+  uint16_t	      size;								/* 2 bytes            Number of dots */
+  eChartDot	      dots[CHART_CHART_MAX_SIZE];		/* 128 * 8 = 1024 bytes  */
+
   eChartFunction  func[CHART_CHART_MAX_SIZE - 1U];
 } eChartData;
 /*------------------------ Extern --------------------------------------*/

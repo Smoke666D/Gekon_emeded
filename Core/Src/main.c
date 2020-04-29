@@ -49,7 +49,15 @@ extern USBD_HandleTypeDef  hUsbDeviceFS;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+/* stack size optim:
+ * default   - 496
+ * net       - 1792
+ * lcd       - 512
+ * lcdRedraw - 128
+ * key       - 232
+ * usb       - 768
+ *
+ */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -67,35 +75,35 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512
+  .stack_size = 496
 };
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
   .name = "netTask",
   .priority = (osPriority_t) osPriorityBelowNormal,
-  .stack_size = 4096
+  .stack_size = 1792
 };
 /* Definitions for lcdTask */
 osThreadId_t lcdTaskHandle;
 const osThreadAttr_t lcdTask_attributes = {
   .name = "lcdTask",
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 1024
+  .stack_size = 512
 };
 /* Definitions for lcdRedrawTask */
 osThreadId_t lcdRedrawTaskHandle;
 const osThreadAttr_t lcdRedrawTask_attributes = {
   .name = "lcdRedrawTask",
   .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 1024
+  .stack_size = 128
 };
 /* Definitions for usbTask */
 osThreadId_t usbTaskHandle;
 const osThreadAttr_t usbTask_attributes = {
   .name = "usbTask",
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 512
+  .stack_size = 768
 };
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
@@ -107,7 +115,7 @@ osThreadId_t keyboardTaskHandle;
 const osThreadAttr_t keyboardTask_attributes = {
   .name = "KeyboardTask",
   .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 1024
+  .stack_size = 232
 };
 
 /* USER CODE END PV */
@@ -586,6 +594,7 @@ void StartDefaultTask(void *argument)
   uint8_t	i = 0U;
   uint8_t	j = 0U;
   uint8_t	temp = 0U;
+  uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
   for ( i=0; i<6U; i++ )
@@ -602,9 +611,13 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-
   	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
   	osDelay( 100U );
+/*
+  	waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
+  	sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );
+  	vSYSSerial( buf );
+*/
   }
   /* USER CODE END 5 */ 
 }

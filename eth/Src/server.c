@@ -20,8 +20,8 @@ static osThreadId_t  netClientHandle;  // Network task handle
 
 /*----------------------- Functions -----------------------------------------------------------------*/
 void            startNetClientTask(void const * argument);              // Network task function
-SERVER_ERROR    eHTTPsendRequest( char* httpStr, char* hostName );
-RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length );
+SERVER_ERROR    eHTTPsendRequest( const char* hostName, char* httpStr );
+RECEIVE_MESSAGE eSERVERanalizMessage( const char* message, uint32_t length );
 /*---------------------------------------------------------------------------------------------------*/
 /**
  * Read local IP address of device in char array format
@@ -134,7 +134,7 @@ SERVER_ERROR eSERVERlistenRoutine( void )
   return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
-RECEIVE_MESSAGE eSERVERanalizMessage( char* message, uint32_t length )
+RECEIVE_MESSAGE eSERVERanalizMessage( const char* message, uint32_t length )
 {
   RECEIVE_MESSAGE res       = RECEIVE_MESSAGE_ERROR;
   char*           pchSt;
@@ -255,7 +255,7 @@ void startNetClientTask( void const * argument )
   }
 }
 /*---------------------------------------------------------------------------------------------------*/
-SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
+SERVER_ERROR eHTTPsendRequest( const char* hostName, char* httpStr )
 {
   SERVER_ERROR 	   res     = SERVER_OK;
   struct netconn * ncr;
@@ -301,19 +301,19 @@ SERVER_ERROR eHTTPsendRequest( char* httpStr, char* hostName )
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Send request, get and parsing response
- * input:		request 	- input request structure
- * 					response 	- output response structure
- * 					output 		- buffer for parsed data of response
- * output:	status of operation
+ * input:  request  - input request structure
+ *         response - output response structure
+ *         output   - buffer for parsed data of response
+ * output: status of operation
  */
 HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
 {
   HTTP_STATUS res = HTTP_STATUS_BAD_REQUEST;
   char        buffer[HTTP_BUFER_SIZE];
 
-  if ( eHTTPmakeRequest( buffer, request ) == HTTP_STATUS_OK )
+  if ( eHTTPmakeRequest( request, buffer ) == HTTP_STATUS_OK )
   {
-    if ( eHTTPsendRequest( buffer, request->host ) == SERVER_OK )
+    if ( eHTTPsendRequest( request->host, buffer ) == SERVER_OK )
     {
       res = eHTTPparsingResponse( buffer, output, response );
     }

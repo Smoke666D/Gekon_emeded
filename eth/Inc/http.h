@@ -214,12 +214,12 @@ typedef struct
 #define	 HTTP_CACHE_CONTROL          "Cache-Control: "
 #define	 HTTP_ENCODING_LINE          "Content-Encoding: "
 /*----------------------- Functions ------------------------------------*/
-HTTP_STATUS eHTTPparsingRequest( char* req, HTTP_REQUEST* request );										/* Parsing data from request text */
-void        vHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response );				/* Build response in response structure */
-HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response );								/* Make string response from response structure */
-HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST* request );																	/* Build request structure */
-HTTP_STATUS eHTTPmakeRequest( char* httpStr, HTTP_REQUEST* request );										/* Make string request from request structure */
-HTTP_STATUS eHTTPparsingResponse( char* input, char* data, HTTP_RESPONSE* response );		/* Parsing data from response text */
+HTTP_STATUS eHTTPparsingRequest( const char* req, HTTP_REQUEST* request );                  /* Parsing data from request text */
+void        vHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response );           /* Build response in response structure */
+HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response );                    /* Make string response from response structure */
+HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST* request );                                     /* Build request structure */
+HTTP_STATUS eHTTPmakeRequest( const HTTP_REQUEST* request, char* httpStr );                 /* Make string request from request structure */
+HTTP_STATUS eHTTPparsingResponse( const char* input, char* data, HTTP_RESPONSE* response ); /* Parsing data from response text */
 /*----------------------------------------------------------------------*/
 #endif /* INC_HTTP_H_ */
 

@@ -26,6 +26,7 @@ typedef enum
 typedef enum
 {
   USB_DONE,
+  USB_CONT,
   USB_ERROR_LENGTH,
 } USB_Status;
 
@@ -53,16 +54,17 @@ typedef enum
 #define USB_REPORT_SIZE       65U
 #define USB_QUEUE_SIZE        10U
 #define	BUFFER_DATA_SHIFT     6U
+#define USB_DATA_SIZE         ( USB_REPORT_SIZE - BUFFER_DATA_SHIFT )
 /*------------------------------ Report --------------------------------------*/
 /*
- * | 0  |  1  |  2   |  3   |  4   |  5   |   6   |   7   |
- * | ID | CMD | STAT | FILD | ADR1 | ADR0 | DATA1 | DATA0 |
+ * | 0  |  1  |  2   |  4   |  5   |  6  | ...  | ... |  64 |
+ * | ID | CMD | STAT | ADR1 | ADR0 | LEN | DATA | ... | ... |
  */
 #define USB_INPUT_REPORT_ID   0x01U    /* Direction - first byte in report */
 #define USB_OUTPUT_REPORT_ID  0x02U    /* Direction - first byte in report */
 /*------------------------------ Macros --------------------------------------*/
-#define USB_GET_DIR_VAL(e)    ( e == USB_INPUT ) ? USB_INPUT_REPORT_ID : USB_OUTPUT_REPORT_ID
-#define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? USB_INPUT : USB_OUTPUT
+#define USB_GET_DIR_VAL(e)    ( e == USB_INPUT ) ? ( USB_INPUT_REPORT_ID ) : ( USB_OUTPUT_REPORT_ID )
+#define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? ( USB_INPUT ) : ( USB_OUTPUT )
 /*---------------------------- Structures ------------------------------------*/
 typedef struct
 {
@@ -73,13 +75,14 @@ typedef struct
 
 typedef struct
 {
-  USB_ReportDir  dir;    /* Direction of transaction */
-  USB_ReportCmd  cmd;    /* Command */
-  USB_ReportStat stat;   /* Status of transaction */
-  uint16_t       adr;    /* Address of register */
-  uint8_t*       data;   /* Data array */
-  uint8_t        length; /* Length of data array */
-  uint8_t*       buf;    /* Pointer to the IO buffer */
+  USB_ReportDir  dir;     /* Direction of transaction */
+  USB_ReportCmd  cmd;     /* Command */
+  USB_ReportStat stat;    /* Status of transaction */
+  uint16_t       adr;     /* Address of register */
+  uint8_t*       data;    /* Data array */
+  uint8_t        length;  /* Length of data array */
+  uint8_t*       buf;     /* Pointer to the IO buffer */
+  uint8_t        multi;   /* Number of USB messages for one report*/
 } USB_REPORT;
 /*------------------------------ Extern --------------------------------------*/
 

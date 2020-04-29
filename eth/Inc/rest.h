@@ -55,7 +55,7 @@ typedef enum
 /*------------------------------ Extern --------------------------------------*/
 extern const char 	*restRequeststr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/
-uint32_t     uRESTmakeConfig( char* output, eConfigReg* reg );
+uint32_t     uRESTmakeConfig( eConfigReg* reg, char* output );
 uint32_t     uRESTmakeChart( char* output, eChartData* chart );
 REST_ERROR   eRESTparsingConfig( char* input, eConfigReg* reg );
 REST_ADDRESS eRESTgetRequest( char* path, REST_REQUEST* request, uint16_t* adr );

@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-04-12 10:39:11
+ * Make time: 2020-04-30 07:26:14
  */
 #include   "config.h"
 
@@ -734,7 +734,7 @@ eConfigReg timerStartDelay =
    .adr        = 41U,
    .scale      = 0U,
    .value      = timerStartDelayValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
@@ -749,7 +749,7 @@ eConfigReg timerPreheating =
    .adr        = 42U,
    .scale      = 0U,
    .value      = timerPreheatingValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
@@ -794,7 +794,7 @@ eConfigReg timerStartupIdleTime =
    .adr        = 45U,
    .scale      = 0U,
    .value      = timerStartupIdleTimeValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
@@ -839,7 +839,7 @@ eConfigReg timerWarming =
    .adr        = 48U,
    .scale      = 0U,
    .value      = timerWarmingValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
@@ -899,7 +899,7 @@ eConfigReg timerReturnDelay =
    .adr        = 52U,
    .scale      = 0U,
    .value      = timerReturnDelayValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
@@ -914,7 +914,7 @@ eConfigReg timerCooling =
    .adr        = 53U,
    .scale      = 0U,
    .value      = timerCoolingValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
@@ -929,7 +929,7 @@ eConfigReg timerCoolingIdle =
    .adr        = 54U,
    .scale      = 0U,
    .value      = timerCoolingIdleValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',
@@ -944,7 +944,7 @@ eConfigReg timerSolenoidHold =
    .adr        = 55U,
    .scale      = 0U,
    .value      = timerSolenoidHoldValue,
-   .min        = 1U,
+   .min        = 0U,
    .max        = 60U,
    .units      = {'с', 'е', 'к', ' '},
    .type       = 'U',

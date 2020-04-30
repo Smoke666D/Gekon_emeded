@@ -34,11 +34,12 @@
 #include "config.h"
 #include "version.h"
 #include "keyboard.h"
+#include "usbhid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+extern USBD_HandleTypeDef  hUsbDeviceFS;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -48,7 +49,15 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+/* stack size optim:
+ * default   - 496
+ * net       - 1792
+ * lcd       - 512
+ * lcdRedraw - 128
+ * key       - 232
+ * usb       - 768
+ *
+ */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -66,28 +75,35 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512
+  .stack_size = 496
 };
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
   .name = "netTask",
   .priority = (osPriority_t) osPriorityBelowNormal,
-  .stack_size = 4096
+  .stack_size = 1792
 };
 /* Definitions for lcdTask */
 osThreadId_t lcdTaskHandle;
 const osThreadAttr_t lcdTask_attributes = {
   .name = "lcdTask",
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 1024
+  .stack_size = 512
 };
 /* Definitions for lcdRedrawTask */
 osThreadId_t lcdRedrawTaskHandle;
 const osThreadAttr_t lcdRedrawTask_attributes = {
   .name = "lcdRedrawTask",
   .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 1024
+  .stack_size = 128
+};
+/* Definitions for usbTask */
+osThreadId_t usbTaskHandle;
+const osThreadAttr_t usbTask_attributes = {
+  .name = "usbTask",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 768
 };
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
@@ -99,7 +115,7 @@ osThreadId_t keyboardTaskHandle;
 const osThreadAttr_t keyboardTask_attributes = {
   .name = "KeyboardTask",
   .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 1024
+  .stack_size = 232
 };
 
 /* USER CODE END PV */
@@ -116,6 +132,7 @@ void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
 void StartLcdTask(void *argument);
 extern void StartLcdRedrawTask(void *argument);
+extern void StartUsbTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 extern void vKeyboardTask(void const * argument);
@@ -208,11 +225,16 @@ int main(void)
   /* creation of lcdRedrawTask */
   lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
 
+  /* creation of usbTask */
+  usbTaskHandle = osThreadNew(StartUsbTask, NULL, &usbTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 
   keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   SetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
+
+  vUSBinit( usbTaskHandle );
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -564,10 +586,15 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
+
+  //HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
+  //HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
+
   char 		buf[36];
   uint8_t	i = 0U;
   uint8_t	j = 0U;
   uint8_t	temp = 0U;
+  uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
   for ( i=0; i<6U; i++ )
@@ -586,6 +613,11 @@ void StartDefaultTask(void *argument)
   {
   	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
   	osDelay( 100U );
+/*
+  	waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
+  	sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );
+  	vSYSSerial( buf );
+*/
   }
   /* USER CODE END 5 */ 
 }
@@ -641,11 +673,7 @@ void StartNetTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-  	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
-    if ( eSERVERlistenRoutine() == SERVER_OK )
-    {
-    	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-    }
+    eSERVERlistenRoutine();
     osDelay( 10U );
   }
   /* USER CODE END StartNetTask */

@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-04-30 07:26:14
+ * Make time: 2020-04-30 12:46:40
  */
 #include   "config.h"
 
@@ -503,6 +503,21 @@ eConfigReg diaDelay =
    .len        = 1U,
 };
 /*----------------------------------------------------------------*/
+uint16_t diaMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+eConfigReg diaMessage =
+{
+   .page       = 0U,
+   .adr        = 30U,
+   .scale      = 0U,
+   .value      = diaMessageValue,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = {' ', ' ', ' ', ' '},
+   .type       = 'S',
+   .rw         = CONFIG_READ_WRITE,
+   .len        = 16U,
+};
+/*----------------------------------------------------------------*/
 static eConfigBitMap dibSetupBitMap[4U] = 
 {
    { 31U, 0U, 0U, 27U },     // dibFunction
@@ -514,7 +529,7 @@ uint16_t dibSetupValue[1U] = { 0U };
 eConfigReg dibSetup =
 {
    .page       = 0U,
-   .adr        = 30U,
+   .adr        = 31U,
    .scale      = 0U,
    .value      = dibSetupValue,
    .min        = 0U,
@@ -531,7 +546,7 @@ uint16_t dibDelayValue[1U] = { 15U };
 eConfigReg dibDelay =
 {
    .page       = 0U,
-   .adr        = 31U,
+   .adr        = 32U,
    .scale      = 0U,
    .value      = dibDelayValue,
    .min        = 0U,
@@ -540,6 +555,21 @@ eConfigReg dibDelay =
    .type       = 'U',
    .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
+};
+/*----------------------------------------------------------------*/
+uint16_t dibMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+eConfigReg dibMessage =
+{
+   .page       = 0U,
+   .adr        = 33U,
+   .scale      = 0U,
+   .value      = dibMessageValue,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = {' ', ' ', ' ', ' '},
+   .type       = 'S',
+   .rw         = CONFIG_READ_WRITE,
+   .len        = 16U,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap dicSetupBitMap[4U] = 
@@ -553,7 +583,7 @@ uint16_t dicSetupValue[1U] = { 0U };
 eConfigReg dicSetup =
 {
    .page       = 0U,
-   .adr        = 32U,
+   .adr        = 34U,
    .scale      = 0U,
    .value      = dicSetupValue,
    .min        = 0U,
@@ -570,7 +600,7 @@ uint16_t dicDelayValue[1U] = { 15U };
 eConfigReg dicDelay =
 {
    .page       = 0U,
-   .adr        = 33U,
+   .adr        = 35U,
    .scale      = 0U,
    .value      = dicDelayValue,
    .min        = 0U,
@@ -579,6 +609,21 @@ eConfigReg dicDelay =
    .type       = 'U',
    .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
+};
+/*----------------------------------------------------------------*/
+uint16_t dicMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+eConfigReg dicMessage =
+{
+   .page       = 0U,
+   .adr        = 36U,
+   .scale      = 0U,
+   .value      = dicMessageValue,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = {' ', ' ', ' ', ' '},
+   .type       = 'S',
+   .rw         = CONFIG_READ_WRITE,
+   .len        = 16U,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap didSetupBitMap[4U] = 
@@ -592,7 +637,7 @@ uint16_t didSetupValue[1U] = { 64U };
 eConfigReg didSetup =
 {
    .page       = 0U,
-   .adr        = 34U,
+   .adr        = 37U,
    .scale      = 0U,
    .value      = didSetupValue,
    .min        = 0U,
@@ -609,7 +654,7 @@ uint16_t didDelayValue[1U] = { 15U };
 eConfigReg didDelay =
 {
    .page       = 0U,
-   .adr        = 35U,
+   .adr        = 38U,
    .scale      = 0U,
    .value      = didDelayValue,
    .min        = 0U,
@@ -618,6 +663,21 @@ eConfigReg didDelay =
    .type       = 'U',
    .rw         = CONFIG_READ_WRITE,
    .len        = 1U,
+};
+/*----------------------------------------------------------------*/
+uint16_t didMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+eConfigReg didMessage =
+{
+   .page       = 0U,
+   .adr        = 39U,
+   .scale      = 0U,
+   .value      = didMessageValue,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = {' ', ' ', ' ', ' '},
+   .type       = 'S',
+   .rw         = CONFIG_READ_WRITE,
+   .len        = 16U,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap doSetupBitMap[6U] = 
@@ -633,7 +693,7 @@ uint16_t doSetupValue[1U] = { 21U };
 eConfigReg doSetup =
 {
    .page       = 0U,
-   .adr        = 36U,
+   .adr        = 40U,
    .scale      = 0U,
    .value      = doSetupValue,
    .min        = 0U,
@@ -655,7 +715,7 @@ uint16_t doabTypeValue[1U] = { 0U };
 eConfigReg doabType =
 {
    .page       = 0U,
-   .adr        = 37U,
+   .adr        = 41U,
    .scale      = 0U,
    .value      = doabTypeValue,
    .min        = 0U,
@@ -677,7 +737,7 @@ uint16_t dodTypeValue[1U] = { 0U };
 eConfigReg dodType =
 {
    .page       = 0U,
-   .adr        = 38U,
+   .adr        = 42U,
    .scale      = 0U,
    .value      = dodTypeValue,
    .min        = 0U,
@@ -699,7 +759,7 @@ uint16_t doefTypeValue[1U] = { 0U };
 eConfigReg doefType =
 {
    .page       = 0U,
-   .adr        = 39U,
+   .adr        = 43U,
    .scale      = 0U,
    .value      = doefTypeValue,
    .min        = 0U,
@@ -716,7 +776,7 @@ uint16_t timerMainsTransientDelayValue[1U] = { 1U };
 eConfigReg timerMainsTransientDelay =
 {
    .page       = 0U,
-   .adr        = 40U,
+   .adr        = 44U,
    .scale      = -1,
    .value      = timerMainsTransientDelayValue,
    .min        = 1U,
@@ -731,7 +791,7 @@ uint16_t timerStartDelayValue[1U] = { 5U };
 eConfigReg timerStartDelay =
 {
    .page       = 0U,
-   .adr        = 41U,
+   .adr        = 45U,
    .scale      = 0U,
    .value      = timerStartDelayValue,
    .min        = 0U,
@@ -746,7 +806,7 @@ uint16_t timerPreheatingValue[1U] = { 5U };
 eConfigReg timerPreheating =
 {
    .page       = 0U,
-   .adr        = 42U,
+   .adr        = 46U,
    .scale      = 0U,
    .value      = timerPreheatingValue,
    .min        = 0U,
@@ -761,7 +821,7 @@ uint16_t timerCrankingValue[1U] = { 10U };
 eConfigReg timerCranking =
 {
    .page       = 0U,
-   .adr        = 43U,
+   .adr        = 47U,
    .scale      = 0U,
    .value      = timerCrankingValue,
    .min        = 1U,
@@ -776,7 +836,7 @@ uint16_t timerCrankDelayValue[1U] = { 10U };
 eConfigReg timerCrankDelay =
 {
    .page       = 0U,
-   .adr        = 44U,
+   .adr        = 48U,
    .scale      = 0U,
    .value      = timerCrankDelayValue,
    .min        = 1U,
@@ -791,7 +851,7 @@ uint16_t timerStartupIdleTimeValue[1U] = { 10U };
 eConfigReg timerStartupIdleTime =
 {
    .page       = 0U,
-   .adr        = 45U,
+   .adr        = 49U,
    .scale      = 0U,
    .value      = timerStartupIdleTimeValue,
    .min        = 0U,
@@ -806,7 +866,7 @@ uint16_t timerNominalRPMDelayValue[1U] = { 10U };
 eConfigReg timerNominalRPMDelay =
 {
    .page       = 0U,
-   .adr        = 46U,
+   .adr        = 50U,
    .scale      = 0U,
    .value      = timerNominalRPMDelayValue,
    .min        = 1U,
@@ -821,7 +881,7 @@ uint16_t timerSafetyOnDelayValue[1U] = { 10U };
 eConfigReg timerSafetyOnDelay =
 {
    .page       = 0U,
-   .adr        = 47U,
+   .adr        = 51U,
    .scale      = 0U,
    .value      = timerSafetyOnDelayValue,
    .min        = 1U,
@@ -836,7 +896,7 @@ uint16_t timerWarmingValue[1U] = { 1U };
 eConfigReg timerWarming =
 {
    .page       = 0U,
-   .adr        = 48U,
+   .adr        = 52U,
    .scale      = 0U,
    .value      = timerWarmingValue,
    .min        = 0U,
@@ -851,7 +911,7 @@ uint16_t timerTransferDelayValue[1U] = { 6U };
 eConfigReg timerTransferDelay =
 {
    .page       = 0U,
-   .adr        = 49U,
+   .adr        = 53U,
    .scale      = -1,
    .value      = timerTransferDelayValue,
    .min        = 1U,
@@ -866,7 +926,7 @@ uint16_t timerBreakerTripPulseValue[1U] = { 5U };
 eConfigReg timerBreakerTripPulse =
 {
    .page       = 0U,
-   .adr        = 50U,
+   .adr        = 54U,
    .scale      = -1,
    .value      = timerBreakerTripPulseValue,
    .min        = 1U,
@@ -881,7 +941,7 @@ uint16_t timerBreakerClosePulseValue[1U] = { 5U };
 eConfigReg timerBreakerClosePulse =
 {
    .page       = 0U,
-   .adr        = 51U,
+   .adr        = 55U,
    .scale      = -1,
    .value      = timerBreakerClosePulseValue,
    .min        = 1U,
@@ -896,7 +956,7 @@ uint16_t timerReturnDelayValue[1U] = { 30U };
 eConfigReg timerReturnDelay =
 {
    .page       = 0U,
-   .adr        = 52U,
+   .adr        = 56U,
    .scale      = 0U,
    .value      = timerReturnDelayValue,
    .min        = 0U,
@@ -911,7 +971,7 @@ uint16_t timerCoolingValue[1U] = { 60U };
 eConfigReg timerCooling =
 {
    .page       = 0U,
-   .adr        = 53U,
+   .adr        = 57U,
    .scale      = 0U,
    .value      = timerCoolingValue,
    .min        = 0U,
@@ -926,7 +986,7 @@ uint16_t timerCoolingIdleValue[1U] = { 20U };
 eConfigReg timerCoolingIdle =
 {
    .page       = 0U,
-   .adr        = 54U,
+   .adr        = 58U,
    .scale      = 0U,
    .value      = timerCoolingIdleValue,
    .min        = 0U,
@@ -941,7 +1001,7 @@ uint16_t timerSolenoidHoldValue[1U] = { 20U };
 eConfigReg timerSolenoidHold =
 {
    .page       = 0U,
-   .adr        = 55U,
+   .adr        = 59U,
    .scale      = 0U,
    .value      = timerSolenoidHoldValue,
    .min        = 0U,
@@ -956,7 +1016,7 @@ uint16_t timerFailStopDelayValue[1U] = { 30U };
 eConfigReg timerFailStopDelay =
 {
    .page       = 0U,
-   .adr        = 56U,
+   .adr        = 60U,
    .scale      = 0U,
    .value      = timerFailStopDelayValue,
    .min        = 1U,
@@ -971,7 +1031,7 @@ uint16_t timerGenTransientDelayValue[1U] = { 10U };
 eConfigReg timerGenTransientDelay =
 {
    .page       = 0U,
-   .adr        = 57U,
+   .adr        = 61U,
    .scale      = -1,
    .value      = timerGenTransientDelayValue,
    .min        = 1U,
@@ -993,7 +1053,7 @@ uint16_t genSetupValue[1U] = { 104U };
 eConfigReg genSetup =
 {
    .page       = 0U,
-   .adr        = 58U,
+   .adr        = 62U,
    .scale      = 0U,
    .value      = genSetupValue,
    .min        = 0U,
@@ -1010,7 +1070,7 @@ uint16_t genRatedActivePowerLevelValue[1U] = { 40000U };
 eConfigReg genRatedActivePowerLevel =
 {
    .page       = 0U,
-   .adr        = 59U,
+   .adr        = 63U,
    .scale      = 0U,
    .value      = genRatedActivePowerLevelValue,
    .min        = 0U,
@@ -1025,7 +1085,7 @@ uint16_t genRatedReactivePowerLevelValue[1U] = { 0U };
 eConfigReg genRatedReactivePowerLevel =
 {
    .page       = 0U,
-   .adr        = 60U,
+   .adr        = 64U,
    .scale      = 0U,
    .value      = genRatedReactivePowerLevelValue,
    .min        = 0U,
@@ -1040,7 +1100,7 @@ uint16_t genRatedApparentPowerLevelValue[1U] = { 200U };
 eConfigReg genRatedApparentPowerLevel =
 {
    .page       = 0U,
-   .adr        = 61U,
+   .adr        = 65U,
    .scale      = 0U,
    .value      = genRatedApparentPowerLevelValue,
    .min        = 0U,
@@ -1055,7 +1115,7 @@ uint16_t genRatedFrequencyLevelValue[1U] = { 500U };
 eConfigReg genRatedFrequencyLevel =
 {
    .page       = 0U,
-   .adr        = 62U,
+   .adr        = 66U,
    .scale      = -1,
    .value      = genRatedFrequencyLevelValue,
    .min        = 2U,
@@ -1070,7 +1130,7 @@ uint16_t genCurrentPrimaryLevelValue[1U] = { 600U };
 eConfigReg genCurrentPrimaryLevel =
 {
    .page       = 0U,
-   .adr        = 63U,
+   .adr        = 67U,
    .scale      = 0U,
    .value      = genCurrentPrimaryLevelValue,
    .min        = 5U,
@@ -1085,7 +1145,7 @@ uint16_t genCurrentFullLoadRatingLevelValue[1U] = { 500U };
 eConfigReg genCurrentFullLoadRatingLevel =
 {
    .page       = 0U,
-   .adr        = 64U,
+   .adr        = 68U,
    .scale      = 0U,
    .value      = genCurrentFullLoadRatingLevelValue,
    .min        = 5U,
@@ -1115,7 +1175,7 @@ uint16_t genAlarmsValue[1U] = { 7167U };
 eConfigReg genAlarms =
 {
    .page       = 0U,
-   .adr        = 65U,
+   .adr        = 69U,
    .scale      = 0U,
    .value      = genAlarmsValue,
    .min        = 0U,
@@ -1132,7 +1192,7 @@ uint16_t genUnderVoltageAlarmLevelValue[1U] = { 318U };
 eConfigReg genUnderVoltageAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 66U,
+   .adr        = 70U,
    .scale      = 0U,
    .value      = genUnderVoltageAlarmLevelValue,
    .min        = 86U,
@@ -1147,7 +1207,7 @@ uint16_t genUnderVoltagePreAlarmLevelValue[1U] = { 339U };
 eConfigReg genUnderVoltagePreAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 67U,
+   .adr        = 71U,
    .scale      = 0U,
    .value      = genUnderVoltagePreAlarmLevelValue,
    .min        = 88U,
@@ -1162,7 +1222,7 @@ uint16_t genOverVoltagePreAlarmLevelValue[1U] = { 439U };
 eConfigReg genOverVoltagePreAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 68U,
+   .adr        = 72U,
    .scale      = 0U,
    .value      = genOverVoltagePreAlarmLevelValue,
    .min        = 93U,
@@ -1177,7 +1237,7 @@ uint16_t genOverVoltageAlarmLevelValue[1U] = { 458U };
 eConfigReg genOverVoltageAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 69U,
+   .adr        = 73U,
    .scale      = 0U,
    .value      = genOverVoltageAlarmLevelValue,
    .min        = 95U,
@@ -1192,7 +1252,7 @@ uint16_t genUnderFrequencyAlarmLevelValue[1U] = { 400U };
 eConfigReg genUnderFrequencyAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 70U,
+   .adr        = 74U,
    .scale      = -1,
    .value      = genUnderFrequencyAlarmLevelValue,
    .min        = 0U,
@@ -1207,7 +1267,7 @@ uint16_t genUnderFrequencyPreAlarmLevelValue[1U] = { 420U };
 eConfigReg genUnderFrequencyPreAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 71U,
+   .adr        = 75U,
    .scale      = -1,
    .value      = genUnderFrequencyPreAlarmLevelValue,
    .min        = 1U,
@@ -1222,7 +1282,7 @@ uint16_t genOverFrequencyPreAlarmLevelValue[1U] = { 540U };
 eConfigReg genOverFrequencyPreAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 72U,
+   .adr        = 76U,
    .scale      = -1,
    .value      = genOverFrequencyPreAlarmLevelValue,
    .min        = 4U,
@@ -1237,7 +1297,7 @@ uint16_t genOverFrequencyAlarmLevelValue[1U] = { 550U };
 eConfigReg genOverFrequencyAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 73U,
+   .adr        = 77U,
    .scale      = -1,
    .value      = genOverFrequencyAlarmLevelValue,
    .min        = 5U,
@@ -1252,7 +1312,7 @@ uint16_t genOverCurrentThermalProtectionLevelValue[1U] = { 20U };
 eConfigReg genOverCurrentThermalProtectionLevel =
 {
    .page       = 0U,
-   .adr        = 74U,
+   .adr        = 78U,
    .scale      = 0U,
    .value      = genOverCurrentThermalProtectionLevelValue,
    .min        = 0U,
@@ -1267,7 +1327,7 @@ uint16_t genOverCurrentCutoffLevelValue[1U] = { 40U };
 eConfigReg genOverCurrentCutoffLevel =
 {
    .page       = 0U,
-   .adr        = 75U,
+   .adr        = 79U,
    .scale      = 0U,
    .value      = genOverCurrentCutoffLevelValue,
    .min        = 0U,
@@ -1282,7 +1342,7 @@ uint16_t genOverCurrentAlarmLevelValue[1U] = { 100U };
 eConfigReg genOverCurrentAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 76U,
+   .adr        = 80U,
    .scale      = 0U,
    .value      = genOverCurrentAlarmLevelValue,
    .min        = 50U,
@@ -1297,7 +1357,7 @@ uint16_t genOverCurrentAlarmDelayValue[1U] = { 60U };
 eConfigReg genOverCurrentAlarmDelay =
 {
    .page       = 0U,
-   .adr        = 77U,
+   .adr        = 81U,
    .scale      = 0U,
    .value      = genOverCurrentAlarmDelayValue,
    .min        = 0U,
@@ -1312,7 +1372,7 @@ uint16_t genCurrentOverloadProtectionLevelValue[1U] = { 100U };
 eConfigReg genCurrentOverloadProtectionLevel =
 {
    .page       = 0U,
-   .adr        = 78U,
+   .adr        = 82U,
    .scale      = 0U,
    .value      = genCurrentOverloadProtectionLevelValue,
    .min        = 1U,
@@ -1327,7 +1387,7 @@ uint16_t genCurrentOverloadProtectionDelayValue[1U] = { 5U };
 eConfigReg genCurrentOverloadProtectionDelay =
 {
    .page       = 0U,
-   .adr        = 79U,
+   .adr        = 83U,
    .scale      = 0U,
    .value      = genCurrentOverloadProtectionDelayValue,
    .min        = 0U,
@@ -1342,7 +1402,7 @@ uint16_t genCurrentOverPhaseImbalanceLevelValue[1U] = { 100U };
 eConfigReg genCurrentOverPhaseImbalanceLevel =
 {
    .page       = 0U,
-   .adr        = 80U,
+   .adr        = 84U,
    .scale      = 0U,
    .value      = genCurrentOverPhaseImbalanceLevelValue,
    .min        = 1U,
@@ -1357,7 +1417,7 @@ uint16_t genCurrentOverPhaseImbalanceDelayValue[1U] = { 60U };
 eConfigReg genCurrentOverPhaseImbalanceDelay =
 {
    .page       = 0U,
-   .adr        = 81U,
+   .adr        = 85U,
    .scale      = 0U,
    .value      = genCurrentOverPhaseImbalanceDelayValue,
    .min        = 0U,
@@ -1378,7 +1438,7 @@ uint16_t mainsSetupValue[1U] = { 13U };
 eConfigReg mainsSetup =
 {
    .page       = 0U,
-   .adr        = 82U,
+   .adr        = 86U,
    .scale      = 0U,
    .value      = mainsSetupValue,
    .min        = 0U,
@@ -1402,7 +1462,7 @@ uint16_t mainsAlarmsValue[1U] = { 15U };
 eConfigReg mainsAlarms =
 {
    .page       = 0U,
-   .adr        = 83U,
+   .adr        = 87U,
    .scale      = 0U,
    .value      = mainsAlarmsValue,
    .min        = 0U,
@@ -1419,7 +1479,7 @@ uint16_t mainsUnderVoltageAlarmLevelValue[1U] = { 318U };
 eConfigReg mainsUnderVoltageAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 84U,
+   .adr        = 88U,
    .scale      = 0U,
    .value      = mainsUnderVoltageAlarmLevelValue,
    .min        = 86U,
@@ -1434,7 +1494,7 @@ uint16_t mainsOverVoltageAlarmLevelValue[1U] = { 438U };
 eConfigReg mainsOverVoltageAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 85U,
+   .adr        = 89U,
    .scale      = 0U,
    .value      = mainsOverVoltageAlarmLevelValue,
    .min        = 90U,
@@ -1449,7 +1509,7 @@ uint16_t mainsUnderFrequencyAlarmLevelValue[1U] = { 450U };
 eConfigReg mainsUnderFrequencyAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 86U,
+   .adr        = 90U,
    .scale      = -1,
    .value      = mainsUnderFrequencyAlarmLevelValue,
    .min        = 0U,
@@ -1464,7 +1524,7 @@ uint16_t mainsOverFrequencyAlarmLevelValue[1U] = { 520U };
 eConfigReg mainsOverFrequencyAlarmLevel =
 {
    .page       = 0U,
-   .adr        = 87U,
+   .adr        = 91U,
    .scale      = -1,
    .value      = mainsOverFrequencyAlarmLevelValue,
    .min        = 2U,
@@ -1485,7 +1545,7 @@ uint16_t engineSetupValue[1U] = { 51U };
 eConfigReg engineSetup =
 {
    .page       = 0U,
-   .adr        = 88U,
+   .adr        = 92U,
    .scale      = 0U,
    .value      = engineSetupValue,
    .min        = 0U,
@@ -1502,7 +1562,7 @@ uint16_t enginePreHeatLevelValue[1U] = { 50U };
 eConfigReg enginePreHeatLevel =
 {
    .page       = 0U,
-   .adr        = 89U,
+   .adr        = 93U,
    .scale      = 0U,
    .value      = enginePreHeatLevelValue,
    .min        = 0U,
@@ -1517,7 +1577,7 @@ uint16_t enginePreHeatDelayValue[1U] = { 0U };
 eConfigReg enginePreHeatDelay =
 {
    .page       = 0U,
-   .adr        = 90U,
+   .adr        = 94U,
    .scale      = 0U,
    .value      = enginePreHeatDelayValue,
    .min        = 0U,
@@ -1532,7 +1592,7 @@ uint16_t enginePostHeatLevelValue[1U] = { 50U };
 eConfigReg enginePostHeatLevel =
 {
    .page       = 0U,
-   .adr        = 91U,
+   .adr        = 95U,
    .scale      = 0U,
    .value      = enginePostHeatLevelValue,
    .min        = 0U,
@@ -1547,7 +1607,7 @@ uint16_t enginePostHeatDelayValue[1U] = { 0U };
 eConfigReg enginePostHeatDelay =
 {
    .page       = 0U,
-   .adr        = 92U,
+   .adr        = 96U,
    .scale      = 0U,
    .value      = enginePostHeatDelayValue,
    .min        = 0U,
@@ -1569,7 +1629,7 @@ uint16_t crankSetupValue[1U] = { 10U };
 eConfigReg crankSetup =
 {
    .page       = 0U,
-   .adr        = 93U,
+   .adr        = 97U,
    .scale      = 0U,
    .value      = crankSetupValue,
    .min        = 0U,
@@ -1586,7 +1646,7 @@ uint16_t crankDisconnectgenFreqLevelValue[1U] = { 210U };
 eConfigReg crankDisconnectgenFreqLevel =
 {
    .page       = 0U,
-   .adr        = 94U,
+   .adr        = 98U,
    .scale      = -1,
    .value      = crankDisconnectgenFreqLevelValue,
    .min        = 0U,
@@ -1601,7 +1661,7 @@ uint16_t crankDisconnectOilPressureLevelValue[1U] = { 20U };
 eConfigReg crankDisconnectOilPressureLevel =
 {
    .page       = 0U,
-   .adr        = 95U,
+   .adr        = 99U,
    .scale      = -1,
    .value      = crankDisconnectOilPressureLevelValue,
    .min        = 5U,
@@ -1616,7 +1676,7 @@ uint16_t crankDisconnectChargeAlternatorLevelValue[1U] = { 60U };
 eConfigReg crankDisconnectChargeAlternatorLevel =
 {
    .page       = 0U,
-   .adr        = 96U,
+   .adr        = 100U,
    .scale      = -1,
    .value      = crankDisconnectChargeAlternatorLevelValue,
    .min        = 0U,
@@ -1638,7 +1698,7 @@ uint16_t batteryAlarmsValue[1U] = { 15U };
 eConfigReg batteryAlarms =
 {
    .page       = 0U,
-   .adr        = 97U,
+   .adr        = 101U,
    .scale      = 0U,
    .value      = batteryAlarmsValue,
    .min        = 0U,
@@ -1655,7 +1715,7 @@ uint16_t batteryUnderVoltageLevelValue[1U] = { 100U };
 eConfigReg batteryUnderVoltageLevel =
 {
    .page       = 0U,
-   .adr        = 98U,
+   .adr        = 102U,
    .scale      = -1,
    .value      = batteryUnderVoltageLevelValue,
    .min        = 0U,
@@ -1670,7 +1730,7 @@ uint16_t batteryUnderVoltageDelayValue[1U] = { 60U };
 eConfigReg batteryUnderVoltageDelay =
 {
    .page       = 0U,
-   .adr        = 99U,
+   .adr        = 103U,
    .scale      = 0U,
    .value      = batteryUnderVoltageDelayValue,
    .min        = 0U,
@@ -1685,7 +1745,7 @@ uint16_t batteryOverVoltageLevelValue[1U] = { 300U };
 eConfigReg batteryOverVoltageLevel =
 {
    .page       = 0U,
-   .adr        = 100U,
+   .adr        = 104U,
    .scale      = -1,
    .value      = batteryOverVoltageLevelValue,
    .min        = 2U,
@@ -1700,7 +1760,7 @@ uint16_t batteryOverVoltageDelayValue[1U] = { 60U };
 eConfigReg batteryOverVoltageDelay =
 {
    .page       = 0U,
-   .adr        = 101U,
+   .adr        = 105U,
    .scale      = 0U,
    .value      = batteryOverVoltageDelayValue,
    .min        = 0U,
@@ -1715,7 +1775,7 @@ uint16_t batteryChargeShutdownLevelValue[1U] = { 40U };
 eConfigReg batteryChargeShutdownLevel =
 {
    .page       = 0U,
-   .adr        = 102U,
+   .adr        = 106U,
    .scale      = -1,
    .value      = batteryChargeShutdownLevelValue,
    .min        = 0U,
@@ -1730,7 +1790,7 @@ uint16_t batteryChargeShutdownDelayValue[1U] = { 5U };
 eConfigReg batteryChargeShutdownDelay =
 {
    .page       = 0U,
-   .adr        = 103U,
+   .adr        = 107U,
    .scale      = 0U,
    .value      = batteryChargeShutdownDelayValue,
    .min        = 0U,
@@ -1745,7 +1805,7 @@ uint16_t batteryChargeWarningLevelValue[1U] = { 60U };
 eConfigReg batteryChargeWarningLevel =
 {
    .page       = 0U,
-   .adr        = 104U,
+   .adr        = 108U,
    .scale      = -1,
    .value      = batteryChargeWarningLevelValue,
    .min        = 1U,
@@ -1760,7 +1820,7 @@ uint16_t batteryChargeWarningDelayValue[1U] = { 5U };
 eConfigReg batteryChargeWarningDelay =
 {
    .page       = 0U,
-   .adr        = 105U,
+   .adr        = 109U,
    .scale      = 0U,
    .value      = batteryChargeWarningDelayValue,
    .min        = 0U,
@@ -1784,7 +1844,7 @@ uint16_t maintenanceAlarmsValue[1U] = { 42U };
 eConfigReg maintenanceAlarms =
 {
    .page       = 0U,
-   .adr        = 106U,
+   .adr        = 110U,
    .scale      = 0U,
    .value      = maintenanceAlarmsValue,
    .min        = 0U,
@@ -1801,7 +1861,7 @@ uint16_t maintenanceAlarmOilTimeValue[1U] = { 10U };
 eConfigReg maintenanceAlarmOilTime =
 {
    .page       = 0U,
-   .adr        = 107U,
+   .adr        = 111U,
    .scale      = 0U,
    .value      = maintenanceAlarmOilTimeValue,
    .min        = 10U,
@@ -1816,7 +1876,7 @@ uint16_t maintenanceAlarmAirTimeValue[1U] = { 10U };
 eConfigReg maintenanceAlarmAirTime =
 {
    .page       = 0U,
-   .adr        = 108U,
+   .adr        = 112U,
    .scale      = 0U,
    .value      = maintenanceAlarmAirTimeValue,
    .min        = 10U,
@@ -1831,7 +1891,7 @@ uint16_t maintenanceAlarmFuelTimeValue[1U] = { 10U };
 eConfigReg maintenanceAlarmFuelTime =
 {
    .page       = 0U,
-   .adr        = 109U,
+   .adr        = 113U,
    .scale      = 0U,
    .value      = maintenanceAlarmFuelTimeValue,
    .min        = 10U,
@@ -1843,4 +1903,4 @@ eConfigReg maintenanceAlarmFuelTime =
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* configReg[SETTING_REGISTER_NUMBER] = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &diaSetup, &diaDelay, &dibSetup, &dibDelay, &dicSetup, &dicDelay, &didSetup, &didDelay, &doSetup, &doabType, &dodType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerPreheating, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerBreakerTripPulse, &timerBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &enginePostHeatLevel, &enginePostHeatDelay, &crankSetup, &crankDisconnectgenFreqLevel, &crankDisconnectOilPressureLevel, &crankDisconnectChargeAlternatorLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime};
+eConfigReg* configReg[SETTING_REGISTER_NUMBER] = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &doabType, &dodType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerPreheating, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerBreakerTripPulse, &timerBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &enginePostHeatLevel, &enginePostHeatDelay, &crankSetup, &crankDisconnectgenFreqLevel, &crankDisconnectOilPressureLevel, &crankDisconnectChargeAlternatorLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime};

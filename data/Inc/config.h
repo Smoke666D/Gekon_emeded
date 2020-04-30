@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-04-30 07:26:14
+ * Make time: 2020-04-30 12:46:40
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -9,10 +9,10 @@
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   SETTING_REGISTER_NUMBER      110U
+#define   SETTING_REGISTER_NUMBER      114U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
-#define   MAX_VALUE_LENGTH             6U
+#define   MAX_VALUE_LENGTH             16U
 
 #define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"
@@ -100,12 +100,16 @@ extern eConfigReg fuelPumpOnLevel;
 extern eConfigReg fuelPumpOffLevel;
 extern eConfigReg diaSetup;
 extern eConfigReg diaDelay;
+extern eConfigReg diaMessage;
 extern eConfigReg dibSetup;
 extern eConfigReg dibDelay;
+extern eConfigReg dibMessage;
 extern eConfigReg dicSetup;
 extern eConfigReg dicDelay;
+extern eConfigReg dicMessage;
 extern eConfigReg didSetup;
 extern eConfigReg didDelay;
+extern eConfigReg didMessage;
 extern eConfigReg doSetup;
 extern eConfigReg doabType;
 extern eConfigReg dodType;

@@ -12,14 +12,11 @@
 /*------------------------ Define --------------------------------------*/
 #define	 CR_HEX                0x0DU
 #define	 LF_HEX                0x0AU
-
 #define	 HEADER_LENGTH         30U
 #define	 SERVER_LENGTH         21U
 #define	 CONTENT_TYPE_LENGTH   9U
-
 #define	 HTTP_PATH_LENGTH      30U
 #define  WEB_PAGE_SIZE         60U
-
 #define  HTTP_BUFER_SIZE       600U
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum

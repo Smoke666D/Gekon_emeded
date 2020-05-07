@@ -13,8 +13,8 @@
 #include "rtc.h"
 
 
-#define home18_width 18
-#define home18_height 18
+#define home18_width  18U
+#define home18_height 18U
 static unsigned char home18_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x80, 0x04, 0x00,
    0x40, 0x08, 0x00, 0x20, 0x10, 0x00, 0x10, 0x20, 0x00, 0x00, 0x00, 0x00,
@@ -23,8 +23,8 @@ static unsigned char home18_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 
-#define icons8_width 20
-#define icons8_height 20
+#define icons8_width  20U
+#define icons8_height 20U
 static unsigned char icons8_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x09, 0x00, 0x38, 0xc9, 0x01,
    0xc8, 0x30, 0x01, 0x08, 0x00, 0x01, 0x10, 0x80, 0x00, 0x10, 0x8f, 0x00,
@@ -74,8 +74,8 @@ static unsigned char akk_bits[] = {
    0x03, 0x00, 0x0c, 0x03, 0x00, 0x0c, 0xff, 0xff, 0x0f, 0xfe, 0xff, 0x07 };
 
 
-#define light_footer_logo_energan_spb_width 128
-#define light_footer_logo_energan_spb_height 35
+#define light_footer_logo_energan_spb_width  128U
+#define light_footer_logo_energan_spb_height 35U
 static unsigned char light_footer_logo_energan_spb_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -125,8 +125,8 @@ static unsigned char light_footer_logo_energan_spb_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-#define i_width 133
-#define i_height 64
+#define i_width  133U
+#define i_height 64U
 static unsigned char i_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -219,84 +219,85 @@ static unsigned char i_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x10, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x1f };
-
-
-
-#define LCD_DATA_BUFFER_SIZE 1024
-
-static u8g2_t u8g2;
-static uint8_t LCD_REDRAW_FLAG = 0;
-
+/*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t  xSemaphore = NULL;
+/*----------------------- Variables -----------------------------------------------------------------*/
+static u8g2_t  u8g2;
+static uint8_t LCD_REDRAW_FLAG = 0U;
 static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
-
-
-
-//Функция инициализации драйвера LCD
-void vLCDInit(SemaphoreHandle_t temp)
-{
-	 xSemaphore = temp;
-
-
-}
-
-
-
+static char str[2]={ '0' , 0U };
+static uint8_t x_dir = 0U;
+static uint8_t y_dir = 0U;
+static uint8_t demo_step = 22U, dl = 0U, SS = 0U;
+/*------------------------ Extern -------------------------------------------------------------------*/
 extern TIM_HandleTypeDef htim7;
 extern SPI_HandleTypeDef hspi1;
-
-
-
-//Процедура обновления индикатора
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Функция инициализации драйвера LCD
+ */
+void vLCDInit( SemaphoreHandle_t temp )
+{
+  xSemaphore = temp;
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Процедура обновления индикатора
+ */
 void LCD_Redraw( void )
 {
-	uint16_t i=0;
-	uint8_t  x, y;
-    uint16_t y_start,y_end;
-    uint8_t k;
-	for ( i=0U; i<LCD_DATA_BUFFER_SIZE;i ++ )
-	{
-		if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
-		{
-			LCD_Buffer[i]	= u8g2.tile_buf_ptr[i];
-			if (LCD_REDRAW_FLAG ==0)
-			{
-				LCD_REDRAW_FLAG = 1U;
-				y_start=i;
-			}
-			else
-				y_end=i;
-		}
-	}
-	if ( LCD_REDRAW_FLAG == 1U )
-	{
-	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
-	  LCD_WriteCommand( 0x3EU );
-	  y_start = y_start/16;
-	  y_end = y_end/16+1;
-	  for ( k=y_start; k<y_end; k++ )
-	  {
-		  if (k>=32)
-		  {
-			 x=8;
-			 y=k-32;
-		  }
-		  else
-		  {
-			 x=0;
-			 y=k;
-		  }
-		  LCD_WriteCommand( 0x080U | y);
-		  LCD_WriteCommand( 0x080U | x);
-		  LCD_Send16Data(&LCD_Buffer[k*16]);
-	  }
-	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
-      LCD_REDRAW_FLAG = 0U;	// Что это???
-	}
-	return;
+  uint16_t i = 0U;
+  uint8_t  x = 0U;
+  uint8_t  y = 0U;
+  uint16_t y_start = 0U;
+  uint16_t y_end   = 0U;
+  uint8_t  k = 0U;
+
+  for ( i=0U; i<LCD_DATA_BUFFER_SIZE;i ++ )
+  {
+    if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
+    {
+      LCD_Buffer[i]	= u8g2.tile_buf_ptr[i];
+      if ( LCD_REDRAW_FLAG == 0U )
+      {
+        LCD_REDRAW_FLAG = 1U;
+        y_start         = i;
+      }
+      else
+      {
+        y_end = i;
+      }
+    }
+  }
+  if ( LCD_REDRAW_FLAG == 1U )
+  {
+    HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+    LCD_WriteCommand( 0x3EU );
+    y_start = y_start / 16U;
+    y_end   = y_end /16U + 1U;
+    for ( k=y_start; k<y_end; k++ )
+    {
+      if ( k >= 32U )
+      {
+        x = 8U;
+        y = k - 32U;
+      }
+      else
+      {
+        x = 0U;
+        y = k;
+      }
+      LCD_WriteCommand( 0x080U | y);
+      LCD_WriteCommand( 0x080U | x);
+      LCD_Send16Data( &LCD_Buffer[k * 16U] );
+    }
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+    LCD_REDRAW_FLAG = 0U;	// Что это???
+  }
+  return;
 }
-
-
+/*---------------------------------------------------------------------------------------------------*/
 void StartLcdRedrawTask(void *argument)
 {
   /* USER CODE BEGIN StartLCDRedraw */
@@ -308,10 +309,7 @@ void StartLcdRedrawTask(void *argument)
   }
   /* USER CODE END StartLCDRedraw */
 }
-
-
-
-
+/*---------------------------------------------------------------------------------------------------*/
 void LCD_Clear( void )
 {
  LCD_WriteCommand( 0x38U );
@@ -319,149 +317,141 @@ void LCD_Clear( void )
  osDelay( 2U );
  return;
 }
-
-//LCD Write Command
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * LCD Write Command
+ */
 inline void LCD_WriteCommand( uint8_t com )
 {
-	uint8_t Data[3U];
-	Data[0U] = 0xF8U;
-	Data[1U] = 0xF0U & com;
+  uint8_t Data[3U];
+  Data[0U] = 0xF8U;
+  Data[1U] = 0xF0U & com;
   Data[2U] = 0xF0U & ( com << 4U );
   HAL_SPI_Transmit_DMA( &hspi1, &Data, 3U );
   HAL_TIM_Base_Start_IT( &htim7 );
   xSemaphoreTake( xSemaphore, portMAX_DELAY );
   return;
 }
-
-
+/*---------------------------------------------------------------------------------------------------*/
 void LCD_Delay( void )
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
 
   if ( hspi1.State != HAL_SPI_STATE_BUSY_TX )
   {
-	  HAL_TIM_Base_Stop_IT( &htim7 );
-	  xHigherPriorityTaskWoken = pdFALSE;
-	  xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
-	  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
+	HAL_TIM_Base_Stop_IT( &htim7 );
+	xHigherPriorityTaskWoken = pdFALSE;
+	xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
+	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 inline void LCD_Send16Data( uint8_t *arg_prt )
 {
-	  uint8_t *data;
-	  uint8_t b;
-	  uint8_t i;
-	  uint8_t Data[33U];
+  uint8_t *data;
+  uint8_t b;
+  uint8_t i;
+  uint8_t Data[33U];
 
-	  Data[0U] = 0xFAU;
-	  data = (uint8_t *)arg_prt;
-	  for ( i=0U; i<16U; i++ )
-	  {
-	   b = *data++;
-	   Data[i * 2U + 1U]= b & 0x0f0U;
-	   Data[i * 2U + 2U]= b << 4U;
-	  }
-	  HAL_SPI_Transmit_DMA( &hspi1, &Data, 33U );
-	  HAL_TIM_Base_Start_IT( &htim7 );
-	  xSemaphoreTake( xSemaphore, portMAX_DELAY );
+  Data[0U] = 0xFAU;
+  data = (uint8_t *)arg_prt;
+  for ( i=0U; i<16U; i++ )
+  {
+    b = *data++;
+    Data[i * 2U + 1U]= b & 0x0f0U;
+    Data[i * 2U + 2U]= b << 4U;
+  }
+  HAL_SPI_Transmit_DMA( &hspi1, &Data, 33U );
+  HAL_TIM_Base_Start_IT( &htim7 );
+  xSemaphoreTake( xSemaphore, portMAX_DELAY );
+  return;
 }
-//LCD Reset
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * LCD Reset
+ */
 void LCD_Reset( void )
 {
-	HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
-	osDelay( 10U );
-	HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET );
-	osDelay( 10U );
-	HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
-	osDelay( 600U );
-	return;
+  HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
+  osDelay( 10U );
+  HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET );
+  osDelay( 10U );
+  HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
+  osDelay( 600U );
+  return;
 }
-
-uint8_t u8x8_stm32_gpio_and_delay( U8X8_UNUSED u8x8_t *u8x8,
-																	 U8X8_UNUSED uint8_t msg,
-																	 U8X8_UNUSED uint8_t arg_int,
-																	 U8X8_UNUSED void *arg_ptr )
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t u8x8_stm32_gpio_and_delay( U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSED uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void *arg_ptr )
 {
   switch ( msg )
   {
   	case U8X8_MSG_DELAY_MILLI:
-  		HAL_Delay( arg_int );
-  		break;
+  	  HAL_Delay( arg_int );
+  	  break;
   	case U8X8_MSG_DELAY_100NANO:
-  		__asm__( "nop" );
+  	  __asm__( "nop" );
       break;
   	case U8X8_MSG_GPIO_DC:
-  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
-  		break;
+  	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
+  	  break;
   	case U8X8_MSG_GPIO_RESET:
-  		// HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int);
-  		break;
+  	  // HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int);
+  	  break;
   }
   return 1U;
 }
-
-uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
-    void *arg_ptr )
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr )
 {
-	uint8_t res = 0U;
-
+  uint8_t res = 0U;
   switch ( msg )
   {
   	case U8X8_MSG_BYTE_SEND:
-  		HAL_SPI_Transmit(&hspi1, (uint8_t *) arg_ptr, arg_int, 10000);
-  		// Delay1us(72);
-  		break;
+      HAL_SPI_Transmit(&hspi1, ( uint8_t* ) arg_ptr, arg_int, 10000U );
+  	  // Delay1us(72);
+  	  break;
   	case U8X8_MSG_BYTE_INIT:
-  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
-  		break;
+  	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
+  	  break;
   	case U8X8_MSG_BYTE_SET_DC:
-  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
-  		break;
+  	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int );
+  	  break;
   	case U8X8_MSG_BYTE_START_TRANSFER:
-  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
-  		break;
+  	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+  	  break;
   	case U8X8_MSG_BYTE_END_TRANSFER:
-  		HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
-  		break;
+  	  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+  	  break;
   	default:
-  		res = 0U;
-  		break;
+  	  res = 0U;
+  	  break;
   }
   res = 1U;
   return res;
 }
-
-static char str[2]={ '0' , 0U };
+/*---------------------------------------------------------------------------------------------------*/
 void vLCD_Init()
 {
+  uint16_t i = 0U;
   u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay );
   u8g2_InitDisplay( &u8g2 );
   u8g2_SetPowerSave( &u8g2, 0U );
-  vMenuInit(&u8g2);
-  u8g2_ClearBuffer(&u8g2);
-  for (uint16_t i=0;i<LCD_DATA_BUFFER_SIZE;i++)
-	  LCD_Buffer[i]=0xFF;
+  vMenuInit( &u8g2 );
+  u8g2_ClearBuffer( &u8g2 );
+  for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i++ )
+  {
+    LCD_Buffer[i] = 0xFFU;
+  }
   LCD_Redraw();
   //LCD_Clear();
-
   return;
 }
-
-
-
-static uint8_t x_dir = 0U;
-static uint8_t y_dir = 0U;
-static uint8_t demo_step = 22U, dl = 0U, SS = 0U;
-
-
-
-void IncData()
+/*---------------------------------------------------------------------------------------------------*/
+void IncData( void )
 {
-
-	vMenuTask();
-
+  vMenuTask();
+  return;
 }
 
 

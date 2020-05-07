@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-04-30 12:46:40
+ * Make time: 2020-05-07 10:12:39
  */
 #include   "config.h"
 
@@ -503,7 +503,7 @@ eConfigReg diaDelay =
    .len        = 1U,
 };
 /*----------------------------------------------------------------*/
-uint16_t diaMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+uint16_t diaMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
 eConfigReg diaMessage =
 {
    .page       = 0U,
@@ -557,7 +557,7 @@ eConfigReg dibDelay =
    .len        = 1U,
 };
 /*----------------------------------------------------------------*/
-uint16_t dibMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+uint16_t dibMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
 eConfigReg dibMessage =
 {
    .page       = 0U,
@@ -611,7 +611,7 @@ eConfigReg dicDelay =
    .len        = 1U,
 };
 /*----------------------------------------------------------------*/
-uint16_t dicMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+uint16_t dicMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
 eConfigReg dicMessage =
 {
    .page       = 0U,
@@ -665,7 +665,7 @@ eConfigReg didDelay =
    .len        = 1U,
 };
 /*----------------------------------------------------------------*/
-uint16_t didMessageValue[16U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+uint16_t didMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
 eConfigReg didMessage =
 {
    .page       = 0U,

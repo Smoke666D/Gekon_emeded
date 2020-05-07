@@ -4,10 +4,11 @@
  *  Created on: Mar 2, 2020
  *      Author: igor.dymov
  */
+/*----------------------- Includes ------------------------------------------------------------------*/
 #include "menu.h"
 #include "rtc.h"
 #include "data_manager.h"
-
+/*------------------------ Extern -------------------------------------------------------------------*/
 extern xScreenSetObject xMainMenu;
 extern xScreenSetObject xGeneratorMenu;
 extern xScreenSetObject xEngineMenu;
@@ -15,10 +16,8 @@ extern xScreenSetObject xNetMenu;
 
 extern void xInfoScreenCallBack(xScreenSetObject * menu, char key);
 extern void xInputScreenKeyCallBack(xScreenSetObject * menu, char key);
-
-
-
-static char EventLog[][44]=
+/*----------------------- Variables -----------------------------------------------------------------*/
+static char EventLog[][44U]=
 {
   "Вспомог. входы",
   "Аналог. вход",
@@ -37,46 +36,40 @@ static char EventLog[][44]=
   "Напряж. ген. низк",
   "Напряж. ген. высок",
   "Напряжение ген.",
-
 };
+#define MENU_LEVEL1_COUNT      8U
+#define ENGINE_MENU_COUNT 	   3U
+#define NET_MENU_COUNT	 	   3U
+#define GENERATOR_MENU_COUNT   7U
+#define MENU_ADD_COUNT 		   1U
+#define MAX_HEADER_STRING_SIZE 40U
+#define LINE4_HIGTH            ( 64U / 4U )
+#define LINE5_HIGTH            ( 64U / 5U )
 
 
+#define LEFT_OFFSET  2U
+#define LINE1        12U
+#define LINE2        30U
+#define LINE3        45U
+#define LINE4        60U
+#define FONT_SIZE    6U
 
 
-#define MENU_LEVEL1_COUNT    8
-#define ENGINE_MENU_COUNT 	 3
-#define NET_MENU_COUNT	 	 3
-#define GENERATOR_MENU_COUNT 7
-#define MENU_ADD_COUNT 		 1
-#define MAX_HEADER_STRING_SIZE 40
+static uint8_t Header[]       = { 0U, 1U, CENTER_ALIGN };
+static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN };
+static uint8_t LeftText[]     = { 0U, 1U, LEFT_ALIGN };
+static uint8_t HeaderParam[]  = { 1U, 0U, CENTER_ALIGN, 0U };
+static uint8_t HeaderParam1[] = { 0U, 0U, RIGTH_ALIGN, 0U };
+static uint8_t HeaderParam2[] = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam2[]  = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam3[]  = { 0U, 1U, CENTER_ALIGN, 0U };
 
-#define LINE4_HIGTH    64/4
-#define LINE5_HIGTH    64/5
-
-
-#define LEFT_OFFSET  2
-#define LINE1  12
-#define LINE2  30
-#define LINE3  45
-#define LINE4  60
-#define FONT_SIZE 6
-
-
-static uint8_t Header[]={0,1,CENTER_ALIGN};
-static uint8_t RigthText[]={0,1,RIGTH_ALIGN};
-static uint8_t LeftText[]= {0,1,LEFT_ALIGN};
-static uint8_t HeaderParam[]={1,0,CENTER_ALIGN,0};
-static uint8_t HeaderParam1[]={0,0,RIGTH_ALIGN,0};
-static uint8_t HeaderParam2[]={0,1,LEFT_ALIGN,0};
-static uint8_t InputParam[]={0,1,CENTER_ALIGN,0};
-static uint8_t InputParam1[]={0,1,CENTER_ALIGN,0};
-static uint8_t InputParam2[]={0,1,CENTER_ALIGN,0};
-static uint8_t InputParam3[]={0,1,CENTER_ALIGN,0};
-
-extern void GetTime(char * Data);
-extern void GetInt(char * Data);
-extern void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString);
-extern void vGetTestData(DATA_COMMNAD_TYPE cmd, char * Data, uint8_t ID);
+extern void GetTime( char* Data );
+extern void GetInt( char* Data );
+extern void vdmGetData( uint8_t command, uint16_t DataID, uint8_t* pchTextString );
+extern void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 
 /*
 
@@ -94,18 +87,17 @@ static xScreenObjet ScreenLev1_1[]=
 //
 static xScreenObjet EngineMainScreen[]=
 {
-   {0,LEFT_OFFSET,LINE1,0,0,TEXT_STRING,LeftText,"ДВИГАТЕЛЬ - Сводные",NULL,0},
-   {0,0,(LINE4_HIGTH+1),128,(LINE4_HIGTH+1),LINE,Header,NULL,NULL,0},
-   {0,LEFT_OFFSET,LINE2,0,0,TEXT_STRING,LeftText,"Давление",NULL,0},
-   {0,67,(LINE4_HIGTH+2),30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,1},
-   {0,FONT_SIZE*17,LINE2,0,0,TEXT_STRING,LeftText,"Бар",NULL,0},
-   {0,LEFT_OFFSET,LINE3,0,0,TEXT_STRING,LeftText,"Температура",NULL,0},
-   {0,67,LINE2+2,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,2},
-   {0,FONT_SIZE*17,LINE3,0,0,TEXT_STRING,LeftText,"гр.С",NULL,0},
-   {0,LEFT_OFFSET,LINE4,0,0,TEXT_STRING,LeftText,"Скорость",NULL,0},
-   {0,67,LINE3+3,30,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3},
-   {1,FONT_SIZE*17,LINE4,0,0,TEXT_STRING,LeftText,"об/м",NULL,0}
-
+  { 0U, LEFT_OFFSET, LINE1, 0U, 0U, TEXT_STRING, LeftText, "ДВИГАТЕЛЬ - Сводные", NULL, 0U },
+  { 0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE,Header, NULL, NULL, 0U },
+  { 0U, LEFT_OFFSET,LINE2, 0U, 0U, TEXT_STRING, LeftText, "Давление", NULL, 0U },
+  { 0U, 67U, ( LINE4_HIGTH + 2U ), 30U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetTestData, 1U },
+  { 0U, ( FONT_SIZE * 17U ), LINE2, 0U, 0U, TEXT_STRING, LeftText, "Бар", NULL, 0U},
+  { 0U, LEFT_OFFSET, LINE3, 0U, 0U, TEXT_STRING, LeftText, "Температура", NULL, 0U},
+  { 0U, 67U, ( LINE2 + 2U ), 30U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetTestData, 2U },
+  { 0U, ( FONT_SIZE * 17U ), LINE3, 0U, 0U, TEXT_STRING, LeftText, "гр.С", NULL, 0U },
+  { 0U, LEFT_OFFSET, LINE4, 0U, 0U, TEXT_STRING, LeftText, "Скорость", NULL, 0U },
+  { 0U, 67U, ( LINE3 + 3U ), 30U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetTestData, 3U },
+  { 1U, ( FONT_SIZE * 17U ), LINE4, 0U, 0U, TEXT_STRING, LeftText, "об/м", NULL, 0U }
 };
 
 static xScreenObjet Engine1Screen[]=

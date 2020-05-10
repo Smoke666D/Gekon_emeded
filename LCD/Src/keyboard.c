@@ -25,7 +25,7 @@ static unsigned char CODES[KEYBOARD_COUNT]    = { up_key, down_key, stop_key, au
 static unsigned long KeyNorPressTimeOut       = 0U;
 static unsigned long KEY_TIME_OUT             = 6000U;
 static char          cKeyDelay                = 0U;
-uint8_t KeyboardBuffer[ 16 * sizeof( KeyEvent ) ];
+uint8_t KeyboardBuffer[ 16U * sizeof( KeyEvent ) ];
 /*---------------------------------------------------------------------------------------------------*/
 void SetupKeyboard( void )
 {
@@ -65,7 +65,7 @@ void vKeyboardInit(  uint32_t message )
 void vKeyboardTask( void const * argument )
 {
   KeyEvent      TEvent;
-  GPIO_PinState TK[KEYBOARD_COUNT];
+  GPIO_PinState TK[5U];
   uint8_t       k = 0U;
   uint8_t       i = 0U;
 
@@ -138,6 +138,10 @@ void vKeyboardTask( void const * argument )
             default:
     	      break;
           }
+        }
+        else
+        {
+          ;
         }
       }
     }

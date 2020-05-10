@@ -228,7 +228,9 @@ static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
 static char str[2]={ '0' , 0U };
 static uint8_t x_dir = 0U;
 static uint8_t y_dir = 0U;
-static uint8_t demo_step = 22U, dl = 0U, SS = 0U;
+static uint8_t demo_step = 22U;
+static uint8_t dl = 0U;
+static uint8_t SS = 0U;
 /*------------------------ Extern -------------------------------------------------------------------*/
 extern TIM_HandleTypeDef htim7;
 extern SPI_HandleTypeDef hspi1;
@@ -275,7 +277,7 @@ void LCD_Redraw( void )
     HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
     LCD_WriteCommand( 0x3EU );
     y_start = y_start / 16U;
-    y_end   = y_end /16U + 1U;
+    y_end   = ( y_end / 16U ) + 1U;
     for ( k=y_start; k<y_end; k++ )
     {
       if ( k >= 32U )
@@ -358,9 +360,9 @@ inline void LCD_Send16Data( uint8_t *arg_prt )
   data = (uint8_t *)arg_prt;
   for ( i=0U; i<16U; i++ )
   {
-    b = *data++;
-    Data[i * 2U + 1U]= b & 0x0f0U;
-    Data[i * 2U + 2U]= b << 4U;
+    b = data[i];					/* *data++ */
+    Data[( i * 2U ) + 1U]= b & 0x0f0U;
+    Data[( i * 2U ) + 2U]= b << 4U;
   }
   HAL_SPI_Transmit_DMA( &hspi1, &Data, 33U );
   HAL_TIM_Base_Start_IT( &htim7 );
@@ -398,6 +400,8 @@ uint8_t u8x8_stm32_gpio_and_delay( U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSED uint8_t
   	case U8X8_MSG_GPIO_RESET:
   	  // HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, arg_int);
   	  break;
+  	default:
+  	  break;
   }
   return 1U;
 }
@@ -408,7 +412,7 @@ uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg
   switch ( msg )
   {
   	case U8X8_MSG_BYTE_SEND:
-      HAL_SPI_Transmit(&hspi1, ( uint8_t* ) arg_ptr, arg_int, 10000U );
+      HAL_SPI_Transmit( &hspi1, ( uint8_t* ) arg_ptr, arg_int, 10000U );
   	  // Delay1us(72);
   	  break;
   	case U8X8_MSG_BYTE_INIT:

@@ -17,11 +17,11 @@ extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static uint8_t      usbBuffer[USB_REPORT_SIZE];
 static uint8_t      inputBuffer[USB_REPORT_SIZE];
-static char         strBuffer[MAX_UNITS_LENGTH * 6U + 1U];
+static char         strBuffer[( MAX_UNITS_LENGTH * 6U ) + 1U];
 static osThreadId_t usbHandle;
 /*----------------------- Functions -----------------------------------------------------------------*/
-void               vUint32ToBytes( const uint32_t* input, uint8_t* output );
-void               vUint16ToBytes( const uint16_t* input, uint8_t* output );
+void               vUint32ToBytes( uint32_t input, uint8_t* output );
+void               vUint16ToBytes( uint16_t input, uint8_t* output );
 void               vUSBmakeReport( USB_REPORT* report );                          /* Convert report structure to the output buffer */
 void               vUSBparseReport( USB_REPORT* report );                         /* Parse input buffer to the report structure */
 void               vUSBresetControl( USB_ConfigControl* control );                /* Clean control structure */
@@ -39,14 +39,18 @@ void               vUSBParsingChartDots( uint16_t adr, uint8_t firstDot, uint8_t
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vUint32ToBytes( const uint32_t* input, uint8_t* output )
+void vUint32ToBytes( uint32_t input, uint8_t* output )
 {
-  for ( uint8_t i=0; i<4U; i++ ) output[i] = *( ( uint8_t* )( input ) + i );
+  output[0U] = ( uint8_t )( ( input & 0x000000FFU ) );
+  output[1U] = ( uint8_t )( ( input & 0x0000FF00U ) >> 8U );
+  output[2U] = ( uint8_t )( ( input & 0x00FF0000U ) >> 16U );
+  output[3U] = ( uint8_t )( ( input & 0xFF000000U ) >> 24U );
   return;
 }
-void vUint16ToBytes( const uint16_t* input, uint8_t* output )
+void vUint16ToBytes(  uint16_t input, uint8_t* output )
 {
-  for ( uint8_t i=0; i<2U; i++ ) output[i] = *( ( uint8_t* )( input ) + i );
+  output[0U] = ( uint8_t )( input );
+  output[1U] = ( uint8_t )( input >> 8U );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -123,16 +127,18 @@ void vUSBConfigToReport( const eConfigReg* config, USB_REPORT* report )
   /*----------- Configuration value -----------*/
   for ( i=0U; i<config->len; i++ )
   {
-    report->data[count + 2U*i]      = ( uint8_t )( ( config->value[i] >> 8U ) & 0x00FFU );
-    report->data[count + 2U*i + 1U] = ( uint8_t )( config->value[i] & 0x00FFU );
+    report->data[count + ( 2U * i )]      = ( uint8_t )( ( config->value[i] >> 8U ) & 0x00FFU );
+    report->data[count + ( 2U * i ) + 1U] = ( uint8_t )( config->value[i] & 0x00FFU );
   }
   count += 2U * config->len;
   /*----------- Configuration scale -----------*/
-  report->data[count++] = ( uint8_t )( config->scale );
+  report->data[count] = ( uint8_t )( config->scale );
+  count++;
   /*----------- Configuration units -----------*/
   for( i=0U; i<shift; i++ )
   {
-    report->data[count++] = ( uint8_t )( strBuffer[i] );
+    report->data[count] = ( uint8_t )( strBuffer[i] );
+    count++;
   }
   /*-------------------------------------------*/
   report->length = count;
@@ -157,38 +163,42 @@ void vUSBChartToReport( uint16_t adr, const eChartData* chart, USB_REPORT* repor
   report->dir    = USB_OUTPUT;
   report->stat   = USB_OK_STAT;
   report->adr    = adr;
-  report->length = 18U + CHART_UNIT_LENGTH * 12U + 8U * chart->size;
+  report->length = 18U + ( CHART_UNIT_LENGTH * 12U ) + ( 8U * chart->size );
   /*--------------- Chart data ----------------*/
-  vUint32ToBytes( ( uint32_t* )( &chart->xmin ), &report->data[count] );
+  vUint32ToBytes( ( uint32_t )( &chart->xmin ), &report->data[count] );
   count += 4U;
-  vUint32ToBytes( ( uint32_t* )( &chart->xmax ), &report->data[count] );
+  vUint32ToBytes( ( uint32_t )( &chart->xmax ), &report->data[count] );
   count += 4U;
-  vUint32ToBytes( ( uint32_t* )( &chart->ymin ), &report->data[count] );
+  vUint32ToBytes( ( uint32_t )( &chart->ymin ), &report->data[count] );
   count += 4U;
-  vUint32ToBytes( ( uint32_t* )( &chart->ymax ), &report->data[count] );
+  vUint32ToBytes( ( uint32_t )( &chart->ymax ), &report->data[count] );
   count += 4U;
   /*--------------- X unit --------------------*/
   shift = uEncodeURI( chart->xunit, CHART_UNIT_LENGTH, strBuffer );
   for ( i=0U; i<shift; i++ )
   {
-    report->data[count++] = ( uint8_t )( strBuffer[i] );
+    report->data[count] = ( uint8_t )( strBuffer[i] );
+    count++;
   }
   for ( i=shift; i<( CHART_UNIT_LENGTH * 6U ); i++ )
   {
-    report->data[count++] = 0U;
+    report->data[count] = 0U;
+    count++;
   }
   /*--------------- Y unit --------------------*/
   shift = uEncodeURI( chart->yunit, CHART_UNIT_LENGTH, strBuffer );
   for ( i=0U; i<shift; i++ )
   {
-    report->data[count++] = ( uint8_t )( strBuffer[i] );
+    report->data[count] = ( uint8_t )( strBuffer[i] );
+    count++;
   }
   for ( i=shift; i<( CHART_UNIT_LENGTH * 6U ); i++ )
   {
-    report->data[count++] = 0U;
+    report->data[count] = 0U;
+    count++;
   }
   /*----------------- Size --------------------*/
-  vUint16ToBytes( &chart->size, &report->data[count] );
+  vUint16ToBytes( chart->size, &report->data[count] );
   count += 2U;
   /*-------------------------------------------*/
   return;
@@ -229,14 +239,14 @@ USB_Status vUSBChartDotsToReport( uint16_t adr, const eChartData* chart, USB_REP
     }
     else
     {
-      size = length - USB_DATA_SIZE * ( uint8_t )( charts[adr]->size / USB_DATA_SIZE );
+      size = length - ( USB_DATA_SIZE * ( uint8_t )( charts[adr]->size / USB_DATA_SIZE ) );
     }
   /*----------------- Dots --------------------*/
     for ( i=0U; i<size; i++ )
     {
-      vUint32ToBytes( ( uint32_t* )( &chart->dots[lastDotNumber + i].x ), &report->data[count] );
+      vUint32ToBytes( ( uint32_t )( &chart->dots[lastDotNumber + i].x ), &report->data[count] );
       count += 4U;
-      vUint32ToBytes( ( uint32_t* )( &chart->dots[lastDotNumber + i].y ), &report->data[count] );
+      vUint32ToBytes( ( uint32_t )( &chart->dots[lastDotNumber + i].y ), &report->data[count] );
       count += 4U;
     }
     lastDotNumber += size;
@@ -253,7 +263,7 @@ USB_Status eUSBReportToConfig( USB_REPORT* report )
   uint8_t    i      = 0U;
   uint8_t    length = 0U;
   /*------------- Length control --------------*/
-  length = configReg[report->adr]->len * 2U + 1U + MAX_UNITS_LENGTH * 6U;
+  length = ( configReg[report->adr]->len * 2U ) + 1U + ( MAX_UNITS_LENGTH * 6U );
   if ( length < report->length ) {
 	res = USB_ERROR_LENGTH;
   }
@@ -261,11 +271,12 @@ USB_Status eUSBReportToConfig( USB_REPORT* report )
   /*----------- Configuration value -----------*/
     for ( i=0U; i<configReg[report->adr]->len; i++ )
     {
-      configReg[report->adr]->value[i] = ( uint16_t )( report->data[count + 2U * i + 1U] ) | ( ( uint16_t )( report->data[count + 2U * i] ) << 8U );
+      configReg[report->adr]->value[i] = ( uint16_t )( report->data[count + ( 2U * i ) + 1U] ) | ( ( uint16_t )( report->data[count + ( 2U * i )] ) << 8U );
     }
     count += 2U * configReg[report->adr]->len;
   /*----------- Configuration scale -----------*/
-    configReg[report->adr]->scale = ( signed char )( report->data[count++] );
+    configReg[report->adr]->scale = ( signed char )( report->data[count] );
+    count++;
   /*----------- Configuration units -----------*/
     vDecodeURI( ( char* )( &report->data[count] ), configReg[report->adr]->units, MAX_UNITS_LENGTH );
   }
@@ -275,6 +286,7 @@ USB_Status eUSBReportToConfig( USB_REPORT* report )
 void vUSBParsingChart( uint16_t adr, const uint8_t* data )
 {
   uint8_t counter = 0U;
+  char    chr     = NULL;
 
   charts[adr]->xmin = *( fix16_t* )( &data[counter] );
   counter += 4U;
@@ -284,11 +296,13 @@ void vUSBParsingChart( uint16_t adr, const uint8_t* data )
   counter += 4U;
   charts[adr]->ymax = *( fix16_t* )( &data[counter] );
   counter += 4U;
-  vDecodeURI( ( char* )( &data[counter] ), charts[adr]->xunit, CHART_UNIT_LENGTH );
+  chr = ( char )( data[counter] );
+  vDecodeURI( &chr, charts[adr]->xunit, CHART_UNIT_LENGTH );
   counter += CHART_UNIT_LENGTH * 6U;
-  vDecodeURI( ( char* )( &data[counter] ), charts[adr]->yunit, CHART_UNIT_LENGTH );
+  chr = ( char )( data[counter] );
+  vDecodeURI( &chr, charts[adr]->yunit, CHART_UNIT_LENGTH );
   counter += CHART_UNIT_LENGTH * 6U;
-  charts[adr]->size = *( uint16_t* )( &data[counter] );
+  charts[adr]->size = ( uint16_t )( data[counter] ) | ( ( uint16_t )( data[counter + 1U] ) << 8 );
   counter += 2U;
   return;
 }
@@ -318,7 +332,7 @@ USB_Status eUSBReportToChart( USB_REPORT* report )
   if ( report->length != 0U )
   {
   /*------------- Length control --------------*/
-    length = 22U + CHART_UNIT_LENGTH * 12U;
+    length = 22U + ( CHART_UNIT_LENGTH * 12U );
     if ( report->length < length )
     {
       res = USB_ERROR_LENGTH;
@@ -340,7 +354,7 @@ USB_Status eUSBReportToChart( USB_REPORT* report )
     	}
     	else
     	{
-          size = length - USB_DATA_SIZE * ( uint8_t )( charts[report->adr]->size / USB_DATA_SIZE );
+          size = length - ( USB_DATA_SIZE * ( uint8_t )( charts[report->adr]->size / USB_DATA_SIZE ) );
     	}
         vUSBParsingChartDots( report->adr, lastDotNumber, size, report->data );
         lastDotNumber += size;
@@ -438,7 +452,7 @@ void vUSBsendChart( uint16_t adr, const eChartData* chart )
   {
     osDelay( 2U );
   }
-  for ( i=0U; i<(CHART_CHART_MAX_SIZE/USB_DATA_SIZE + 1U); i++ )
+  for ( i=0U; i<( ( CHART_CHART_MAX_SIZE / USB_DATA_SIZE ) + 1U); i++ )
   {
     result =  vUSBChartDotsToReport( adr, chart, &report ) == USB_DONE;
     vUSBmakeReport( &report );
@@ -446,7 +460,10 @@ void vUSBsendChart( uint16_t adr, const eChartData* chart )
     {
       osDelay( 2U );
     }
-    if ( result == USB_DONE ) break;
+    if ( result == USB_DONE )
+    {
+      break;
+    }
   }
   return;
 }
@@ -579,6 +596,10 @@ void StartUsbTask( void *argument )
           {
             vUSBsendConfig( configReg[report.adr] );
           }
+          else
+          {
+        	;
+          }
           break;
         case USB_PUT_CONFIG_CMD:
           if ( report.adr < SETTING_REGISTER_NUMBER )
@@ -597,6 +618,10 @@ void StartUsbTask( void *argument )
         	else if ( report.adr < CHART_NUMBER )
         	{
         	  vUSBsendChart( report.adr, charts[report.adr] );
+        	}
+        	else
+        	{
+        	  ;
         	}
           break;
         case USB_PUT_CHART_CMD:

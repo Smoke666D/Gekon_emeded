@@ -98,13 +98,14 @@ uint8_t uHTTPgetLine( const char* input, uint16_t num, char* line )
 
   for ( i=0U; i<num; i++ )
   {
-    start = strchr( end, LF_HEX ) + 1U;
+    start = strchr( end, LF_HEX );
+    start++;
     end   = strchr( start, LF_HEX );
   }
   if ( start && end)
   {
     res = 1U;
-    if ( strncpy( line, start, ( end - start ) ) == NULL )
+    if ( strncpy( line, start, ( strlen( start ) - strlen( end ) ) ) == NULL )
     {
       res = 0U;
     }
@@ -150,9 +151,9 @@ HTTP_STATUS eHTTPparsingRequest( const char* req, HTTP_REQUEST* request )
       /*--------------------------- Parsing HTTP path  ----------------------------*/
       pchSt  = strchr( line, '/' );
       pchEnd = strchr( pchSt, ' ' );
-      if ( ( pchEnd - pchSt ) > 2U )
+      if ( ( strlen( pchSt ) - strlen( pchEnd ) ) > 2U )
       {
-        if( strncpy( request->path, ( pchSt ), ( pchEnd - pchSt ) ) == NULL )
+        if( strncpy( request->path, ( pchSt ), ( strlen( pchSt ) - strlen( pchEnd ) ) ) == NULL )
         {
           res = HTTP_STATUS_BAD_REQUEST;
         }
@@ -161,7 +162,7 @@ HTTP_STATUS eHTTPparsingRequest( const char* req, HTTP_REQUEST* request )
       pchSt  = strstr( req, HTTP_END_HEADER );
       if ( pchSt != NULL )
       {
-    	request->content = pchSt + strlen( HTTP_END_HEADER );
+    	request->content = &pchSt[strlen( HTTP_END_HEADER )];
       }
     }
   }
@@ -180,29 +181,32 @@ HTTP_STATUS eHTTPparsingResponse( const char* input, char* data, HTTP_RESPONSE* 
   HTTP_STATUS res    = HTTP_STATUS_BAD_REQUEST;
   char*       pchSt  = NULL;
   char*       pchEn  = NULL;
-  char        buffer[5U];
 
-  pchSt = strchr( input, ' ') + 1U;
+
+  pchSt = strchr( input, ' ');
+  pchSt++;
   if ( pchSt != NULL )
   {
     pchEn = strchr( pchSt, ' ' );
     if ( pchEn != NULL )
     {
-      if ( strncpy( buffer, pchSt, ( pchEn - pchSt ) ) != NULL )
+      response->status = strtol( pchSt, &pchEn, 10U );
+      if ( response->status == HTTP_STATUS_OK )
       {
-        response->status = atoi( buffer );
-        if ( response->status == HTTP_STATUS_OK )
+        res = HTTP_STATUS_OK;
+        pchSt = strstr( input, "\r\n\r\n" );
+        pchSt = &pchSt[4U];
+        if ( pchSt != NULL )
         {
-          res = HTTP_STATUS_OK;
-          pchSt = strstr( input, "\r\n\r\n" ) + 4U;
-          if ( pchSt != NULL )
+          pchEn = strcpy( data, pchSt );
+          if ( pchEn == NULL )
           {
-            pchEn = strcpy( data, pchSt );
-            if ( pchEn == NULL )
-            {
-              res = HTTP_STATUS_BAD_REQUEST;
-            }
-          } else res = HTTP_STATUS_BAD_REQUEST;
+            res = HTTP_STATUS_BAD_REQUEST;
+          }
+        }
+        else
+        {
+          res = HTTP_STATUS_BAD_REQUEST;
         }
       }
     }
@@ -222,8 +226,9 @@ void eHTTPbuildPutResponse( char* path, HTTP_RESPONSE *response, char* content )
   uint16_t      adr       = 0xFFFFU;
   REST_REQUEST  request   = 0U;
   REST_ADDRESS  adrFlag   = REST_NO_ADR;
+  char*         pStr      = NULL;
 
-  strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
+  pStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
   response->cache         = HTTP_CACHE_NO_CACHE_STORE;
   response->connect       = HTTP_CONNECT_CLOSED;
@@ -540,28 +545,30 @@ HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response )
             // LENGTH
             if ( strcat( httpStr, HTTP_LENGTH_LINE ) != NULL )
             {
-              itoa( response->contentLength, buffer, 10U );
-              if ( strcat( httpStr, buffer ) != NULL )
+              if ( itoa( response->contentLength, buffer, 10U ) != NULL )
               {
-                if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+                if ( strcat( httpStr, buffer ) != NULL )
                 {
-                  // CONTENT TYPE
-                  if ( vHTTPaddContetntType( httpStr, response->contetntType ) != NULL )
+                  if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
                   {
-                    // ENCODING
-                    if ( vHTTPaddContentEncoding ( httpStr, response->encoding ) != NULL )
+                    // CONTENT TYPE
+                    if ( vHTTPaddContetntType( httpStr, response->contetntType ) != NULL )
                     {
-                      // CACHE
-                      if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
+                      // ENCODING
+                      if ( vHTTPaddContentEncoding ( httpStr, response->encoding ) != NULL )
                       {
-                        // CONNECTION
-                        if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
+                        // CACHE
+                        if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
                         {
-                          if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+                          // CONNECTION
+                          if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
                           {
                             if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
                             {
-                              res = HTTP_STATUS_OK;
+                              if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
+                              {
+                                res = HTTP_STATUS_OK;
+                              }
                             }
                           }
                         }
@@ -676,6 +683,8 @@ char* vHTTPaddContentEncoding( char* httpStr, HTTP_ENCODING encoding )
       case HTTP_ENCODING_BR:
         strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_BR );
         break;
+      default:
+    	break;
     }
     strRes = strcat( httpStr, HTTP_END_LINE );
   }

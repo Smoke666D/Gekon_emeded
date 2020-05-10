@@ -384,7 +384,7 @@ REST_ERROR eRESTparsingBitMapArray( const char* input, const char* header, eConf
           if ( pchAr != NULL )
           {
             bitPointer = &bitMap[i];
-            pchAr += 1U;
+            pchAr++;
             res = eRESTparsingDig16Record( pchAr, BIT_MAP_MASK_STR, &bitPointer->mask );
             if ( res == REST_OK )
             {
@@ -510,7 +510,8 @@ REST_ERROR eRESTparsingValueRecord( const char* input, const char* header, uint1
 		  pchEnd = pchStr;
 		  for ( i=0U; i<len; i++ )
 		  {
-            pchStr = strchr( pchEnd, QUOTES_ANCII ) + 1U;
+            pchStr = strchr( pchEnd, QUOTES_ANCII );
+            pchStr++;
             pchEnd = strchr( ( pchStr + 1U ), QUOTES_ANCII );
             for ( j=0U; j<(pchEnd - pchStr); j++ )
             {

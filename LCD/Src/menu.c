@@ -337,20 +337,27 @@ void DrawObject( xScreenObjet * pScreenObjects)
   {
     for ( i=0U; i<MAX_SCREEN_OBJECT; i++ ) //Проверяем есть ли на экране динамические объекты
     {
-      if  ( pScreenObjects[i].last ) break;
+      if  ( pScreenObjects[i].last > 0U )
+      {
+    	break;
+      }
       switch ( pScreenObjects[i].xType )
       {
         case HW_DATA:
+          break;
         case INPUT_HW_DATA:
           Redraw = 1U;
           break;
         default:
           break;
       }
-      if ( Redraw ) break;
+      if ( Redraw > 0U )
+      {
+    	break;
+      }
     }
   }
-  if ( Redraw )   //Если экран нужно перерисовывать
+  if ( Redraw > 0U )   //Если экран нужно перерисовывать
   {
     u8g2_ClearBuffer( u8g2 );
     for ( i=0U; i<MAX_SCREEN_OBJECT; i++ )
@@ -364,37 +371,67 @@ void DrawObject( xScreenObjet * pScreenObjects)
           u8g2_DrawLine( u8g2, pScreenObjects[i].x, pScreenObjects[i].y, pScreenObjects[i].Width, pScreenObjects[i].Height );
           break;
         case INPUT_HW_DATA:
-          if ( pScreenObjects[i].ObjectParamert[3U] )
+          if ( pScreenObjects[i].ObjectParamert[3U] > 0U )
           {
             Insert = 1U;
-            if ( Blink ) Blink = 0U; else Blink = 1U;
+            if ( Blink )
+            {
+              Blink = 0U;
+            }
+            else
+            {
+              Blink = 1U;
+            }
           }
+          break;
         case STRING:
+          break;
         case HW_DATA:
-          if ( !Insert )
+          if ( !Insert > 0U )
+          {
             u8g2_SetDrawColor( u8g2, pScreenObjects[i].ObjectParamert[1U]?0U:1U );
+          }
           else
+          {
             u8g2_SetDrawColor( u8g2, Blink?0U:1U );
+          }
           u8g2_DrawBox( u8g2, pScreenObjects[i].x, pScreenObjects[i].y, pScreenObjects[i].Width, pScreenObjects[i].Height );
+          /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+          /* Если поставить сюда break - не выводяться цифры*/
+          /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
         case TEXT_STRING:
           u8g2_SetFontMode( u8g2, pScreenObjects[i].ObjectParamert[0U] );
           if ( !Insert )
+          {
             u8g2_SetDrawColor( u8g2, pScreenObjects[i].ObjectParamert[1U] );
+          }
           else
+          {
             u8g2_SetDrawColor( u8g2, Blink );
+          }
           switch ( pScreenObjects[i].xType )
           {
             case STRING:
+              break;
             case TEXT_STRING:
               TEXT = pScreenObjects[i].pStringParametr;
               break;
             case HW_DATA:
+            	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+            	/* Если поставить сюда break - не выводяться цифры*/
+            	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
             case INPUT_HW_DATA:
-              if ( pScreenObjects[i].DataID )
+              if ( pScreenObjects[i].DataID > 0U )
+              {
                 pScreenObjects[i].GetDtaFunction( READ, &Text, pScreenObjects[i].DataID );
+              }
               else
+              {
                 pScreenObjects[i].GetDtaFunction( READ, &Text );
+              }
               TEXT = Text;
+              break;
+            default:
               break;
           }
           u8g2_SetFont( u8g2, FONT_TYPE4 );
@@ -416,12 +453,17 @@ void DrawObject( xScreenObjet * pScreenObjects)
             u8g2_DrawUTF8( u8g2,x_offset, y_offset, TEXT );
           }
           else
-            u8g2_DrawUTF8( u8g2,pScreenObjects[i].x,pScreenObjects[i].y, TEXT );
+          {
+            u8g2_DrawUTF8( u8g2, pScreenObjects[i].x, pScreenObjects[i]. y, TEXT );
+          }
           break;
         default:
            break;
       }
-      if  ( pScreenObjects[i].last ) break;
+      if  ( pScreenObjects[i].last > 0U )
+      {
+    	break;
+      }
     }
   }
   return;
@@ -596,6 +638,8 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       Data[1]=',';
       Data[2]='9';
       Data[3]=0;
+      break;
+    default:
       break;
   }
   return;

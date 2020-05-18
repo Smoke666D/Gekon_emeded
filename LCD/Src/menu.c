@@ -4,7 +4,7 @@
  *  Created on: 21 февр. 2020 г.
  *      Author: igor.dymov
  */
-
+/*----------------------- Includes ------------------------------------------------------------------*/
 #include "menu.h"
 #include "main.h"
 #include "lcd.h"
@@ -12,21 +12,11 @@
 #include "keyboard.h"
 #include "data_type.h"
 #include "menu_data.c"
-
-#define XRESULURION       128U
-#define YRESOLUTION       64U
-#define FONT_TYPE         ( u8g2_font_6x13_t_cyrillic )
-#define FONT_X_SIZE       6U
-#define FONT_TYPE_NUMBER  ( u8g2_font_5x8_mf )
-#define FONT_TYPE4        ( u8g2_font_6x13_t_cyrillic )
-#define FONT_X_SIZE4      6U
-#define FONT_TYPE_NUMBER4 ( u8g2_font_5x8_mf )
-#define MAX_KEY_PRESS     10U
-
-u8g2_t*  u8g2;
-KeyEvent TempEvent;
-KeyEvent BufferEvent = { 0U, 0U };
-uint8_t  temp_counter = 0U;
+/*----------------------- Variables -----------------------------------------------------------------*/
+static u8g2_t*           u8g2           = NULL;
+static KeyEvent          TempEvent;
+static KeyEvent          BufferEvent    = { 0U, 0U };
+static uint8_t           temp_counter   = 0U;
 static xScreenSetObject* pCurrMenu      = NULL;
 static xScreenObjet*     pCurObject     = NULL;
 static uint8_t           CurObjectIndex = 0U;
@@ -35,13 +25,13 @@ static QueueHandle_t     pKeyboard;
 static uint8_t           key            = 0U;
 static xScreenObjet*     pCurDrawScreen = NULL;
 static uint8_t           Blink          = 0U;
-
-void xInputScreenKeyCallBack(xScreenSetObject* menu, char key)
+/*---------------------------------------------------------------------------------------------------*/
+void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
   xScreenObjet* pObjects          = menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets;
   uint8_t       ActiveObjectCount = 0U;
   uint8_t       i                 = 0U;
-  switch (key)
+  switch ( key )
   {
     case KEY_STOP:
       pCurObject->GetDtaFunction( INC, NULL, pCurObject->DataID );
@@ -53,7 +43,7 @@ void xInputScreenKeyCallBack(xScreenSetObject* menu, char key)
       if ( menu->pHomeMenu[menu->pCurrIndex].pCurrIndex <  menu->pHomeMenu[menu->pCurrIndex].pMaxIndex )
       {
         menu->pHomeMenu[menu->pCurrIndex].pCurrIndex++;
-        for ( i=0; i<MAX_SCREEN_OBJECT; i++ ) //Проверяем есть ли на экране динамические объекты
+        for ( i=0U; i<MAX_SCREEN_OBJECT; i++ ) //Проверяем есть ли на экране динамические объекты
         {
           if ( pObjects[i].xType == INPUT_HW_DATA )
           {
@@ -118,7 +108,7 @@ void xInputScreenKeyCallBack(xScreenSetObject* menu, char key)
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void xLineScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
   uint8_t index = menu->pCurrIndex;
@@ -229,7 +219,7 @@ void xLineScreenKeyCallBack( xScreenSetObject* menu, char key )
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void xInfoScreenCallBack( xScreenSetObject* menu, char key )
 {
   uint8_t           index = menu->pCurrIndex;
@@ -283,12 +273,12 @@ void xInfoScreenCallBack( xScreenSetObject* menu, char key )
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void InitMenu( void )
 {
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void vMenuInit( u8g2_t* temp )
 {
   u8g2      = temp;
@@ -296,7 +286,7 @@ void vMenuInit( u8g2_t* temp )
   pKeyboard = GetKeyboardQueue();
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void vMenuTask( void )
 {
     //Блок обработки нажатий на клавиши
@@ -360,7 +350,7 @@ void vMenuTask( void )
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void DrawObject( xScreenObjet * pScreenObjects)
 {
   uint8_t* TEXT;
@@ -512,9 +502,10 @@ void DrawObject( xScreenObjet * pScreenObjects)
   }
   return;
 }
-
-
-//Обявдение объека-карусели экранов верхнего уровня
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Обявдение объека-карусели экранов верхнего уровня
+ */
 xScreenSetObject xMainMenu =
 {
   xScreensLev1,
@@ -522,7 +513,7 @@ xScreenSetObject xMainMenu =
   0U,
   ( void* )&xInfoScreenCallBack,
 };
-
+/*---------------------------------------------------------------------------------------------------*/
 xScreenSetObject xEngineMenu =
 {
   xEngineScreens,
@@ -530,7 +521,7 @@ xScreenSetObject xEngineMenu =
   0U,
   ( void* )&xInfoScreenCallBack,
 };
-
+/*---------------------------------------------------------------------------------------------------*/
 xScreenSetObject xGeneratorMenu =
 {
   xGeneratorScreens,
@@ -538,7 +529,7 @@ xScreenSetObject xGeneratorMenu =
   0U,
   ( void* )&xInfoScreenCallBack,
 };
-
+/*---------------------------------------------------------------------------------------------------*/
 xScreenSetObject xNetMenu =
 {
   xNetScreens,
@@ -546,7 +537,7 @@ xScreenSetObject xNetMenu =
   0U,
   ( void* )&xInfoScreenCallBack,
 };
-
+/*---------------------------------------------------------------------------------------------------*/
 void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   switch ( ID )
@@ -688,7 +679,7 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void GetTime( char* Data )
 {
   Data[0]='1';
@@ -702,3 +693,6 @@ void GetTime( char* Data )
   Data[8]=0;
   return;
 }
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/

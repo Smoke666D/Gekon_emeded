@@ -4,7 +4,7 @@
  *  Created on: 21 февр. 2020 г.
  *      Author: igor.dymov
  */
-
+/*----------------------------------------------------------------------*/
 #ifndef INC_MENU_H_
 #define INC_MENU_H_
 /*----------------------- Includes -------------------------------------*/
@@ -24,6 +24,15 @@
 #define KEY_EXIT            6U
 #define MAX_SCREEN_COUNT    3U
 #define MAX_SCREEN_OBJECT   20U
+#define XRESULURION         128U
+#define YRESOLUTION         64U
+#define FONT_TYPE           ( u8g2_font_6x13_t_cyrillic )
+#define FONT_X_SIZE         6U
+#define FONT_TYPE_NUMBER    ( u8g2_font_5x8_mf )
+#define FONT_TYPE4          ( u8g2_font_6x13_t_cyrillic )
+#define FONT_X_SIZE4        6U
+#define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
+#define MAX_KEY_PRESS       10U
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -31,6 +40,7 @@ typedef enum
   NOT_ACTIVE,
   PASSIVE,
 } SCREEN_STATUS;
+
 typedef enum
 {
   ICON,
@@ -57,6 +67,7 @@ typedef struct
   void        (*GetDtaFunction)();
   uint16_t    DataID;
 } xScreenObjet;
+
 typedef struct
 {
   xScreenObjet* pScreenCurObjets;
@@ -67,6 +78,7 @@ typedef struct
   uint8_t       pMaxIndex;
   void          (*pFunc)(void *,char);
 } xScreenType;
+
 typedef struct
 {
   xScreenType*  pHomeMenu;               /* Указатель на массив экранов верхнего уровня. */

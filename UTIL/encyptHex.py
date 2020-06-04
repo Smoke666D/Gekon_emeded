@@ -16,11 +16,15 @@ def openFile( name ):
     return open( name, encoding="utf-8" ).read();
 #-------------------------------------------------------------------------------
 def encyptLine( line ):
-    out = line + "\n";
-    if ( len( line ) > 0 ):
+    out = line;
+    if ( len( line ) > 1 ):
         length = int( line[1:3], 16 );
+        crc    = length;
         data   = [];
-        if ( int( line[7:9], 16 ) == 0x00 ):
+        crc   += int( line[3:5], 16 ) + int( line[5:7], 16 );
+        type   = int( line[7:9], 16 );
+        crc   += type;
+        if ( type == 0x00 ):
             count = 9;
             for i in range( 0, length ):
                 data.append( int( line[ count : ( count + 2 ) ], 16 ) );
@@ -28,13 +32,12 @@ def encyptLine( line ):
             for i in range( len( data ), 16 ):
                 data.append( 0 );
             enc  = encrypt( data );
-            crc  = 0;
             data = "";
             for i in range( 0, length ):
                 data += format( enc[i], '02X' );
                 crc  += enc[i];
-            crc = format( ( 1 + ( ~crc & 0xFF ) ) & 0xFF , '02X' );
-            out =  line[0:8] + data + "\n";
+            crc = format( ( ( ~( crc & 0xFF) & 0xFF ) + 0x01 ) & 0xFF , '02X' );
+            out =  line[0:9] + data + crc + "\n";
     return out;
 #-------------------------------------------------------------------------------
 def encrypt ( line ):
@@ -50,7 +53,7 @@ if __name__ == "__main__":
         file   = openFile( argv[1] );
         while( True ):
             strInd     = file.find( ":", strInd );
-            endInd     = file.find( "\n", strInd );
+            endInd     = file.find( "\n", strInd ) + 1;
             line       = file[strInd:endInd];
             strInd    += 1;
             lineCount += 1;

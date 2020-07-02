@@ -22,29 +22,42 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "sys.h"
+#include "common.h"
 #include "server.h"
 #include "http.h"
 #include "rtc.h"
-
 #include "lcd.h"
+#include "config.h"
+#include "version.h"
+#include "keyboard.h"
+#include "usbhid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+extern USBD_HandleTypeDef  hUsbDeviceFS;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+/* stack size optim:
+ * default   - 496
+ * net       - 1792
+ * lcd       - 512
+ * lcdRedraw - 128
+ * key       - 232
+ * usb       - 768
+ *
+ */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -57,35 +70,40 @@ TIM_HandleTypeDef htim7;
 
 UART_HandleTypeDef huart3;
 
-PCD_HandleTypeDef hpcd_USB_OTG_FS;
-
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512
+  .stack_size = 496
 };
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
   .name = "netTask",
   .priority = (osPriority_t) osPriorityBelowNormal,
-  .stack_size = 4096
+  .stack_size = 1792
 };
 /* Definitions for lcdTask */
 osThreadId_t lcdTaskHandle;
 const osThreadAttr_t lcdTask_attributes = {
   .name = "lcdTask",
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 1024
+  .stack_size = 512
 };
 /* Definitions for lcdRedrawTask */
 osThreadId_t lcdRedrawTaskHandle;
 const osThreadAttr_t lcdRedrawTask_attributes = {
   .name = "lcdRedrawTask",
   .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 1024
+  .stack_size = 128
+};
+/* Definitions for usbTask */
+osThreadId_t usbTaskHandle;
+const osThreadAttr_t usbTask_attributes = {
+  .name = "usbTask",
+  .priority = (osPriority_t) osPriorityLow,
+  .stack_size = 768
 };
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
@@ -93,6 +111,12 @@ const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
   .name = "xLCDDelaySemph"
 };
 /* USER CODE BEGIN PV */
+osThreadId_t keyboardTaskHandle;
+const osThreadAttr_t keyboardTask_attributes = {
+  .name = "KeyboardTask",
+  .priority = (osPriority_t) osPriorityHigh,
+  .stack_size = 232
+};
 
 /* USER CODE END PV */
 
@@ -102,16 +126,16 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_RTC_Init(void);
 static void MX_USART3_UART_Init(void);
-static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_SPI1_Init(void);
 void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
 void StartLcdTask(void *argument);
 extern void StartLcdRedrawTask(void *argument);
+extern void StartUsbTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+extern void vKeyboardTask(void const * argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -151,14 +175,19 @@ int main(void)
   MX_DMA_Init();
   MX_RTC_Init();
   MX_USART3_UART_Init();
-  MX_USB_OTG_FS_PCD_Init();
   MX_LWIP_Init();
   MX_TIM7_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  vSYSInitSerial();
-  vRTCgetTimer( &hrtc );
-  vSYSSerial( "***********************\n\r");
+  /*-------------- Put hardware structures to external modules ---------------*/
+  vSYSInitSerial( &huart3 );    /* Debug serial interface */
+  vRTCputTimer( &hrtc );        /* RTC structure */
+  /*-------------------- Version initialization ------------------------------*/
+  vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
+  versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
+  versionController.value[0U] = HARDWARE_VERSION;   /* Hardware version */
+  /*--------------------------------------------------------------------------*/
+  vSYSSerial("***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();
@@ -196,8 +225,16 @@ int main(void)
   /* creation of lcdRedrawTask */
   lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
 
+  /* creation of usbTask */
+  usbTaskHandle = osThreadNew(StartUsbTask, NULL, &usbTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
+
+  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  SetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
+
+  vUSBinit( usbTaskHandle );
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
@@ -434,40 +471,6 @@ static void MX_USART3_UART_Init(void)
 
 }
 
-/**
-  * @brief USB_OTG_FS Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USB_OTG_FS_PCD_Init(void)
-{
-
-  /* USER CODE BEGIN USB_OTG_FS_Init 0 */
-
-  /* USER CODE END USB_OTG_FS_Init 0 */
-
-  /* USER CODE BEGIN USB_OTG_FS_Init 1 */
-
-  /* USER CODE END USB_OTG_FS_Init 1 */
-  hpcd_USB_OTG_FS.Instance = USB_OTG_FS;
-  hpcd_USB_OTG_FS.Init.dev_endpoints = 4;
-  hpcd_USB_OTG_FS.Init.speed = PCD_SPEED_FULL;
-  hpcd_USB_OTG_FS.Init.dma_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.phy_itface = PCD_PHY_EMBEDDED;
-  hpcd_USB_OTG_FS.Init.Sof_enable = ENABLE;
-  hpcd_USB_OTG_FS.Init.low_power_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.vbus_sensing_enable = ENABLE;
-  hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
-  if (HAL_PCD_Init(&hpcd_USB_OTG_FS) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USB_OTG_FS_Init 2 */
-
-  /* USER CODE END USB_OTG_FS_Init 2 */
-
-}
-
 /** 
   * Enable DMA controller clock
   */
@@ -498,14 +501,18 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOF, LED0_Pin|LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
@@ -533,18 +540,27 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : LED0_Pin LED1_Pin LED2_Pin */
+  GPIO_InitStruct.Pin = LED0_Pin|LED1_Pin|LED2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SW0_Pin SW1_Pin SW2_Pin SW3_Pin 
+                           SW4_Pin USB_OverCurrent_Pin */
+  GPIO_InitStruct.Pin = SW0_Pin|SW1_Pin|SW2_Pin|SW3_Pin 
+                          |SW4_Pin|USB_OverCurrent_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
   /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : USB_OverCurrent_Pin */
-  GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LCD_RST_Pin */
   GPIO_InitStruct.Pin = LCD_RST_Pin;
@@ -567,13 +583,41 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-	vSYSSerial( ">>Start Default Task!\n\r" );
+
+  //HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
+  //HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
+
+  char 		buf[36];
+  uint8_t	i = 0U;
+  uint8_t	j = 0U;
+  uint8_t	temp = 0U;
+  uint32_t  waterMark = 0U;
+  vSYSSerial( ">>Start Default Task!\n\r" );
+  vSYSSerial( ">>Serial number: " );
+  for ( i=0; i<6U; i++ )
+  {
+    for ( j=0U; j<2U; j++ )
+    {
+      temp = (uint8_t)(serialNumber.value[i] << j*8U);
+      sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
+    }
+  }
+  buf[35] = 0U;
+  vSYSSerial( buf );
+  vSYSSerial( "\n\r" );
   /* Infinite loop */
   for(;;)
   {
   	HAL_GPIO_TogglePin( GPIOB, LD1_Pin );
   	osDelay( 100U );
+/*
+  	waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
+  	sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );
+  	vSYSSerial( buf );
+*/
   }
   /* USER CODE END 5 */ 
 }
@@ -596,9 +640,8 @@ void StartNetTask(void *argument)
 	vSYSSerial( ">>IP address: ");
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
-
 	vSYSSerial( ">>RTC: ");
-	if ( eRTCgetHttpTime() == RTC_ERROR )
+	if ( eRTCgetExtrenalTime() == RTC_ERROR )
 	{
 		vSYSSerial( "server fail!");
 		vSYSSerial("\n\r");
@@ -616,8 +659,6 @@ void StartNetTask(void *argument)
 		vSYSSerial( buffer );
 		vSYSSerial( "\r\n" );
 	}
-
-
 	vSYSSerial( ">>TCP: " );
 	if ( eSERVERstart() != SERVER_OK )
 	{
@@ -632,11 +673,7 @@ void StartNetTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-  	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
-    if ( eSERVERlistenRoutine() == SERVER_OK )
-    {
-    	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-    }
+    eSERVERlistenRoutine();
     osDelay( 10U );
   }
   /* USER CODE END StartNetTask */
@@ -656,7 +693,6 @@ void StartLcdTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay( 2000U );
     IncData();
   }
   /* USER CODE END StartLcdTask */

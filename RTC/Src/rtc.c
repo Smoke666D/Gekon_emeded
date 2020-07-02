@@ -6,16 +6,14 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "rtc.h"
-
-
 #include "string.h"
 #include "stdio.h"
 #include "stdlib.h"
-
-#include "http.h"
 #include "server.h"
+#include "data_type.h"
+#include "FreeRTOS.h"
+#include "task.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *wkdayList[7]  = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 const char *monthList[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
@@ -29,23 +27,160 @@ uint8_t 					utc_offset;
 SIGN 							utc_offset_sign;
 uint8_t						day_of_week;
 TIME_API_LOCATION	location;
-char time[8];
+char 							time[9];
 /*----------------------- Functions -----------------------------------------------------------------*/
-RTC_STATUS 	eRTCtxtTimeParser( char* input, char *header, char* output );
-RTC_STATUS 	eRTCdatetimeParser( char* input, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate );
-uint8_t 		eRTCgetInt( char* input, uint8_t start, uint8_t length );
-RTC_STATUS 	eRTCparsingHttpTime( char* data, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate );
+RTC_STATUS 	eRTCtxtTimeParser( char* input, char *header, char* output );												/* Parsing text of incoming message from time server */
+RTC_STATUS 	eRTCdatetimeParser( char* input, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate );	/* Parsing time server time-date string */
+uint8_t 		eRTCgetInt( char* input, uint8_t start, uint8_t length );														/* Get uint8_t from part of string */
+RTC_STATUS 	eRTCparsingHttpTime( char* data, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate );	/* Parsing full message from time server */
 /*---------------------------------------------------------------------------------------------------*/
-void vRTCgetTimer( RTC_HandleTypeDef *hrtc )
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+/* Put the pointer to the current RTC structure
+ * Put it after HAL initialization
+ * Input: 	RTC HAL structure
+ * Output:	none
+ */
+void vRTCputTimer( RTC_HandleTypeDef *hrtc )
 {
 	rtc = hrtc;
 	return;
 }
+
+void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time)
+{
+	RTC_TimeTypeDef 	t;
+	Time[0]= 0;
+	switch (cmd)
+	{
+	case READ:
+
+		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+		{
+			Time[0]= (t.Hours>>4)+'0';
+			Time[1]= (t.Hours & 0x0F)+'0';
+			Time[2] = ':';
+			Time[3]= (t.Minutes>>4)+'0';
+			Time[4]= (t.Minutes & 0x0F)+'0';
+			Time[5] = ':';
+			Time[6]= (t.Seconds>>4)+'0';
+			Time[7]= (t.Seconds & 0x0F)+'0';
+			Time[8] = 0;
+		}
+	default:
+		break;
+	}
+}
+
+static uint8_t CorrectData =0,CorrectPos=0;
+static char buffer;
+static char MaxData;
+void vRTCCorrectTime(DATA_COMMNAD_TYPE cmd,char *Time, uint8_t TimePosition)
+{
+    uint8_t DataToRead=0;
+	RTC_TimeTypeDef 	t;
+	Time[0]= 0;
+	if ((!CorrectData) ||  (TimePosition != CorrectPos))
+		DataToRead =TimePosition;
+	switch (cmd)
+	{
+	case READ:
+		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BIN ) == HAL_OK )
+		{
+			switch (DataToRead)
+			{
+				case RTC_MIN:
+					Time[0]= (t.Minutes/10)+'0';
+					Time[1]= (t.Minutes%10)+'0';
+					Time[2] = 0;
+					break;
+				case RTC_HOUR:
+					Time[0]= (t.Hours/10)+'0';
+					Time[1]= (t.Hours%10)+'0';
+					Time[2] = 0;
+					break;
+				case RTC_SEC:
+					Time[0]= (t.Seconds/10)+'0';
+					Time[1]= (t.Seconds%10)+'0';
+					Time[2] = 0;
+					break;
+				case 0:
+					Time[0]= (buffer/10)+'0';
+					Time[1]= (buffer%10)+'0';
+					Time[2] = 0;
+					break;
+			}
+		}
+		break;
+	case INC:
+	case DEC:
+		if ((CorrectData) && (CorrectPos!=TimePosition))
+			CorrectData=0;
+		if (!CorrectData)
+		{
+			CorrectData =1;
+			CorrectPos=TimePosition;
+			HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BIN );
+			switch (TimePosition)
+			{
+				case RTC_MIN:
+						buffer = t.Minutes;
+						MaxData = 59;
+						break;
+				case RTC_HOUR:
+						buffer =  t.Hours;
+						MaxData = 23;
+						break;
+				case RTC_SEC:
+					    buffer = t.Seconds;
+					    MaxData = 59;
+					    break;
+			}
+		}
+		switch (cmd)
+		{
+		  case INC:
+			  if (buffer<MaxData) buffer++;
+			  break;
+		  case DEC:
+			  if (buffer) buffer--;
+			  break;
+
+		}
+		break;
+	case SAVE:
+		HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BIN);
+		switch (TimePosition)
+		{
+				case RTC_MIN:
+					t.Minutes =buffer;
+				    break;
+				case RTC_HOUR:
+					t.Hours = buffer;
+					break;
+				case RTC_SEC:
+			        t.Seconds = buffer;
+					break;
+	    }
+		HAL_RTC_SetTime(rtc, &t,RTC_FORMAT_BIN);
+	default:
+		CorrectData =0;
+		buffer=0;
+		break;
+	}
+
+}
+
+
+
 /*---------------------------------------------------------------------------------------------------*/
+/* Get the date string for HTTP requests, example:
+ * "Thu, 06 Feb 2020 15:11:53 GMT"
+ * Input: 	buffer for output
+ * Output:	status of operation
+ */
 RTC_STATUS eRTCgetDateForHttp( char* date )
 {
-	/*  Thu, 06 Feb 2020 15:11:53 GMT  */
-
 	RTC_STATUS 				res = RTC_OK;
 	RTC_TimeTypeDef 	t;
 	RTC_DateTypeDef		d;
@@ -55,7 +190,6 @@ RTC_STATUS eRTCgetDateForHttp( char* date )
 	{
 		if ( HAL_RTC_GetDate( rtc, &d, RTC_FORMAT_BCD ) == HAL_OK )
 	  {
-			// Week day
 			for( i=0U; i<3; i++ )
 	  	{
 				date[i] = wkdayList[day_of_week][i];
@@ -88,6 +222,12 @@ RTC_STATUS eRTCgetDateForHttp( char* date )
 	return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Get simple time string, example:
+ * hh.mm.ss
+ * input:		buffer for string. Length = 8
+ * output:	status of operation
+ */
 RTC_STATUS eRTCgetTime( char* out )
 {
 	RTC_STATUS				rtcRes 	= RTC_OK;
@@ -101,13 +241,16 @@ RTC_STATUS eRTCgetTime( char* out )
 	return rtcRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
-RTC_STATUS eRTCgetHttpTime( void )
+/*
+ * Get time from time server
+ * input:		none
+ * output:	status of operation
+ */
+RTC_STATUS eRTCgetExtrenalTime( void )
 {
-	HTTP_STATUS 			httpRes	= HTTP_STATUS_BAD_REQUEST;
-	RTC_STATUS				rtcRes 	= RTC_OK;
+	RTC_STATUS				rtcRes = RTC_ERROR;
 	RTC_TimeTypeDef 	t;
 	RTC_DateTypeDef		d;
-	char*							buffer = pvPortMalloc( HTTP_BUFER_SIZE );
 	char*							data   = pvPortMalloc( 200U );
 	HTTP_RESPONSE			response;
 
@@ -117,32 +260,31 @@ RTC_STATUS eRTCgetHttpTime( void )
 			.host   = TIME_HOST,
 			.cache  = HTTP_CACHE_NO_CACHE,
 	};
-
-	httpRes = eHTTPmakeRequest( buffer, request );
-	eHTTPsendRequest( buffer, request.host );
-	httpRes = eHTTPparsingResponse( buffer, data, &response );
-
-	if ( httpRes == HTTP_STATUS_OK )
+	if ( eHTTPrequest( &request, &response, data ) == HTTP_STATUS_OK )
 	{
-
-		rtcRes = eRTCparsingHttpTime( data, &t, &d );
-		sprintf( time, "%02d:%02d:%02d", t.Hours, t.Minutes, t.Seconds );
-		if ( HAL_RTC_SetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
+		if ( eRTCparsingHttpTime( data, &t, &d ) == RTC_OK )
 		{
-			if ( HAL_RTC_SetDate( rtc, &d, RTC_FORMAT_BCD ) != HAL_OK )
+			if ( HAL_RTC_SetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
 			{
-				rtcRes = RTC_ERROR;
+				if ( HAL_RTC_SetDate( rtc, &d, RTC_FORMAT_BCD ) == HAL_OK )
+				{
+					rtcRes = RTC_OK;
+					sprintf( time, "%02d:%02d:%02d", t.Hours, t.Minutes, t.Seconds );
+				}
 			}
 		}
-		else rtcRes = RTC_ERROR;
 	}
-	else rtcRes = RTC_ERROR;
-
-	vPortFree( buffer );
 	vPortFree( data );
 	return rtcRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Parsing text of incoming message from time server.
+ * input:		input  - message from time server
+ * 					header - header of parsing information
+ * 					output - parsed data
+ * output:	status of operation
+ */
 RTC_STATUS eRTCtxtTimeParser( char* input, char *header, char* output)
 {
 	RTC_STATUS	rtcRes 	= RTC_OK;
@@ -172,6 +314,13 @@ RTC_STATUS eRTCtxtTimeParser( char* input, char *header, char* output)
 	return rtcRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Get uint8_t from part of string
+ * input:		input  - input string
+ * 					start  - number of start converting char
+ * 					length - length of converting chars
+ * output: 	uint8_t data from string
+ */
 uint8_t eRTCgetInt( char* input, uint8_t start, uint8_t length )
 {
 	uint8_t		output	 	= 0xFFU;
@@ -189,6 +338,13 @@ uint8_t eRTCgetInt( char* input, uint8_t start, uint8_t length )
 }
 
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Parsing time server time-date string.
+ * input:		input - input string from time server
+ * 					sTime - HAL structure of RTC
+ * 					sDate - HAL structure of RTC
+ * output:	status of operation
+ */
 RTC_STATUS eRTCdatetimeParser( char* input, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate  )
 {
 	RTC_STATUS	rtcRes 	= RTC_ERROR;
@@ -213,12 +369,18 @@ RTC_STATUS eRTCdatetimeParser( char* input, RTC_TimeTypeDef *sTime, RTC_DateType
 	return rtcRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Parsing full message from time server
+ * input:		data  - input message from time server
+ * 					sTime - HAL structure of RTC
+ * 					sDate - HAL structure of RTC
+ * output:	status of operation
+ */
 RTC_STATUS eRTCparsingHttpTime( char* data, RTC_TimeTypeDef *sTime, RTC_DateTypeDef *sDate )
 {
 	RTC_STATUS	rtcRes 	= RTC_OK;
 	char				timeBuff[TIME_API_BUFFER_SIZE];
 	char				dayBuff[2];
-
 
 	rtcRes = eRTCtxtTimeParser( data, TIME_API_DATETIME_STR, timeBuff );
 	if ( rtcRes != RTC_ERROR )

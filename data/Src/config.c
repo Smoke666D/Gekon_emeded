@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-05-07 10:12:39
+ * Make time: 2020-05-27 10:17:27
  */
 #include   "config.h"
 
@@ -471,7 +471,7 @@ static eConfigBitMap diaSetupBitMap[4U] =
    { 192U, 6U, 0U, 3U },     // diaAction
    { 768U, 8U, 0U, 4U },     // diaArming
 };
-uint16_t diaSetupValue[1U] = { 0U };
+uint16_t diaSetupValue[1U] = { 14U };
 eConfigReg diaSetup =
 {
    .page       = 0U,
@@ -689,7 +689,7 @@ static eConfigBitMap doSetupBitMap[6U] =
    { 16U, 4U, 0U, 1U },     // doeNOC
    { 32U, 5U, 0U, 1U },     // dofNOC
 };
-uint16_t doSetupValue[1U] = { 21U };
+uint16_t doSetupValue[1U] = { 0U };
 eConfigReg doSetup =
 {
    .page       = 0U,

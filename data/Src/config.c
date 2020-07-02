@@ -19,7 +19,7 @@ eConfigReg versionController =
    .len        = 1U,
 };
 /*----------------------------------------------------------------*/
-uint16_t versionFirmwareValue[1U] = { 1U };
+uint16_t versionFirmwareValue[1U] = { 2U };
 eConfigReg versionFirmware =
 {
    .page       = 0U,

@@ -24,6 +24,7 @@
 #if defined ( __CC_ARM )  /* MDK ARM Compiler */
 #include "lwip/sio.h"
 #endif /* MDK ARM Compiler */
+#include <string.h>
 
 /* USER CODE BEGIN 0 */
 
@@ -53,6 +54,8 @@ void MX_LWIP_Init(void)
 {
   /* Initilialize the LwIP stack with RTOS */
   tcpip_init( NULL, NULL );
+  #define INTERFACE_THREAD_STACK_SIZE ( 350 )
+  osThreadAttr_t attributes;
 
   /* IP addresses initialization with DHCP (IPv4) */
   ipaddr.addr = 0;

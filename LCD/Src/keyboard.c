@@ -9,11 +9,11 @@
 #include "main.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static xKeyPortStruct xKeyPortMass[KEYBOARD_COUNT]={
-		{SW0_GPIO_Port,SW0_Pin},
-		{SW1_GPIO_Port,SW1_Pin},
-		{SW2_GPIO_Port,SW2_Pin},
-		{SW3_GPIO_Port,SW3_Pin},
-		{SW4_GPIO_Port,SW4_Pin},
+		{ GPIOD, KL_UP_Pin },
+		{ GPIOD, KL_DOWN_Pin },
+		{ GPIOD, KL_STOP_Pin },
+		{ GPIOD, KL_START_Pin },
+		{ GPIOD, KL_AUTO_Pin },
 };
 static StaticQueue_t      xKeyboardQueue;
 static QueueHandle_t      pKeyboardQueue;
@@ -75,7 +75,7 @@ void vKeyboardTask( void const * argument )
     xEventGroupWaitBits(pxKeyStatusFLag,KEY_READY,pdFALSE,pdTRUE,portMAX_DELAY); /* Задача ждет флага готовности KEY_READY, */
     for ( k=0U; k<KEYBOARD_COUNT; k++ )                                          /* Считываем текущее состояние портов клавиатуры */
     {
-	  TK[k]=  HAL_GPIO_ReadPin( xKeyPortMass[k].KeyPort, xKeyPortMass[k].KeyPin );
+      TK[k]=  HAL_GPIO_ReadPin( xKeyPortMass[k].KeyPort, xKeyPortMass[k].KeyPin );
     }
     for ( i=0U; i<KEYBOARD_COUNT; i++ )                                          /* Анализируем клавиутру */
     {

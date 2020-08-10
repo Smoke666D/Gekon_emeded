@@ -7,8 +7,11 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "RTC.h"
 #include "cmsis_os2.h"
+/*------------------------- Define ------------------------------------------------------------------*/
+#define  RTC_TIME_SIZE        7U
+#define  RTC_MEMORY_SIZE      19U
 /*----------------------- Structures ----------------------------------------------------------------*/
-static I2C_HandleTypeDef* i2c = NULL;
+static   I2C_HandleTypeDef*   i2c = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -133,7 +136,7 @@ RTC_STATUS eRTCread( uint8_t adr, uint8_t* data, uint8_t size )
  */
 uint8_t bcdToDec( uint8_t num )
 {
-  return ( num >> 4U ) * 10U + ( num & 0x0FU );;
+  return ( ( num >> 4U ) * 10U ) + ( num & 0x0FU );
 }
 /*
  * Convert decimal number to BCD
@@ -142,7 +145,7 @@ uint8_t bcdToDec( uint8_t num )
  */
 uint8_t decToBcd( uint8_t num )
 {
-  return ( ( num / 10U << 4U ) + ( num % 10U ) );
+  return ( ( ( num / 10U ) << 4U ) + ( num % 10U ) );
 }
 
 RTC_STATUS eVarifyTime( RTC_TIME* time )
@@ -328,7 +331,7 @@ RTC_STATUS eRTCsetTemperatureCompensation( uint8_t enb )
 	res = eRTCreadFreq( &freq );
 	if ( res == RTC_OK )
 	{
-	  if ( data[1U] & RTC_SR_OSF )
+	  if ( ( data[1U] & RTC_SR_OSF ) > 0U )
 	  {
 	    res   = eRTCsetOscillator( 0U, freq );
 	    start = 1U;
@@ -523,11 +526,11 @@ uint8_t uRTCcheckIfAlarm( void )
   RTC_STATUS stat = eRTCread( RTC_SR, &data, 1U );
   if ( stat == RTC_OK )
   {
-    if ( data & RTC_SR_A1F )
+    if ( ( data & RTC_SR_A1F ) > 0U )
     {
       res |= 0x01U;
     }
-    if ( data & RTC_SR_A2F )
+    if ( ( data & RTC_SR_A2F ) > 0U )
     {
       res |= 0x02U;
     }

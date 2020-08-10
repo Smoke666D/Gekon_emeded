@@ -52,6 +52,8 @@ typedef enum
   EEPROM_OK,            /* Command done and bus is free for new one */
   EEPROM_BUSY,          /* Some process in progress */
   EEPROM_WRITE_DISABLE, /* Write disable by W pin */
+  EEPROM_OVER_PAGE,	/* Try to write over one page */
+  EEPROM_OVER_ROLL,     /* Try to read over end of memory */
   EEPROM_ADR_ERROR,     /* Try to get access over address */
   EEPROM_INIT_ERROR,    /* No SPI structure*/
   EEPROM_ERROR,         /* Other errors */
@@ -67,7 +69,7 @@ typedef enum
 } EEPROM_SR_STATE;
 /*----------------------- Functions ------------------------------------*/
 EEPROM_STATUS eEEPROMInit ( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssGPIO, uint32_t nssPIN ); /* Installation of EEPROM */
-EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint32_t len );          /* Read memory of EEPROM */
-EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint32_t len );         /* Write data to memory of EEPROM */
+EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint8_t len );          /* Read memory of EEPROM */
+EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint8_t len );         /* Write data to memory of EEPROM */
 /*----------------------------------------------------------------------*/
 #endif /* INC_EEPROM_H_ */

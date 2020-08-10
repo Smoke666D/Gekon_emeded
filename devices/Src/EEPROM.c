@@ -166,15 +166,15 @@ EEPROM_STATUS eEEPROMreadSR( EEPROM_SR_STATE* status )
 {
   uint8_t       data = 0x00U;
   EEPROM_STATUS res  = eEEPROMread( EEPROM_RDSR, NULL, &data, 1U );
-  if ( data & EEPROM_SR_WIP )
+  if ( ( data & EEPROM_SR_WIP ) > 0U )
   {
     *status = EEPROM_SR_BUSY;
   }
-  else if ( data & EEPROM_SR_WEL )
+  else if ( ( data & EEPROM_SR_WEL ) > 0U )
   {
     *status = EEPROM_SR_WRITE_READY;
   }
-  else if ( data & ( EEPROM_SR_BP0 | EEPROM_SR_BP1 ) )
+  else if ( ( data & ( EEPROM_SR_BP0 | EEPROM_SR_BP1 ) ) > 0U )
   {
     *status = EEPROM_SR_BLOCK;
   }
@@ -282,15 +282,18 @@ EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint3
  *         len  - length to read
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint32_t len )
+EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint8_t len )
 {
   EEPROM_STATUS res   = EEPROM_OK;
   if ( *adr <= EEPROM_MAX_ADR )
   {
-    res = eEEPROMpoolUntil( EEPROM_SR_IDLE );
-    if (res == EEPROM_OK )
+    if ( ( *adr + len ) <= EEPROM_MAX_ADR )
     {
       res = eEEPROMread( EEPROM_READ, adr, data, len );
+    }
+    else
+    {
+      res = EEPROM_OVER_ROLL;
     }
   }
   else
@@ -307,41 +310,49 @@ EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint32_t l
  *         len  - length to write
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint32_t len )
+EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint8_t len )
 {
-  EEPROM_STATUS   res   = EEPROM_OK;
-  EEPROM_SR_STATE state = EEPROM_SR_IDLE;
-  res = eEEPROMreadSR( &state );
-  if ( ( state & EEPROM_SR_SRWD ) == 0U )
+  EEPROM_STATUS   res    = EEPROM_OK;
+  EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
+  uint8_t         relAdr = *adr - ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) * EEPROM_PAGE_SIZE );
+  if ( ( relAdr + len ) <= EEPROM_PAGE_SIZE )
   {
-    if ( ( *adr ) <= EEPROM_MAX_ADR )
+    res = eEEPROMreadSR( &state );
+    if ( ( state & EEPROM_SR_SRWD ) == 0U )
     {
-      res = eEEPROMpoolUntil( EEPROM_SR_IDLE );
-      if ( res == EEPROM_OK )
+      if ( ( *adr ) <= EEPROM_MAX_ADR )
       {
-        res = eEEPROMwriteEnable();
+        res = eEEPROMpoolUntil( EEPROM_SR_IDLE );
         if ( res == EEPROM_OK )
         {
-          res = eEEPROMpoolUntil( EEPROM_SR_WRITE_READY );
+          res = eEEPROMwriteEnable();
           if ( res == EEPROM_OK )
           {
-            res = eEEPROMwrite( EEPROM_WRITE, adr, data, len );
+            res = eEEPROMpoolUntil( EEPROM_SR_WRITE_READY );
             if ( res == EEPROM_OK )
             {
-              res = eEEPROMwriteDisable();
+              res = eEEPROMwrite( EEPROM_WRITE, adr, data, len );
+              if ( res == EEPROM_OK )
+              {
+                res = eEEPROMwriteDisable();
+              }
             }
           }
         }
       }
+      else
+      {
+        res = EEPROM_ADR_ERROR;
+      }
     }
     else
     {
-      res = EEPROM_ADR_ERROR;
+      res = EEPROM_WRITE_DISABLE;
     }
   }
   else
   {
-    res = EEPROM_WRITE_DISABLE;
+    res = EEPROM_OVER_PAGE;
   }
 
   return res;

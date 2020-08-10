@@ -131,18 +131,18 @@ typedef enum
 
 typedef enum
 {
-  JAN,
-  FEB,
-  MAR,
-  APR,
-  MAY,
-  JUN,
-  JUL,
-  AUG,
-  SEP,
-  OCT,
-  NOV,
-  DEC,
+  MONTH_JAN,
+  MONTH_FEB,
+  MONTH_MAR,
+  MONTH_APR,
+  MONTH_MAY,
+  MONTH_JUN,
+  MONTH_JUL,
+  MONTH_AUG,
+  MONTH_SEP,
+  MONTH_OCT,
+  MONTH_NOV,
+  MONTH_DEC,
 } MONTH_TYPE;
 
 typedef enum

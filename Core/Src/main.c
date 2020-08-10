@@ -23,7 +23,6 @@
 #include "cmsis_os.h"
 #include "lwip.h"
 #include "usb_device.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "common.h"
@@ -35,6 +34,7 @@
 #include "version.h"
 #include "keyboard.h"
 #include "usbhid.h"
+#include "EEPROM.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -214,7 +214,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );    /* Debug serial interface */
-  vRTCputTimer( &hrtc );        /* RTC structure */
+  vEEPROMInit( &hspi1 );        /* EEPROM init */
+  //vRTCputTimer( &hrtc );        /* RTC structure */
   /*-------------------- Version initialization ------------------------------*/
   vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
   versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
@@ -999,6 +1000,15 @@ void StartDefaultTask(void *argument)
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
+
+  uint8_t data[1U] = { 0x00U };
+  uint8_t adr[3U]  = { 0x01, 0x00, 0x00 };
+  EEPROM_STATUS status;
+  status = eEEPROMReadMemory( adr, data, 1U );
+  data[0U] = 0xAAU;
+  status = eEEPROMWriteMemory( adr, data, 1U );
+  status = eEEPROMReadMemory( adr, data, 1U );
+
   /* Infinite loop */
   for(;;)
   {
@@ -1032,6 +1042,7 @@ void StartNetTask(void *argument)
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
 	vSYSSerial( ">>RTC: ");
+	/*
 	if ( eRTCgetExtrenalTime() == RTC_ERROR )
 	{
 		vSYSSerial( "server fail!");
@@ -1050,6 +1061,7 @@ void StartNetTask(void *argument)
 		vSYSSerial( buffer );
 		vSYSSerial( "\r\n" );
 	}
+	*/
 	vSYSSerial( ">>TCP: " );
 	if ( eSERVERstart() != SERVER_OK )
 	{

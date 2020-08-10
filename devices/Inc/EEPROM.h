@@ -18,7 +18,7 @@
 /*---------- Chip parameters ----------*/
 #define  EEPROM_PAGE_SIZE         0x100U    /* bytes */
 #define  EEPROM_ADR_LEN           24U       /* bit */
-#define  EEPROM_SIZE              0x200U     /* Kb */
+#define  EEPROM_SIZE              0x200U    /* Kb */
 #define  EEPROM_PAGE_NUM          0x200U    /* pages */
 #define  EEPROM_MAX_ADR           0x1FFFFU
 /*---------- Commands -----------------*/
@@ -62,7 +62,7 @@ typedef enum
 /*----------------------- Functions ------------------------------------*/
 void          vEEPROMInit( SPI_HandleTypeDef* hspi );                            /* Installation of EEPROM */
 void          vEEPROMformAdr ( uint32_t adr, uint8_t* buffer );                  /* Transferm uint32_t address to the 24bit array ( uint8_t x3 ) */
-EEPROM_STATUS eEEPROMReadMemory ( uint8_t* adr, uint8_t* data, uint32_t len );   /* Read memory of EEPROM */
+EEPROM_STATUS eEEPROMReadMemory ( const uint8_t* adr, uint8_t* data, uint32_t len );   /* Read memory of EEPROM */
 EEPROM_STATUS eEEPROMWriteMemory ( uint8_t* adr, uint8_t* data, uint32_t len );  /* Write data to memory of EEPROM */
 /*----------------------------------------------------------------------*/
 #endif /* INC_EEPROM_H_ */

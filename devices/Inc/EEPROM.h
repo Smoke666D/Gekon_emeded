@@ -10,17 +10,21 @@
 #include "stm32f2xx_hal.h"
 #include "stm32f2xx_hal_spi.h"
 /*------------------------ Macros --------------------------------------*/
-#define  REVERSE_BYTE( b )   ( ( ( b << 7U ) & 0x80U ) | ( ( b << 5U ) & 0x40U ) | ( ( b << 3U ) & 0x20U ) | ( ( b << 1U ) & 0x10U ) | ( ( b >> 1U ) & 0x08U ) | ( ( b >> 3U ) & 0x04U ) | ( ( b >> 5U ) & 0x02U ) | ( ( b >> 7U ) & 0x01U ) )
-#define  ADR_TO_UINT( a )    ( ( (uint32_t)a[0U] ) | ( ( (uint32_t)a[1U] ) << 8U ) | ( ( (uint32_t)a[2U] ) << 16U ) )
+
 /*------------------------ Define --------------------------------------*/
+/*---------- Choose your chip ---------*/
+//#define  M95M01
+#define  M95M04
 /*---------- Software parameters ------*/
 #define  EEPROM_TIMEOUT           1000U
 /*---------- Chip parameters ----------*/
 #define  EEPROM_PAGE_SIZE         0x100U    /* bytes */
-#define  EEPROM_ADR_LEN           24U       /* bit */
-#define  EEPROM_SIZE              0x200U    /* Kb */
-#define  EEPROM_PAGE_NUM          0x200U    /* pages */
-#define  EEPROM_MAX_ADR           0x1FFFFU
+#ifdef M95M01
+  #define  EEPROM_MAX_ADR         0x1FFFFU
+#endif
+#ifdef M95M04
+  #define  EEPROM_MAX_ADR         0x7FFFFU
+#endif
 /*---------- Commands -----------------*/
 #define  EEPROM_WREN              0x06U     /* Write Enable */
 #define  EEPROM_WRDI              0x04U     /* Write Disable */
@@ -45,11 +49,12 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  EEPROM_OK,         /* Command done and bus is free for new one */
-  EEPROM_BUSY,       /* Some process in progress */
-  EEPROM_ADR_ERROR,  /* Try to get access over address */
-  EEPROM_INIT_ERROR, /* No SPI structure*/
-  EEPROM_ERROR,      /* Other errors */
+  EEPROM_OK,            /* Command done and bus is free for new one */
+  EEPROM_BUSY,          /* Some process in progress */
+  EEPROM_WRITE_DISABLE, /* Write disable by W pin */
+  EEPROM_ADR_ERROR,     /* Try to get access over address */
+  EEPROM_INIT_ERROR,    /* No SPI structure*/
+  EEPROM_ERROR,         /* Other errors */
 } EEPROM_STATUS;
 
 typedef enum
@@ -58,11 +63,11 @@ typedef enum
   EEPROM_SR_BUSY,        /* Write process in progress */
   EEPROM_SR_WRITE_READY, /* Memory is enabled for writing */
   EEPROM_SR_UNBLOCK,     /* All memory is unprotected for writing BP0 = 0, BP1 = 0 */
+  EEPROM_SR_BLOCK,       /* All memory is protected for writing BP0 = 1, BP1 = 1 */
 } EEPROM_SR_STATE;
 /*----------------------- Functions ------------------------------------*/
-void          vEEPROMInit( SPI_HandleTypeDef* hspi );                            /* Installation of EEPROM */
-void          vEEPROMformAdr ( uint32_t adr, uint8_t* buffer );                  /* Transferm uint32_t address to the 24bit array ( uint8_t x3 ) */
-EEPROM_STATUS eEEPROMReadMemory ( const uint8_t* adr, uint8_t* data, uint32_t len );   /* Read memory of EEPROM */
-EEPROM_STATUS eEEPROMWriteMemory ( uint8_t* adr, uint8_t* data, uint32_t len );  /* Write data to memory of EEPROM */
+EEPROM_STATUS eEEPROMInit ( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssGPIO, uint32_t nssPIN ); /* Installation of EEPROM */
+EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint32_t len );          /* Read memory of EEPROM */
+EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint32_t len );         /* Write data to memory of EEPROM */
 /*----------------------------------------------------------------------*/
 #endif /* INC_EEPROM_H_ */

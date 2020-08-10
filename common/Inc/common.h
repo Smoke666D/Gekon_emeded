@@ -12,7 +12,8 @@
 /*------------------------ Define --------------------------------------*/
 #define     UNIQUE_ID_ADR               0x1FFF7A10U
 /*------------------------ Macros --------------------------------------*/
-#define     BUILD_BUG_OR_ZERO(e)        sizeof(struct { int: -!!(e); })					/* Test value - logical error will be in compiling  */
+#define     BUILD_BUG_OR_ZERO( e )      sizeof( struct { int: -!!( e ); } )					/* Test value - logical error will be in compiling  */
+#define     REVERSE_BYTE( b )           ( ( ( b << 7U ) & 0x80U ) | ( ( b << 5U ) & 0x40U ) | ( ( b << 3U ) & 0x20U ) | ( ( b << 1U ) & 0x10U ) | ( ( b >> 1U ) & 0x08U ) | ( ( b >> 3U ) & 0x04U ) | ( ( b >> 5U ) & 0x02U ) | ( ( b >> 7U ) & 0x01U ) )
 #define     GET_UNIQUE_ID0              ( *( uint32_t* )( UNIQUE_ID_ADR + 0x00U ) )
 #define     GET_UNIQUE_ID1              ( *( uint32_t* )( UNIQUE_ID_ADR + 0x04U ) )
 #define     GET_UNIQUE_ID2              ( *( uint32_t* )( UNIQUE_ID_ADR + 0x08U ) )

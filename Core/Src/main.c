@@ -23,6 +23,7 @@
 #include "cmsis_os.h"
 #include "lwip.h"
 #include "usb_device.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "common.h"
@@ -178,7 +179,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -214,8 +214,17 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );    /* Debug serial interface */
-  vEEPROMInit( &hspi1 );        /* EEPROM init */
+  eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );        /* EEPROM init */
   //vRTCputTimer( &hrtc );        /* RTC structure */
+  /*
+  uint8_t pData[1] = { 0xAA };
+  while (1)
+  {
+    HAL_GPIO_WritePin( EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin, GPIO_PIN_RESET );
+    HAL_SPI_Transmit( &hspi1, pData, 1U, (uint32_t)0xFFFFFFFFFF );
+    HAL_GPIO_WritePin( EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin, GPIO_PIN_SET );
+  }
+  */
   /*-------------------- Version initialization ------------------------------*/
   vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
   versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
@@ -273,7 +282,7 @@ int main(void)
 
   /* Start scheduler */
   osKernelStart();
- 
+
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
@@ -297,7 +306,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
@@ -313,7 +322,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -351,7 +360,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
@@ -369,7 +378,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
@@ -401,7 +410,7 @@ static void MX_ADC2_Init(void)
   /* USER CODE BEGIN ADC2_Init 1 */
 
   /* USER CODE END ADC2_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc2.Instance = ADC2;
   hadc2.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
@@ -419,7 +428,7 @@ static void MX_ADC2_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = 1;
@@ -451,7 +460,7 @@ static void MX_ADC3_Init(void)
   /* USER CODE BEGIN ADC3_Init 1 */
 
   /* USER CODE END ADC3_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc3.Instance = ADC3;
   hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
@@ -469,7 +478,7 @@ static void MX_ADC3_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 1;
@@ -573,7 +582,7 @@ static void MX_RTC_Init(void)
   /* USER CODE BEGIN RTC_Init 1 */
 
   /* USER CODE END RTC_Init 1 */
-  /** Initialize RTC Only 
+  /** Initialize RTC Only
   */
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
@@ -591,7 +600,7 @@ static void MX_RTC_Init(void)
     
   /* USER CODE END Check_RTC_BKUP */
 
-  /** Initialize RTC and set the Time and Date 
+  /** Initialize RTC and set the Time and Date
   */
   sTime.Hours = 0x0;
   sTime.Minutes = 0x0;
@@ -640,7 +649,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -797,10 +806,10 @@ static void MX_USART3_UART_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
@@ -809,16 +818,16 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
 
 }
@@ -846,11 +855,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin 
+  HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin 
+  HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
                           |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -884,9 +893,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : CHARG_ALTER_ON_Pin POUT_A_Pin POUT_B_Pin LD3_Pin 
+  /*Configure GPIO pins : CHARG_ALTER_ON_Pin POUT_A_Pin POUT_B_Pin LD3_Pin
                            LED2_Pin EEPROM_NSS_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin 
+  GPIO_InitStruct.Pin = CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -899,18 +908,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(MIXING_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : POUT_E_Pin POUT_CD_CS_Pin POUT_C_Pin POUT_EF_CS_Pin 
+  /*Configure GPIO pins : POUT_E_Pin POUT_CD_CS_Pin POUT_C_Pin POUT_EF_CS_Pin
                            POUT_D_Pin POUT_F_Pin POUT_AB_CS_Pin */
-  GPIO_InitStruct.Pin = POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin 
+  GPIO_InitStruct.Pin = POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
                           |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin KL_START_Pin KL_AUTO_Pin 
+  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin KL_START_Pin KL_AUTO_Pin
                            KL_STOP_Pin RS485_DE_Pin */
-  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|KL_START_Pin|KL_AUTO_Pin 
+  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|KL_START_Pin|KL_AUTO_Pin
                           |KL_STOP_Pin|RS485_DE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -958,7 +967,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LCD_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
@@ -1001,14 +1010,22 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
-  uint8_t data[1U] = { 0x00U };
-  uint8_t adr[3U]  = { 0x01, 0x00, 0x00 };
+  uint8_t data[2U] = { 0x00U, 0x00U };
+  uint32_t adr  = 2U;
   EEPROM_STATUS status;
-  status = eEEPROMReadMemory( adr, data, 1U );
-  data[0U] = 0xAAU;
-  status = eEEPROMWriteMemory( adr, data, 1U );
-  status = eEEPROMReadMemory( adr, data, 1U );
-
+  status   = eEEPROMReadMemory( &adr, data, 2U );
+  if ( status == EEPROM_OK )
+  {
+    data[0U] = 0xAAU;
+    data[1U] = 0xBBU;
+    status   = eEEPROMWriteMemory( &adr, data, 2U );
+    if ( status == EEPROM_OK )
+    {
+      data[0U] = 0x00U;
+      data[1U] = 0x00U;
+      status   = eEEPROMReadMemory( &adr, data, 2U );
+    }
+  }
   /* Infinite loop */
   for(;;)
   {
@@ -1020,7 +1037,7 @@ void StartDefaultTask(void *argument)
   	vSYSSerial( buf );
 */
   }
-  /* USER CODE END 5 */ 
+  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_StartNetTask */
@@ -1143,7 +1160,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

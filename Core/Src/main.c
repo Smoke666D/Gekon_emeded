@@ -216,15 +216,6 @@ int main(void)
   vSYSInitSerial( &huart3 );    /* Debug serial interface */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );        /* EEPROM init */
   //vRTCputTimer( &hrtc );        /* RTC structure */
-  /*
-  uint8_t pData[1] = { 0xAA };
-  while (1)
-  {
-    HAL_GPIO_WritePin( EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin, GPIO_PIN_RESET );
-    HAL_SPI_Transmit( &hspi1, pData, 1U, (uint32_t)0xFFFFFFFFFF );
-    HAL_GPIO_WritePin( EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin, GPIO_PIN_SET );
-  }
-  */
   /*-------------------- Version initialization ------------------------------*/
   vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
   versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
@@ -1012,12 +1003,17 @@ void StartDefaultTask(void *argument)
 
   uint8_t data[2U] = { 0x00U, 0x00U };
   uint32_t adr  = 10U;
-  EEPROM_STATUS status;
+  EEPROM_STATUS status = EEPROM_OK;
+  uint32_t l = 0U;
+  uint8_t  in = 0U;
+
+
+
   status   = eEEPROMReadMemory( &adr, data, 2U );
   if ( status == EEPROM_OK )
   {
-    data[0U] = 0xAAU;
-    data[1U] = 0xBBU;
+    data[0U] = 0xCCU;
+    data[1U] = 0x11U;
     status   = eEEPROMWriteMemory( &adr, data, 2U );
     if ( status == EEPROM_OK )
     {

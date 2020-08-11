@@ -284,7 +284,9 @@ EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint3
  */
 EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint8_t len )
 {
-  EEPROM_STATUS res   = EEPROM_OK;
+  EEPROM_STATUS   res = EEPROM_OK;
+  EEPROM_SR_STATE state = EEPROM_SR_IDLE;
+  res = eEEPROMreadSR( &state );
   if ( *adr <= EEPROM_MAX_ADR )
   {
     if ( ( *adr + len ) <= EEPROM_MAX_ADR )
@@ -335,6 +337,7 @@ EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint8_t l
               if ( res == EEPROM_OK )
               {
                 res = eEEPROMwriteDisable();
+                osDelay( 5U );
               }
             }
           }
@@ -354,7 +357,6 @@ EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint8_t l
   {
     res = EEPROM_OVER_PAGE;
   }
-
   return res;
 }
 /*----------------------------------------------------------------------------*/

@@ -21,9 +21,11 @@
 #define  EEPROM_PAGE_SIZE         0x100U    /* bytes */
 #ifdef M95M01
   #define  EEPROM_MAX_ADR         0x1FFFFU
+  #define  EEPROM_SIZE            128U      /* Kb */
 #endif
 #ifdef M95M04
   #define  EEPROM_MAX_ADR         0x7FFFFU
+  #define  EEPROM_SIZE            512U      /* Kb */
 #endif
 /*---------- Commands -----------------*/
 #define  EEPROM_WREN              0x06U     /* Write Enable */

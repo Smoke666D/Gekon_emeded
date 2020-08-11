@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-05-27 10:17:27
+ * Make time: 2020-08-11 12:58:02
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -9,10 +9,12 @@
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   SETTING_REGISTER_NUMBER      114U
+#define   SETTING_REGISTER_NUMBER      125U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
+#define   CONFIG_MAX_SIZE              558U
+#define   CONFIG_TOTAL_SIZE            3U
 
 #define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"
@@ -76,6 +78,7 @@ extern eConfigReg serialNumber;
 extern eConfigReg displayBrightnesLevel;
 extern eConfigReg displayContarstLevel;
 extern eConfigReg displaySleepDelay;
+extern eConfigReg hysteresisLevel;
 extern eConfigReg moduleSetup;
 extern eConfigReg oilPressureSetup;
 extern eConfigReg oilPressureAlarmLevel;
@@ -98,6 +101,10 @@ extern eConfigReg fuelLevelHightAlarmLevel;
 extern eConfigReg fuelLevelHightAlarmDelay;
 extern eConfigReg fuelPumpOnLevel;
 extern eConfigReg fuelPumpOffLevel;
+extern eConfigReg speedSetup;
+extern eConfigReg speedToothNumber;
+extern eConfigReg speedLowAlarmLevel;
+extern eConfigReg speedHightAlarmLevel;
 extern eConfigReg diaSetup;
 extern eConfigReg diaDelay;
 extern eConfigReg diaMessage;
@@ -112,11 +119,10 @@ extern eConfigReg didDelay;
 extern eConfigReg didMessage;
 extern eConfigReg doSetup;
 extern eConfigReg doabType;
-extern eConfigReg dodType;
+extern eConfigReg docdType;
 extern eConfigReg doefType;
 extern eConfigReg timerMainsTransientDelay;
 extern eConfigReg timerStartDelay;
-extern eConfigReg timerPreheating;
 extern eConfigReg timerCranking;
 extern eConfigReg timerCrankDelay;
 extern eConfigReg timerStartupIdleTime;
@@ -124,8 +130,10 @@ extern eConfigReg timerNominalRPMDelay;
 extern eConfigReg timerSafetyOnDelay;
 extern eConfigReg timerWarming;
 extern eConfigReg timerTransferDelay;
-extern eConfigReg timerBreakerTripPulse;
-extern eConfigReg timerBreakerClosePulse;
+extern eConfigReg timerGenBreakerTripPulse;
+extern eConfigReg timerGenBreakerClosePulse;
+extern eConfigReg timerMainsBreakerTripPulse;
+extern eConfigReg timerMainsBreakerClosePulse;
 extern eConfigReg timerReturnDelay;
 extern eConfigReg timerCooling;
 extern eConfigReg timerCoolingIdle;
@@ -165,12 +173,13 @@ extern eConfigReg mainsOverFrequencyAlarmLevel;
 extern eConfigReg engineSetup;
 extern eConfigReg enginePreHeatLevel;
 extern eConfigReg enginePreHeatDelay;
-extern eConfigReg enginePostHeatLevel;
-extern eConfigReg enginePostHeatDelay;
-extern eConfigReg crankSetup;
-extern eConfigReg crankDisconnectgenFreqLevel;
-extern eConfigReg crankDisconnectOilPressureLevel;
-extern eConfigReg crankDisconnectChargeAlternatorLevel;
+extern eConfigReg engineWorkTimeInput;
+extern eConfigReg engineStartsNumberInput;
+extern eConfigReg starterStopSetup;
+extern eConfigReg starterStopGenFreqLevel;
+extern eConfigReg starterStopOilPressureLevel;
+extern eConfigReg starterStopChargeAlternatorLevel;
+extern eConfigReg starterStopSpeedLevel;
 extern eConfigReg batteryAlarms;
 extern eConfigReg batteryUnderVoltageLevel;
 extern eConfigReg batteryUnderVoltageDelay;
@@ -184,6 +193,10 @@ extern eConfigReg maintenanceAlarms;
 extern eConfigReg maintenanceAlarmOilTime;
 extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
+extern eConfigReg maintenanceAlarmOilTimeLeft;
+extern eConfigReg maintenanceAlarmAirTimeLeft;
+extern eConfigReg maintenanceAlarmFuelTimeLeft;
+extern eConfigReg logSetup;
 extern eConfigReg* configReg[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

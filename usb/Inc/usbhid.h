@@ -87,9 +87,9 @@ typedef struct
 /*------------------------------ Extern --------------------------------------*/
 
 /*----------------------------- Functions ------------------------------------*/
-void               vUSBinit( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
-void               StartUsbTask( void *argument );       /* Processing USB input task */
-USB_StatusConnect  eUSBgetStatus( void );                /* Get connection status of USB device */
-void               vUSBreceiveHandler( void );           /* Handler of USB input interrupt */
+void              vUSBinit ( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
+void              StartUsbTask ( void *argument );       /* Processing USB input task */
+USB_StatusConnect eUSBgetStatus ( void );                /* Get connection status of USB device */
+void              vUSBreceiveHandler ( void );           /* Handler of USB input interrupt */
 /*----------------------------------------------------------------------------*/
 #endif /* INC_USBHID_H_ */

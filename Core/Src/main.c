@@ -36,6 +36,7 @@
 #include "keyboard.h"
 #include "usbhid.h"
 #include "EEPROM.h"
+#include "RTC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -213,9 +214,9 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
-  vSYSInitSerial( &huart3 );    /* Debug serial interface */
-  eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );        /* EEPROM init */
-  //vRTCputTimer( &hrtc );        /* RTC structure */
+  vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
+  eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM init */
+  vRTCinit( &hi2c1 );                                           /* RTC init */
   /*-------------------- Version initialization ------------------------------*/
   vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
   versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
@@ -1001,27 +1002,31 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
-  uint8_t data[2U] = { 0x00U, 0x00U };
-  uint32_t adr  = 10U;
-  EEPROM_STATUS status = EEPROM_OK;
-  uint32_t l = 0U;
-  uint8_t  in = 0U;
+  /*------------------------------------------------------------*/
+  RTC_TIME   time;
+  RTC_STATUS status      = RTC_OK;
+  float      temperature = 0;
 
+  time.day = 12;
+  time.month = MONTH_AUG;
+  time.year  = 19;
+  time.wday = MONDAY;
+  time.hour = 12;
+  time.min = 12;
+  time.sec = 12;
 
-
-  status   = eEEPROMReadMemory( &adr, data, 2U );
-  if ( status == EEPROM_OK )
+  status = vRTCsetTime( &time );
+  status = eRTCgetTime( &time );
+  while(1)
   {
-    data[0U] = 0xCCU;
-    data[1U] = 0x11U;
-    status   = eEEPROMWriteMemory( &adr, data, 2U );
-    if ( status == EEPROM_OK )
-    {
-      data[0U] = 0x00U;
-      data[1U] = 0x00U;
-      status   = eEEPROMReadMemory( &adr, data, 2U );
-    }
+    status = eRTCgetTime( &time );
+    status = eRTCgetTemperature( &temperature );
   }
+  /*------------------------------------------------------------*/
+
+
+
+
   /* Infinite loop */
   for(;;)
   {

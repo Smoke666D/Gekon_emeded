@@ -11,23 +11,11 @@
 #include "stm32f2xx_hal.h"
 #include "stm32f2xx_hal_i2c.h"
 /*------------------------ Define --------------------------------------*/
-#define  RTC_SEC_MAX          59U
-#define  RTC_MIN_MAX          59U
-#define  RTC_HOUR_MAX         23U
-#define  RTC_WDAY_MIN         1U
-#define  RTC_WDAY_MAX         7U
-#define  RTC_DAY_MIN          1U
-#define  RTC_DAY_MAX          31U
-#define  RTC_MONTH_MIN        1U
-#define  RTC_MONTH_MAX        12U
-#define  RTC_YEAR_MIN         0U
-#define  RTC_YEAR_MAX         99U
-
 #define  RTC_DEVICE_ADR       0xD0U
 #define  RTC_MEMORY_SIZE      19U
 #define  RTC_TIMEOUT          1000U
 
-#define  RTC_SECONRTC         0x00U
+#define  RTC_SECONDS          0x00U
 #define  RTC_MINUTES          0x01U
 #define  RTC_HOURS            0X02U
 #define  RTC_WDAY             0x03U
@@ -131,18 +119,18 @@ typedef enum
 
 typedef enum
 {
-  MONTH_JAN,
-  MONTH_FEB,
-  MONTH_MAR,
-  MONTH_APR,
-  MONTH_MAY,
-  MONTH_JUN,
-  MONTH_JUL,
-  MONTH_AUG,
-  MONTH_SEP,
-  MONTH_OCT,
-  MONTH_NOV,
-  MONTH_DEC,
+  MONTH_JAN = 0x01U,
+  MONTH_FEB = 0x02U,
+  MONTH_MAR = 0x03U,
+  MONTH_APR = 0x04U,
+  MONTH_MAY = 0x05U,
+  MONTH_JUN = 0x06U,
+  MONTH_JUL = 0x07U,
+  MONTH_AUG = 0x08U,
+  MONTH_SEP = 0x09U,
+  MONTH_OCT = 0x0AU,
+  MONTH_NOV = 0x0BU,
+  MONTH_DEC = 0x0CU,
 } MONTH_TYPE;
 
 typedef enum
@@ -150,6 +138,18 @@ typedef enum
   ALARM_ON_DATE,
   ALARM_ON_DAY_OF_WEEK,
 } ALARM_RTC_TYPE;
+/*----------------------------------------------------------------------*/
+#define  RTC_SEC_MAX          59U
+#define  RTC_MIN_MAX          59U
+#define  RTC_HOUR_MAX         23U
+#define  RTC_WDAY_MIN         1U
+#define  RTC_WDAY_MAX         7U
+#define  RTC_DAY_MIN          SUNDAY
+#define  RTC_DAY_MAX          MONTH_DEC
+#define  RTC_MONTH_MIN        MONTH_JAN
+#define  RTC_MONTH_MAX        MONTH_DEC
+#define  RTC_YEAR_MIN         0U
+#define  RTC_YEAR_MAX         99U
 /*----------------------- Structures -----------------------------------*/
 typedef struct
 {
@@ -174,20 +174,20 @@ typedef struct
   uint8_t         ie;     /* Interrupt enable */
 } RTC_ALARM;
 /*------------------------ Functions -----------------------------------*/
-void        vInitRTC( I2C_HandleTypeDef* hi2c );
-RTC_STATUS  eRTCsetOscillator( uint8_t enb, RTC_FREQ freq );
-RTC_STATUS  eRTCreadFreq( RTC_FREQ* freq );
-RTC_STATUS  eRTCgetTime( RTC_TIME* time );
-RTC_STATUS  vRTCsetTime( RTC_TIME* time );
-RTC_STATUS  vRTCsetCalibration( signed char value );
-RTC_STATUS  eRTCgetCalibration( signed char* value );
-RTC_STATUS  eRTCgetTemperature( float* data );
-RTC_STATUS  eRTCsetTemperatureCompensation( uint8_t enb );
-RTC_STATUS  eRTCsetAlarm( uint8_t n, RTC_ALARM* alarm );
-RTC_STATUS  eRTCgetAlarm( uint8_t n, RTC_ALARM* alarm );
-RTC_STATUS  vRTCclearAlarm( uint8_t n );
-uint8_t     uRTCcheckIfAlarm( void );
-RTC_STATUS  eRTCsetExternSquareWave( uint8_t enb );
-RTC_STATUS  eRTCsetInterrupt( uint8_t ext );
+void       vRTCinit ( I2C_HandleTypeDef* hi2c );             /* Ok */
+RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq ); /**/
+RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq );                  /**/
+RTC_STATUS eRTCgetTime ( RTC_TIME* time );                   /* Ok */
+RTC_STATUS vRTCsetTime ( RTC_TIME* time );                   /* Ok */
+RTC_STATUS vRTCsetCalibration ( signed char value );         /**/
+RTC_STATUS eRTCgetCalibration ( signed char* value );        /**/
+RTC_STATUS eRTCgetTemperature ( float* data );               /**/
+RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb );   /**/
+RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm );     /**/
+RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm );     /**/
+RTC_STATUS vRTCclearAlarm ( uint8_t n );                     /**/
+uint8_t    uRTCcheckIfAlarm ( void );                        /**/
+RTC_STATUS eRTCsetExternSquareWave ( uint8_t enb );          /**/
+RTC_STATUS eRTCsetInterrupt ( uint8_t ext );                 /**/
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

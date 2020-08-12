@@ -35,6 +35,8 @@
 #include "version.h"
 #include "keyboard.h"
 #include "usbhid.h"
+#include "EEPROM.h"
+#include "RTC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,8 +73,6 @@ DMA_HandleTypeDef hdma_adc3;
 CAN_HandleTypeDef hcan1;
 
 I2C_HandleTypeDef hi2c1;
-
-RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
@@ -143,7 +143,6 @@ const osThreadAttr_t keyboardTask_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_RTC_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_SPI1_Init(void);
@@ -178,7 +177,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -199,7 +197,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_RTC_Init();
   MX_USART3_UART_Init();
   MX_LWIP_Init();
   MX_TIM7_Init();
@@ -213,8 +210,9 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
-  vSYSInitSerial( &huart3 );    /* Debug serial interface */
-  vRTCputTimer( &hrtc );        /* RTC structure */
+  vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
+  eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM init */
+  vRTCinit( &hi2c1 );                                           /* RTC init */
   /*-------------------- Version initialization ------------------------------*/
   vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
   versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
@@ -272,7 +270,7 @@ int main(void)
 
   /* Start scheduler */
   osKernelStart();
- 
+
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
@@ -294,12 +292,10 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSE;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -312,7 +308,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -322,12 +318,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -350,7 +340,7 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 1 */
 
   /* USER CODE END ADC1_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
@@ -368,7 +358,7 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
@@ -400,7 +390,7 @@ static void MX_ADC2_Init(void)
   /* USER CODE BEGIN ADC2_Init 1 */
 
   /* USER CODE END ADC2_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc2.Instance = ADC2;
   hadc2.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
@@ -418,7 +408,7 @@ static void MX_ADC2_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = 1;
@@ -450,7 +440,7 @@ static void MX_ADC3_Init(void)
   /* USER CODE BEGIN ADC3_Init 1 */
 
   /* USER CODE END ADC3_Init 1 */
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc3.Instance = ADC3;
   hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
@@ -468,7 +458,7 @@ static void MX_ADC3_Init(void)
   {
     Error_Handler();
   }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 1;
@@ -555,68 +545,6 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief RTC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_RTC_Init(void)
-{
-
-  /* USER CODE BEGIN RTC_Init 0 */
-
-  /* USER CODE END RTC_Init 0 */
-
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef sDate = {0};
-
-  /* USER CODE BEGIN RTC_Init 1 */
-
-  /* USER CODE END RTC_Init 1 */
-  /** Initialize RTC Only 
-  */
-  hrtc.Instance = RTC;
-  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  hrtc.Init.AsynchPrediv = 127;
-  hrtc.Init.SynchPrediv = 255;
-  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /* USER CODE BEGIN Check_RTC_BKUP */
-    
-  /* USER CODE END Check_RTC_BKUP */
-
-  /** Initialize RTC and set the Time and Date 
-  */
-  sTime.Hours = 0x0;
-  sTime.Minutes = 0x0;
-  sTime.Seconds = 0x0;
-  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
-  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
-
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN RTC_Init 2 */
-
-  /* USER CODE END RTC_Init 2 */
-
-}
-
-/**
   * @brief SPI1 Initialization Function
   * @param None
   * @retval None
@@ -639,7 +567,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -796,10 +724,10 @@ static void MX_USART3_UART_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
@@ -845,11 +773,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin 
+  HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin 
+  HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
                           |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -883,9 +811,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : CHARG_ALTER_ON_Pin POUT_A_Pin POUT_B_Pin LD3_Pin 
+  /*Configure GPIO pins : CHARG_ALTER_ON_Pin POUT_A_Pin POUT_B_Pin LD3_Pin
                            LED2_Pin EEPROM_NSS_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin 
+  GPIO_InitStruct.Pin = CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -898,18 +826,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(MIXING_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : POUT_E_Pin POUT_CD_CS_Pin POUT_C_Pin POUT_EF_CS_Pin 
+  /*Configure GPIO pins : POUT_E_Pin POUT_CD_CS_Pin POUT_C_Pin POUT_EF_CS_Pin
                            POUT_D_Pin POUT_F_Pin POUT_AB_CS_Pin */
-  GPIO_InitStruct.Pin = POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin 
+  GPIO_InitStruct.Pin = POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
                           |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin KL_START_Pin KL_AUTO_Pin 
+  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin KL_START_Pin KL_AUTO_Pin
                            KL_STOP_Pin RS485_DE_Pin */
-  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|KL_START_Pin|KL_AUTO_Pin 
+  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|KL_START_Pin|KL_AUTO_Pin
                           |KL_STOP_Pin|RS485_DE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -1002,15 +930,15 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-  	HAL_GPIO_TogglePin( GPIOB, LD2_Pin );
-  	osDelay( 100U );
+    HAL_GPIO_TogglePin( GPIOB, LD2_Pin );
+    osDelay( 100U );
 /*
-  	waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
-  	sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );
-  	vSYSSerial( buf );
+    waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
+    sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );
+    vSYSSerial( buf );
 */
   }
-  /* USER CODE END 5 */ 
+  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_StartNetTask */
@@ -1032,6 +960,7 @@ void StartNetTask(void *argument)
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
 	vSYSSerial( ">>RTC: ");
+	/*
 	if ( eRTCgetExtrenalTime() == RTC_ERROR )
 	{
 		vSYSSerial( "server fail!");
@@ -1050,6 +979,7 @@ void StartNetTask(void *argument)
 		vSYSSerial( buffer );
 		vSYSSerial( "\r\n" );
 	}
+	*/
 	vSYSSerial( ">>TCP: " );
 	if ( eSERVERstart() != SERVER_OK )
 	{
@@ -1131,7 +1061,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

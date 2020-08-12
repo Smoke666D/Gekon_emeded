@@ -905,10 +905,6 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-
-  //HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-  //HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_RESET );
-
   char 		buf[36];
   uint8_t	i = 0U;
   uint8_t	j = 0U;
@@ -960,26 +956,6 @@ void StartNetTask(void *argument)
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
 	vSYSSerial( ">>RTC: ");
-	/*
-	if ( eRTCgetExtrenalTime() == RTC_ERROR )
-	{
-		vSYSSerial( "server fail!");
-		vSYSSerial("\n\r");
-	}
-	else
-	{
-		char buffer[40U];
-		vSYSSerial( "done!");
-		vSYSSerial( "\n\r" );
-		RTC_TimeTypeDef 	t;
-		RTC_DateTypeDef		d;
-		HAL_RTC_GetTime( &hrtc, &t, RTC_FORMAT_BCD );
-		HAL_RTC_GetDate( &hrtc, &d, RTC_FORMAT_BCD );
-		sprintf( buffer, ">>Current time: %d.%d.20%d  %d:%d:%d   ", d.Date, d.Month, d.Year, t.Hours, t.Minutes, t.Seconds );
-		vSYSSerial( buffer );
-		vSYSSerial( "\r\n" );
-	}
-	*/
 	vSYSSerial( ">>TCP: " );
 	if ( eSERVERstart() != SERVER_OK )
 	{

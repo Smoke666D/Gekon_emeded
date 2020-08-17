@@ -10,8 +10,8 @@
 #include "stm32f2xx_hal.h"
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
-#define	CHART_UNIT_LENGTH       3U
-#define	CHART_CHART_MAX_SIZE    128U
+#define  CHART_UNIT_LENGTH       3U
+#define  CHART_CHART_MAX_SIZE    128U
 #define CHART_NUMBER            3U
 
 #define CHART_DATA_XMIN_STR     "xmin"
@@ -48,15 +48,14 @@ typedef struct
 
 typedef struct
 {
-  fix16_t 	      xmin;								/* 4 bytes */
-  fix16_t 	      xmax;								/* 4 bytes */
-  fix16_t  	      ymin;								/* 4 bytes */
-  fix16_t 	      ymax;								/* 4 bytes */
-  uint16_t        xunit[CHART_UNIT_LENGTH];			/* 2 * 3 = 6 bytes */
-  uint16_t        yunit[CHART_UNIT_LENGTH];			/* 2 * 3 = 6 bytes */
-  uint16_t	      size;								/* 2 bytes            Number of dots */
-  eChartDot	      dots[CHART_CHART_MAX_SIZE];		/* 128 * 8 = 1024 bytes  */
-
+  fix16_t         xmin;                        /* 4 bytes */
+  fix16_t         xmax;                        /* 4 bytes */
+  fix16_t         ymin;                        /* 4 bytes */
+  fix16_t         ymax;                        /* 4 bytes */
+  uint16_t        xunit[CHART_UNIT_LENGTH];    /* 2 * 3 = 6 bytes */
+  uint16_t        yunit[CHART_UNIT_LENGTH];    /* 2 * 3 = 6 bytes */
+  uint16_t        size;                        /* 2 bytes            Number of dots */
+  eChartDot       dots[CHART_CHART_MAX_SIZE];  /* 128 * 8 = 1024 bytes  */
   eChartFunction  func[CHART_CHART_MAX_SIZE - 1U];
 } eChartData;
 /*------------------------ Extern --------------------------------------*/

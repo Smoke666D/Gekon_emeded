@@ -25,9 +25,10 @@ typedef enum
 
 typedef enum
 {
-  USB_DONE,
-  USB_CONT,
-  USB_ERROR_LENGTH,
+  USB_DONE,          /* Operation done */
+  USB_CONT,          /* Message is not end. Wait for new package */
+  USB_ERROR_LENGTH,  /* Error in declared and received length of data*/
+  USB_STORAGE_ERROR, /* Error in storage process ( EEPROM )  */
 } USB_Status;
 
 typedef enum

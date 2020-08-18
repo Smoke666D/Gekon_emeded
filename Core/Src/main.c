@@ -923,6 +923,41 @@ void StartDefaultTask(void *argument)
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
+
+
+
+  #define         length     1U
+  EEPROM_STATUS   status     = EEPROM_OK;
+  uint32_t        adr        = 0U;
+  uint8_t         writeBuffer[length];
+  uint8_t         readBuffer[length];
+  for ( i=0U; i<length; i++ )
+    {
+      writeBuffer[i]=(i+1);
+      readBuffer[i] = 0U;
+    }
+  while ( ( adr + length ) < EEPROM_MAX_ADR )
+  {
+    status = eEEPROMReadMemory( &adr, readBuffer, length );
+    osDelay(15U);
+    status = eEEPROMWriteMemory( &adr, writeBuffer, length );
+    if (status == EEPROM_OK)
+    {
+      status = eEEPROMReadMemory( &adr, readBuffer, length );
+      osDelay(15U);
+    } else {
+      break;
+    }
+    for(i=0;i<length;i++)
+    {
+      if ( writeBuffer[i] != readBuffer[i] ) {
+	break;
+      }
+    }
+    adr += length;
+  }
+
+
   /* Infinite loop */
   for(;;)
   {

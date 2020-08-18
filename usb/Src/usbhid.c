@@ -372,13 +372,14 @@ USB_Status eUSBReportToChart ( USB_REPORT* report )
 USB_Status eUSBReportToEWA ( USB_REPORT* report )
 {
   USB_Status      res    = USB_DONE;
-  uint8_t         i      = 0U;
   uint8_t         length = 0U;
   static uint32_t index  = 0U;
+  uint32_t        adr    = 0U;
+  EEPROM_STATUS   status = EEPROM_OK;
 
   if ( report->length > 0U )
   {
-    if ( ( uint8_t )( ( report->length - index ) / USB_DATA_SIZE ) > 0U )
+    if ( ( ( report->length - index ) / USB_DATA_SIZE ) > 0U )
     {
       length = USB_DATA_SIZE;
     }
@@ -392,21 +393,50 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
     }
     if ( length > 0U )
     {
-      eEEPROMWriteMemory( ( STORAGE_EWA_ADR + index ), report->data, length );
-      index += length;
-      if ( index < report->length )
+      adr    = STORAGE_EWA_ADR + index ;
+      status = eEEPROMWriteMemory( &adr, report->data, length );
+      if ( status == EEPROM_OK )
       {
-        res = USB_CONT;
-      }
-      else if ( index == report->length )
-      {
-        index = 0U;
-        res   = USB_DONE;
+	uint8_t temp[length];
+	uint8_t i =0;
+	for(i=0;i<length;i++){temp[i]=0;}
+	status = eEEPROMReadMemory( &adr, temp, length );
+	if ( status == EEPROM_OK )
+	{
+	  for ( i=0;i<length;i++)
+	  {
+	      uint8_t a = report->data[i];
+	      uint8_t b = temp[i];
+	    if (report->data[i] != temp[i])
+	      {
+		i=2;
+	      }
+	  }
+	} else {
+	    i=1;
+	}
+
+
+        index += length;
+        if ( index < report->length )
+        {
+          res = USB_CONT;
+        }
+        else if ( index == report->length )
+        {
+          index = 0U;
+          res   = USB_DONE;
+        }
+        else
+        {
+ 	  index = 0U;
+	  res   = USB_ERROR_LENGTH;
+        }
       }
       else
       {
 	index = 0U;
-	res   = USB_ERROR_LENGTH;
+	res = USB_STORAGE_ERROR;
       }
     }
     else
@@ -424,7 +454,8 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
  */
 void vUSBmakeReport ( USB_REPORT* report )
 {
-  uint8_t i = 0U;
+  uint8_t i   = 0U;
+  uint8_t len = USB_DATA_SIZE;
   report->buf[USB_DIR_BYTE]  = USB_GET_DIR_VAL( report->dir );
   report->buf[USB_CMD_BYTE]  = report->cmd;
   report->buf[USB_STAT_BYTE] = report->stat;
@@ -433,7 +464,11 @@ void vUSBmakeReport ( USB_REPORT* report )
   report->buf[USB_LEN2_BYTE] = ( uint8_t )( report->length >> 16U );
   report->buf[USB_LEN1_BYTE] = ( uint8_t )( report->length >> 8U );
   report->buf[USB_LEN0_BYTE] = ( uint8_t )( report->length );
-  for( i=0U; i<report->length; i++)
+  if ( report->length < USB_DATA_SIZE )
+  {
+    len = report->length;
+  }
+  for( i=0U; i<len; i++)
   {
     report->buf[USB_DATA_BYTE + i] = report->data[i];
   }
@@ -600,17 +635,19 @@ void vUSBgetChart ( USB_REPORT* report )
 void vUSBgetEWA ( USB_REPORT* report )
 {
   uint8_t    i        = 0U;
+  USB_Status status   = USB_DONE;
   USB_REPORT response =
   {
     .cmd    = report->cmd,
     .stat   = USB_OK_STAT,
     .adr    = report->adr,
-    .length = 0U,
+    .length = report->length,
     .buf    = usbBuffer,
     .data   = &usbBuffer[USB_DATA_BYTE],
   };
 
-  if ( eUSBReportToEWA( &report ) != USB_DONE )
+  status = eUSBReportToEWA( report );
+  if ( ( status != USB_DONE ) && ( status != USB_CONT ) )
   {
     response.stat = USB_BAD_REQ_STAT;
   }

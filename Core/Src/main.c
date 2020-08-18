@@ -927,6 +927,31 @@ void StartDefaultTask(void *argument)
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
+
+  #define length 8
+  uint32_t adr = 0U;
+  uint8_t  input[length];
+  uint8_t  output[length];
+  EEPROM_STATUS stat;
+
+  for(i=0;i<length;i++) {
+      input[i]=0;
+      output[i]=i+1;
+  }
+  while (adr<EEPROM_MAX_ADR) {
+    stat=eEEPROMReadMemory(&adr, input, length);
+    if (stat==EEPROM_OK){
+      stat=eEEPROMWriteMemory(&adr, output, length);
+      if(stat==EEPROM_OK){
+        stat=eEEPROMReadMemory(&adr, input, length);
+        if(stat==EEPROM_OK){
+          adr +=length;
+        }else break;
+      }else break;
+    }else break;
+  }
+
+
   /* Infinite loop */
   for(;;)
   {
@@ -960,26 +985,6 @@ void StartNetTask(void *argument)
 	vSYSSerial( ipaddr );
 	vSYSSerial("\n\r");
 	vSYSSerial( ">>RTC: ");
-	/*
-	if ( eRTCgetExtrenalTime() == RTC_ERROR )
-	{
-		vSYSSerial( "server fail!");
-		vSYSSerial("\n\r");
-	}
-	else
-	{
-		char buffer[40U];
-		vSYSSerial( "done!");
-		vSYSSerial( "\n\r" );
-		RTC_TimeTypeDef 	t;
-		RTC_DateTypeDef		d;
-		HAL_RTC_GetTime( &hrtc, &t, RTC_FORMAT_BCD );
-		HAL_RTC_GetDate( &hrtc, &d, RTC_FORMAT_BCD );
-		sprintf( buffer, ">>Current time: %d.%d.20%d  %d:%d:%d   ", d.Date, d.Month, d.Year, t.Hours, t.Minutes, t.Seconds );
-		vSYSSerial( buffer );
-		vSYSSerial( "\r\n" );
-	}
-	*/
 	vSYSSerial( ">>TCP: " );
 	if ( eSERVERstart() != SERVER_OK )
 	{

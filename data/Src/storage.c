@@ -238,11 +238,11 @@ EEPROM_STATUS eSTORAGEreadCharts( void )
   for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
     vEEPROMformAdr( adr, adrForm );
-    res = eEEPROMReadMemory( adrForm, &size, 1U );
+    res = eEEPROMReadMemory( &adrForm, &size, 1U );
     if ( ( res == EEPROM_OK ) && ( size > 0U ) && ( size < CHART_CHART_MAX_SIZE ) )
     {
       vEEPROMformAdr( ++adr, adrForm );
-      res = eEEPROMReadMemory( adrForm, buffer, size );
+      res = eEEPROMReadMemory( &adrForm, buffer, size );
       if ( res == EEPROM_OK )
       {
         adr += size;

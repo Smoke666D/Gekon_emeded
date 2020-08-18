@@ -30,6 +30,7 @@ void vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer )
   buffer[0U] = ( uint8_t )( adr >> 16U );
   return;
 }
+/*----------------------------------------------------------------------------*/
 /*
  * Send data via SPI to the EEPROM
  * Input:  cmd  - command of operation

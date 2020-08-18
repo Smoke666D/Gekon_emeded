@@ -16,7 +16,7 @@
 //#define  M95M01
 #define  M95M04
 /*---------- Software parameters ------*/
-#define  EEPROM_TIMEOUT           15U
+#define  EEPROM_TIMEOUT           5U
 /*---------- Chip parameters ----------*/
 #define  EEPROM_PAGE_SIZE         0x100U    /* bytes */
 #ifdef M95M01

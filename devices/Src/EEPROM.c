@@ -378,10 +378,7 @@ EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint16_t l
 	}
       }
     }
-    res = eEEPROMread( EEPROM_WRITE, adr, &data[shift], subLen );
-    shift += subLen;
-    count += subLen;
-    if ( res == EEPROM_OK )
+    else
     {
       res = EEPROM_ADR_ERROR;
     }

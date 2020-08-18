@@ -371,11 +371,15 @@ USB_Status eUSBReportToChart ( USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_Status eUSBReportToEWA ( USB_REPORT* report )
 {
-  USB_Status      res    = USB_DONE;
-  uint8_t         length = 0U;
-  static uint32_t index  = 0U;
-  uint32_t        adr    = 0U;
-  EEPROM_STATUS   status = EEPROM_OK;
+  USB_Status      res           = USB_DONE;
+  uint8_t         length        = 0U;
+  static uint32_t index         = 0U;
+  uint32_t        adr           = 0U;
+  EEPROM_STATUS   status        = EEPROM_OK;
+  uint16_t        i             = 0;
+  uint32_t        checkAdr      = 0U;
+  uint8_t         checkData[1U] = {0U};
+
 
   if ( report->length > 0U )
   {
@@ -397,40 +401,34 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
       status = eEEPROMWriteMemory( &adr, report->data, length );
       if ( status == EEPROM_OK )
       {
-	uint8_t temp[length];
-	uint8_t i =0;
-	for(i=0;i<length;i++){temp[i]=0;}
-	status = eEEPROMReadMemory( &adr, temp, length );
-	if ( status == EEPROM_OK )
+	checkAdr = adr;
+	for ( i=0; i<length; i++ )
 	{
-	  for ( i=0;i<length;i++)
+	  status = eEEPROMReadMemory( &checkAdr, checkData, 1U );
+	  checkAdr++;
+	  if ( ( report->data[i] != checkData[0U] ) || ( status != EEPROM_OK ) )
 	  {
-	      uint8_t a = report->data[i];
-	      uint8_t b = temp[i];
-	    if (report->data[i] != temp[i])
-	      {
-		i=2;
-	      }
+	    res = USB_STORAGE_ERROR;
+	    break;
 	  }
-	} else {
-	    i=1;
 	}
-
-
-        index += length;
-        if ( index < report->length )
+        if ( res != USB_STORAGE_ERROR )
         {
-          res = USB_CONT;
-        }
-        else if ( index == report->length )
-        {
-          index = 0U;
-          res   = USB_DONE;
-        }
-        else
-        {
- 	  index = 0U;
-	  res   = USB_ERROR_LENGTH;
+          index += length;
+          if ( index < report->length )
+          {
+            res = USB_CONT;
+          }
+          else if ( index == report->length )
+          {
+            index = 0U;
+            res   = USB_DONE;
+          }
+          else
+          {
+ 	    index = 0U;
+	    res   = USB_ERROR_LENGTH;
+          }
         }
       }
       else

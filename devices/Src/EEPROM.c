@@ -23,6 +23,13 @@ EEPROM_STATUS eEEPROMpoolUntil ( EEPROM_SR_STATE target );                      
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+void vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer )
+{
+  buffer[2U] = ( uint8_t )( adr );
+  buffer[1U] = ( uint8_t )( adr >> 8U );
+  buffer[0U] = ( uint8_t )( adr >> 16U );
+  return;
+}
 /*
  * Send data via SPI to the EEPROM
  * Input:  cmd  - command of operation
@@ -41,9 +48,7 @@ EEPROM_STATUS eEEPROMwrite( uint8_t cmd, const uint32_t* adr, uint8_t* data, uin
   {
     if ( adr != NULL )
     {
-      buffer[1U] = ( uint8_t )( *adr );
-      buffer[2U] = ( uint8_t )( *adr >> 8U );
-      buffer[3U] = ( uint8_t )( *adr >> 16U );
+      vEEPROMmakeAdr( *adr, &buffer[1U] );
       bufferLen  = 4U;
     }
     while ( EEPROM_SPI->State != HAL_SPI_STATE_READY )
@@ -98,9 +103,7 @@ EEPROM_STATUS eEEPROMread( uint8_t cmd, const uint32_t* adr, uint8_t* data, uint
   {
     if ( adr != NULL )
     {
-      buffer[1U] = ( uint8_t )( *adr );
-      buffer[2U] = ( uint8_t )( *adr >> 8U );
-      buffer[3U] = ( uint8_t )( *adr >> 16U );
+      vEEPROMmakeAdr( *adr, &buffer[1U] );
       bufferLen  = 4U;
     }
     while ( EEPROM_SPI->State != HAL_SPI_STATE_READY )

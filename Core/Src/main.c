@@ -927,8 +927,8 @@ void StartDefaultTask(void *argument)
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
-
-  #define length 8
+/*
+  #define length 9
   uint32_t adr = 0U;
   uint8_t  input[length];
   uint8_t  output[length];
@@ -938,7 +938,16 @@ void StartDefaultTask(void *argument)
       input[i]=0;
       output[i]=i+1;
   }
+
+  adr = 256U;
+  stat=eEEPROMWriteMemory(&adr, input, length);
+  adr = 0U;
+
   while (adr<EEPROM_MAX_ADR) {
+    if ( ( adr > 248U ) && ( adr < 256 ) )
+    {
+      i = 0;
+    }
     stat=eEEPROMReadMemory(&adr, input, length);
     if (stat==EEPROM_OK){
       stat=eEEPROMWriteMemory(&adr, output, length);
@@ -946,11 +955,22 @@ void StartDefaultTask(void *argument)
         stat=eEEPROMReadMemory(&adr, input, length);
         if(stat==EEPROM_OK){
           adr +=length;
-        }else break;
-      }else break;
-    }else break;
+        }else{
+          break;
+        }
+      }else{
+	break;
+      }
+    }else{
+      break;
+    }
+    for(i=0;i<length;i++){
+      if (input[i] != output[i]){
+        break;
+      }
+    }
   }
-
+*/
 
   /* Infinite loop */
   for(;;)

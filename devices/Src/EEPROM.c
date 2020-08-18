@@ -250,6 +250,57 @@ EEPROM_STATUS eEEPROMpoolUntil ( EEPROM_SR_STATE target )
   return res;
 }
 /*----------------------------------------------------------------------------*/
+/*
+ * Write some data to the memory in one page
+ * Input:  adr  - address
+ *         data - data array
+ *         len  - length of data array
+ * Output: Status of operation
+ */
+EEPROM_STATUS eEEPROMWriteData ( const uint32_t* adr, uint8_t* data, uint8_t len )
+{
+  EEPROM_STATUS   res    = EEPROM_OK;
+  EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
+  if ( ( *adr + len ) <= EEPROM_MAX_ADR )
+  {
+    if ( EEPROM_PAGE_SIZE - ( *adr - ( ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) ) >= len )
+    {
+      res = eEEPROMreadSR( &state );
+      if ( ( state & EEPROM_SR_SRWD ) == 0U )
+      {
+        res = eEEPROMpoolUntil( EEPROM_SR_IDLE );
+        if ( res == EEPROM_OK )
+        {
+          res = eEEPROMwriteEnable();
+          if ( res == EEPROM_OK )
+          {
+            res = eEEPROMpoolUntil( EEPROM_SR_WRITE_READY );
+            if ( res == EEPROM_OK )
+            {
+              res = eEEPROMwrite( EEPROM_WRITE, adr, data, ( uint16_t )len );
+              osDelay( EEPROM_TIMEOUT );
+              if ( res == EEPROM_OK )
+              {
+                res = eEEPROMwriteDisable();
+                osDelay( EEPROM_TIMEOUT );
+              }
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      res = EEPROM_OVER_PAGE;
+    }
+  }
+  else
+  {
+    res = EEPROM_ADR_ERROR;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 /*
@@ -282,25 +333,55 @@ EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint3
  *         len  - length to read
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint8_t len )
+EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint16_t len )
 {
-  EEPROM_STATUS   res = EEPROM_OK;
-  EEPROM_SR_STATE state = EEPROM_SR_IDLE;
+  EEPROM_STATUS   res    = EEPROM_OK;
+  EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
+  uint16_t        i      = 0;
+  uint16_t        size   = 0U;             /* Size of data in memory pages */
+  uint16_t        remain = 0U;             /* Remain of first page in bytes */
+  uint32_t        count  = *adr;           /* Counter of address */
+  uint32_t        shift  = 0U;             /* Shift in output buffer */
+  uint16_t        subLen = len;            /* Length of write iteration */
+
   res = eEEPROMreadSR( &state );
-  if ( *adr <= EEPROM_MAX_ADR )
+  if ( res == EEPROM_OK )
   {
-    if ( ( *adr + len ) <= EEPROM_MAX_ADR )
+    if ( ( *adr + len ) <= EEPROM_MAX_ADR  )
     {
-      res = eEEPROMread( EEPROM_READ, adr, data, len );
+      remain = EEPROM_PAGE_SIZE - ( *adr - ( ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
+      if ( remain < len )
+      {
+        size   = (uint8_t)( ( len - remain ) / EEPROM_PAGE_SIZE );
+        subLen = remain;
+      }
+      res = eEEPROMread( EEPROM_READ, adr, &data[shift], subLen );
+      shift += subLen;
+      count += subLen;
+      if ( res == EEPROM_OK )
+      {
+	subLen = EEPROM_PAGE_SIZE;
+	for ( i=0U; i<size; i++ )
+	{
+	  res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
+	  shift += subLen;
+	  count += EEPROM_PAGE_SIZE;
+	  if ( res != EEPROM_OK )
+	  {
+	    break;
+	  }
+	}
+	if ( ( count < ( *adr + len ) ) && ( res == EEPROM_OK ) )
+	{
+	  subLen = ( uint16_t )( *adr + len - count );
+	  res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
+	}
+      }
     }
     else
     {
-      res = EEPROM_OVER_ROLL;
+      res = EEPROM_ADR_ERROR;
     }
-  }
-  else
-  {
-    res = EEPROM_ADR_ERROR;
   }
   return res;
 }
@@ -312,50 +393,44 @@ EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint8_t le
  *         len  - length to write
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint8_t len )
+EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS   res    = EEPROM_OK;
   EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
-  uint8_t         relAdr = *adr - ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) * EEPROM_PAGE_SIZE );
-  if ( ( relAdr + len ) <= EEPROM_PAGE_SIZE )
+  uint16_t        i      = 0U;
+  uint16_t        size   = 0U;             /* Size of data in memory pages */
+  uint16_t        remain = 0U;             /* Remain of first page in bytes */
+  uint32_t        count  = *adr;           /* Counter of address */
+  uint32_t        shift  = 0U;             /* Shift in output buffer */
+  uint16_t        subLen = len;            /* Length of write iteration */
+
+  remain = EEPROM_PAGE_SIZE - ( *adr - ( ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
+  if ( remain < len )
   {
-    res = eEEPROMreadSR( &state );
-    if ( ( state & EEPROM_SR_SRWD ) == 0U )
-    {
-      if ( ( *adr ) <= EEPROM_MAX_ADR )
-      {
-        res = eEEPROMpoolUntil( EEPROM_SR_IDLE );
-        if ( res == EEPROM_OK )
-        {
-          res = eEEPROMwriteEnable();
-          if ( res == EEPROM_OK )
-          {
-            res = eEEPROMpoolUntil( EEPROM_SR_WRITE_READY );
-            if ( res == EEPROM_OK )
-            {
-              res = eEEPROMwrite( EEPROM_WRITE, adr, data, len );
-              if ( res == EEPROM_OK )
-              {
-                res = eEEPROMwriteDisable();
-                osDelay( 5U );
-              }
-            }
-          }
-        }
-      }
-      else
-      {
-        res = EEPROM_ADR_ERROR;
-      }
-    }
-    else
-    {
-      res = EEPROM_WRITE_DISABLE;
-    }
+    size   = (uint8_t)( ( len - remain ) / EEPROM_PAGE_SIZE );
+    subLen = remain;
   }
-  else
+  res = eEEPROMWriteData( adr, &data[shift], subLen );
+  count += subLen;
+  shift += subLen;
+  if ( res == EEPROM_OK )
   {
-    res = EEPROM_OVER_PAGE;
+    subLen = EEPROM_PAGE_SIZE;
+    for ( i=0U; i<size; i++ )
+    {
+      res    = eEEPROMWriteData( &count, &data[shift], subLen );
+      count += subLen;
+      shift += subLen;
+      if ( res != EEPROM_OK )
+      {
+        break;
+      }
+    }
+    if ( ( count < ( *adr + len ) ) && ( res == EEPROM_OK ) )
+    {
+      subLen = ( uint16_t )( *adr + len - count );
+      res    = eEEPROMWriteData( &count, &data[shift], subLen );
+    }
   }
   return res;
 }

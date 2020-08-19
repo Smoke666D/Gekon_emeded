@@ -18,8 +18,8 @@ static UART_HandleTypeDef*	debug_huart;
  */
 void vSYSInitSerial( UART_HandleTypeDef* uart )
 {
-	debug_huart = uart;
-	return;
+  debug_huart = uart;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -29,8 +29,8 @@ void vSYSInitSerial( UART_HandleTypeDef* uart )
  */
 void vSYSSerial( char* msg )
 {
-	HAL_UART_Transmit(debug_huart, (uint8_t*)msg, strlen(msg), 0xFFFF);
-	return;
+  HAL_UART_Transmit(debug_huart, (uint8_t*)msg, strlen(msg), 0xFFFF);
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vSYSgetUniqueID32( uint32_t* id )

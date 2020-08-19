@@ -378,7 +378,7 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
   EEPROM_STATUS   status        = EEPROM_OK;
   uint16_t        i             = 0;
   uint32_t        checkAdr      = 0U;
-  uint8_t         checkData[1U] = {0U};
+  uint8_t         checkData[4U] = {0U};
 
 
   if ( report->length > 0U )
@@ -397,14 +397,13 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
     }
     if ( length > 0U )
     {
-      adr    = STORAGE_EWA_ADR + index ;
-      status = eEEPROMWriteMemory( &adr, report->data, length );
+      status = eEEPROMWriteMemory( ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
       if ( status == EEPROM_OK )
       {
-	checkAdr = adr;
+	checkAdr = STORAGE_EWA_DATA_ADR + index;
 	for ( i=0; i<length; i++ )
 	{
-	  status = eEEPROMReadMemory( &checkAdr, checkData, 1U );
+	  status = eEEPROMReadMemory( checkAdr, checkData, 1U );
 	  checkAdr++;
 	  if ( ( report->data[i] != checkData[0U] ) || ( status != EEPROM_OK ) )
 	  {
@@ -421,8 +420,16 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
           }
           else if ( index == report->length )
           {
-            index = 0U;
-            res   = USB_DONE;
+            index  = 0U;
+            status = eEEPROMWriteMemory( STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), 3U );
+            if ( status == EEPROM_OK )
+            {
+              res = USB_DONE;
+            }
+            else
+            {
+              res = USB_STORAGE_ERROR;
+            }
           }
           else
           {

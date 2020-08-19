@@ -10,14 +10,14 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
-#define	 CR_HEX                0x0DU
-#define	 LF_HEX                0x0AU
-#define	 HEADER_LENGTH         30U
-#define	 SERVER_LENGTH         21U
-#define	 CONTENT_TYPE_LENGTH   9U
-#define	 HTTP_PATH_LENGTH      30U
-#define  WEB_PAGE_SIZE         60U
-#define  HTTP_BUFER_SIZE       600U
+#define	 CR_HEX                 0x0DU
+#define	 LF_HEX                 0x0AU
+#define	 HEADER_LENGTH          30U
+#define	 SERVER_LENGTH          21U
+#define	 CONTENT_TYPE_LENGTH    9U
+#define	 HTTP_PATH_LENGTH       30U
+#define  HTTP_BUFER_SIZE        600U
+#define  HTTP_EWA_TRANSFER_SIZE 8U
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
@@ -47,12 +47,12 @@ typedef enum
 
 typedef enum
 {
-	HTTP_METHOD_NO      = 0x00U,
-	HTTP_METHOD_GET     = 0x01U,
-	HTTP_METHOD_POST    = 0x02U,
-	HTTP_METHOD_PUT     = 0x03U,
-	HTTP_METHOD_HEAD    = 0x04U,
-	HTTP_METHOD_OPTION  = 0x05U
+  HTTP_METHOD_NO      = 0x00U,
+  HTTP_METHOD_GET     = 0x01U,
+  HTTP_METHOD_POST    = 0x02U,
+  HTTP_METHOD_PUT     = 0x03U,
+  HTTP_METHOD_HEAD    = 0x04U,
+  HTTP_METHOD_OPTION  = 0x05U
 } HTTP_METHOD;
 /*----------------------- Content type ---------------------------------*/
 #define	HTTP_CONTENT_STR_HTML     "text/html"

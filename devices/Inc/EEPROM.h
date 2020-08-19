@@ -18,6 +18,7 @@
 /*---------- Software parameters ------*/
 #define  EEPROM_TIMEOUT           5U
 /*---------- Chip parameters ----------*/
+#define  EEPROM_LENGTH_SIZE       3U
 #define  EEPROM_PAGE_SIZE         0x100U    /* bytes */
 #ifdef M95M01
   #define  EEPROM_MAX_ADR         0x1FFFFU
@@ -71,7 +72,7 @@ typedef enum
 } EEPROM_SR_STATE;
 /*----------------------- Functions ------------------------------------*/
 EEPROM_STATUS eEEPROMInit ( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssGPIO, uint32_t nssPIN ); /* Installation of EEPROM */
-EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint16_t len );          /* Read memory of EEPROM */
-EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint16_t len );         /* Write data to memory of EEPROM */
+EEPROM_STATUS eEEPROMReadMemory ( uint32_t adr, uint8_t* data, uint16_t len );          /* Read memory of EEPROM */
+EEPROM_STATUS eEEPROMWriteMemory ( uint32_t adr, uint8_t* data, uint16_t len );         /* Write data to memory of EEPROM */
 /*----------------------------------------------------------------------*/
 #endif /* INC_EEPROM_H_ */

@@ -11,6 +11,7 @@
 #include "lwip.h"
 #include "api.h"
 #include "string.h"
+#include "common.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static struct netconn * nc;            // Connection to the port 80
 static struct netconn * in_nc;         // New user connection
@@ -217,7 +218,7 @@ void startNetClientTask( void const * argument )
   		/*-------------------- Send response ---------------------*/
         if ( response.status != HTTP_STATUS_ERROR )
         {
-          netconn_write( netcon, output, strlen(output), NETCONN_COPY );									// Send header of the response
+          netconn_write( netcon, output, strlen( output ), NETCONN_COPY );  // Send header of the response
   		/*-------------------- Send content ----------------------*/
           if ( response.contentLength > 0U )																							// There is content
           {
@@ -324,11 +325,11 @@ HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* 
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Make response for input request
- * input:		input    - input http string
- * 					request  - output structure after parsing
- * 					response - output structure
- * 					output   - response string
- * output:	none
+ * input:  input    - input http string
+ *         request  - output structure after parsing
+ *         response - output structure
+ *         output   - response string
+ * output: none
  */
 void eHTTPresponse( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
 {

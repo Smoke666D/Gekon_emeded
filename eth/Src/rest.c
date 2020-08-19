@@ -148,9 +148,9 @@ uint32_t uRESTmakeDot( const eChartDot* dot, RESTrecordPos last, char* output )
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Make response content for GET request
- * input:		output - output string buffer for content
- * 					reg    - pointer to the configuration register
- * output:	length of the content
+ * input:  output - output string buffer for content
+ *         reg    - pointer to the configuration register
+ * output: length of the content
  */
 uint32_t uRESTmakeConfig( eConfigReg* reg, char* output )
 {

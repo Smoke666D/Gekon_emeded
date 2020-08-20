@@ -242,7 +242,7 @@ static uint8_t dl              = 0U;
 static uint8_t SS              = 0U;
 /*------------------------ Extern -------------------------------------------------------------------*/
 extern TIM_HandleTypeDef htim7;
-extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi3;
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция инициализации драйвера LCD
@@ -262,10 +262,10 @@ void LCD_Redraw( void )
   uint8_t  x       = 0U;
   uint8_t  y       = 0U;
   uint16_t y_start = 0U;
-  uint16_t y_end   = 0U;
+  uint16_t y_end   = LCD_DATA_BUFFER_SIZE;
   uint8_t  k       = 0U;
 
-  for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i ++ )
+ /* for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i ++ )
   {
     if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
     {
@@ -280,8 +280,8 @@ void LCD_Redraw( void )
         y_end = i;
       }
     }
-  }
-  if ( LCD_REDRAW_FLAG == 1U )
+  }*/
+ // if ( LCD_REDRAW_FLAG == 1U )
   {
     HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
     LCD_WriteCommand( 0x3EU );
@@ -316,7 +316,7 @@ void StartLcdRedrawTask(void *argument)
   for(;;)
   {
     osDelay( 200U );
-   // LCD_Redraw();
+   LCD_Redraw();
   }
   /* USER CODE END StartLCDRedraw */
 }
@@ -338,7 +338,7 @@ inline void LCD_WriteCommand( uint8_t com )
   Data[0U] = 0xF8U;
   Data[1U] = 0xF0U & com;
   Data[2U] = 0xF0U & ( com << 4U );
-  HAL_SPI_Transmit_DMA( &hspi1, &Data, 3U );
+  HAL_SPI_Transmit_DMA( &hspi3, &Data, 3U );
   HAL_TIM_Base_Start_IT( &htim7 );
   xSemaphoreTake( xSemaphore, portMAX_DELAY );
   return;
@@ -348,7 +348,7 @@ void LCD_Delay( void )
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
 
-  if ( hspi1.State != HAL_SPI_STATE_BUSY_TX )
+  if ( hspi3.State != HAL_SPI_STATE_BUSY_TX )
   {
 	HAL_TIM_Base_Stop_IT( &htim7 );
 	xHigherPriorityTaskWoken = pdFALSE;
@@ -373,7 +373,7 @@ inline void LCD_Send16Data( uint8_t *arg_prt )
     Data[( i * 2U ) + 1U]= b & 0x0f0U;
     Data[( i * 2U ) + 2U]= b << 4U;
   }
-  HAL_SPI_Transmit_DMA( &hspi1, &Data, 33U );
+  HAL_SPI_Transmit_DMA( &hspi3, &Data, 33U );
   HAL_TIM_Base_Start_IT( &htim7 );
   xSemaphoreTake( xSemaphore, portMAX_DELAY );
   return;
@@ -384,12 +384,13 @@ inline void LCD_Send16Data( uint8_t *arg_prt )
  */
 void LCD_Reset( void )
 {
+  HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_SET );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
   osDelay( 10U );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET );
   osDelay( 10U );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
-  osDelay( 600U );
+
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -421,7 +422,7 @@ uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg
   switch ( msg )
   {
     case U8X8_MSG_BYTE_SEND:
-      HAL_SPI_Transmit( &hspi1, ( uint8_t* ) arg_ptr, arg_int, 10000U );
+      HAL_SPI_Transmit( &hspi3, ( uint8_t* ) arg_ptr, arg_int, 10000U );
       // Delay1us(72);
       break;
     case U8X8_MSG_BYTE_INIT:
@@ -447,6 +448,8 @@ uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg
 void vLCD_Init()
 {
   uint16_t i = 0U;
+  LCD_Reset();
+  osDelay( 600U );
   u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay );
   u8g2_InitDisplay( &u8g2 );
   u8g2_SetPowerSave( &u8g2, 0U );

@@ -228,9 +228,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
   uint16_t      adr       = 0xFFFFU;
   REST_REQUEST  request   = 0U;
   REST_ADDRESS  adrFlag   = REST_NO_ADR;
-  char*         pStr      = NULL;
 
-  pStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
   response->cache         = HTTP_CACHE_NO_CACHE_STORE;
   response->connect       = HTTP_CONNECT_CLOSED;

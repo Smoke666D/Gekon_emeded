@@ -124,14 +124,14 @@ void vUSBConfigToReport ( const eConfigReg* config, USB_REPORT* report )
   report->cmd  = USB_GET_CONFIG_CMD;
   report->dir  = USB_OUTPUT;
   report->stat = USB_OK_STAT;
-  report->adr  = config->adr;
+  report->adr  = config->atrib->adr;
   /*----------- Configuration value -----------*/
-  for ( i=0U; i<config->len; i++ )
+  for ( i=0U; i<config->atrib->len; i++ )
   {
     report->data[count + ( 2U * i )]      = ( uint8_t )( ( config->value[i] >> 8U ) & 0x00FFU );
     report->data[count + ( 2U * i ) + 1U] = ( uint8_t )( config->value[i] & 0x00FFU );
   }
-  count += 2U * config->len;
+  count += 2U * config->atrib->len;
   /*----------- Configuration scale -----------*/
   report->data[count] = ( uint8_t )( config->scale );
   count++;
@@ -263,17 +263,17 @@ USB_Status eUSBReportToConfig ( USB_REPORT* report )
   uint8_t    i      = 0U;
   uint8_t    length = 0U;
   /*------------- Length control --------------*/
-  length = ( configReg[report->adr]->len * 2U ) + 1U + ( MAX_UNITS_LENGTH * 6U );
+  length = ( configReg[report->adr]->atrib->len * 2U ) + 1U + ( MAX_UNITS_LENGTH * 6U );
   if ( length < report->length ) {
   res = USB_ERROR_LENGTH;
   }
   else {
   /*----------- Configuration value -----------*/
-    for ( i=0U; i<configReg[report->adr]->len; i++ )
+    for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
     {
       configReg[report->adr]->value[i] = ( uint16_t )( report->data[count + ( 2U * i ) + 1U] ) | ( ( uint16_t )( report->data[count + ( 2U * i )] ) << 8U );
     }
-    count += 2U * configReg[report->adr]->len;
+    count += 2U * configReg[report->adr]->atrib->len;
   /*----------- Configuration scale -----------*/
     configReg[report->adr]->scale = ( signed char )( report->data[count] );
     count++;

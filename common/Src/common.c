@@ -115,7 +115,15 @@ void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-
+uint8_t uSYSisConst ( void* ptr )
+{
+  uint8_t res = 1U;
+  if ( ptr > 0x20000000U )
+  {
+    res = 0U;
+  }
+  return res;
+}
 
 
 

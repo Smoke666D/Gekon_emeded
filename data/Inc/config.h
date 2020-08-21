@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-21 12:07:52
+ * Make time: 2020-08-21 16:12:04
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -13,8 +13,8 @@
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              101U
-#define   CONFIG_TOTAL_SIZE            3U
+#define   CONFIG_MAX_SIZE              77U     // bytes
+#define   CONFIG_TOTAL_SIZE            1574U   // bytes
 
 #define   CONFIG_REG_ADR_STR           "adr"
 #define   CONFIG_REG_SCALE_STR         "scale"
@@ -35,12 +35,6 @@
 /*----------------------- Structures -----------------------------------*/
 typedef enum
 {
-  CONFIG_READ_ONLY,
-  CONFIG_READ_WRITE,
-} CONFIG_RW;
-
-typedef enum
-{
   CONFIG_NO    = 0x00U,
   CONFIG_VALUE = 0x01U,
   CONFIG_SCALE = 0x02U,
@@ -51,28 +45,30 @@ typedef struct
 {
   uint16_t  mask;
   uint8_t   shift;
-  uint8_t   min;
-  uint8_t   max;
 } eConfigBitMap;
 
 typedef struct
 {
-  uint16_t         adr;                     // R
-  signed char      scale;                   // RW
-  uint16_t*        value;                   // RW
-  uint16_t         min;                     // R
-  uint16_t         max;                     // R
-  uint16_t         units[MAX_UNITS_LENGTH]; // RW
-  uint16_t         type;                    // R
-  CONFIG_RW        rw;                      // R
-  uint8_t          len;                     // R
-  uint8_t          bitMapSize;              // R
-  eConfigBitMap*   bitMap;                  // RW
+  uint16_t         adr;         // R
+  uint16_t         min;         // R
+  uint16_t         max;         // R
+  uint16_t         type;        // R
+  uint8_t          len;         // R
+  uint8_t          bitMapSize;  // R
+} eConfigAttributes;
+
+typedef struct
+{
+  eConfigAttributes* atrib;                   // R
+  signed char        scale;                   // RW
+  uint16_t*          value;                   // RW
+  uint16_t           units[MAX_UNITS_LENGTH]; // RW
+  eConfigBitMap*     bitMap;                  // RW
 } eConfigReg;
 /*------------------------- Extern -------------------------------------*/
-extern eConfigReg versionController;
-extern eConfigReg versionFirmware;
-extern eConfigReg serialNumber;
+extern const eConfigReg versionController;
+extern const eConfigReg versionFirmware;
+extern const eConfigReg serialNumber;
 extern eConfigReg displayBrightnesLevel;
 extern eConfigReg displayContarstLevel;
 extern eConfigReg displaySleepDelay;
@@ -191,9 +187,9 @@ extern eConfigReg maintenanceAlarms;
 extern eConfigReg maintenanceAlarmOilTime;
 extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
-extern eConfigReg maintenanceAlarmOilTimeLeft;
-extern eConfigReg maintenanceAlarmAirTimeLeft;
-extern eConfigReg maintenanceAlarmFuelTimeLeft;
+extern const eConfigReg maintenanceAlarmOilTimeLeft;
+extern const eConfigReg maintenanceAlarmAirTimeLeft;
+extern const eConfigReg maintenanceAlarmFuelTimeLeft;
 extern eConfigReg logSetup;
 extern eConfigReg* configReg[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/

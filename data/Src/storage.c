@@ -88,7 +88,7 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
   uint8_t count = 0U;
 
   blob[count++] = ( uint8_t ) reg->scale;
-  for ( i=0U; i<reg->len; i++ )
+  for ( i=0U; i<reg->atrib->len; i++ )
   {
     count += uUint16ToBlob( reg->value[i], &blob[count] );
   }
@@ -96,12 +96,10 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
   {
     count += uUint16ToBlob( reg->units[i], &blob[count] );
   }
-  for ( i=0U; i<reg->bitMapSize; i++ )
+  for ( i=0U; i<reg->atrib->bitMapSize; i++ )
   {
     count += uUint16ToBlob( reg->bitMap[i].mask, &blob[count] );
     blob[count++] = ( uint8_t )  reg->bitMap[i].shift;
-    blob[count++] = ( uint8_t )  reg->bitMap[i].min;
-    blob[count++] = ( uint8_t )  reg->bitMap[i].max;
   }
   return count;
 }
@@ -118,7 +116,7 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
 
 
   reg->scale      = ( uint8_t ) blob[count++];
-  for ( i=0U; i<reg->len; i++ )
+  for ( i=0U; i<reg->atrib->len; i++ )
   {
     count += uBlobToUint16( &reg->value[i], &blob[count] );
   }
@@ -126,12 +124,10 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
   {
     count += uBlobToUint16( &reg->units[i], &blob[count] );
   }
-  for ( i=0U; i<reg->bitMapSize; i++ )
+  for ( i=0U; i<reg->atrib->bitMapSize; i++ )
   {
     count += uBlobToUint16( &reg->bitMap[i].mask, &blob[count] );
     reg->bitMap[i].shift = ( uint8_t ) blob[count++];
-    reg->bitMap[i].min   = ( uint8_t ) blob[count++];
-    reg->bitMap[i].max   = ( uint8_t ) blob[count++];
   }
   return count;
 }
@@ -357,6 +353,12 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
       break;
     }
   }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEdeleteConfigs( void )
+{
+  EEPROM_STATUS res  = EEPROM_OK;
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

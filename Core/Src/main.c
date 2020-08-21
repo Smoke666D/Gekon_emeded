@@ -906,18 +906,18 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  char 		buf[36];
-  uint8_t	i = 0U;
-  uint8_t	j = 0U;
-  uint8_t	temp = 0U;
+  char      buf[36];
+  uint8_t   i         = 0U;
+  uint8_t   j         = 0U;
+  uint8_t   temp      = 0U;
   uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
-  for ( i=0; i<6U; i++ )
+  for ( i=0U; i<6U; i++ )
   {
     for ( j=0U; j<2U; j++ )
     {
-      temp = (uint8_t)(serialNumber.value[i] << j*8U);
+      temp = ( uint8_t )( serialNumber.value[i] << j*8U );
       sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
     }
   }
@@ -925,13 +925,67 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
+
+  vSYSSerial("--------------EEPROM map:--------------\n\r");
+  vSYSSerial("EWA            : ");
+  sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_WEB_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " Kb )\n\r" );
+
+  vSYSSerial("Reserve        : ");
+  sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " Kb )\n\r" );
+
+  vSYSSerial("Configurations : ");
+  sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", CONFIG_TOTAL_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Charts         : ");
+  sprintf( buf, "0x%06X", STORAGE_CHART_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_CHART_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " Kb )\n\r" );
+
+  vSYSSerial("Log            : ");
+  sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_LOG_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " Kb )\n\r" );
+
+  vSYSSerial("Free           : ");
+  sprintf( buf, "%d", ( EEPROM_SIZE - STORAGE_REQUIRED_SIZE ) );
+  vSYSSerial( buf );
+  vSYSSerial( " Kb \n\r" );
+
+  vSYSSerial("End            : ");
+  sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
+  vSYSSerial( buf );
+  vSYSSerial( "\n\r" );
+
+  vSYSSerial("---------------------------------------\n\r");
+
   if ( eSTORAGEreadConfigs() == EEPROM_OK )
   {
-    vSYSSerial( ">>EEPROM configurations read: DONE!\n\r" );
+    vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
   }
   else
   {
-    vSYSSerial( ">>EEPROM configurations read: FAIL!\n\r" );
+    vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
   }
   /* Infinite loop */
   for(;;)

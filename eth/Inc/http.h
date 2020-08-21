@@ -134,7 +134,7 @@ typedef STREAM_STATUS ( *streamCallBack )( HTTP_STREAM* stream );	/* Stream call
 
 typedef struct
 {
-  HTTP_STATUS    status;
+  HTTP_STATUS     status;
   HTTP_METHOD     method;
   /* Header data */
   char            header[HEADER_LENGTH];
@@ -151,45 +151,45 @@ typedef struct
 } HTTP_RESPONSE;
 /* HHTP status-codes ---------------------------------------------------*/
 /*
-#define		HTTP_STATUS_CONTINUE												"100"
-#define		HTTP_STATUS_SWITCHING_PROTOCOLS							"101"
-#define		HTTP_STATUS_OK															"200"
-#define		HTTP_STATUS_CREATED													"201"
-#define		HTTP_STATUS_NON_AUTHORITATIVE_INFORMATION		"203"
-#define		HTTP_STATUS_NON_CONNECT											"204"
-#define		HTTP_STATUS_RESET_CONTENT										"205"
-#define		HTTP_STATUS_PARITAL_CONTENT									"206"
-#define		HTTP_STATUS_MULTIPLE_CHOICES								"300"
-#define		HTTP_STATUS_MOVED_PERMANENTLY								"301"
-#define		HTTP_STATUS_FOUND														"302"
-#define		HTTP_STATUS_SEE_PTHER												"303"
-#define		HTTP_STATUS_NOT_MODIFIED										"304"
-#define		HTTP_STATUS_USE_PROXY												"305"
-#define		HTTP_STATUS_TEMPORY_REDIRECT								"307"
-#define		HTTP_STATUS_BAD_REQUEST											"400"
-#define		HTTP_STATUS_UNAUTHORIZED										"401"
-#define		HTTP_STATUS_PAYMENT_REQUIRED								"402"
-#define		HTTP_STATUS_FORBIDDEN												"403"
-#define		HTTP_STATUS_NOT_FOUND												"404"
-#define		HTTP_STATUS_METHOD_NOT_ALLOWED							"405"
-#define		HTTP_STATUS_NOT_ACCEPTABLE									"406"
-#define		HTTP_STATUS_PROXY_AUTHENTICATION_REQUIRED		"407"
-#define		HTTP_STATUS_REQUEST_TIMEOUT									"408"
-#define		HTTP_STATUS_CONFLICT												"409"
-#define		HTTP_STATUS_GONE														"410"
-#define		HTTP_STATUS_LENGTH_REQUIRED									"411"
-#define		HTTP_STATUS_PRECONDITION_FAILED							"412"
-#define		HTTP_STATUS_REQUEST_ENTITY_TOO_LARGE				"413"
-#define		HTTP_STATUS_REQUEST_URI_TOO_LARGE						"414"
-#define		HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE					"415"
-#define		HTTP_STATUS_REQUESTED_RANGE_NOT_SATISFIABLE	"416"
-#define		HTTP_STATUS_EXPECTATION_FAILED							"417"
-#define		HTTP_STATUS_INTERNAL_SERVER_ERROR						"500"
-#define		HTTP_STATUS_NOT_IMPLEMENTED									"501"
-#define		HTTP_STATUS_BAD_GATEWAY											"502"
-#define		HTTP_STATUS_SERVICE_UNAVAILABLE							"503"
-#define		HTTP_STATUS_GATEWAY_TIMEOUT									"504"
-#define		HTTP_STATUS_HTTP_VERSION_NOT_SUPPORTED			"505"
+#define	HTTP_STATUS_CONTINUE                        "100"
+#define	HTTP_STATUS_SWITCHING_PROTOCOLS             "101"
+#define	HTTP_STATUS_OK                              "200"
+#define	HTTP_STATUS_CREATED                         "201"
+#define	HTTP_STATUS_NON_AUTHORITATIVE_INFORMATION   "203"
+#define	HTTP_STATUS_NON_CONNECT                     "204"
+#define	HTTP_STATUS_RESET_CONTENT                   "205"
+#define	HTTP_STATUS_PARITAL_CONTENT                 "206"
+#define	HTTP_STATUS_MULTIPLE_CHOICES                "300"
+#define	HTTP_STATUS_MOVED_PERMANENTLY               "301"
+#define	HTTP_STATUS_FOUND                           "302"
+#define	HTTP_STATUS_SEE_PTHER                       "303"
+#define	HTTP_STATUS_NOT_MODIFIED                    "304"
+#define	HTTP_STATUS_USE_PROXY                       "305"
+#define	HTTP_STATUS_TEMPORY_REDIRECT                "307"
+#define	HTTP_STATUS_BAD_REQUEST                     "400"
+#define	HTTP_STATUS_UNAUTHORIZED                    "401"
+#define	HTTP_STATUS_PAYMENT_REQUIRED                "402"
+#define	HTTP_STATUS_FORBIDDEN                       "403"
+#define	HTTP_STATUS_NOT_FOUND                       "404"
+#define	HTTP_STATUS_METHOD_NOT_ALLOWED              "405"
+#define	HTTP_STATUS_NOT_ACCEPTABLE                  "406"
+#define	HTTP_STATUS_PROXY_AUTHENTICATION_REQUIRED   "407"
+#define	HTTP_STATUS_REQUEST_TIMEOUT                 "408"
+#define	HTTP_STATUS_CONFLICT                        "409"
+#define	HTTP_STATUS_GONE                            "410"
+#define	HTTP_STATUS_LENGTH_REQUIRED                 "411"
+#define	HTTP_STATUS_PRECONDITION_FAILED             "412"
+#define	HTTP_STATUS_REQUEST_ENTITY_TOO_LARGE        "413"
+#define	HTTP_STATUS_REQUEST_URI_TOO_LARGE           "414"
+#define	HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE          "415"
+#define	HTTP_STATUS_REQUESTED_RANGE_NOT_SATISFIABLE "416"
+#define	HTTP_STATUS_EXPECTATION_FAILED              "417"
+#define	HTTP_STATUS_INTERNAL_SERVER_ERROR           "500"
+#define	HTTP_STATUS_NOT_IMPLEMENTED                 "501"
+#define	HTTP_STATUS_BAD_GATEWAY                     "502"
+#define	HTTP_STATUS_SERVICE_UNAVAILABLE             "503"
+#define	HTTP_STATUS_GATEWAY_TIMEOUT                 "504"
+#define	HTTP_STATUS_HTTP_VERSION_NOT_SUPPORTED      "505"
 */
 /*------------------------ Templates ----------------------------------*/
 #define  HTTP_END_LINE               "\r\n"
@@ -211,12 +211,12 @@ typedef struct
 #define	 HTTP_CACHE_CONTROL          "Cache-Control: "
 #define	 HTTP_ENCODING_LINE          "Content-Encoding: "
 /*----------------------- Functions ------------------------------------*/
-HTTP_STATUS eHTTPparsingRequest( const char* req, HTTP_REQUEST* request );                  /* Parsing data from request text */
-void        vHTTPbuildResponse( HTTP_REQUEST* request, HTTP_RESPONSE* response );           /* Build response in response structure */
-HTTP_STATUS eHTTPmakeResponse( char* httpStr, HTTP_RESPONSE* response );                    /* Make string response from response structure */
-HTTP_STATUS eHTTPbuildRequest( HTTP_REQUEST* request );                                     /* Build request structure */
-HTTP_STATUS eHTTPmakeRequest( const HTTP_REQUEST* request, char* httpStr );                 /* Make string request from request structure */
-HTTP_STATUS eHTTPparsingResponse( const char* input, char* data, HTTP_RESPONSE* response ); /* Parsing data from response text */
+HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request );                  /* Parsing data from request text */
+void        vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response );           /* Build response in response structure */
+HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response );                    /* Make string response from response structure */
+HTTP_STATUS eHTTPbuildRequest ( HTTP_REQUEST* request );                                     /* Build request structure */
+HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr );                 /* Make string request from request structure */
+HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE* response ); /* Parsing data from response text */
 /*----------------------------------------------------------------------*/
 #endif /* INC_HTTP_H_ */
 

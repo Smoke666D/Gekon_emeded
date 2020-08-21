@@ -86,21 +86,15 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
-  count += uUint16ToBlob( reg->adr, &blob[count] );
+
   blob[count++] = ( uint8_t ) reg->scale;
-  blob[count++] = ( uint8_t ) reg->len;
-  blob[count++] = ( uint8_t ) reg->rw;
-  blob[count++] = ( uint8_t ) reg->bitMapSize;
-  count += uUint16ToBlob( reg->min, &blob[count] );
-  count += uUint16ToBlob( reg->max, &blob[count] );
-  count += uUint16ToBlob( reg->type, &blob[count] );
-  for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
-  {
-    count += uUint16ToBlob( reg->units[i], &blob[count] );
-  }
   for ( i=0U; i<reg->len; i++ )
   {
     count += uUint16ToBlob( reg->value[i], &blob[count] );
+  }
+  for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
+  {
+    count += uUint16ToBlob( reg->units[i], &blob[count] );
   }
   for ( i=0U; i<reg->bitMapSize; i++ )
   {
@@ -121,21 +115,16 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
-  count += uBlobToUint16( &reg->adr, &blob[count] );
+
+
   reg->scale      = ( uint8_t ) blob[count++];
-  reg->len        = ( uint8_t ) blob[count++];
-  reg->rw         = ( uint8_t ) blob[count++];
-  reg->bitMapSize = ( uint8_t ) blob[count++];
-  count += uBlobToUint16( &reg->min, &blob[count] );
-  count += uBlobToUint16( &reg->max, &blob[count] );
-  count += uBlobToUint16( &reg->type, &blob[count] );
-  for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
-  {
-    count += uBlobToUint16( &reg->units[i], &blob[count] );
-  }
   for ( i=0U; i<reg->len; i++ )
   {
     count += uBlobToUint16( &reg->value[i], &blob[count] );
+  }
+  for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
+  {
+    count += uBlobToUint16( &reg->units[i], &blob[count] );
   }
   for ( i=0U; i<reg->bitMapSize; i++ )
   {
@@ -348,22 +337,21 @@ EEPROM_STATUS eSTORAGEreadLog( LOG_TYPE* log )
   return res;
 }
 */
+/*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteConfigs ( void )
 {
   EEPROM_STATUS res  = EEPROM_OK;
   uint8_t       i    = 0U;
-  uint32_t      adr  = STORAGE_CONFIG_ADR * 1024U;
+  uint32_t      adr  = STORAGE_CONFIG_ADR;
   uint8_t       size = 0U;
-  uint8_t       adrForm[3U] = { 0x00U, 0x00U, 0x00U };
   uint8_t       buffer[CONFIG_MAX_SIZE + 1U];
 
   for( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
-    vEEPROMformAdr( adr, adrForm );
-    size = uConfigToBlob( configReg[i], &buffer[1U] );
+    size       = uConfigToBlob( configReg[i], &buffer[1U] );
     buffer[0U] = size;
-    res = eEEPROMWriteMemory( adrForm, buffer, ( size + 1U ) );
-    adr += size + 1U;
+    res        = eEEPROMWriteMemory( adr, buffer, ( size + 1U ) );
+    adr       += size + 1U;
     if ( res != EEPROM_OK )
     {
       break;
@@ -371,25 +359,23 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   }
   return res;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadConfigs( void )
 {
   EEPROM_STATUS res  = EEPROM_OK;
   uint8_t       i    = 0U;
   uint8_t       size = 0U;
   uint8_t       calc = 0U;
-  uint32_t      adr  = STORAGE_CONFIG_ADR * 1024U;
-  uint8_t       adrForm[3U] = { 0x00U, 0x00U, 0x00U };
+  uint32_t      adr  = STORAGE_CONFIG_ADR;
   uint8_t       buffer[CONFIG_MAX_SIZE];
 
   for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
-    vEEPROMformAdr( adr, adrForm );
-    res = eEEPROMReadMemory( adrForm, &size, 1U );
+    res = eEEPROMReadMemory( adr, &size, 1U );
     if ( ( res == EEPROM_OK ) && ( size > 0U ) && ( size < CONFIG_MAX_SIZE ) )
     {
-      vEEPROMformAdr( ++adr, adrForm );
-      res = eEEPROMReadMemory( adrForm, buffer, size );
+      adr++;
+      res = eEEPROMReadMemory( adr, buffer, size );
       if ( res == EEPROM_OK )
       {
         adr += size;
@@ -416,4 +402,3 @@ EEPROM_STATUS eSTORAGEreadConfigs( void )
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-

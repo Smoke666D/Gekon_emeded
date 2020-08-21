@@ -46,11 +46,12 @@ typedef enum
 
 typedef enum
 {
-  USB_GET_CONFIG_CMD = 0x01U,
-  USB_PUT_CONFIG_CMD = 0x02U,
-  USB_GET_CHART_CMD  = 0x03U,
-  USB_PUT_CHART_CMD  = 0x04U,
-  USB_PUT_EWA_CMD    = 0x05U,
+  USB_GET_CONFIG_CMD  = 0x01U,
+  USB_PUT_CONFIG_CMD  = 0x02U,
+  USB_GET_CHART_CMD   = 0x03U,
+  USB_PUT_CHART_CMD   = 0x04U,
+  USB_PUT_EWA_CMD     = 0x05U,
+  USB_SAVE_CONFIG_CMD = 0x06U,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-21 09:14:24
+ * Make time: 2020-08-21 12:07:52
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -13,7 +13,7 @@
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              558U
+#define   CONFIG_MAX_SIZE              101U
 #define   CONFIG_TOTAL_SIZE            3U
 
 #define   CONFIG_REG_ADR_STR           "adr"
@@ -57,17 +57,17 @@ typedef struct
 
 typedef struct
 {
-  uint16_t         adr;
-  signed char      scale;
-  uint16_t*        value;
-  uint16_t         min;
-  uint16_t         max;
-  uint16_t         units[MAX_UNITS_LENGTH];
-  uint16_t         type;
-  CONFIG_RW        rw;
-  uint8_t          len;
-  uint8_t          bitMapSize;
-  eConfigBitMap*   bitMap;
+  uint16_t         adr;                     // R
+  signed char      scale;                   // RW
+  uint16_t*        value;                   // RW
+  uint16_t         min;                     // R
+  uint16_t         max;                     // R
+  uint16_t         units[MAX_UNITS_LENGTH]; // RW
+  uint16_t         type;                    // R
+  CONFIG_RW        rw;                      // R
+  uint8_t          len;                     // R
+  uint8_t          bitMapSize;              // R
+  eConfigBitMap*   bitMap;                  // RW
 } eConfigReg;
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg versionController;

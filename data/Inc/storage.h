@@ -27,10 +27,10 @@
 #define  STORAGE_START_ADR      0x0000U
 #define  STORAGE_EWA_ADR        ( STORAGE_START_ADR )
 #define  STORAGE_EWA_DATA_ADR   ( STORAGE_START_ADR + EEPROM_LENGTH_SIZE )
-#define  STORAGE_RESERVE_ADR    ( STORAGE_EWA_ADR + STORAGE_WEB_SIZE )
-#define  STORAGE_CONFIG_ADR     ( STORAGE_RESERVE_ADR + STORAGE_RESERVE_SIZE )
-#define  STORAGE_CHART_ADR      ( STORAGE_CONFIG_ADR +  STORAGE_CONFIG_SIZE )
-#define  STORAGE_LOG_ADR        ( STORAGE_CHART_ADR + STORAGE_CHART_SIZE )
+#define  STORAGE_RESERVE_ADR    ( STORAGE_EWA_ADR + ( STORAGE_WEB_SIZE * 1024U ) )
+#define  STORAGE_CONFIG_ADR     ( STORAGE_RESERVE_ADR + ( STORAGE_RESERVE_SIZE * 1024U ) )
+#define  STORAGE_CHART_ADR      ( STORAGE_CONFIG_ADR +  ( STORAGE_CONFIG_SIZE * 1024U ) )
+#define  STORAGE_LOG_ADR        ( STORAGE_CHART_ADR + ( STORAGE_CHART_SIZE * 1024U ) )
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/

@@ -667,6 +667,36 @@ void vUSBgetEWA ( USB_REPORT* report )
   }
   return;
 }
+
+void vUSBsaveConfigs ( USB_REPORT* report )
+{
+  USB_Status status   = USB_DONE;
+  uint8_t    i        = 0U;
+  USB_REPORT response =
+  {
+    .cmd    = report->cmd,
+    .stat   = USB_OK_STAT,
+    .adr    = report->adr,
+    .length = report->length,
+    .buf    = usbBuffer,
+    .data   = &usbBuffer[USB_DATA_BYTE],
+  };
+
+  if ( eSTORAGEwriteConfigs() != EEPROM_OK )
+  {
+    response.stat = USB_BAD_REQ_STAT;
+  }
+  for( i=0U; i<USB_REPORT_SIZE; i++ )
+  {
+    usbBuffer[i] = 0U;
+  }
+  vUSBmakeReport( &response );
+  while ( eUSBwrite( response.buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
+  }
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -761,6 +791,9 @@ void StartUsbTask ( void *argument )
           break;
         case USB_PUT_EWA_CMD:
           vUSBgetEWA( &report );
+          break;
+        case USB_SAVE_CONFIG_CMD:
+          vUSBsaveConfigs( &report );
           break;
         default:
           break;

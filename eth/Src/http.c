@@ -263,6 +263,14 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
           }
     	}
     	break;
+      case REST_SAVE_CONFIGS:
+	if ( eSTORAGEwriteConfigs() == EEPROM_OK )
+	{
+	    response->contetntType  = HTTP_CONTENT_JSON;
+	    response->status        = HTTP_STATUS_OK;
+	    response->contentLength = 0U;
+	}
+	break;
       case REST_REQUEST_ERROR:
         break;
       default:

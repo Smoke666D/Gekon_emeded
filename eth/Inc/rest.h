@@ -35,6 +35,7 @@ typedef enum
 {
   REST_CONFIGS       = 0x00,
   REST_CHARTS        = 0x01,
+  REST_SAVE_CONFIGS  = 0x02,
   REST_REQUEST_ERROR = 0xFF,
 } REST_REQUEST;
 
@@ -45,22 +46,21 @@ typedef enum
 } REST_ADDRESS;
 
 /*------------------------------ Default -------------------------------------*/
-#define	QUOTES_ANCII            0x22U
-
-#define	REST_BUFFER_SIZE        700U
-#define	REST_DIGIT_BUFFER_SIZE  7U
-
-#define	REST_REQUEST_NUMBER     2U
-#define	REST_REQUEST_CONFIGS    "configs"
-#define	REST_REQUEST_CHARTS     "charts"
+#define	QUOTES_ANCII              0x22U
+#define	REST_BUFFER_SIZE          700U
+#define	REST_DIGIT_BUFFER_SIZE    7U
+#define	REST_REQUEST_NUMBER       3U
+#define	REST_REQUEST_CONFIGS      "configs"
+#define	REST_REQUEST_CHARTS       "charts"
+#define REST_REQUEST_SAVE_CONFIGS "saveConfigs"
 /*------------------------------ Extern --------------------------------------*/
 extern const char 	*restRequeststr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/
-uint32_t     uRESTmakeConfig( eConfigReg* reg, char* output );
-uint32_t     uRESTmakeChart( char* output, eChartData* chart );
-REST_ERROR   eRESTparsingConfig( char* input, eConfigReg* reg );
-REST_ADDRESS eRESTgetRequest( char* path, REST_REQUEST* request, uint16_t* adr );
-REST_ERROR   eRESTparsingChart( char* input, eChartData* chart );
+uint32_t     uRESTmakeConfig ( eConfigReg* reg, char* output );
+uint32_t     uRESTmakeChart ( char* output, eChartData* chart );
+REST_ERROR   eRESTparsingConfig ( char* input, eConfigReg* reg );
+REST_ADDRESS eRESTgetRequest ( char* path, REST_REQUEST* request, uint16_t* adr );
+REST_ERROR   eRESTparsingChart ( char* input, eChartData* chart );
 /*---------------------------------------------------------------------------------------------------*/
 
 #endif /* INC_REST_H_ */

@@ -36,6 +36,7 @@
 #include "keyboard.h"
 #include "usbhid.h"
 #include "EEPROM.h"
+#include "storage.h"
 #include "RTC.h"
 /* USER CODE END Includes */
 
@@ -923,6 +924,15 @@ void StartDefaultTask(void *argument)
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
+
+  if ( eSTORAGEreadConfigs() == EEPROM_OK )
+  {
+    vSYSSerial( ">>EEPROM configurations read: DONE!\n\r" );
+  }
+  else
+  {
+    vSYSSerial( ">>EEPROM configurations read: FAIL!\n\r" );
+  }
   /* Infinite loop */
   for(;;)
   {
@@ -947,26 +957,23 @@ void StartDefaultTask(void *argument)
 void StartNetTask(void *argument)
 {
   /* USER CODE BEGIN StartNetTask */
-	char ipaddr[16];
-	vSYSSerial( ">>DHCP: ");
-	vSERVERinit();
-	vSYSSerial( "done!\n\r");
-	cSERVERgetStrIP( ipaddr );
-	vSYSSerial( ">>IP address: ");
-	vSYSSerial( ipaddr );
-	vSYSSerial("\n\r");
-	vSYSSerial( ">>RTC: ");
-	vSYSSerial( ">>TCP: " );
-	if ( eSERVERstart() != SERVER_OK )
-	{
-		vSYSSerial( "fail!\n\r" );
-		while( 1U ) osDelay( 1U );
-	}
-	vSYSSerial( "done!\n\r" );
-	vSYSSerial( ">>Server ready and listen port 80!\n\r" );
-
-	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-
+  char ipaddr[16];
+  vSYSSerial( ">>DHCP: ");
+  vSERVERinit();
+  vSYSSerial( "done!\n\r");
+  cSERVERgetStrIP( ipaddr );
+  vSYSSerial( ">>IP address: ");
+  vSYSSerial( ipaddr );
+  vSYSSerial("\n\r");
+  vSYSSerial( ">>TCP: " );
+  if ( eSERVERstart() != SERVER_OK )
+  {
+    vSYSSerial( "fail!\n\r" );
+    while( 1U ) osDelay( 1U );
+  }
+  vSYSSerial( "done!\n\r" );
+  vSYSSerial( ">>Server ready and listen port 80!\n\r" );
+  HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
   /* Infinite loop */
   for(;;)
   {

@@ -286,6 +286,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
   REST_ADDRESS  adrFlag = REST_NO_ADR;
   HTTP_STREAM   *stream = NULL;
   uint32_t      i       = 0U;
+  uint32_t      ewaLen  = 0U;
   uint8_t       buffer[EEPROM_LENGTH_SIZE];
   /*----------------- Common header -----------------*/
   strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
@@ -300,36 +301,38 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
   strStr = strstr(path, "index" );
   if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
   {
-      /*
-    stream = &(response->stream);
-    stream->size            = 1U;
-    stream->index           = 0U;
-    stream->content         = data__index_html;
-    stream->length          = HTML_LENGTH;
-    response->callBack      = cHTTPstreamFile;
-    response->contetntType  = HTTP_CONTENT_HTML;
-    response->status        = HTTP_STATUS_OK;
-    response->contentLength = HTML_LENGTH;
-    if ( HTML_ENCODING > 0U )
-    {
-      response->encoding = HTTP_ENCODING_GZIP;
-    }
-    */
-    /*-------------*/
-    stream = &(response->stream);
     eEEPROMReadMemory( STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
-    stream->index           = 0U;
-    stream->start           = 0U;
-    stream->length          = 0U;
-    stream->size            = ( ( ( uint32_t )( buffer[0U] ) ) << 16U ) |
-                              ( ( ( uint32_t )( buffer[1U] ) ) <<  8U ) |
-                                ( ( uint32_t )( buffer[2U] ) );
-    response->callBack      = cHTTPstreamFileEEPROM;
-    response->contetntType  = HTTP_CONTENT_HTML;
-    response->status        = HTTP_STATUS_OK;
-    response->contentLength = stream->size;
-    response->encoding      = HTTP_ENCODING_GZIP;
-    /*-------------*/
+    ewaLen = ( ( ( uint32_t )( buffer[0U] ) ) << 16U ) |
+             ( ( ( uint32_t )( buffer[1U] ) ) <<  8U ) |
+               ( ( uint32_t )( buffer[2U] ) );
+    eEEPROMReadMemory( ( STORAGE_EWA_DATA_ADR + ewaLen - 2U ), buffer, EEPROM_LENGTH_SIZE );
+    if ( ( buffer[0U] != 0x00U ) && ( buffer[0U] != 0xFFU ) && ( buffer[1U] == 0x00U ) && ( buffer[2U] == 0xFF ) )
+    {
+      stream                  = &(response->stream);
+      stream->index           = 0U;
+      stream->start           = 0U;
+      stream->length          = 0U;
+      stream->size            = ewaLen;
+      response->callBack      = cHTTPstreamFileEEPROM;
+      response->contetntType  = HTTP_CONTENT_HTML;
+      response->status        = HTTP_STATUS_OK;
+      response->contentLength = stream->size;
+      response->encoding      = HTTP_ENCODING_GZIP;
+    }
+    else
+    {
+      stream                  = &(response->stream);
+      stream->index           = 0U;
+      stream->start           = 0U;
+      stream->content         = data__index_html;
+      stream->length          = HTML_LENGTH;
+      stream->size            = 1U;
+      response->callBack      = cHTTPstreamFile;
+      response->contetntType  = HTTP_CONTENT_HTML;
+      response->status        = HTTP_STATUS_OK;
+      response->contentLength = HTML_LENGTH;
+      response->encoding      = HTTP_ENCODING_GZIP;
+    }
   }
   /*--------------------- REST ---------------------*/
   else if ( path[0U] > 0U )

@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-18 18:28:56
+ * Make time: 2020-08-21 09:14:24
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -16,7 +16,6 @@
 #define   CONFIG_MAX_SIZE              558U
 #define   CONFIG_TOTAL_SIZE            3U
 
-#define   CONFIG_REG_PAGE_STR          "page"
 #define   CONFIG_REG_ADR_STR           "adr"
 #define   CONFIG_REG_SCALE_STR         "scale"
 #define   CONFIG_REG_VALUE_STR         "value"
@@ -58,7 +57,6 @@ typedef struct
 
 typedef struct
 {
-  uint16_t         page;
   uint16_t         adr;
   signed char      scale;
   uint16_t*        value;

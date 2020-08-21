@@ -86,7 +86,6 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
-  count += uUint16ToBlob( reg->page, &blob[count] );
   count += uUint16ToBlob( reg->adr, &blob[count] );
   blob[count++] = ( uint8_t ) reg->scale;
   blob[count++] = ( uint8_t ) reg->len;
@@ -122,7 +121,6 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
-  count += uBlobToUint16( &reg->page, &blob[count] );
   count += uBlobToUint16( &reg->adr, &blob[count] );
   reg->scale      = ( uint8_t ) blob[count++];
   reg->len        = ( uint8_t ) blob[count++];

@@ -306,7 +306,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
              ( ( ( uint32_t )( buffer[1U] ) ) <<  8U ) |
                ( ( uint32_t )( buffer[2U] ) );
     eEEPROMReadMemory( ( STORAGE_EWA_DATA_ADR + ewaLen - 2U ), buffer, EEPROM_LENGTH_SIZE );
-    if ( ( buffer[0U] != 0x00U ) && ( buffer[0U] != 0xFFU ) && ( buffer[1U] == 0x00U ) && ( buffer[2U] == 0xFF ) )
+    if ( ( buffer[0U] != 0x00U ) && ( buffer[0U] != 0xFFU ) && ( buffer[1U] == 0x00U ) )
     {
       stream                  = &(response->stream);
       stream->index           = 0U;

@@ -157,7 +157,6 @@ uint32_t uRESTmakeConfig( eConfigReg* reg, char* output )
   uint32_t position = 1U;
 
   output[0U] = '{';
-  position += uRESTmakeDigRecord( CONFIG_REG_PAGE_STR,          reg->page,  REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_ADR_STR,           reg->adr,   REST_CONT_RECORD, &output[position] );
   position += uRESTmakeSignedRecord( CONFIG_REG_SCALE_STR,      reg->scale, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_LEN_STR,           reg->len,   REST_CONT_RECORD, &output[position] );
@@ -231,7 +230,6 @@ REST_ERROR eRESTparsingConfig( char* input, eConfigReg* reg )
   pchSt = strchr( input, '{' );
   if (pchSt != NULL)
   {
-	res = eRESTparsingDig16Record( input, CONFIG_REG_PAGE_STR, &reg->page );
     if ( res == REST_OK )
     {
       res = eRESTparsingDig16Record( input, CONFIG_REG_ADR_STR, &reg->adr );

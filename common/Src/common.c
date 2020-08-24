@@ -33,7 +33,7 @@ void vSYSSerial( char* msg )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vSYSgetUniqueID32( uint32_t* id )
+void vSYSgetUniqueID32 ( uint32_t* id )
 {
   id[0U] = GET_UNIQUE_ID0;
   id[1U] = GET_UNIQUE_ID1;
@@ -41,7 +41,7 @@ void vSYSgetUniqueID32( uint32_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vSYSgetUniqueID16( uint16_t* id )
+void vSYSgetUniqueID16 ( uint16_t* id )
 {
   id[0U] = ( uint16_t )( GET_UNIQUE_ID0 & 0xFFFF );
   id[1U] = ( uint16_t )( ( GET_UNIQUE_ID0 >> 16U ) & 0xFFFF );
@@ -52,7 +52,7 @@ void vSYSgetUniqueID16( uint16_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uEncodeURI( const uint16_t* input, uint8_t length, char* output )
+uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output )
 {
   uint8_t shift = 0U;
   uint8_t i     = 0U;

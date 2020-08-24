@@ -215,7 +215,7 @@ int main(void)
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM init */
   vRTCinit( &hi2c1 );                                           /* RTC init */
   /*-------------------- Version initialization ------------------------------*/
-  vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
+  vSYSgetUniqueID16( serialNumber.value );          /* Serial number */
   versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
   versionController.value[0U] = HARDWARE_VERSION;   /* Hardware version */
   /*--------------------------------------------------------------------------*/
@@ -925,7 +925,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
-
+/*
   vSYSSerial("--------------EEPROM map:--------------\n\r");
   vSYSSerial("EWA            : ");
   sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
@@ -978,7 +978,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "\n\r" );
 
   vSYSSerial("---------------------------------------\n\r");
-
+*/
   if ( eSTORAGEreadConfigs() == EEPROM_OK )
   {
     vSYSSerial( ">>EEPROM configurations read: done!\n\r" );

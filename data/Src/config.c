@@ -1,10 +1,10 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-21 16:12:04
+ * Make time: 2020-08-24 07:25:10
  */
 #include   "config.h"
 
-const uint16_t versionControllerValue[1U] = { 1U };
+uint16_t versionControllerValue[1U] = { 1U };
 const eConfigAttributes versionControllerAtrib =
 {
    .adr        = 0U,
@@ -14,16 +14,16 @@ const eConfigAttributes versionControllerAtrib =
    .len        = 1U,
    .bitMapSize = 0U,
 };
-const eConfigReg versionController =
+eConfigReg versionController =
 {
    .atrib      = &versionControllerAtrib,
    .scale      = 0U,
    .value      = versionControllerValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
-const uint16_t versionFirmwareValue[1U] = { 1U };
+uint16_t versionFirmwareValue[1U] = { 1U };
 const eConfigAttributes versionFirmwareAtrib =
 {
    .adr        = 1U,
@@ -33,16 +33,16 @@ const eConfigAttributes versionFirmwareAtrib =
    .len        = 1U,
    .bitMapSize = 0U,
 };
-const eConfigReg versionFirmware =
+eConfigReg versionFirmware =
 {
    .atrib      = &versionFirmwareAtrib,
    .scale      = 0U,
    .value      = versionFirmwareValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
-const uint16_t serialNumberValue[6U] = { 0U, 0U, 0U, 0U, 0U, 0U };
+uint16_t serialNumberValue[6U] = { 0U, 0U, 0U, 0U, 0U, 0U };
 const eConfigAttributes serialNumberAtrib =
 {
    .adr        = 2U,
@@ -52,12 +52,12 @@ const eConfigAttributes serialNumberAtrib =
    .len        = 6U,
    .bitMapSize = 0U,
 };
-const eConfigReg serialNumber =
+eConfigReg serialNumber =
 {
    .atrib      = &serialNumberAtrib,
    .scale      = 0U,
    .value      = serialNumberValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -76,7 +76,7 @@ eConfigReg displayBrightnesLevel =
    .atrib      = &displayBrightnesLevelAtrib,
    .scale      = 0U,
    .value      = displayBrightnesLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -95,7 +95,7 @@ eConfigReg displayContarstLevel =
    .atrib      = &displayContarstLevelAtrib,
    .scale      = 0U,
    .value      = displayContarstLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -114,7 +114,7 @@ eConfigReg displaySleepDelay =
    .atrib      = &displaySleepDelayAtrib,
    .scale      = 0U,
    .value      = displaySleepDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -133,7 +133,7 @@ eConfigReg hysteresisLevel =
    .atrib      = &hysteresisLevelAtrib,
    .scale      = -1,
    .value      = hysteresisLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -157,7 +157,7 @@ eConfigReg moduleSetup =
    .atrib      = &moduleSetupAtrib,
    .scale      = 0U,
    .value      = moduleSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = moduleSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -183,7 +183,7 @@ eConfigReg oilPressureSetup =
    .atrib      = &oilPressureSetupAtrib,
    .scale      = 0U,
    .value      = oilPressureSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = oilPressureSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -202,7 +202,7 @@ eConfigReg oilPressureAlarmLevel =
    .atrib      = &oilPressureAlarmLevelAtrib,
    .scale      = -2,
    .value      = oilPressureAlarmLevelValue,
-   .units      = {'Б', 'а', 'р', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -221,7 +221,7 @@ eConfigReg oilPressurePreAlarmLevel =
    .atrib      = &oilPressurePreAlarmLevelAtrib,
    .scale      = -2,
    .value      = oilPressurePreAlarmLevelValue,
-   .units      = {'Б', 'а', 'р', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -249,7 +249,7 @@ eConfigReg coolantTempSetup =
    .atrib      = &coolantTempSetupAtrib,
    .scale      = 0U,
    .value      = coolantTempSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = coolantTempSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -268,7 +268,7 @@ eConfigReg coolantHightTempAlarmLevel =
    .atrib      = &coolantHightTempAlarmLevelAtrib,
    .scale      = 0U,
    .value      = coolantHightTempAlarmLevelValue,
-   .units      = {'C', ' ', ' ', ' '},
+   .units      = {'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -287,7 +287,7 @@ eConfigReg coolantHightTempPreAlarmLevel =
    .atrib      = &coolantHightTempPreAlarmLevelAtrib,
    .scale      = 0U,
    .value      = coolantHightTempPreAlarmLevelValue,
-   .units      = {'C', ' ', ' ', ' '},
+   .units      = {'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -306,7 +306,7 @@ eConfigReg coolantTempHeaterOffLevel =
    .atrib      = &coolantTempHeaterOffLevelAtrib,
    .scale      = 0U,
    .value      = coolantTempHeaterOffLevelValue,
-   .units      = {'C', ' ', ' ', ' '},
+   .units      = {'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -325,7 +325,7 @@ eConfigReg coolantTempHeaterOnLevel =
    .atrib      = &coolantTempHeaterOnLevelAtrib,
    .scale      = 0U,
    .value      = coolantTempHeaterOnLevelValue,
-   .units      = {'C', ' ', ' ', ' '},
+   .units      = {'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -344,7 +344,7 @@ eConfigReg coolantTempCoolerOffLevel =
    .atrib      = &coolantTempCoolerOffLevelAtrib,
    .scale      = 0U,
    .value      = coolantTempCoolerOffLevelValue,
-   .units      = {'C', ' ', ' ', ' '},
+   .units      = {'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -363,7 +363,7 @@ eConfigReg coolantTempCoolerOnLevel =
    .atrib      = &coolantTempCoolerOnLevelAtrib,
    .scale      = 0U,
    .value      = coolantTempCoolerOnLevelValue,
-   .units      = {'C', ' ', ' ', ' '},
+   .units      = {'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -394,7 +394,7 @@ eConfigReg fuelLevelSetup =
    .atrib      = &fuelLevelSetupAtrib,
    .scale      = 0U,
    .value      = fuelLevelSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = fuelLevelSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -413,7 +413,7 @@ eConfigReg fuelLevelLowAlarmLevel =
    .atrib      = &fuelLevelLowAlarmLevelAtrib,
    .scale      = 0U,
    .value      = fuelLevelLowAlarmLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -432,7 +432,7 @@ eConfigReg fuelLevelLowAlarmDelay =
    .atrib      = &fuelLevelLowAlarmDelayAtrib,
    .scale      = 0U,
    .value      = fuelLevelLowAlarmDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -451,7 +451,7 @@ eConfigReg fuelLevelLowPreAlarmLevel =
    .atrib      = &fuelLevelLowPreAlarmLevelAtrib,
    .scale      = 0U,
    .value      = fuelLevelLowPreAlarmLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -470,7 +470,7 @@ eConfigReg fuelLevelLowPreAlarmDelay =
    .atrib      = &fuelLevelLowPreAlarmDelayAtrib,
    .scale      = 0U,
    .value      = fuelLevelLowPreAlarmDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -489,7 +489,7 @@ eConfigReg fuelLevelHightPreAlarmLevel =
    .atrib      = &fuelLevelHightPreAlarmLevelAtrib,
    .scale      = 0U,
    .value      = fuelLevelHightPreAlarmLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -508,7 +508,7 @@ eConfigReg fuelLevelHightPreAlarmDelay =
    .atrib      = &fuelLevelHightPreAlarmDelayAtrib,
    .scale      = 0U,
    .value      = fuelLevelHightPreAlarmDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -527,7 +527,7 @@ eConfigReg fuelLevelHightAlarmLevel =
    .atrib      = &fuelLevelHightAlarmLevelAtrib,
    .scale      = 0U,
    .value      = fuelLevelHightAlarmLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -546,7 +546,7 @@ eConfigReg fuelLevelHightAlarmDelay =
    .atrib      = &fuelLevelHightAlarmDelayAtrib,
    .scale      = 0U,
    .value      = fuelLevelHightAlarmDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -565,7 +565,7 @@ eConfigReg fuelPumpOnLevel =
    .atrib      = &fuelPumpOnLevelAtrib,
    .scale      = 0U,
    .value      = fuelPumpOnLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -584,7 +584,7 @@ eConfigReg fuelPumpOffLevel =
    .atrib      = &fuelPumpOffLevelAtrib,
    .scale      = 0U,
    .value      = fuelPumpOffLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -608,7 +608,7 @@ eConfigReg speedSetup =
    .atrib      = &speedSetupAtrib,
    .scale      = 0U,
    .value      = speedSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = speedSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -627,7 +627,7 @@ eConfigReg speedToothNumber =
    .atrib      = &speedToothNumberAtrib,
    .scale      = 0U,
    .value      = speedToothNumberValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -646,7 +646,7 @@ eConfigReg speedLowAlarmLevel =
    .atrib      = &speedLowAlarmLevelAtrib,
    .scale      = 0U,
    .value      = speedLowAlarmLevelValue,
-   .units      = {'R', 'P', 'M', ' '},
+   .units      = {'R', 'P', 'M', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -665,7 +665,7 @@ eConfigReg speedHightAlarmLevel =
    .atrib      = &speedHightAlarmLevelAtrib,
    .scale      = 0U,
    .value      = speedHightAlarmLevelValue,
-   .units      = {'R', 'P', 'M', ' '},
+   .units      = {'R', 'P', 'M', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -691,7 +691,7 @@ eConfigReg diaSetup =
    .atrib      = &diaSetupAtrib,
    .scale      = 0U,
    .value      = diaSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = diaSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -710,7 +710,7 @@ eConfigReg diaDelay =
    .atrib      = &diaDelayAtrib,
    .scale      = 0U,
    .value      = diaDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -729,7 +729,7 @@ eConfigReg diaMessage =
    .atrib      = &diaMessageAtrib,
    .scale      = 0U,
    .value      = diaMessageValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -755,7 +755,7 @@ eConfigReg dibSetup =
    .atrib      = &dibSetupAtrib,
    .scale      = 0U,
    .value      = dibSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = dibSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -774,7 +774,7 @@ eConfigReg dibDelay =
    .atrib      = &dibDelayAtrib,
    .scale      = 0U,
    .value      = dibDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -793,7 +793,7 @@ eConfigReg dibMessage =
    .atrib      = &dibMessageAtrib,
    .scale      = 0U,
    .value      = dibMessageValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -819,7 +819,7 @@ eConfigReg dicSetup =
    .atrib      = &dicSetupAtrib,
    .scale      = 0U,
    .value      = dicSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = dicSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -838,7 +838,7 @@ eConfigReg dicDelay =
    .atrib      = &dicDelayAtrib,
    .scale      = 0U,
    .value      = dicDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -857,7 +857,7 @@ eConfigReg dicMessage =
    .atrib      = &dicMessageAtrib,
    .scale      = 0U,
    .value      = dicMessageValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -883,7 +883,7 @@ eConfigReg didSetup =
    .atrib      = &didSetupAtrib,
    .scale      = 0U,
    .value      = didSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = didSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -902,7 +902,7 @@ eConfigReg didDelay =
    .atrib      = &didDelayAtrib,
    .scale      = 0U,
    .value      = didDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -921,7 +921,7 @@ eConfigReg didMessage =
    .atrib      = &didMessageAtrib,
    .scale      = 0U,
    .value      = didMessageValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -949,7 +949,7 @@ eConfigReg doSetup =
    .atrib      = &doSetupAtrib,
    .scale      = 0U,
    .value      = doSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = doSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -973,7 +973,7 @@ eConfigReg doabType =
    .atrib      = &doabTypeAtrib,
    .scale      = 0U,
    .value      = doabTypeValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = doabTypeBitMap
 };
 /*----------------------------------------------------------------*/
@@ -997,7 +997,7 @@ eConfigReg docdType =
    .atrib      = &docdTypeAtrib,
    .scale      = 0U,
    .value      = docdTypeValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = docdTypeBitMap
 };
 /*----------------------------------------------------------------*/
@@ -1021,7 +1021,7 @@ eConfigReg doefType =
    .atrib      = &doefTypeAtrib,
    .scale      = 0U,
    .value      = doefTypeValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = doefTypeBitMap
 };
 /*----------------------------------------------------------------*/
@@ -1040,7 +1040,7 @@ eConfigReg timerMainsTransientDelay =
    .atrib      = &timerMainsTransientDelayAtrib,
    .scale      = -1,
    .value      = timerMainsTransientDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1059,7 +1059,7 @@ eConfigReg timerStartDelay =
    .atrib      = &timerStartDelayAtrib,
    .scale      = 0U,
    .value      = timerStartDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1078,7 +1078,7 @@ eConfigReg timerCranking =
    .atrib      = &timerCrankingAtrib,
    .scale      = 0U,
    .value      = timerCrankingValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1097,7 +1097,7 @@ eConfigReg timerCrankDelay =
    .atrib      = &timerCrankDelayAtrib,
    .scale      = 0U,
    .value      = timerCrankDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1116,7 +1116,7 @@ eConfigReg timerStartupIdleTime =
    .atrib      = &timerStartupIdleTimeAtrib,
    .scale      = 0U,
    .value      = timerStartupIdleTimeValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1135,7 +1135,7 @@ eConfigReg timerNominalRPMDelay =
    .atrib      = &timerNominalRPMDelayAtrib,
    .scale      = 0U,
    .value      = timerNominalRPMDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1154,7 +1154,7 @@ eConfigReg timerSafetyOnDelay =
    .atrib      = &timerSafetyOnDelayAtrib,
    .scale      = 0U,
    .value      = timerSafetyOnDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1173,7 +1173,7 @@ eConfigReg timerWarming =
    .atrib      = &timerWarmingAtrib,
    .scale      = 0U,
    .value      = timerWarmingValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1192,7 +1192,7 @@ eConfigReg timerTransferDelay =
    .atrib      = &timerTransferDelayAtrib,
    .scale      = -1,
    .value      = timerTransferDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1211,7 +1211,7 @@ eConfigReg timerGenBreakerTripPulse =
    .atrib      = &timerGenBreakerTripPulseAtrib,
    .scale      = -1,
    .value      = timerGenBreakerTripPulseValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1230,7 +1230,7 @@ eConfigReg timerGenBreakerClosePulse =
    .atrib      = &timerGenBreakerClosePulseAtrib,
    .scale      = -1,
    .value      = timerGenBreakerClosePulseValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1249,7 +1249,7 @@ eConfigReg timerMainsBreakerTripPulse =
    .atrib      = &timerMainsBreakerTripPulseAtrib,
    .scale      = -1,
    .value      = timerMainsBreakerTripPulseValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1268,7 +1268,7 @@ eConfigReg timerMainsBreakerClosePulse =
    .atrib      = &timerMainsBreakerClosePulseAtrib,
    .scale      = -1,
    .value      = timerMainsBreakerClosePulseValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1287,7 +1287,7 @@ eConfigReg timerReturnDelay =
    .atrib      = &timerReturnDelayAtrib,
    .scale      = 0U,
    .value      = timerReturnDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1306,7 +1306,7 @@ eConfigReg timerCooling =
    .atrib      = &timerCoolingAtrib,
    .scale      = 0U,
    .value      = timerCoolingValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1325,7 +1325,7 @@ eConfigReg timerCoolingIdle =
    .atrib      = &timerCoolingIdleAtrib,
    .scale      = 0U,
    .value      = timerCoolingIdleValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1344,7 +1344,7 @@ eConfigReg timerSolenoidHold =
    .atrib      = &timerSolenoidHoldAtrib,
    .scale      = 0U,
    .value      = timerSolenoidHoldValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1363,7 +1363,7 @@ eConfigReg timerFailStopDelay =
    .atrib      = &timerFailStopDelayAtrib,
    .scale      = 0U,
    .value      = timerFailStopDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1382,7 +1382,7 @@ eConfigReg timerGenTransientDelay =
    .atrib      = &timerGenTransientDelayAtrib,
    .scale      = -1,
    .value      = timerGenTransientDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1406,7 +1406,7 @@ eConfigReg genSetup =
    .atrib      = &genSetupAtrib,
    .scale      = 0U,
    .value      = genSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = genSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -1425,7 +1425,7 @@ eConfigReg genRatedActivePowerLevel =
    .atrib      = &genRatedActivePowerLevelAtrib,
    .scale      = 0U,
    .value      = genRatedActivePowerLevelValue,
-   .units      = {'к', 'В', 'т', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1444,7 +1444,7 @@ eConfigReg genRatedReactivePowerLevel =
    .atrib      = &genRatedReactivePowerLevelAtrib,
    .scale      = 0U,
    .value      = genRatedReactivePowerLevelValue,
-   .units      = {'к', 'В', 'А', 'Р'},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ'},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1463,7 +1463,7 @@ eConfigReg genRatedApparentPowerLevel =
    .atrib      = &genRatedApparentPowerLevelAtrib,
    .scale      = 0U,
    .value      = genRatedApparentPowerLevelValue,
-   .units      = {'к', 'В', 'А', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1482,7 +1482,7 @@ eConfigReg genRatedFrequencyLevel =
    .atrib      = &genRatedFrequencyLevelAtrib,
    .scale      = -1,
    .value      = genRatedFrequencyLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1501,7 +1501,7 @@ eConfigReg genCurrentPrimaryLevel =
    .atrib      = &genCurrentPrimaryLevelAtrib,
    .scale      = 0U,
    .value      = genCurrentPrimaryLevelValue,
-   .units      = {'А', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1520,7 +1520,7 @@ eConfigReg genCurrentFullLoadRatingLevel =
    .atrib      = &genCurrentFullLoadRatingLevelAtrib,
    .scale      = 0U,
    .value      = genCurrentFullLoadRatingLevelValue,
-   .units      = {'А', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1554,7 +1554,7 @@ eConfigReg genAlarms =
    .atrib      = &genAlarmsAtrib,
    .scale      = 0U,
    .value      = genAlarmsValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = genAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
@@ -1573,7 +1573,7 @@ eConfigReg genUnderVoltageAlarmLevel =
    .atrib      = &genUnderVoltageAlarmLevelAtrib,
    .scale      = 0U,
    .value      = genUnderVoltageAlarmLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1592,7 +1592,7 @@ eConfigReg genUnderVoltagePreAlarmLevel =
    .atrib      = &genUnderVoltagePreAlarmLevelAtrib,
    .scale      = 0U,
    .value      = genUnderVoltagePreAlarmLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1611,7 +1611,7 @@ eConfigReg genOverVoltagePreAlarmLevel =
    .atrib      = &genOverVoltagePreAlarmLevelAtrib,
    .scale      = 0U,
    .value      = genOverVoltagePreAlarmLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1630,7 +1630,7 @@ eConfigReg genOverVoltageAlarmLevel =
    .atrib      = &genOverVoltageAlarmLevelAtrib,
    .scale      = 0U,
    .value      = genOverVoltageAlarmLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1649,7 +1649,7 @@ eConfigReg genUnderFrequencyAlarmLevel =
    .atrib      = &genUnderFrequencyAlarmLevelAtrib,
    .scale      = -1,
    .value      = genUnderFrequencyAlarmLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1668,7 +1668,7 @@ eConfigReg genUnderFrequencyPreAlarmLevel =
    .atrib      = &genUnderFrequencyPreAlarmLevelAtrib,
    .scale      = -1,
    .value      = genUnderFrequencyPreAlarmLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1687,7 +1687,7 @@ eConfigReg genOverFrequencyPreAlarmLevel =
    .atrib      = &genOverFrequencyPreAlarmLevelAtrib,
    .scale      = -1,
    .value      = genOverFrequencyPreAlarmLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1706,7 +1706,7 @@ eConfigReg genOverFrequencyAlarmLevel =
    .atrib      = &genOverFrequencyAlarmLevelAtrib,
    .scale      = -1,
    .value      = genOverFrequencyAlarmLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1725,7 +1725,7 @@ eConfigReg genOverCurrentThermalProtectionLevel =
    .atrib      = &genOverCurrentThermalProtectionLevelAtrib,
    .scale      = 0U,
    .value      = genOverCurrentThermalProtectionLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1744,7 +1744,7 @@ eConfigReg genOverCurrentCutoffLevel =
    .atrib      = &genOverCurrentCutoffLevelAtrib,
    .scale      = 0U,
    .value      = genOverCurrentCutoffLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1763,7 +1763,7 @@ eConfigReg genOverCurrentAlarmLevel =
    .atrib      = &genOverCurrentAlarmLevelAtrib,
    .scale      = 0U,
    .value      = genOverCurrentAlarmLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1782,7 +1782,7 @@ eConfigReg genOverCurrentAlarmDelay =
    .atrib      = &genOverCurrentAlarmDelayAtrib,
    .scale      = 0U,
    .value      = genOverCurrentAlarmDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1801,7 +1801,7 @@ eConfigReg genCurrentOverloadProtectionLevel =
    .atrib      = &genCurrentOverloadProtectionLevelAtrib,
    .scale      = 0U,
    .value      = genCurrentOverloadProtectionLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1820,7 +1820,7 @@ eConfigReg genCurrentOverloadProtectionDelay =
    .atrib      = &genCurrentOverloadProtectionDelayAtrib,
    .scale      = 0U,
    .value      = genCurrentOverloadProtectionDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1839,7 +1839,7 @@ eConfigReg genCurrentOverPhaseImbalanceLevel =
    .atrib      = &genCurrentOverPhaseImbalanceLevelAtrib,
    .scale      = 0U,
    .value      = genCurrentOverPhaseImbalanceLevelValue,
-   .units      = {'%', ' ', ' ', ' '},
+   .units      = {'%', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1858,7 +1858,7 @@ eConfigReg genCurrentOverPhaseImbalanceDelay =
    .atrib      = &genCurrentOverPhaseImbalanceDelayAtrib,
    .scale      = 0U,
    .value      = genCurrentOverPhaseImbalanceDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1882,7 +1882,7 @@ eConfigReg mainsSetup =
    .atrib      = &mainsSetupAtrib,
    .scale      = 0U,
    .value      = mainsSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = mainsSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -1908,7 +1908,7 @@ eConfigReg mainsAlarms =
    .atrib      = &mainsAlarmsAtrib,
    .scale      = 0U,
    .value      = mainsAlarmsValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = mainsAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
@@ -1927,7 +1927,7 @@ eConfigReg mainsUnderVoltageAlarmLevel =
    .atrib      = &mainsUnderVoltageAlarmLevelAtrib,
    .scale      = 0U,
    .value      = mainsUnderVoltageAlarmLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1946,7 +1946,7 @@ eConfigReg mainsOverVoltageAlarmLevel =
    .atrib      = &mainsOverVoltageAlarmLevelAtrib,
    .scale      = 0U,
    .value      = mainsOverVoltageAlarmLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1965,7 +1965,7 @@ eConfigReg mainsUnderFrequencyAlarmLevel =
    .atrib      = &mainsUnderFrequencyAlarmLevelAtrib,
    .scale      = -1,
    .value      = mainsUnderFrequencyAlarmLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -1984,7 +1984,7 @@ eConfigReg mainsOverFrequencyAlarmLevel =
    .atrib      = &mainsOverFrequencyAlarmLevelAtrib,
    .scale      = -1,
    .value      = mainsOverFrequencyAlarmLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2008,7 +2008,7 @@ eConfigReg engineSetup =
    .atrib      = &engineSetupAtrib,
    .scale      = 0U,
    .value      = engineSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = engineSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -2027,7 +2027,7 @@ eConfigReg enginePreHeatLevel =
    .atrib      = &enginePreHeatLevelAtrib,
    .scale      = 0U,
    .value      = enginePreHeatLevelValue,
-   .units      = {'C', ' ', ' ', ' '},
+   .units      = {'C', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2046,7 +2046,7 @@ eConfigReg enginePreHeatDelay =
    .atrib      = &enginePreHeatDelayAtrib,
    .scale      = 0U,
    .value      = enginePreHeatDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2065,7 +2065,7 @@ eConfigReg engineWorkTimeInput =
    .atrib      = &engineWorkTimeInputAtrib,
    .scale      = 0U,
    .value      = engineWorkTimeInputValue,
-   .units      = {'ч', 'а', 'с', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2084,7 +2084,7 @@ eConfigReg engineStartsNumberInput =
    .atrib      = &engineStartsNumberInputAtrib,
    .scale      = 0U,
    .value      = engineStartsNumberInputValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2110,7 +2110,7 @@ eConfigReg starterStopSetup =
    .atrib      = &starterStopSetupAtrib,
    .scale      = 0U,
    .value      = starterStopSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = starterStopSetupBitMap
 };
 /*----------------------------------------------------------------*/
@@ -2129,7 +2129,7 @@ eConfigReg starterStopGenFreqLevel =
    .atrib      = &starterStopGenFreqLevelAtrib,
    .scale      = -1,
    .value      = starterStopGenFreqLevelValue,
-   .units      = {'Г', 'ц', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2148,7 +2148,7 @@ eConfigReg starterStopOilPressureLevel =
    .atrib      = &starterStopOilPressureLevelAtrib,
    .scale      = -1,
    .value      = starterStopOilPressureLevelValue,
-   .units      = {'Б', 'а', 'р', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2167,7 +2167,7 @@ eConfigReg starterStopChargeAlternatorLevel =
    .atrib      = &starterStopChargeAlternatorLevelAtrib,
    .scale      = -1,
    .value      = starterStopChargeAlternatorLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2186,7 +2186,7 @@ eConfigReg starterStopSpeedLevel =
    .atrib      = &starterStopSpeedLevelAtrib,
    .scale      = -1,
    .value      = starterStopSpeedLevelValue,
-   .units      = {'R', 'P', 'M', ' '},
+   .units      = {'R', 'P', 'M', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2212,7 +2212,7 @@ eConfigReg batteryAlarms =
    .atrib      = &batteryAlarmsAtrib,
    .scale      = 0U,
    .value      = batteryAlarmsValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = batteryAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
@@ -2231,7 +2231,7 @@ eConfigReg batteryUnderVoltageLevel =
    .atrib      = &batteryUnderVoltageLevelAtrib,
    .scale      = -1,
    .value      = batteryUnderVoltageLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2250,7 +2250,7 @@ eConfigReg batteryUnderVoltageDelay =
    .atrib      = &batteryUnderVoltageDelayAtrib,
    .scale      = 0U,
    .value      = batteryUnderVoltageDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2269,7 +2269,7 @@ eConfigReg batteryOverVoltageLevel =
    .atrib      = &batteryOverVoltageLevelAtrib,
    .scale      = -1,
    .value      = batteryOverVoltageLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2288,7 +2288,7 @@ eConfigReg batteryOverVoltageDelay =
    .atrib      = &batteryOverVoltageDelayAtrib,
    .scale      = 0U,
    .value      = batteryOverVoltageDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2307,7 +2307,7 @@ eConfigReg batteryChargeShutdownLevel =
    .atrib      = &batteryChargeShutdownLevelAtrib,
    .scale      = -1,
    .value      = batteryChargeShutdownLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2326,7 +2326,7 @@ eConfigReg batteryChargeShutdownDelay =
    .atrib      = &batteryChargeShutdownDelayAtrib,
    .scale      = 0U,
    .value      = batteryChargeShutdownDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2345,7 +2345,7 @@ eConfigReg batteryChargeWarningLevel =
    .atrib      = &batteryChargeWarningLevelAtrib,
    .scale      = -1,
    .value      = batteryChargeWarningLevelValue,
-   .units      = {'В', ' ', ' ', ' '},
+   .units      = {'п', 'ї', 'Ѕ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2364,7 +2364,7 @@ eConfigReg batteryChargeWarningDelay =
    .atrib      = &batteryChargeWarningDelayAtrib,
    .scale      = 0U,
    .value      = batteryChargeWarningDelayValue,
-   .units      = {'с', 'е', 'к', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2392,7 +2392,7 @@ eConfigReg maintenanceAlarms =
    .atrib      = &maintenanceAlarmsAtrib,
    .scale      = 0U,
    .value      = maintenanceAlarmsValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = maintenanceAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
@@ -2411,7 +2411,7 @@ eConfigReg maintenanceAlarmOilTime =
    .atrib      = &maintenanceAlarmOilTimeAtrib,
    .scale      = 0U,
    .value      = maintenanceAlarmOilTimeValue,
-   .units      = {'ч', 'а', 'с', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2430,7 +2430,7 @@ eConfigReg maintenanceAlarmAirTime =
    .atrib      = &maintenanceAlarmAirTimeAtrib,
    .scale      = 0U,
    .value      = maintenanceAlarmAirTimeValue,
-   .units      = {'ч', 'а', 'с', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2449,7 +2449,7 @@ eConfigReg maintenanceAlarmFuelTime =
    .atrib      = &maintenanceAlarmFuelTimeAtrib,
    .scale      = 0U,
    .value      = maintenanceAlarmFuelTimeValue,
-   .units      = {'ч', 'а', 'с', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2468,7 +2468,7 @@ const eConfigReg maintenanceAlarmOilTimeLeft =
    .atrib      = &maintenanceAlarmOilTimeLeftAtrib,
    .scale      = 0U,
    .value      = maintenanceAlarmOilTimeLeftValue,
-   .units      = {'ч', 'а', 'с', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2487,7 +2487,7 @@ const eConfigReg maintenanceAlarmAirTimeLeft =
    .atrib      = &maintenanceAlarmAirTimeLeftAtrib,
    .scale      = 0U,
    .value      = maintenanceAlarmAirTimeLeftValue,
-   .units      = {'ч', 'а', 'с', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2506,7 +2506,7 @@ const eConfigReg maintenanceAlarmFuelTimeLeft =
    .atrib      = &maintenanceAlarmFuelTimeLeftAtrib,
    .scale      = 0U,
    .value      = maintenanceAlarmFuelTimeLeftValue,
-   .units      = {'ч', 'а', 'с', ' '},
+   .units      = {'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', 'п', 'ї', 'Ѕ', ' ', ' ', ' '},
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
@@ -2529,7 +2529,7 @@ eConfigReg logSetup =
    .atrib      = &logSetupAtrib,
    .scale      = 0U,
    .value      = logSetupValue,
-   .units      = {' ', ' ', ' ', ' '},
+   .units      = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
    .bitMap     = logSetupBitMap
 };
 /*----------------------------------------------------------------*/

@@ -104,13 +104,6 @@ const osThreadAttr_t lcdTask_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 1024
 };
-/* Definitions for lcdRedrawTask */
-osThreadId_t lcdRedrawTaskHandle;
-const osThreadAttr_t lcdRedrawTask_attributes = {
-  .name = "lcdRedrawTask",
-  .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 1024
-};
 /* Definitions for usbTask */
 osThreadId_t usbTaskHandle;
 const osThreadAttr_t usbTask_attributes = {
@@ -157,7 +150,6 @@ static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
 void StartLcdTask(void *argument);
-extern void StartLcdRedrawTask(void *argument);
 extern void StartUsbTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -253,9 +245,6 @@ int main(void)
 
   /* creation of lcdTask */
   lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
-
-  /* creation of lcdRedrawTask */
-  lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
 
   /* creation of usbTask */
   usbTaskHandle = osThreadNew(StartUsbTask, NULL, &usbTask_attributes);

@@ -262,10 +262,10 @@ void LCD_Redraw( void )
   uint8_t  x       = 0U;
   uint8_t  y       = 0U;
   uint16_t y_start = 0U;
-  uint16_t y_end   = LCD_DATA_BUFFER_SIZE;
-  uint8_t  k       = 0U;
+  uint16_t y_end   = 0U;
+ // uint8_t  k       = 0U;
 
- /* for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i ++ )
+  for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i ++ )
   {
     if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
     {
@@ -280,46 +280,36 @@ void LCD_Redraw( void )
         y_end = i;
       }
     }
-  }*/
- // if ( LCD_REDRAW_FLAG == 1U )
+  }
+  if ( LCD_REDRAW_FLAG == 1U )
   {
     HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
     LCD_WriteCommand( 0x3EU );
     y_start = y_start / 16U;
     y_end   = ( y_end / 16U ) + 1U;
-    for ( k=y_start; k<y_end; k++ )
+    for ( i=y_start; i<y_end; i++ )
     {
-      if ( k >= 32U )
+      if ( i >= 32U )
       {
         x = 8U;
-        y = k - 32U;
+        y = i - 32U;
       }
       else
       {
         x = 0U;
-        y = k;
+        y = i;
       }
       LCD_WriteCommand( 0x080U | y );
       LCD_WriteCommand( 0x080U | x );
-      LCD_Send16Data( &LCD_Buffer[k * 16U] );
+      LCD_Send16Data( &LCD_Buffer[i * 16U] );
     }
 	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
     LCD_REDRAW_FLAG = 0U;	// Что это???
   }
   return;
 }
-/*---------------------------------------------------------------------------------------------------*/
-void StartLcdRedrawTask(void *argument)
-{
-  /* USER CODE BEGIN StartLCDRedraw */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay( 200U );
-   LCD_Redraw();
-  }
-  /* USER CODE END StartLCDRedraw */
-}
+
+
 /*---------------------------------------------------------------------------------------------------*/
 void LCD_Clear( void )
 {
@@ -384,15 +374,35 @@ inline void LCD_Send16Data( uint8_t *arg_prt )
  */
 void LCD_Reset( void )
 {
-  HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_SET );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
   osDelay( 10U );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET );
   osDelay( 10U );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
-
+  osDelay( 600U );
   return;
 }
+
+void lcd_init(void)
+{
+  HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_SET );
+  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+  osDelay(40);
+  LCD_WriteCommand( 0x38U );
+  osDelay(1);
+  LCD_WriteCommand( 0x38U );
+  osDelay(1);
+  LCD_WriteCommand( 0x08U );
+  osDelay(1);
+  LCD_WriteCommand( 0x01U );
+  osDelay(11);
+  LCD_WriteCommand( 0x06U );
+  osDelay(1);
+  LCD_WriteCommand( 0x02U );
+  osDelay(1);
+  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+}
+
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t u8x8_stm32_gpio_and_delay( U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSED uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void *arg_ptr )
 {
@@ -435,7 +445,7 @@ uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg
       HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
       break;
     case U8X8_MSG_BYTE_END_TRANSFER:
-      HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+      HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET ); HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
       break;
     default:
       res = 0U;
@@ -448,11 +458,9 @@ uint8_t u8x8_byte_STM_spi( u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg
 void vLCD_Init()
 {
   uint16_t i = 0U;
-  LCD_Reset();
-  osDelay( 600U );
+
   u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, u8x8_byte_STM_spi, u8x8_stm32_gpio_and_delay );
-  u8g2_InitDisplay( &u8g2 );
-  u8g2_SetPowerSave( &u8g2, 0U );
+  lcd_init();
   vMenuInit( &u8g2 );
   u8g2_ClearBuffer( &u8g2 );
   for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i++ )
@@ -460,7 +468,6 @@ void vLCD_Init()
     LCD_Buffer[i] = 0xFFU;
   }
   LCD_Redraw();
-  //LCD_Clear();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

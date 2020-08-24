@@ -55,12 +55,12 @@ eChartData fuelSensorChart = {
   .xunit    = {'О','м',' '},
   .yunit    = {'Б','а','р'},
   .size     = 2U,
-  .dots[0]  =
+  .dots[0U]  =
   {
     .x = 0x00000000U,
     .y = 0x00000000U,
   },
-  .dots[1]  =
+  .dots[1U]  =
   {
     .x = 0x05DC0000U,
     .y = 0x000F0000U,

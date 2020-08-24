@@ -52,6 +52,7 @@ typedef enum
   USB_PUT_CHART_CMD   = 0x04U,
   USB_PUT_EWA_CMD     = 0x05U,
   USB_SAVE_CONFIG_CMD = 0x06U,
+  USB_SAVE_CHART_CMD  = 0x07U,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

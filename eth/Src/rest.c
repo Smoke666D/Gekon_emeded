@@ -682,7 +682,7 @@ uint32_t uRESTmakeBitMap( eConfigBitMap* bitMap, RESTrecordPos last, char* outpu
 
   output[0U] = '{';
   position += uRESTmakeDigRecord( BIT_MAP_MASK_STR,  bitMap->mask,  REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeDigRecord( BIT_MAP_SHIFT_STR, bitMap->shift, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeDigRecord( BIT_MAP_SHIFT_STR, bitMap->shift, REST_LAST_RECORD, &output[position] );
   output[position] = '}';
   position++;
   if ( last == REST_CONT_RECORD )

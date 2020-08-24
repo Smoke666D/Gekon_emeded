@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-24 07:25:10
+ * Make time: 2020-08-24 08:03:33
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -8,13 +8,13 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
-#define   MAX_UNITS_LENGTH             12U
+#define   MAX_UNITS_LENGTH             4U
 #define   SETTING_REGISTER_NUMBER      125U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              93U     // bytes
-#define   CONFIG_TOTAL_SIZE            3566U   // bytes
+#define   CONFIG_MAX_SIZE              77U     // bytes
+#define   CONFIG_TOTAL_SIZE            1614U   // bytes
 
 #define   CONFIG_REG_ADR_STR           "adr"
 #define   CONFIG_REG_SCALE_STR         "scale"

@@ -13,8 +13,6 @@
 /*----------------------- Functions -----------------------------------------------------------------*/
 uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob );
 uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob );
-uint8_t uChartToBlob ( eChartData* chart, uint8_t* blob );
-uint8_t uBlobToChart ( eChartData* chart, uint8_t* blob );
 
 uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob );
 uint8_t uBlobToFix16 ( fix16_t* val, uint8_t* blob );
@@ -25,32 +23,12 @@ uint8_t uUint32ToBlob ( uint32_t val, uint8_t* blob );
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob )
-{
-  uint8_t count = 0U;
-
-  blob[count++] = ( uint8_t )( ( uint32_t )val );
-  blob[count++] = ( uint8_t )( ( uint32_t )val >> 8U );
-  blob[count++] = ( uint8_t )( ( uint32_t )val >> 16U );
-  blob[count++] = ( uint8_t )( ( uint32_t )val >> 24U );
-
-  return count;
-}
-
-uint8_t uBlobToFix16 ( fix16_t* val, uint8_t* blob )
-{
-  *val = ( fix16_t )( ( uint32_t )blob[0U] | ( ( uint32_t )val >> 8U ) | ( ( uint32_t )val >> 16U ) | ( ( uint32_t )val >> 24U ) );
-  return 4U;
-}
-
 uint8_t uUint16ToBlob ( uint16_t val, uint8_t* blob )
 {
-  uint8_t count = 0U;
+  blob[0U] = ( uint8_t )  val;
+  blob[1U] = ( uint8_t )( val >> 8U );
 
-  blob[count++] = ( uint8_t )  val;
-  blob[count++] = ( uint8_t )( val >> 8U );
-
-  return count;
+  return 2U;
 }
 
 uint8_t uBlobToUint16 ( uint16_t* val, uint8_t* blob )
@@ -58,7 +36,7 @@ uint8_t uBlobToUint16 ( uint16_t* val, uint8_t* blob )
   *val = ( uint16_t )blob[0U] | ( ( uint16_t )blob[1U] << 8U );
   return 2U;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 uint8_t uBlobToUint32 ( uint32_t* val, uint8_t* blob )
 {
   *val = ( uint32_t )blob[0U] | ( ( uint32_t )blob[1U] << 8U ) | ( ( uint32_t )blob[2U] << 16U ) | ( ( uint32_t )blob[3U] << 24U );
@@ -67,15 +45,24 @@ uint8_t uBlobToUint32 ( uint32_t* val, uint8_t* blob )
 
 uint8_t uUint32ToBlob ( uint32_t val, uint8_t* blob )
 {
-  uint8_t count = 0U;
+  blob[0U] = ( uint8_t )  val;
+  blob[1U] = ( uint8_t )( val >> 8U );
+  blob[2U] = ( uint8_t )( val >> 16U );
+  blob[3U] = ( uint8_t )( val >> 24U );
 
-  blob[count++] = ( uint8_t )  val;
-  blob[count++] = ( uint8_t )( val >> 8U );
-  blob[count++] = ( uint8_t )( val >> 16U );
-  blob[count++] = ( uint8_t )( val >> 24U );
-
-  return count;
+  return 4U;
 }
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob )
+{
+  return uUint32ToBlob( ( uint32_t )val, blob );
+}
+
+uint8_t uBlobToFix16 ( fix16_t* val, uint8_t* blob )
+{
+  return uBlobToUint32( ( ( uint32_t* )val ), blob );
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Convert configuration register to byte array
  * Input:  reg  - configuration register
@@ -103,6 +90,7 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
   }
   return count;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Convert byte array to configuration register
  * Input:  reg  - output configuration register
@@ -113,7 +101,6 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
-
 
   reg->scale      = ( uint8_t ) blob[count++];
   for ( i=0U; i<reg->atrib->len; i++ )
@@ -131,113 +118,123 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
   }
   return count;
 }
-
-uint8_t uChartToBlob( eChartData* chart, uint8_t* blob )
-{
-  uint8_t count = 0U;
-  uint8_t i     = 0U;
-  count += uFix16ToBlob( chart->xmin, &blob[count] );
-  count += uFix16ToBlob( chart->xmax, &blob[count] );
-  count += uFix16ToBlob( chart->ymin, &blob[count] );
-  count += uFix16ToBlob( chart->ymax, &blob[count] );
-  for ( i=0U; i<CHART_UNIT_LENGTH; i++ )
-  {
-    count += uUint16ToBlob( chart->xunit[i], &blob[count] );
-  }
-  for ( i=0U; i<CHART_UNIT_LENGTH; i++ )
-  {
-    count += uUint16ToBlob( chart->yunit[i], &blob[count] );
-  }
-  count += uUint16ToBlob( chart->size, &blob[count] );
-  for ( i=0U; i<chart->size; i++ )
-  {
-    count += uFix16ToBlob( chart->dots[i].x, &blob[count] );
-    count += uFix16ToBlob( chart->dots[i].y, &blob[count] );
-  }
-  return count;
-}
-
-uint8_t uBlobToChart ( eChartData* chart, uint8_t* blob )
-{
-  uint8_t count = 0U;
-  uint8_t i     = 0U;
-  count += uBlobToFix16(  &chart->xmin, &blob[count] );
-  count += uBlobToFix16(  &chart->xmax, &blob[count] );
-  count += uBlobToFix16(  &chart->ymin, &blob[count] );
-  count += uBlobToFix16(  &chart->ymax, &blob[count] );
-  for ( i=0U; i<CHART_UNIT_LENGTH; i++ )
-  {
-    count += uBlobToUint16( &chart->xunit[i], &blob[count] );
-  }
-  for ( i=0U; i<CHART_UNIT_LENGTH; i++ )
-  {
-    count += uBlobToUint16( &chart->yunit[i], &blob[count] );
-  }
-  count += uBlobToUint16( &chart->size, &blob[count] );
-  for ( i=0U; i<chart->size; i++ )
-  {
-    count += uBlobToFix16( &chart->dots[i].x, &blob[count] );
-    count += uBlobToFix16( &chart->dots[i].y, &blob[count] );
-  }
-  return count;
-}
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteCharts ( void )
 {
-  EEPROM_STATUS res  = EEPROM_OK;
-  uint8_t       i    = 0U;
-  uint32_t      adr  = STORAGE_CHART_ADR * 1024U;
-  uint8_t       size = 0U;
-  uint8_t       adrForm[3U] = { 0x00U, 0x00U, 0x00U };
-  uint8_t       buffer[CHART_CHART_MAX_SIZE + 1U];
+  EEPROM_STATUS res        = EEPROM_OK;
+  uint8_t       i          = 0U;
+  uint8_t       j          = 0U;
+  uint32_t      adr        = STORAGE_CHART_ADR;
+  uint8_t       size       = 0U;
+  uint8_t       len        = 0U;
+  uint8_t       buffer[4U] = { 0U, 0U, 0U, 0U };
 
   for ( i=0U; i<CHART_NUMBER; i++ )
   {
-    vEEPROMformAdr( adr, adrForm );
-    size = uChartToBlob( charts[i], &buffer[1U] );
-    buffer[0U] = size;
-    res = eEEPROMWriteMemory( adrForm, buffer, ( size + 1U ) );
-    adr += size + 1U;
-    if ( res != EEPROM_OK )
+    size  = 0U;
+    len   = uFix16ToBlob( charts[i]->xmin, buffer );
+    res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+    size += len;
+    len   = uFix16ToBlob( charts[i]->xmax, buffer );
+    res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+    size += len;
+    len   = uFix16ToBlob( charts[i]->ymin, buffer );
+    res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+    size += len;
+    len   = uFix16ToBlob( charts[i]->ymax, buffer );
+    res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+    size += len;
+    for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
     {
-      break;
+      len   = uUint16ToBlob( charts[i]->xunit[j], buffer );
+      res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+      size += len;
     }
+    for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
+    {
+      len  = uUint16ToBlob( charts[i]->yunit[j], buffer );
+      res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+      size += len;
+    }
+    len   = uUint16ToBlob( charts[i]->size, buffer );
+    res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+    size += len;
+    for ( j=0U; j<charts[i]->size; j++ )
+    {
+      len   = uFix16ToBlob( charts[i]->dots[j].x, buffer );
+      res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+      size += len;
+      len   = uFix16ToBlob( charts[i]->dots[j].y, buffer );
+      res   = eEEPROMWriteMemory( ( adr + size + 1U ), buffer, len );
+      size += len;
+    }
+    res  = eEEPROMWriteMemory( adr, &size, 1U );
+    adr += size + 1U;
   }
   return res;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadCharts( void )
 {
-  EEPROM_STATUS res  = EEPROM_OK;
-  uint8_t       i    = 0U;
-  uint8_t       size = 0U;
-  uint8_t       calc = 0U;
-  uint32_t      adr  = STORAGE_CHART_ADR * 1024U;
-  uint8_t       adrForm[3U] = { 0x00U, 0x00U, 0x00U };
-  uint8_t       buffer[CHART_CHART_MAX_SIZE];
+  EEPROM_STATUS res        = EEPROM_OK;
+  uint8_t       i          = 0U;
+  uint8_t       j          = 0U;
+  uint8_t       len        = 0U;
+  uint8_t       size       = 0U;
+  uint8_t       calc       = 0U;
+  uint32_t      adr        = STORAGE_CHART_ADR;
+  uint8_t       buffer[4U] = { 0U, 0U, 0U, 0U };
 
-  for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
+  for ( i=0U; i<CHART_NUMBER; i++ )
   {
-    vEEPROMformAdr( adr, adrForm );
-    res = eEEPROMReadMemory( &adrForm, &size, 1U );
-    if ( ( res == EEPROM_OK ) && ( size > 0U ) && ( size < CHART_CHART_MAX_SIZE ) )
+    res = eEEPROMReadMemory( adr, &calc, 1U );
+    if ( ( res == EEPROM_OK ) && ( calc > 0U ) && ( calc < CHART_CHART_SIZE ) )
     {
-      vEEPROMformAdr( ++adr, adrForm );
-      res = eEEPROMReadMemory( &adrForm, buffer, size );
-      if ( res == EEPROM_OK )
+      size = 0U;
+      adr++;
+      res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+      len   = uBlobToFix16( &charts[i]->xmin, buffer );
+      size += len;
+      res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+      len   = uBlobToFix16( &charts[i]->xmax, buffer );
+      size += len;
+      res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+      len   = uBlobToFix16( &charts[i]->ymin, buffer );
+      size += len;
+      res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+      len   = uBlobToFix16( &charts[i]->ymax, buffer );
+      size += len;
+      for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
       {
-        adr += size;
-        calc = uBlobToChart( charts[i], buffer );
-        if ( calc != size )
-        {
-          res = EEPROM_ERROR;
-          break;
-        }
+	res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+	len   = uBlobToUint16( &charts[i]->xunit[j], buffer );
+	size += len;
       }
-      else
+      for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
       {
+	res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+	len   = uBlobToUint16( &charts[i]->yunit[j], buffer );
+	size += len;
+      }
+      res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+      len   = uBlobToUint16( &charts[i]->size, buffer );
+      size += len;
+      for ( j=0U; j<charts[i]->size; j++ )
+      {
+	res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+	len   = uBlobToFix16( &charts[i]->dots[j].x, buffer );
+	size += len;
+	res   = eEEPROMReadMemory( ( adr + size ), buffer, 4U );
+	len   = uBlobToFix16( &charts[i]->dots[j].y, buffer );
+	size += len;
+      }
+      adr += size;
+
+      if ( calc != size )
+      {
+        res = EEPROM_ERROR;
         break;
       }
     }
@@ -249,6 +246,7 @@ EEPROM_STATUS eSTORAGEreadCharts( void )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
 EEPROM_STATUS eSTORAGEwriteLogRecord( LOG_RECORD_TYPE* record )
 {
@@ -358,7 +356,20 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEdeleteConfigs( void )
 {
-  EEPROM_STATUS res  = EEPROM_OK;
+  EEPROM_STATUS res        = EEPROM_OK;
+  uint32_t      i          = 0U;
+  uint32_t      adr        = STORAGE_CONFIG_ADR;
+  uint8_t       buffer[1U] = { 0U };
+
+  for ( i=0U; i<CONFIG_TOTAL_SIZE; i++ )
+  {
+    res = eEEPROMWriteMemory( adr, buffer, 1U );
+    adr++;
+    if ( res != EEPROM_OK )
+    {
+      break;
+    }
+  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

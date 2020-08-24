@@ -89,7 +89,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 496
+  .stack_size = 1024
 };
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
@@ -262,7 +262,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
 
-  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  keyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   SetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
 
@@ -925,7 +925,6 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
-/*
   vSYSSerial("--------------EEPROM map:--------------\n\r");
   vSYSSerial("EWA            : ");
   sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
@@ -978,7 +977,6 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "\n\r" );
 
   vSYSSerial("---------------------------------------\n\r");
-*/
   if ( eSTORAGEreadConfigs() == EEPROM_OK )
   {
     vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
@@ -987,6 +985,15 @@ void StartDefaultTask(void *argument)
   {
     vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
   }
+  if ( eSTORAGEreadCharts() == EEPROM_OK )
+  {
+    vSYSSerial( ">>EEPROM charts read: done!\n\r" );
+  }
+  else
+  {
+    vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
+  }
+
   /* Infinite loop */
   for(;;)
   {

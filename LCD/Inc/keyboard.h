@@ -56,11 +56,11 @@ typedef struct
   unsigned char cStatus;
 } xKeyEvent;
 /*----------------------------- Functions ------------------------------------*/
-unsigned long GetKeyTimeOut( void );
-void          SetKeyTimeOut( unsigned long data );
+unsigned long ulGetKeyTimeOut( void );
+void          vSetKeyTimeOut( unsigned long data );
 void          vKeyboardTask( void const * argument );
-void          SetupKeyboard( void );
+void          vSetupKeyboard( void );
 void          vKeyboardInit( uint32_t Message );
-QueueHandle_t GetKeyboardQueue( void );
+QueueHandle_t pGetKeyboardQueue( void );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_KEYBOARD_H_ */

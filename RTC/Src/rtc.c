@@ -53,7 +53,7 @@ void vRTCGetTime(DATA_COMMNAD_TYPE cmd, char * Time)
 	Time[0]= 0;
 	switch (cmd)
 	{
-	case READ:
+	case mREAD:
 
 		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BCD ) == HAL_OK )
 		{
@@ -84,7 +84,7 @@ void vRTCCorrectTime(DATA_COMMNAD_TYPE cmd,char *Time, uint8_t TimePosition)
 		DataToRead =TimePosition;
 	switch (cmd)
 	{
-	case READ:
+	case mREAD:
 		if ( HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BIN ) == HAL_OK )
 		{
 			switch (DataToRead)
@@ -112,8 +112,8 @@ void vRTCCorrectTime(DATA_COMMNAD_TYPE cmd,char *Time, uint8_t TimePosition)
 			}
 		}
 		break;
-	case INC:
-	case DEC:
+	case mINC:
+	case mDEC:
 		if ((CorrectData) && (CorrectPos!=TimePosition))
 			CorrectData=0;
 		if (!CorrectData)
@@ -139,16 +139,16 @@ void vRTCCorrectTime(DATA_COMMNAD_TYPE cmd,char *Time, uint8_t TimePosition)
 		}
 		switch (cmd)
 		{
-		  case INC:
+		  case mINC:
 			  if (buffer<MaxData) buffer++;
 			  break;
-		  case DEC:
+		  case mDEC:
 			  if (buffer) buffer--;
 			  break;
 
 		}
 		break;
-	case SAVE:
+	case mSAVE:
 		HAL_RTC_GetTime( rtc, &t, RTC_FORMAT_BIN);
 		switch (TimePosition)
 		{

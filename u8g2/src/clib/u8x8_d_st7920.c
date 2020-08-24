@@ -95,11 +95,11 @@ uint8_t u8x8_d_st7920_common(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
       u8x8_d_helper_display_init(u8x8);
 
       HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_SET);
-      LCD_WriteCommand(0x38);
+    /*  LCD_WriteCommand(0x38);
       LCD_WriteCommand(0x08);
       LCD_WriteCommand(0x06);
       LCD_WriteCommand(0x02);
-      LCD_WriteCommand(0x01);
+      LCD_WriteCommand(0x01);*/
       osDelay(2U);
       HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_RESET);
 
@@ -121,17 +121,17 @@ uint8_t u8x8_d_st7920_common(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
     	  y-=32;
     	  x+=8;
       }
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_SET);
+  //   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_SET);
       ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;	/* data ptr to the tiles */
-      LCD_WriteCommand(0x3E);
+   //   LCD_WriteCommand(0x3E);
       for( i = 0; i < 8; i++ )
       {
-    	  LCD_WriteCommand( 0x080 | (y+i) );
-    	  LCD_WriteCommand(0x080 | x);
-    	  LCD_Send16Data(ptr);
+   // 	  LCD_WriteCommand( 0x080 | (y+i) );
+   // 	  LCD_WriteCommand(0x080 | x);
+  //  	  LCDSend16Data(ptr);
     	  ptr += 16;
       }
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_RESET);
+   //   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_RESET);
       break;
     default:
       return 0;

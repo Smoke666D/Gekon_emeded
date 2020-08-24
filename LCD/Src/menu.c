@@ -34,10 +34,10 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
   switch ( key )
   {
     case KEY_STOP:
-      pCurObject->GetDtaFunction( INC, NULL, pCurObject->DataID );
+      pCurObject->GetDtaFunction( mINC, NULL, pCurObject->DataID );
       break;
     case KEY_START:
-      pCurObject->GetDtaFunction( DEC, NULL, pCurObject->DataID );
+      pCurObject->GetDtaFunction( mDEC, NULL, pCurObject->DataID );
       break;
     case KEY_UP:
       if ( menu->pHomeMenu[menu->pCurrIndex].pCurrIndex <  menu->pHomeMenu[menu->pCurrIndex].pMaxIndex )
@@ -86,21 +86,21 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
       }
       break;
     case KEY_AUTO:
-      //Если на экране есть объект с редактируемым полем, то оправлем команду на запись текущего значения
-      pCurObject->GetDtaFunction( SAVE, NULL, pCurObject->DataID );
-      //Если на экране только один объект редактирования или его вообще нет, то выполняются дейтсвия по выходу из экрана
-      if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex > 1U )
-      {
-    	break;
-      }
-      /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
     case KEY_EXIT:
+      if (key ==KEY_AUTO)
+      {
+	  //Если на экране есть объект с редактируемым полем, то оправлем команду на запись текущего значения
+	   pCurObject->GetDtaFunction( mSAVE, NULL, pCurObject->DataID );
+	   //Если на экране только один объект редактирования или его вообще нет, то выполняются дейтсвия по выходу из экрана
+	   if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex > 1U ) break;
+      }
+
       //Выходи из активного экрана, для этого меняем его статус и также освобождаем редактируемый объект
       menu->pHomeMenu[menu->pCurrIndex].xScreenStatus = NOT_ACTIVE;
       pCurObject->ObjectParamert[3U] = 0U;
       if ( menu->pHomeMenu[menu->pCurrIndex].pMaxIndex > 0U )
       {
-    	pCurObject->GetDtaFunction( ESC, NULL );
+    	pCurObject->GetDtaFunction( mESC, NULL );
       }
       break;
     default:
@@ -273,17 +273,13 @@ void xInfoScreenCallBack( xScreenSetObject* menu, char key )
   }
   return;
 }
-/*---------------------------------------------------------------------------------------------------*/
-void InitMenu( void )
-{
-  return;
-}
+
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuInit( u8g2_t* temp )
 {
   u8g2      = temp;
   pCurrMenu = &xMainMenu;
-  pKeyboard = GetKeyboardQueue();
+  pKeyboard = pGetKeyboardQueue();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -295,8 +291,8 @@ void vMenuTask( void )
   //Блок отрисовки экранов
   if ( temp_counter == 2U )
   {
-    DrawObject( pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets );
-    LCD_Redraw();
+    vDrawObject( pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets );
+    vLCDRedraw();
     temp_counter = 0U;
   }
   if ( xQueueReceive( pKeyboard, &TempEvent, 0U ) == pdPASS )
@@ -351,7 +347,7 @@ void vMenuTask( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void DrawObject( xScreenObjet * pScreenObjects)
+void vDrawObject( xScreenObjet * pScreenObjects)
 {
   uint8_t* TEXT;
   uint8_t  Insert    = 0U;
@@ -409,31 +405,23 @@ void DrawObject( xScreenObjet * pScreenObjects)
           {
             Insert = 1U;
             if ( Blink > 0U )
-            {
               Blink = 0U;
-            }
             else
-            {
               Blink = 1U;
-            }
           }
           break;
         case STRING:
           break;
         case HW_DATA:
-          if ( !Insert )
-          {
-            u8g2_SetDrawColor( u8g2, pScreenObjects[i].ObjectParamert[1U]?0U:1U );
-          }
-          else
-          {
-            u8g2_SetDrawColor( u8g2, Blink?0U:1U );
-          }
-          u8g2_DrawBox( u8g2, pScreenObjects[i].x, pScreenObjects[i].y, pScreenObjects[i].Width, pScreenObjects[i].Height );
-          /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-          /* Если поставить сюда break - не выводяться цифры*/
-          /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
         case TEXT_STRING:
+          if  (pScreenObjects[i].xType ==HW_DATA)
+          {
+              if ( !Insert )
+                 u8g2_SetDrawColor( u8g2, pScreenObjects[i].ObjectParamert[1U]?0U:1U );
+               else
+                 u8g2_SetDrawColor( u8g2, Blink?0U:1U );
+              u8g2_DrawBox( u8g2, pScreenObjects[i].x, pScreenObjects[i].y, pScreenObjects[i].Width, pScreenObjects[i].Height );
+          }
           u8g2_SetFontMode( u8g2, pScreenObjects[i].ObjectParamert[0U] );
           if ( !Insert )
           {
@@ -457,11 +445,11 @@ void DrawObject( xScreenObjet * pScreenObjects)
             case INPUT_HW_DATA:
               if ( pScreenObjects[i].DataID > 0U )
               {
-                pScreenObjects[i].GetDtaFunction( READ, &Text, pScreenObjects[i].DataID );
+                pScreenObjects[i].GetDtaFunction( mREAD, &Text, pScreenObjects[i].DataID );
               }
               else
               {
-                pScreenObjects[i].GetDtaFunction( READ, &Text );
+                pScreenObjects[i].GetDtaFunction( mREAD, &Text );
               }
               TEXT = Text;
               break;

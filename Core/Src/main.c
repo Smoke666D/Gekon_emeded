@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "common.h"
+#include "menu.h"
 #include "server.h"
 #include "http.h"
 #include "rtc.h"
@@ -252,7 +253,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
 
   keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
-  SetupKeyboard();
+  vSetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
 
   vUSBinit( usbTaskHandle );
@@ -1068,11 +1069,11 @@ void StartNetTask(void *argument)
 void StartLcdTask(void *argument)
 {
   /* USER CODE BEGIN StartLcdTask */
-	vLCD_Init();
+  vLCD_Init();
   /* Infinite loop */
   for(;;)
   {
-    IncData();
+    vMenuTask();
   }
   /* USER CODE END StartLcdTask */
 }

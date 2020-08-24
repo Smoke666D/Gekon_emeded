@@ -87,9 +87,9 @@ typedef struct
   void          (* pFunc)(void *,char);  /* Функция обработки нажатий */
 } xScreenSetObject;
 /*----------------------------- Functions ------------------------------------*/
-void DrawMenu( uint8_t temp, uint8_t* data );
+void vDrawMenu( uint8_t temp, uint8_t* data );
 void vMenuInit( u8g2_t* temp );
 void vMenuTask( void );
-void DrawObject( xScreenObjet* pScreenObjects );
+void vDrawObject( xScreenObjet* pScreenObjects );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

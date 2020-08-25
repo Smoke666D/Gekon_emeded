@@ -202,8 +202,8 @@ void startNetClientTask( void const * argument )
 
   for(;;)
   {
-  	if( netconn_recv( netcon, &nb ) == ERR_OK )
-  	{
+    if( netconn_recv( netcon, &nb ) == ERR_OK )
+    {
       /*-------------------- Input message --------------------*/
       len = netbuf_len( nb );                          // Get length of input message
       netbuf_copy( nb, endInput, len );                // Copy message from net buffer to local buffer
@@ -215,11 +215,11 @@ void startNetClientTask( void const * argument )
       {
         endInput = input;                                    // Return pointer to the start of the local buffer
         eHTTPresponse( input, &request, &response, output ); // Parsing request and prepare the response
-  		/*-------------------- Send response ---------------------*/
+  	/*-------------------- Send response ---------------------*/
         if ( response.status != HTTP_STATUS_ERROR )
         {
           netconn_write( netcon, output, strlen( output ), NETCONN_COPY );  // Send header of the response
-  		/*-------------------- Send content ----------------------*/
+  	  /*-------------------- Send content ----------------------*/
           if ( response.contentLength > 0U )																							// There is content
           {
             while ( status == STREAM_CONTINUES )
@@ -252,7 +252,7 @@ void startNetClientTask( void const * argument )
       vPortFree( input );
       vPortFree( output );
       osThreadExit();
-  	}
+    }
   }
 }
 /*---------------------------------------------------------------------------------------------------*/

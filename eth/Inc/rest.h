@@ -36,6 +36,7 @@ typedef enum
   REST_CONFIGS       = 0x00,
   REST_CHARTS        = 0x01,
   REST_SAVE_CONFIGS  = 0x02,
+  REST_SAVE_CHARTS   = 0x03,
   REST_REQUEST_ERROR = 0xFF,
 } REST_REQUEST;
 
@@ -49,10 +50,11 @@ typedef enum
 #define	QUOTES_ANCII              0x22U
 #define	REST_BUFFER_SIZE          700U
 #define	REST_DIGIT_BUFFER_SIZE    7U
-#define	REST_REQUEST_NUMBER       3U
+#define	REST_REQUEST_NUMBER       4U
 #define	REST_REQUEST_CONFIGS      "configs"
 #define	REST_REQUEST_CHARTS       "charts"
 #define REST_REQUEST_SAVE_CONFIGS "saveConfigs"
+#define REST_REQUEST_SAVE_CHARTS  "saveCharts"
 /*------------------------------ Extern --------------------------------------*/
 extern const char 	*restRequeststr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/

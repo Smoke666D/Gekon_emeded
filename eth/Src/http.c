@@ -25,7 +25,7 @@ const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD
 /*----------------------- Functions -----------------------------------------------------------------*/
 void          vHTTPcleanRequest ( HTTP_REQUEST *httpRequest );                     /* Clean request structure */
 void          vHTTPCleanResponse ( HTTP_RESPONSE *response );                      /* Clean response structure */
-uint8_t	      uHTTPgetLine ( const char* input, uint16_t num, char* line );        /* Get the string of line from multiline text */
+uint8_t            uHTTPgetLine ( const char* input, uint16_t num, char* line );        /* Get the string of line from multiline text */
 void          eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response );       /* Build get response in response structure */
 char*         vHTTPaddCache ( char* httpStr, HTTP_CACHE cache);                    /* Add cache string to http */
 char*         vHTTPaddContetntType ( char* httpStr, HTTP_CONTENT type );           /* Add content type string to http */
@@ -87,7 +87,7 @@ void vHTTPCleanResponse ( HTTP_RESPONSE *response )
  * The end of line is LF simbol (Line Feed)
  * Input:  input - pointer to char array of multiline text
  *         num   - number of line of interest
- *         line	 - pointer to char array of output buffer for line
+ *         line       - pointer to char array of output buffer for line
  * Output: 1     - There is valid line in output buffer
  *         0     - There is no valid line in output buffer
  */
@@ -131,7 +131,7 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
 
   if ( uHTTPgetLine( req, 0U, line ) > 0U )
   {
-    res 	 = HTTP_STATUS_OK;
+    res        = HTTP_STATUS_OK;
     vHTTPcleanRequest( request );
     /*--------------------------- Parsing HTTP methods ---------------------------*/
     for( i=0U; i<HTTP_METHOD_NUM; i++)
@@ -164,7 +164,7 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
       pchSt  = strstr( req, HTTP_END_HEADER );
       if ( pchSt != NULL )
       {
-    	request->content = &pchSt[strlen( HTTP_END_HEADER )];
+          request->content = &pchSt[strlen( HTTP_END_HEADER )];
       }
     }
   }
@@ -251,24 +251,32 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
         }
         break;
       case REST_CHARTS:
-    	if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
-    	{
+          if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+          {
           if ( eRESTparsingChart( content, charts[adr] ) == REST_OK )
-    	  {
+            {
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
             response->contentLength = 0U;
           }
-    	}
-    	break;
+          }
+          break;
       case REST_SAVE_CONFIGS:
-	if ( eSTORAGEwriteConfigs() == EEPROM_OK )
-	{
-	    response->contetntType  = HTTP_CONTENT_JSON;
-	    response->status        = HTTP_STATUS_OK;
-	    response->contentLength = 0U;
+        if ( eSTORAGEwriteConfigs() == EEPROM_OK )
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_OK;
+          response->contentLength = 0U;
+        }
+        break;
+      case REST_SAVE_CHARTS:
+	if ( eSTORAGEwriteCharts() == EEPROM_OK )
+        {
+	  response->contetntType  = HTTP_CONTENT_JSON;
+	  response->status        = HTTP_STATUS_OK;
+	  response->contentLength = 0U;
 	}
-	break;
+        break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -363,7 +371,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
           {
             response->contentLength += uRESTmakeConfig( configReg[i], restBuffer );
           }
-          response->contentLength += 1U + stream->size;		/* '[' + ']' + ',' */
+          response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
           response->contetntType   = HTTP_CONTENT_JSON;
           response->status         = HTTP_STATUS_OK;
           response->data           = restBuffer;
@@ -385,25 +393,25 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
         }
         break;
       case REST_CHARTS:
-    	  /*------------------ Broadcast -------------------*/
-    	  if ( adrFlag == REST_NO_ADR )
-    	  {
-    		  //uRESTmakeChart
-    		stream = &(response->stream);
-    		stream->size  = CHART_NUMBER;
-    		stream->index = 0U;
-    		stream->start = 0U;
-    		response->callBack = cHTTPstreamCharts;
-    		for( i=0U; i<stream->size; i++ )
-    		{
-    		  response->contentLength += uRESTmakeChart( restBuffer, charts[i] );
-    		}
-    		response->contentLength += 1U + stream->size;		/* '[' + ']' + ',' */
-    		response->contetntType   = HTTP_CONTENT_JSON;
-    		response->status         = HTTP_STATUS_OK;
-    		response->data           = restBuffer;
-    	  }
-    	break;
+        /*------------------ Broadcast -------------------*/
+        if ( adrFlag == REST_NO_ADR )
+        {
+          //uRESTmakeChart
+          stream = &(response->stream);
+          stream->size  = CHART_NUMBER;
+          stream->index = 0U;
+          stream->start = 0U;
+          response->callBack = cHTTPstreamCharts;
+          for( i=0U; i<stream->size; i++ )
+          {
+            response->contentLength += uRESTmakeChart( restBuffer, charts[i] );
+          }
+          response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+          response->contetntType   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_OK;
+          response->data           = restBuffer;
+        }
+        break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -469,7 +477,6 @@ HTTP_STATUS eHTTPbuildRequest ( HTTP_REQUEST* request )
       res = HTTP_STATUS_BAD_REQUEST;
       break;
     case HTTP_METHOD_GET:
-      //eHTTPbuildGetRequest( request );
       res = HTTP_STATUS_OK;
       break;
     case HTTP_METHOD_POST:
@@ -713,7 +720,7 @@ char* vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding )
         strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_BR );
         break;
       default:
-    	break;
+        break;
     }
     strRes = strcat( httpStr, HTTP_END_LINE );
   }

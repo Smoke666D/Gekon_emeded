@@ -14,7 +14,7 @@
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
-const char *restRequeststr[REST_REQUEST_NUMBER] = { REST_REQUEST_CONFIGS, REST_REQUEST_CHARTS, REST_REQUEST_SAVE_CONFIGS };
+const char *restRequeststr[REST_REQUEST_NUMBER] = { REST_REQUEST_CONFIGS, REST_REQUEST_CHARTS, REST_REQUEST_SAVE_CONFIGS, REST_REQUEST_SAVE_CHARTS };
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -232,6 +232,7 @@ REST_ERROR eRESTparsingConfig ( char* input, eConfigReg* reg )
     if ( res == REST_OK )
     {
       res = eRESTparsingDig16Record( input, CONFIG_REG_ADR_STR, &reg->atrib->adr );
+      /*
       for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
       {
         if ( configReg[i]->atrib->adr == reg->atrib->adr )
@@ -239,16 +240,17 @@ REST_ERROR eRESTparsingConfig ( char* input, eConfigReg* reg )
           break;
         }
       }
+      */
       if ( res == REST_OK )
       {
         res = eRESTparsingSignedRecord( input, CONFIG_REG_SCALE_STR, &reg->scale );
-        if (res == REST_OK )
+        if ( res == REST_OK )
         {
           res = eRESTparsingDig16Record( input, CONFIG_REG_MIN_STR, &reg->atrib->min );
-          if (res == REST_OK )
+          if ( res == REST_OK )
           {
             res = eRESTparsingDig16Record( input, CONFIG_REG_MAX_STR, &reg->atrib->max );
-            if (res == REST_OK )
+            if ( res == REST_OK )
             {
               res = eRESTparsingStrRecord( input, CONFIG_REG_UNITS_STR, reg->units, MAX_UNITS_LENGTH );
               if ( res == REST_OK )
@@ -279,7 +281,7 @@ REST_ERROR eRESTparsingConfig ( char* input, eConfigReg* reg )
   }
   else
   {
-  res = REST_MESSAGE_FORMAT_ERROR;
+    res = REST_MESSAGE_FORMAT_ERROR;
   }
   return res;
 }

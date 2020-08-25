@@ -25,7 +25,7 @@ const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD
 /*----------------------- Functions -----------------------------------------------------------------*/
 void          vHTTPcleanRequest ( HTTP_REQUEST *httpRequest );                     /* Clean request structure */
 void          vHTTPCleanResponse ( HTTP_RESPONSE *response );                      /* Clean response structure */
-uint8_t            uHTTPgetLine ( const char* input, uint16_t num, char* line );        /* Get the string of line from multiline text */
+uint8_t       uHTTPgetLine ( const char* input, uint16_t num, char* line );        /* Get the string of line from multiline text */
 void          eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response );       /* Build get response in response structure */
 char*         vHTTPaddCache ( char* httpStr, HTTP_CACHE cache);                    /* Add cache string to http */
 char*         vHTTPaddContetntType ( char* httpStr, HTTP_CONTENT type );           /* Add content type string to http */
@@ -168,7 +168,6 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
       }
     }
   }
-
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -551,7 +550,7 @@ HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
 HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
 {
   HTTP_STATUS  res = HTTP_STATUS_ERROR;
-  char         buffer[30];
+  char         buffer[30U];
   char*        strRes;
 
   // STATUS
@@ -630,7 +629,7 @@ HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
  */
 char* vHTTPaddCache ( char* httpStr, HTTP_CACHE cache)
 {
-  char *strRes;
+  char* strRes = NULL;
 
   strRes = strcat( httpStr, HTTP_CACHE_CONTROL );
   switch ( cache )
@@ -653,7 +652,6 @@ char* vHTTPaddCache ( char* httpStr, HTTP_CACHE cache)
       break;
   }
   strRes = strcat( httpStr, HTTP_END_LINE );
-
   return strRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -697,6 +695,7 @@ char* vHTTPaddContetntType ( char* httpStr, HTTP_CONTENT type )
 char* vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding )
 {
   char* strRes = NULL;
+
   if ( encoding != HTTP_ENCODING_NO )
   {
     strRes = strcat( httpStr, HTTP_ENCODING_LINE );
@@ -759,7 +758,6 @@ STREAM_STATUS cHTTPstreamFileEEPROM ( HTTP_STREAM* stream )
   stream->length = length;
   restBuffer[stream->length] = 0U;
   stream->content = restBuffer;
-
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -807,7 +805,6 @@ STREAM_STATUS cHTTPstreamConfigs ( HTTP_STREAM* stream )
     restBuffer[stream->length] = 0U;
     stream->content = restBuffer;
   }
-
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -855,7 +852,6 @@ STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream )
     restBuffer[stream->length] = 0U;
     stream->content = restBuffer;
   }
-
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/

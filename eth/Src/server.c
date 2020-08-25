@@ -20,9 +20,9 @@ static osThreadId_t  netClientHandle;  // Network task handle
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void            startNetClientTask(void const * argument);              // Network task function
-SERVER_ERROR    eHTTPsendRequest( const char* hostName, char* httpStr );
-RECEIVE_MESSAGE eSERVERanalizMessage( const char* message, uint32_t length );
+void            startNetClientTask (void const * argument);              // Network task function
+SERVER_ERROR    eHTTPsendRequest ( const char* hostName, char* httpStr );
+RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length );
 /*---------------------------------------------------------------------------------------------------*/
 /**
  * Read local IP address of device in char array format
@@ -32,7 +32,7 @@ RECEIVE_MESSAGE eSERVERanalizMessage( const char* message, uint32_t length );
  *         if ipStr[0] = 0x00, initialization havn't finished
  * Output: none
  */
-void cSERVERgetStrIP( char* ipStr )
+void cSERVERgetStrIP ( char* ipStr )
 {
   uint8_t i       = 0U;
   char*   pointer = ip4addr_ntoa( &gnetif.ip_addr );
@@ -51,7 +51,7 @@ void cSERVERgetStrIP( char* ipStr )
  * Input:  none
  * Output: none
  */
-void vSERVERinit( void )
+void vSERVERinit ( void )
 {
   while ( gnetif.ip_addr.addr == 0U )
   {
@@ -66,25 +66,24 @@ void vSERVERinit( void )
  * Input:  none
  * Output: server error code
  */
-SERVER_ERROR eSERVERstart( void )
+SERVER_ERROR eSERVERstart ( void )
 {
-  SERVER_ERROR 	servRes 	= SERVER_OK;
-  err_t 				netconRes = ERR_OK;
+  SERVER_ERROR 	servRes   = SERVER_OK;
+  err_t         netconRes = ERR_OK;
 
-  nc = netconn_new( NETCONN_TCP );										// Create new network connection TCP TYPE
+  nc = netconn_new( NETCONN_TCP );                   // Create new network connection TCP TYPE
   if ( nc != NULL )
   {
-    netconRes = netconn_bind (nc, IP_ADDR_ANY, 80 );	// Bind connection to well known port number 80
+    netconRes = netconn_bind (nc, IP_ADDR_ANY, 80 ); // Bind connection to well known port number 80
     if ( netconRes == ERR_OK )
     {
-      netconRes = netconn_listen( nc );								// Tell connection to go into listening mode
+      netconRes = netconn_listen( nc );	             // Tell connection to go into listening mode
       if ( netconRes != ERR_OK )
       {
         servRes = SERVER_LISTEN_ERROR;
       }
     } else servRes = SERVER_BIND_ERROR;
   } else servRes = SERVER_NEW_CONNECT_ERROR;
-
   return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -93,10 +92,10 @@ SERVER_ERROR eSERVERstart( void )
  * Input:  none
  * Output: server error code
  */
-SERVER_ERROR eSERVERstop( void )
+SERVER_ERROR eSERVERstop ( void )
 {
-  SERVER_ERROR 	servRes 	= SERVER_CLOSE_ERROR;
-  err_t 				netconRes = ERR_OK;
+  SERVER_ERROR 	servRes   = SERVER_CLOSE_ERROR;
+  err_t         netconRes = ERR_OK;
 
   netconRes = netconn_close( nc );
   if ( netconRes == ERR_OK )
@@ -113,7 +112,7 @@ SERVER_ERROR eSERVERstop( void )
  * Input:  none
  * Output: server error code
  */
-SERVER_ERROR eSERVERlistenRoutine( void )
+SERVER_ERROR eSERVERlistenRoutine ( void )
 {
   SERVER_ERROR servRes   = SERVER_OK;
   err_t        netconRes = ERR_OK;
@@ -135,19 +134,19 @@ SERVER_ERROR eSERVERlistenRoutine( void )
   return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
-RECEIVE_MESSAGE eSERVERanalizMessage( const char* message, uint32_t length )
+RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
 {
-  RECEIVE_MESSAGE res       = RECEIVE_MESSAGE_ERROR;
-  char*           pchSt;
-  char*           pchEn;
-  char            buffer[5] = { 0U, 0U, 0U, 0U, 0U };
+  RECEIVE_MESSAGE res                 = RECEIVE_MESSAGE_ERROR;
+  char*           pchSt               = NULL;
+  char*           pchEn               = NULL;
+  char            buffer[5U]          = { 0U, 0U, 0U, 0U, 0U };
   uint32_t        contentLengthHeader = 0U;
 
   pchSt = strstr( message, "PUT" );
-  if ( ( pchSt != NULL ) && ( pchSt[0] < 0x7F ) )
+  if ( ( pchSt != NULL ) && ( pchSt[0U] < 0x7FU ) )
   {
     pchSt = strstr( message, HTTP_LENGTH_LINE );
-    if ( ( pchSt != NULL) && ( pchSt[0] < 0x7F ) )
+    if ( ( pchSt != NULL) && ( pchSt[0U] < 0x7FU ) )
     {
       pchSt = &pchSt[strlen( HTTP_LENGTH_LINE )];
       pchEn = strchr( pchSt, LF_HEX );
@@ -172,7 +171,7 @@ RECEIVE_MESSAGE eSERVERanalizMessage( const char* message, uint32_t length )
             }
           }
         }
-        else if ( message[length - 1] == CR_HEX )
+        else if ( message[length - 1U] == CR_HEX )
         {
           res = RECEIVE_MESSAGE_COMPLETE;
         }
@@ -187,7 +186,7 @@ RECEIVE_MESSAGE eSERVERanalizMessage( const char* message, uint32_t length )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void startNetClientTask( void const * argument )
+void startNetClientTask ( void const * argument )
 {
   struct netconn * netcon      = ( struct netconn * )argument;
   struct netbuf *  nb;
@@ -200,9 +199,9 @@ void startNetClientTask( void const * argument )
   uint32_t         len         = 0U;
   STREAM_STATUS    status      = STREAM_CONTINUES;
 
-  for(;;)
+  for (;;)
   {
-    if( netconn_recv( netcon, &nb ) == ERR_OK )
+    if ( netconn_recv( netcon, &nb ) == ERR_OK )
     {
       /*-------------------- Input message --------------------*/
       len = netbuf_len( nb );                          // Get length of input message
@@ -256,7 +255,7 @@ void startNetClientTask( void const * argument )
   }
 }
 /*---------------------------------------------------------------------------------------------------*/
-SERVER_ERROR eHTTPsendRequest( const char* hostName, char* httpStr )
+SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
 {
   SERVER_ERROR 	   res     = SERVER_OK;
   struct netconn * ncr;
@@ -283,20 +282,13 @@ SERVER_ERROR eHTTPsendRequest( const char* hostName, char* httpStr )
               len = netbuf_len( nbr );
               netbuf_copy( nbr, httpStr, len );
               netbuf_delete( nbr );
-              httpStr[len] = 0;
+              httpStr[len] = 0U;
             }
           } else res = SERVER_WRITE_ERROR;
         } else res = SERVER_REMOTE_CONNECT_ERROR;
       } else res = SERVER_BIND_ERROR;
     } else res = SERVER_NEW_CONNECT_ERROR;
-  }	else res = SERVER_DNS_ERROR;
-/*
-	if ( netconn_close( ncr ) != ERR_OK )
-	{
-		res = SERVER_CLOSE_ERROR;
-	}
-	netconn_delete( ncr );
-*/
+  } else res = SERVER_DNS_ERROR;
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -307,7 +299,7 @@ SERVER_ERROR eHTTPsendRequest( const char* hostName, char* httpStr )
  *         output   - buffer for parsed data of response
  * output: status of operation
  */
-HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
 {
   HTTP_STATUS res = HTTP_STATUS_BAD_REQUEST;
   char        buffer[HTTP_BUFER_SIZE];
@@ -331,7 +323,7 @@ HTTP_STATUS eHTTPrequest( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* 
  *         output   - response string
  * output: none
  */
-void eHTTPresponse( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
 {
   eHTTPparsingRequest( input, request );
   vHTTPbuildResponse( request, response );

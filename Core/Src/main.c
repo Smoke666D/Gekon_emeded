@@ -993,7 +993,6 @@ void StartDefaultTask(void *argument)
   {
     vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
   }
-
   /* Infinite loop */
   for(;;)
   {

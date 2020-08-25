@@ -343,6 +343,11 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   for( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
     size       = uConfigToBlob( configReg[i], &buffer[1U] );
+    if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )
+    {
+      res = EEPROM_ADR_ERROR;
+      break;
+    }
     buffer[0U] = size;
     res        = eEEPROMWriteMemory( adr, buffer, ( size + 1U ) );
     adr       += size + 1U;

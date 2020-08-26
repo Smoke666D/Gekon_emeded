@@ -43,19 +43,23 @@ void vLCDInit( SemaphoreHandle_t temp )
 /*
  * Функция установки яркости подсветки индикатора
  */
-void vSetLedBrigth(uint8_t brigth)
+void vLCDSetLedBrigth(uint8_t brigth)
 {
-  if ( brigth<=100U)
+  if ( brigth <= displayBrightnesLevel.max)
+  {
     lcd_brigth = brigth;
+  }
   else
-    lcd_brigth =100U;
+  {
+    lcd_brigth = displayBrightnesLevel.max;
+  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция плучения яркости подсветки индикатора
  */
-uint8_t ucGetLedBrigth(void)
+uint8_t ucLCDGetLedBrigth(void)
 {
   return  lcd_brigth;
 }
@@ -180,9 +184,11 @@ inline void vLCDWriteCommand( uint8_t com )
 
 void vST7920init(void)
 {
-  vSetLedBrigth(81U);
+  lcd_brigth = displayBrightnesLevel.value[0U];
   HAL_TIM_Base_Start_IT( &htim7 );
+
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+
   osDelay(40);
   vLCDWriteCommand( 0x38U );
   osDelay(1);
@@ -196,6 +202,7 @@ void vST7920init(void)
   osDelay(1);
   vLCDWriteCommand( 0x02U );
   osDelay(1);
+
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
 }
 

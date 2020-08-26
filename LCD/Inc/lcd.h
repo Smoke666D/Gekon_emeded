@@ -16,6 +16,7 @@
 #include "semphr.h"
 #include "u8g2.h"
 #include "menu.h"
+#include "config.h"
 /*------------------------ Define --------------------------------------*/
 #define LCD_WIDTH            128U  /* LCD Size */
 #define LCD_HEIGHT           64U
@@ -46,8 +47,8 @@ void vLCD_Init( void );
 void vLCDRedraw( void );
 void vLCDDelay( void );
 void vST7920init(void);
-uint8_t ucGetLedBrigth(void);
-void vSetLedBrigth(uint8_t brigth);
+uint8_t ucLCDGetLedBrigth(void);
+void vLCDSetLedBrigth(uint8_t brigth);
 void vLCDInit( SemaphoreHandle_t temp );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_LCD_H_ */

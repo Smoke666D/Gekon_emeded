@@ -9,11 +9,11 @@
 
 /*----------------------- Structures ----------------------------------------------------------------*/
 static xKeyPortStruct xKeyPortMass[KEYBOARD_COUNT]={
-		{ GPIOD, KL_UP_Pin },
-		{ GPIOD, KL_DOWN_Pin },
-		{ GPIOD, KL_STOP_Pin },
-		{ GPIOD, KL_START_Pin },
-		{ GPIOD, KL_AUTO_Pin },
+		{  KL_UP_GPIO_Port, KL_UP_Pin },
+		{ KL_DOWN_GPIO_Port, KL_DOWN_Pin },
+		{ KL_STOP_GPIO_Port, KL_STOP_Pin },
+		{ KL_START_GPIO_Port, KL_START_Pin },
+		{ KL_AUTO_GPIO_Port, KL_AUTO_Pin },
 };
 static StaticQueue_t      xKeyboardQueue;
 static QueueHandle_t      pKeyboardQueue;

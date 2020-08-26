@@ -9,6 +9,8 @@
 #define INC_MENU_H_
 /*----------------------- Includes -------------------------------------*/
 #include "u8g2.h"
+#include "main.h"
+
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
 #define CENTER_ALIGN        1U

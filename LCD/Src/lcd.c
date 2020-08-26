@@ -180,7 +180,7 @@ inline void vLCDWriteCommand( uint8_t com )
 
 void vST7920init(void)
 {
-  vSetLedBrigth(80U);
+  vSetLedBrigth(81U);
   HAL_TIM_Base_Start_IT( &htim7 );
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
   osDelay(40);

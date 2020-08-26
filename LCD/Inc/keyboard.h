@@ -38,7 +38,7 @@
 #define stop_key           0x04U
 #define start_key          0x08U
 #define auto_key           0x10U
-#define time_out           0x20U
+#define time_out           0x40U
 /*---------------------------- Structures --------------------------------------*/
 typedef struct
 {

@@ -13,6 +13,7 @@ extern xScreenSetObject xMainMenu;
 extern xScreenSetObject xGeneratorMenu;
 extern xScreenSetObject xEngineMenu;
 extern xScreenSetObject xNetMenu;
+extern xScreenSetObject xSettingsMenu;
 
 extern void xInfoScreenCallBack( xScreenSetObject * menu, char key );
 extern void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
@@ -37,15 +38,17 @@ static char EventLog[][44U]=
   "Напряж. ген. высок",
   "Напряжение ген.",
 };
-#define MENU_LEVEL1_COUNT      8U
+#define MENU_LEVEL1_COUNT      9U
 #define ENGINE_MENU_COUNT      3U
 #define NET_MENU_COUNT         3U
 #define GENERATOR_MENU_COUNT   7U
+#define SETTINGS_MENU_COUNT    3U
 #define MENU_ADD_COUNT         1U
 #define MAX_HEADER_STRING_SIZE 40U
 #define LINE4_HIGTH            ( 64U / 4U )
 #define LINE5_HIGTH            ( 64U / 5U )
 
+#define BRIGTH_ID    1U
 
 #define LEFT_OFFSET  2U
 #define LINE1        12U
@@ -61,7 +64,7 @@ static uint8_t LeftText[]     = { 0U, 1U, LEFT_ALIGN };
 static uint8_t HeaderParam[]  = { 1U, 0U, CENTER_ALIGN, 0U };
 static uint8_t HeaderParam1[] = { 0U, 0U, RIGTH_ALIGN, 0U };
 static uint8_t HeaderParam2[] = { 0U, 1U, LEFT_ALIGN, 0U };
-static uint8_t InputParam[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 0U };
 static uint8_t InputParam2[]  = { 0U, 1U, CENTER_ALIGN, 0U };
 static uint8_t InputParam3[]  = { 0U, 1U, CENTER_ALIGN, 0U };
@@ -70,7 +73,7 @@ extern void GetTime( char* Data );
 extern void GetInt( char* Data );
 extern void vdmGetData( uint8_t command, uint16_t DataID, uint8_t* pchTextString );
 extern void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-
+extern void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 /*
 
 static xScreenObjet ScreenLev1_1[]=
@@ -318,9 +321,38 @@ static xScreenObjet StatusMainScreen[]=
 };
 
 
+static xScreenObjet BrigthScreen[]=
+{
+    {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА",NULL,0U},
+    {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+    {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Ярокость % ",NULL,0U},
+    {1U,FONT_SIZE*13U,LINE1+6U,100U,LINE4_HIGTH,INPUT_HW_DATA,InputParam,NULL,(void*)&vGetStatusData,BRIGTH_ID},
+};
+
+static xScreenObjet BrigthScreen1[]=
+{
+    {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА1",NULL,0U},
+    {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+    {1U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Ярокость тестовая ",NULL,0U},
+
+};
+
+
+static xScreenObjet SettingsMainScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКИ",NULL,0U},
+  {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА ",NULL,0U},
+  {1U,FONT_SIZE*10U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetStatusData,BRIGTH_ID},
+};
+
+
+
+
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   //  {ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
+  {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},
   {NetMainScreen,&xMainMenu,&xNetMenu,PASSIVE,0U,0U,NULL},
@@ -329,6 +361,8 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
   {EventMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {InfoMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+
+
 };
 
 static xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
@@ -356,4 +390,11 @@ static xScreenType  xNetScreens[NET_MENU_COUNT]=
   { NetMainScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
 };
 
+static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
+{
+  { BrigthScreen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
+  { BrigthScreen1, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
+  { SettingsMainScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
+
+};
 

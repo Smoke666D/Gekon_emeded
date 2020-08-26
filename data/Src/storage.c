@@ -13,7 +13,6 @@
 /*----------------------- Functions -----------------------------------------------------------------*/
 uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob );
 uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob );
-
 uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob );
 uint8_t uBlobToFix16 ( fix16_t* val, uint8_t* blob );
 uint8_t uUint16ToBlob( uint16_t val, uint8_t* blob );
@@ -416,6 +415,23 @@ EEPROM_STATUS eSTORAGEreadConfigs( void )
     }
   }
   return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEgetData ( DATA_ADR n, uint16_t* data )
+{
+  EEPROM_STATUS res = EEPROM_OK;
+  res = eEEPROMReadMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )data, 2U );
+  if ( res == EEPROM_OK )
+  {
+    *( dataArray[n] ) = *data;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEsetData ( DATA_ADR n, const uint16_t* data )
+{
+  *(dataArray[n]) = *data;
+  return eEEPROMWriteMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )dataArray[n], 2U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

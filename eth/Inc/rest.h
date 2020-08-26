@@ -11,6 +11,8 @@
 #include "stm32f2xx_hal.h"
 #include "config.h"
 #include "chart.h"
+#include "RTC.h"
+#include "data.h"
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -33,11 +35,13 @@ typedef enum
 
 typedef enum
 {
-  REST_CONFIGS       = 0x00,
-  REST_CHARTS        = 0x01,
-  REST_SAVE_CONFIGS  = 0x02,
-  REST_SAVE_CHARTS   = 0x03,
-  REST_REQUEST_ERROR = 0xFF,
+  REST_CONFIGS       = 0x00U,
+  REST_CHARTS        = 0x01U,
+  REST_SAVE_CONFIGS  = 0x02U,
+  REST_SAVE_CHARTS   = 0x03U,
+  REST_TIME          = 0x04U,
+  REST_DATA          = 0x05U,
+  REST_REQUEST_ERROR = 0xFFU,
 } REST_REQUEST;
 
 typedef enum
@@ -50,19 +54,31 @@ typedef enum
 #define	QUOTES_ANCII              0x22U
 #define	REST_BUFFER_SIZE          700U
 #define	REST_DIGIT_BUFFER_SIZE    7U
-#define	REST_REQUEST_NUMBER       4U
-#define	REST_REQUEST_CONFIGS      "configs"
-#define	REST_REQUEST_CHARTS       "charts"
-#define REST_REQUEST_SAVE_CONFIGS "saveConfigs"
-#define REST_REQUEST_SAVE_CHARTS  "saveCharts"
+#define	REST_REQUEST_NUMBER       6U            // Number of active REST requests
+#define	REST_REQUEST_CONFIGS      "configs"     // GET and PUT configuration
+#define	REST_REQUEST_CHARTS       "charts"      // GET and PUT chart
+#define REST_REQUEST_SAVE_CONFIGS "saveConfigs" // PUT command to save all configurations to EEPROM
+#define REST_REQUEST_SAVE_CHARTS  "saveCharts"  // PUT command to save all charts to EEPROM
+#define REST_REQUEST_TIME         "time"        // GET and PUT time
+#define REST_REQUEST_DATA         "data"        // GET and PUT data ( 2 byte data )
+
+#define TIME_HOUR_STR             "hour"
+#define TIME_MIN_STR              "min"
+#define TIME_SEC_STR              "sec"
+#define TIME_YEAR_STR             "year"
+#define TIME_MONTH_STR            "month"
+#define TIME_DAY_STR              "day"
+#define TIME_WDAY_STR             "wday"
 /*------------------------------ Extern --------------------------------------*/
 extern const char 	*restRequeststr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/
-uint32_t     uRESTmakeConfig ( eConfigReg* reg, char* output );
-uint32_t     uRESTmakeChart ( char* output, eChartData* chart );
+uint32_t     uRESTmakeConfig ( const eConfigReg* reg, char* output );
+uint32_t     uRESTmakeChart ( const eChartData* chart, char* output );
+uint32_t     uRESTmakeTime ( const RTC_TIME* time, char* output );
 REST_ERROR   eRESTparsingConfig ( char* input, eConfigReg* reg );
 REST_ADDRESS eRESTgetRequest ( char* path, REST_REQUEST* request, uint16_t* adr );
 REST_ERROR   eRESTparsingChart ( char* input, eChartData* chart );
+REST_ERROR   eRESTparsingTime( char* input, RTC_TIME* time );
 /*---------------------------------------------------------------------------------------------------*/
 
 #endif /* INC_REST_H_ */

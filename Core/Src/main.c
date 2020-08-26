@@ -38,6 +38,7 @@
 #include "EEPROM.h"
 #include "storage.h"
 #include "RTC.h"
+#include "data.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -910,6 +911,7 @@ void StartDefaultTask(void *argument)
   uint8_t   i         = 0U;
   uint8_t   j         = 0U;
   uint8_t   temp      = 0U;
+  uint16_t  data      = 0U;
   uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
@@ -932,7 +934,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "( ");
   sprintf( buf, "%d", STORAGE_WEB_SIZE );
   vSYSSerial( buf );
-  vSYSSerial( " Kb )\n\r" );
+  vSYSSerial( " bytes )\n\r" );
 
   vSYSSerial("Reserve        : ");
   sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
@@ -940,7 +942,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "( ");
   sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
   vSYSSerial( buf );
-  vSYSSerial( " Kb )\n\r" );
+  vSYSSerial( " bytes )\n\r" );
 
   vSYSSerial("Configurations : ");
   sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
@@ -956,7 +958,15 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "( ");
   sprintf( buf, "%d", STORAGE_CHART_SIZE );
   vSYSSerial( buf );
-  vSYSSerial( " Kb )\n\r" );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Data           : ");
+  sprintf( buf, "0x%06X", STORAGE_DATA_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_DATA_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
 
   vSYSSerial("Log            : ");
   sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
@@ -964,15 +974,15 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "( ");
   sprintf( buf, "%d", STORAGE_LOG_SIZE );
   vSYSSerial( buf );
-  vSYSSerial( " Kb )\n\r" );
+  vSYSSerial( " bytes )\n\r" );
 
   vSYSSerial("Free           : ");
   sprintf( buf, "%d", ( EEPROM_SIZE - STORAGE_REQUIRED_SIZE ) );
   vSYSSerial( buf );
-  vSYSSerial( " Kb \n\r" );
+  vSYSSerial( " bytes \n\r" );
 
   vSYSSerial("End            : ");
-  sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
+  sprintf( buf, "0x%06X", EEPROM_SIZE );
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
@@ -992,6 +1002,14 @@ void StartDefaultTask(void *argument)
   else
   {
     vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
+  }
+  for ( i=0; i<DATA_SIZE; i++ )
+  {
+    if ( eSTORAGEgetData( i, &data ) != EEPROM_OK )
+    {
+      vSYSSerial( ">>EEPROM data read: fail!\n\r" );
+      break;
+    }
   }
   /* Infinite loop */
   for(;;)

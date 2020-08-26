@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-25 08:11:58
+ * Make time: 2020-08-26 10:28:58
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -9,12 +9,12 @@
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   SETTING_REGISTER_NUMBER      125U
+#define   SETTING_REGISTER_NUMBER      122U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
 #define   CONFIG_MAX_SIZE              77U     // bytes
-#define   CONFIG_TOTAL_SIZE            1894U   // bytes
+#define   CONFIG_TOTAL_SIZE            1858U   // bytes
 
 #define   CONFIG_REG_ADR_STR           "adr"
 #define   CONFIG_REG_SCALE_STR         "scale"
@@ -59,11 +59,11 @@ typedef struct
 
 typedef struct
 {
-  eConfigAttributes* atrib;                   // R
-  signed char        scale;                   // RW
-  uint16_t*          value;                   // RW
-  uint16_t           units[MAX_UNITS_LENGTH]; // RW
-  eConfigBitMap*     bitMap;                  // RW
+  const eConfigAttributes* atrib;                   // R
+  signed char              scale;                   // RW
+  uint16_t*                value;                   // RW
+  uint16_t                 units[MAX_UNITS_LENGTH]; // RW
+  eConfigBitMap*           bitMap;                  // RW
 } eConfigReg;
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg versionController;
@@ -187,10 +187,7 @@ extern eConfigReg maintenanceAlarms;
 extern eConfigReg maintenanceAlarmOilTime;
 extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
-extern const eConfigReg maintenanceAlarmOilTimeLeft;
-extern const eConfigReg maintenanceAlarmAirTimeLeft;
-extern const eConfigReg maintenanceAlarmFuelTimeLeft;
 extern eConfigReg logSetup;
-extern eConfigReg* configReg[SETTING_REGISTER_NUMBER];
+extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

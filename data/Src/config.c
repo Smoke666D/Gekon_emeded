@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-25 08:11:58
+ * Make time: 2020-08-26 10:28:58
  */
 #include   "config.h"
 
@@ -2453,63 +2453,6 @@ eConfigReg maintenanceAlarmFuelTime =
    .bitMap     = NULL
 };
 /*----------------------------------------------------------------*/
-const uint16_t maintenanceAlarmOilTimeLeftValue[1U] = { 0U };
-const eConfigAttributes maintenanceAlarmOilTimeLeftAtrib =
-{
-   .adr        = 121U,
-   .min        = 0U,
-   .max        = 5000U,
-   .type       = 'U',
-   .len        = 1U,
-   .bitMapSize = 0U,
-};
-const eConfigReg maintenanceAlarmOilTimeLeft =
-{
-   .atrib      = &maintenanceAlarmOilTimeLeftAtrib,
-   .scale      = 0U,
-   .value      = maintenanceAlarmOilTimeLeftValue,
-   .units      = {'ч', 'а', 'с', ' '},
-   .bitMap     = NULL
-};
-/*----------------------------------------------------------------*/
-const uint16_t maintenanceAlarmAirTimeLeftValue[1U] = { 0U };
-const eConfigAttributes maintenanceAlarmAirTimeLeftAtrib =
-{
-   .adr        = 122U,
-   .min        = 0U,
-   .max        = 5000U,
-   .type       = 'U',
-   .len        = 1U,
-   .bitMapSize = 0U,
-};
-const eConfigReg maintenanceAlarmAirTimeLeft =
-{
-   .atrib      = &maintenanceAlarmAirTimeLeftAtrib,
-   .scale      = 0U,
-   .value      = maintenanceAlarmAirTimeLeftValue,
-   .units      = {'ч', 'а', 'с', ' '},
-   .bitMap     = NULL
-};
-/*----------------------------------------------------------------*/
-const uint16_t maintenanceAlarmFuelTimeLeftValue[1U] = { 0U };
-const eConfigAttributes maintenanceAlarmFuelTimeLeftAtrib =
-{
-   .adr        = 123U,
-   .min        = 0U,
-   .max        = 5000U,
-   .type       = 'U',
-   .len        = 1U,
-   .bitMapSize = 0U,
-};
-const eConfigReg maintenanceAlarmFuelTimeLeft =
-{
-   .atrib      = &maintenanceAlarmFuelTimeLeftAtrib,
-   .scale      = 0U,
-   .value      = maintenanceAlarmFuelTimeLeftValue,
-   .units      = {'ч', 'а', 'с', ' '},
-   .bitMap     = NULL
-};
-/*----------------------------------------------------------------*/
 static eConfigBitMap logSetupBitMap[1U] = 
 {
    { 1U, 0U },     // logSaveWarningEventsEnb
@@ -2517,7 +2460,7 @@ static eConfigBitMap logSetupBitMap[1U] =
 uint16_t logSetupValue[1U] = { 1U };
 const eConfigAttributes logSetupAtrib =
 {
-   .adr        = 124U,
+   .adr        = 121U,
    .min        = 0U,
    .max        = 65535U,
    .type       = 'U',
@@ -2534,4 +2477,4 @@ eConfigReg logSetup =
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* configReg[SETTING_REGISTER_NUMBER] = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &hysteresisLevel, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &speedSetup, &speedToothNumber, &speedLowAlarmLevel, &speedHightAlarmLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &doabType, &docdType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerGenBreakerTripPulse, &timerGenBreakerClosePulse, &timerMainsBreakerTripPulse, &timerMainsBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &engineWorkTimeInput, &engineStartsNumberInput, &starterStopSetup, &starterStopGenFreqLevel, &starterStopOilPressureLevel, &starterStopChargeAlternatorLevel, &starterStopSpeedLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime, &maintenanceAlarmOilTimeLeft, &maintenanceAlarmAirTimeLeft, &maintenanceAlarmFuelTimeLeft, &logSetup};
+eConfigReg* const configReg[SETTING_REGISTER_NUMBER] = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &hysteresisLevel, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &speedSetup, &speedToothNumber, &speedLowAlarmLevel, &speedHightAlarmLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &doabType, &docdType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerGenBreakerTripPulse, &timerGenBreakerClosePulse, &timerMainsBreakerTripPulse, &timerMainsBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &engineWorkTimeInput, &engineStartsNumberInput, &starterStopSetup, &starterStopGenFreqLevel, &starterStopOilPressureLevel, &starterStopChargeAlternatorLevel, &starterStopSpeedLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime, &logSetup};

@@ -16,8 +16,11 @@
 #include "chart.h"
 #include "EEPROM.h"
 #include "storage.h"
+#include "RTC.h"
+#include "data.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static char restBuffer[REST_BUFFER_SIZE];
+static char     restBuffer[REST_BUFFER_SIZE];
+static RTC_TIME time;
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_PUT, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -34,6 +37,8 @@ STREAM_STATUS cHTTPstreamFile ( HTTP_STREAM* );                                 
 STREAM_STATUS cHTTPstreamFileEEPROM ( HTTP_STREAM* stream );                       /* Stream callback for file trasfer from EEPROM */
 STREAM_STATUS cHTTPstreamConfigs ( HTTP_STREAM* );                                 /* Stream call back for configuration data transfer */
 STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* );                                  /* Stream call back for charts data transfer */
+STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream );                             /* Stream call back for RTC time */
+STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream );
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -250,16 +255,16 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
         }
         break;
       case REST_CHARTS:
-          if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
-          {
+        if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+        {
           if ( eRESTparsingChart( content, charts[adr] ) == REST_OK )
             {
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
             response->contentLength = 0U;
           }
-          }
-          break;
+        }
+        break;
       case REST_SAVE_CONFIGS:
         if ( eSTORAGEwriteConfigs() == EEPROM_OK )
         {
@@ -269,13 +274,26 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
         }
         break;
       case REST_SAVE_CHARTS:
-	if ( eSTORAGEwriteCharts() == EEPROM_OK )
+        if ( eSTORAGEwriteCharts() == EEPROM_OK )
         {
-	  response->contetntType  = HTTP_CONTENT_JSON;
-	  response->status        = HTTP_STATUS_OK;
-	  response->contentLength = 0U;
-	}
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_OK;
+          response->contentLength = 0U;
+        }
         break;
+      case REST_TIME:
+	if ( eRESTparsingTime( content, &time ) == REST_OK )
+	{
+	  if ( vRTCsetTime( &time ) == RTC_OK )
+	  {
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->contentLength = 0U;
+	  }
+	}
+    break;
+      case REST_DATA:
+    break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -395,7 +413,6 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
         /*------------------ Broadcast -------------------*/
         if ( adrFlag == REST_NO_ADR )
         {
-          //uRESTmakeChart
           stream = &(response->stream);
           stream->size  = CHART_NUMBER;
           stream->index = 0U;
@@ -403,13 +420,41 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
           response->callBack = cHTTPstreamCharts;
           for( i=0U; i<stream->size; i++ )
           {
-            response->contentLength += uRESTmakeChart( restBuffer, charts[i] );
+            response->contentLength += uRESTmakeChart( charts[i], restBuffer );
           }
           response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
           response->contetntType   = HTTP_CONTENT_JSON;
           response->status         = HTTP_STATUS_OK;
           response->data           = restBuffer;
         }
+        break;
+      case REST_TIME:
+        if ( eRTCgetTime( &time ) == RTC_OK )
+        {
+          stream = &(response->stream);
+          stream->size            = 1U;
+          stream->start           = 0U;
+          stream->index           = 0U;
+          response->contentLength = uRESTmakeTime( &time, restBuffer );;
+          response->callBack      = cHTTPstreamTime ;
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_OK;
+        }
+        break;
+      case REST_DATA:
+	if ( adrFlag != REST_NO_ADR )
+	{
+	  if ( adr < DATA_SIZE )
+	  {
+	    stream = &(response->stream);
+	    stream->size            = 1U;
+	    stream->start           = adr;
+	    stream->index           = 0U;
+	    response->callBack      = cHTTPstreamData;
+	    response->contetntType  = HTTP_CONTENT_JSON;
+	    response->status        = HTTP_STATUS_OK;
+	  }
+	}
         break;
       case REST_REQUEST_ERROR:
         break;
@@ -753,7 +798,7 @@ STREAM_STATUS cHTTPstreamFileEEPROM ( HTTP_STREAM* stream )
     length = stream->size - stream->index;
     stream->status = STREAM_END;
   }
-  eEEPROMReadMemory( ( STORAGE_EWA_DATA_ADR + stream->index ), restBuffer, length );
+  eEEPROMReadMemory( ( STORAGE_EWA_DATA_ADR + stream->index ), ( uint8_t* )restBuffer, length );
   stream->index += length;
   stream->length = length;
   restBuffer[stream->length] = 0U;
@@ -818,11 +863,11 @@ STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream )
   if ( ( stream->index == 0U ) && ( length > 1U ) )
   {
     restBuffer[0U] = '[';
-    stream->length = uRESTmakeChart( &restBuffer[1U], charts[stream->start + stream->index] ) + 1U;
+    stream->length = uRESTmakeChart(  charts[stream->start + stream->index], &restBuffer[1U] ) + 1U;
   }
   else
   {
-    stream->length = uRESTmakeChart( restBuffer, charts[stream->start + stream->index] );
+    stream->length = uRESTmakeChart( charts[stream->start + stream->index], restBuffer );
   }
   if ( stream->length == 0U )
   {
@@ -852,6 +897,23 @@ STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream )
     restBuffer[stream->length] = 0U;
     stream->content = restBuffer;
   }
+  return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Stream callback for time transfer
+ */
+STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream )
+{
+  stream->status = STREAM_END;
+  stream->length = uRESTmakeTime( &time, restBuffer );
+  restBuffer[stream->length] = 0U;
+  stream->content = restBuffer;
+  return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
+{
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/

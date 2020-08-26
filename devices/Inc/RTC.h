@@ -142,10 +142,10 @@ typedef enum
 #define  RTC_SEC_MAX          59U
 #define  RTC_MIN_MAX          59U
 #define  RTC_HOUR_MAX         23U
-#define  RTC_WDAY_MIN         1U
-#define  RTC_WDAY_MAX         7U
-#define  RTC_DAY_MIN          SUNDAY
-#define  RTC_DAY_MAX          MONTH_DEC
+#define  RTC_WDAY_MIN         SUNDAY
+#define  RTC_WDAY_MAX         SATURDAY
+#define  RTC_DAY_MIN          1U
+#define  RTC_DAY_MAX          31U
 #define  RTC_MONTH_MIN        MONTH_JAN
 #define  RTC_MONTH_MAX        MONTH_DEC
 #define  RTC_YEAR_MIN         0U

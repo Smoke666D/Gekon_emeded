@@ -159,7 +159,7 @@ void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
 void StartLcdTask(void *argument);
 extern void StartLcdRedrawTask(void *argument);
-extern void StartUsbTask(void *argument);
+extern void vStartUsbTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 extern void vKeyboardTask(void const * argument);
@@ -259,7 +259,7 @@ int main(void)
   lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
 
   /* creation of usbTask */
-  usbTaskHandle = osThreadNew(StartUsbTask, NULL, &usbTask_attributes);
+  usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 

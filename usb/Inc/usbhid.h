@@ -28,7 +28,7 @@ typedef enum
   USB_DONE,          /* Operation done */
   USB_CONT,          /* Message is not end. Wait for new package */
   USB_ERROR_LENGTH,  /* Error in declared and received length of data*/
-  USB_STORAGE_ERROR, /* Error in storage process ( EEPROM )  */
+  USB_STORAGE_ERROR, /* Error in storage process ( EEPROM or RTC )  */
 } USB_Status;
 
 typedef enum
@@ -53,6 +53,10 @@ typedef enum
   USB_PUT_EWA_CMD     = 0x05U,
   USB_SAVE_CONFIG_CMD = 0x06U,
   USB_SAVE_CHART_CMD  = 0x07U,
+  USB_GET_TIME        = 0x08U,
+  USB_PUT_TIME        = 0x09U,
+  USB_GET_DATA        = 0x0AU,
+  USB_PUT_DATA        = 0x0BU,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U
@@ -102,7 +106,7 @@ typedef struct
 
 /*----------------------------- Functions ------------------------------------*/
 void              vUSBinit ( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
-void              StartUsbTask ( void *argument );       /* Processing USB input task */
+void              vStartUsbTask ( void *argument );       /* Processing USB input task */
 USB_StatusConnect eUSBgetStatus ( void );                /* Get connection status of USB device */
 void              vUSBreceiveHandler ( void );           /* Handler of USB input interrupt */
 /*----------------------------------------------------------------------------*/

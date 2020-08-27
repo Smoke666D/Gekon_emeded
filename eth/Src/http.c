@@ -5,6 +5,7 @@
  *      Author: mikhail.mikhailov
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
+#include "freeData.h"
 #include "http.h"
 #include "index.h"
 #include "string.h"
@@ -17,7 +18,6 @@
 #include "EEPROM.h"
 #include "storage.h"
 #include "RTC.h"
-#include "data.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static char     restBuffer[REST_BUFFER_SIZE];
 static RTC_TIME time;
@@ -297,7 +297,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
 	{
 	  if ( eRESTparsingData( content, dataArray[adr] ) == REST_OK )
 	  {
-	    if ( eSTORAGEsaveData( dataArray[adr] ) )
+	    if ( eSTORAGEsaveData( adr ) )
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
             response->contentLength = 0U;

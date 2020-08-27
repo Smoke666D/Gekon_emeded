@@ -8,10 +8,10 @@
 #ifndef INC_STORAGE_H_
 #define INC_STORAGE_H_
 /*----------------------- Includes -------------------------------------*/
+#include <freeData.h>
 #include "stm32f2xx_hal.h"
 #include "EEPROM.h"
 #include "config.h"
-#include "data.h"
 //#include "logicCommon.h"
 /*------------------------ Define --------------------------------------*/
 #define  STORAGE_WEB_SIZE       307200U                            /* byte */

@@ -5,8 +5,8 @@
  *      Author: 79110
  */
 
-#ifndef INC_DATA_H_
-#define INC_DATA_H_
+#ifndef INC_FREEDATA_H_
+#define INC_FREEDATA_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
@@ -29,4 +29,4 @@ extern uint16_t maintenanceAlarmFuelTimeLeft; /* 4 */
 
 extern uint16_t* const dataArray[DATA_SIZE];
 /*----------------------------------------------------------------------*/
-#endif /* INC_DATA_H_ */
+#endif /* INC_FREEDATA_H_ */

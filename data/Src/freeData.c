@@ -5,7 +5,7 @@
  *      Author: 79110
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
-#include "data.h"
+#include "freeData.h"
 
 uint16_t engineWorkTime               = 0U;  /* 0 */
 uint16_t engineStartsNumber           = 0U;  /* 1 */

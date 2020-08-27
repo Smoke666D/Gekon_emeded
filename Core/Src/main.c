@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <freeData.h>
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
@@ -38,7 +39,6 @@
 #include "EEPROM.h"
 #include "storage.h"
 #include "RTC.h"
-#include "data.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

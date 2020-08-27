@@ -8,11 +8,11 @@
 #ifndef INC_REST_H_
 #define INC_REST_H_
 /*----------------------------- Includes -------------------------------------*/
+#include <freeData.h>
 #include "stm32f2xx_hal.h"
 #include "config.h"
 #include "chart.h"
 #include "RTC.h"
-#include "data.h"
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {

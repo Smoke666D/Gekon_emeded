@@ -337,29 +337,29 @@ EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint3
  *         len  - length to read
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint16_t len )
+EEPROM_STATUS eEEPROMReadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS   res    = EEPROM_OK;
   EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
   uint16_t        i      = 0;
   uint16_t        size   = 0U;             /* Size of data in memory pages */
   uint16_t        remain = 0U;             /* Remain of first page in bytes */
-  uint32_t        count  = *adr;           /* Counter of address */
+  uint32_t        count  = adr;           /* Counter of address */
   uint32_t        shift  = 0U;             /* Shift in output buffer */
   uint16_t        subLen = len;            /* Length of write iteration */
 
   res = eEEPROMreadSR( &state );
   if ( res == EEPROM_OK )
   {
-    if ( ( *adr + len ) <= EEPROM_MAX_ADR  )
+    if ( ( adr + len ) <= EEPROM_MAX_ADR  )
     {
-      remain = EEPROM_PAGE_SIZE - ( *adr - ( ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
+      remain = EEPROM_PAGE_SIZE - ( adr - ( ( ( uint8_t )( adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
       if ( remain < len )
       {
         size   = (uint8_t)( ( len - remain ) / EEPROM_PAGE_SIZE );
         subLen = remain;
       }
-      res = eEEPROMread( EEPROM_READ, adr, &data[shift], subLen );
+      res = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
       shift += subLen;
       count += subLen;
       if ( res == EEPROM_OK )
@@ -375,9 +375,9 @@ EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint16_t l
 	    break;
 	  }
 	}
-	if ( ( count < ( *adr + len ) ) && ( res == EEPROM_OK ) )
+	if ( ( count < ( adr + len ) ) && ( res == EEPROM_OK ) )
 	{
-	  subLen = ( uint16_t )( *adr + len - count );
+	  subLen = ( uint16_t )( adr + len - count );
 	  res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
 	}
       }
@@ -397,24 +397,23 @@ EEPROM_STATUS eEEPROMReadMemory ( const uint32_t* adr, uint8_t* data, uint16_t l
  *         len  - length to write
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint16_t len )
+EEPROM_STATUS eEEPROMWriteMemory ( uint32_t adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS   res    = EEPROM_OK;
-  EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
   uint16_t        i      = 0U;
   uint16_t        size   = 0U;             /* Size of data in memory pages */
   uint16_t        remain = 0U;             /* Remain of first page in bytes */
-  uint32_t        count  = *adr;           /* Counter of address */
+  uint32_t        count  = adr;            /* Counter of address */
   uint32_t        shift  = 0U;             /* Shift in output buffer */
   uint16_t        subLen = len;            /* Length of write iteration */
 
-  remain = EEPROM_PAGE_SIZE - ( *adr - ( ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
+  remain = EEPROM_PAGE_SIZE - ( adr - ( ( ( uint8_t )( adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
   if ( remain < len )
   {
     size   = (uint8_t)( ( len - remain ) / EEPROM_PAGE_SIZE );
     subLen = remain;
   }
-  res = eEEPROMWriteData( adr, &data[shift], subLen );
+  res = eEEPROMWriteData( &count, &data[shift], subLen );
   count += subLen;
   shift += subLen;
   if ( res == EEPROM_OK )
@@ -430,9 +429,9 @@ EEPROM_STATUS eEEPROMWriteMemory ( const uint32_t* adr, uint8_t* data, uint16_t 
         break;
       }
     }
-    if ( ( count < ( *adr + len ) ) && ( res == EEPROM_OK ) )
+    if ( ( count < ( adr + len ) ) && ( res == EEPROM_OK ) )
     {
-      subLen = ( uint16_t )( *adr + len - count );
+      subLen = ( uint16_t )( adr + len - count );
       res    = eEEPROMWriteData( &count, &data[shift], subLen );
     }
   }

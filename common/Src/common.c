@@ -18,8 +18,8 @@ static UART_HandleTypeDef*	debug_huart;
  */
 void vSYSInitSerial( UART_HandleTypeDef* uart )
 {
-	debug_huart = uart;
-	return;
+  debug_huart = uart;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -29,11 +29,11 @@ void vSYSInitSerial( UART_HandleTypeDef* uart )
  */
 void vSYSSerial( char* msg )
 {
-	HAL_UART_Transmit(debug_huart, (uint8_t*)msg, strlen(msg), 0xFFFF);
-	return;
+  HAL_UART_Transmit(debug_huart, (uint8_t*)msg, strlen(msg), 0xFFFF);
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vSYSgetUniqueID32( uint32_t* id )
+void vSYSgetUniqueID32 ( uint32_t* id )
 {
   id[0U] = GET_UNIQUE_ID0;
   id[1U] = GET_UNIQUE_ID1;
@@ -41,7 +41,7 @@ void vSYSgetUniqueID32( uint32_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vSYSgetUniqueID16( uint16_t* id )
+void vSYSgetUniqueID16 ( uint16_t* id )
 {
   id[0U] = ( uint16_t )( GET_UNIQUE_ID0 & 0xFFFF );
   id[1U] = ( uint16_t )( ( GET_UNIQUE_ID0 >> 16U ) & 0xFFFF );
@@ -52,7 +52,7 @@ void vSYSgetUniqueID16( uint16_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uEncodeURI( const uint16_t* input, uint8_t length, char* output )
+uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output )
 {
   uint8_t shift = 0U;
   uint8_t i     = 0U;
@@ -115,7 +115,15 @@ void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-
+uint8_t uSYSisConst ( void* ptr )
+{
+  uint8_t res = 1U;
+  if ( ptr > 0x20000000U )
+  {
+    res = 0U;
+  }
+  return res;
+}
 
 
 

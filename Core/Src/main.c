@@ -36,7 +36,9 @@
 #include "keyboard.h"
 #include "usbhid.h"
 #include "EEPROM.h"
+#include "storage.h"
 #include "RTC.h"
+#include "data.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -88,7 +90,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 496
+  .stack_size = 1024
 };
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
@@ -157,7 +159,7 @@ void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
 void StartLcdTask(void *argument);
 extern void StartLcdRedrawTask(void *argument);
-extern void StartUsbTask(void *argument);
+extern void vStartUsbTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 extern void vKeyboardTask(void const * argument);
@@ -214,7 +216,7 @@ int main(void)
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM init */
   vRTCinit( &hi2c1 );                                           /* RTC init */
   /*-------------------- Version initialization ------------------------------*/
-  vSYSgetUniqueID16(serialNumber.value);            /* Serial number */
+  vSYSgetUniqueID16( serialNumber.value );          /* Serial number */
   versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
   versionController.value[0U] = HARDWARE_VERSION;   /* Hardware version */
   /*--------------------------------------------------------------------------*/
@@ -257,11 +259,11 @@ int main(void)
   lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
 
   /* creation of usbTask */
-  usbTaskHandle = osThreadNew(StartUsbTask, NULL, &usbTask_attributes);
+  usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 
-  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  keyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   SetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
 
@@ -905,24 +907,110 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  char 		buf[36];
-  uint8_t	i = 0U;
-  uint8_t	j = 0U;
-  uint8_t	temp = 0U;
+  char      buf[36];
+  uint8_t   i         = 0U;
+  uint8_t   j         = 0U;
+  uint8_t   temp      = 0U;
+  uint16_t  data      = 0U;
   uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
-  for ( i=0; i<6U; i++ )
+  for ( i=0U; i<6U; i++ )
   {
     for ( j=0U; j<2U; j++ )
     {
-      temp = (uint8_t)(serialNumber.value[i] << j*8U);
+      temp = ( uint8_t )( serialNumber.value[i] << j*8U );
       sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
     }
   }
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
+
+  vSYSSerial("--------------EEPROM map:--------------\n\r");
+  vSYSSerial("EWA            : ");
+  sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_WEB_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Reserve        : ");
+  sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Configurations : ");
+  sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", CONFIG_TOTAL_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Charts         : ");
+  sprintf( buf, "0x%06X", STORAGE_CHART_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_CHART_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Data           : ");
+  sprintf( buf, "0x%06X", STORAGE_DATA_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_DATA_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Log            : ");
+  sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_LOG_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Free           : ");
+  sprintf( buf, "%d", ( EEPROM_SIZE - STORAGE_REQUIRED_SIZE ) );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes \n\r" );
+
+  vSYSSerial("End            : ");
+  sprintf( buf, "0x%06X", EEPROM_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( "\n\r" );
+
+  vSYSSerial("---------------------------------------\n\r");
+  if ( eSTORAGEreadConfigs() == EEPROM_OK )
+  {
+    vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
+  }
+  else
+  {
+    vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
+  }
+  if ( eSTORAGEreadCharts() == EEPROM_OK )
+  {
+    vSYSSerial( ">>EEPROM charts read: done!\n\r" );
+  }
+  else
+  {
+    vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
+  }
+  /*for ( i=0; i<DATA_SIZE; i++ )
+  {
+    if ( eSTORAGEgetData( i, &data ) != EEPROM_OK )
+    {
+      vSYSSerial( ">>EEPROM data read: fail!\n\r" );
+      break;
+    }
+  }*/
   /* Infinite loop */
   for(;;)
   {
@@ -947,26 +1035,23 @@ void StartDefaultTask(void *argument)
 void StartNetTask(void *argument)
 {
   /* USER CODE BEGIN StartNetTask */
-	char ipaddr[16];
-	vSYSSerial( ">>DHCP: ");
-	vSERVERinit();
-	vSYSSerial( "done!\n\r");
-	cSERVERgetStrIP( ipaddr );
-	vSYSSerial( ">>IP address: ");
-	vSYSSerial( ipaddr );
-	vSYSSerial("\n\r");
-	vSYSSerial( ">>RTC: ");
-	vSYSSerial( ">>TCP: " );
-	if ( eSERVERstart() != SERVER_OK )
-	{
-		vSYSSerial( "fail!\n\r" );
-		while( 1U ) osDelay( 1U );
-	}
-	vSYSSerial( "done!\n\r" );
-	vSYSSerial( ">>Server ready and listen port 80!\n\r" );
-
-	HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-
+  char ipaddr[16];
+  vSYSSerial( ">>DHCP: ");
+  vSERVERinit();
+  vSYSSerial( "done!\n\r");
+  cSERVERgetStrIP( ipaddr );
+  vSYSSerial( ">>IP address: ");
+  vSYSSerial( ipaddr );
+  vSYSSerial("\n\r");
+  vSYSSerial( ">>TCP: " );
+  if ( eSERVERstart() != SERVER_OK )
+  {
+    vSYSSerial( "fail!\n\r" );
+    while( 1U ) osDelay( 1U );
+  }
+  vSYSSerial( "done!\n\r" );
+  vSYSSerial( ">>Server ready and listen port 80!\n\r" );
+  HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
   /* Infinite loop */
   for(;;)
   {

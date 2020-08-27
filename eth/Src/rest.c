@@ -192,6 +192,18 @@ uint32_t uRESTmakeTime ( const RTC_TIME* time, char* output )
   position++;
   return position;
 }
+
+uint32_t uRESTmakeData ( uint16_t data, char* output )
+{
+  uint32_t position = 1U;
+
+  output[0U] = '{';
+  position += uRESTmakeDigRecord( FREE_DATA_STR,  data,  REST_LAST_RECORD, &output[position] );
+  output[position] = '}';
+  position++;
+  return position;
+
+}
 /*---------------------------------------------------------------------------------------------------*/
 REST_ERROR eRESTparsingTime( char* input, RTC_TIME* time )
 {
@@ -226,6 +238,23 @@ REST_ERROR eRESTparsingTime( char* input, RTC_TIME* time )
         }
       }
     }
+  }
+  else
+  {
+    res = REST_MESSAGE_FORMAT_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+REST_ERROR eRESTparsingData ( char* input, uint16_t* data )
+{
+  REST_ERROR res   = REST_OK;
+  char*      pchSt = NULL;
+
+  pchSt = strchr( input, '{' );
+  if ( pchSt != NULL )
+  {
+    res = eRESTparsingDig16Record( input, FREE_DATA_STR, data );
   }
   else
   {

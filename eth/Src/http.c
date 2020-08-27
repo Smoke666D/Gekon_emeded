@@ -291,9 +291,19 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
             response->contentLength = 0U;
 	  }
 	}
-    break;
+        break;
       case REST_DATA:
-    break;
+	if ( adr < DATA_SIZE )
+	{
+	  if ( eRESTparsingData( content, dataArray[adr] ) == REST_OK )
+	  {
+	    if ( eSTORAGEsaveData( dataArray[adr] ) )
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->contentLength = 0U;
+	  }
+	}
+        break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -450,6 +460,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
 	    stream->size            = 1U;
 	    stream->start           = adr;
 	    stream->index           = 0U;
+	    response->contentLength = uRESTmakeData( *dataArray[stream->start], restBuffer );;
 	    response->callBack      = cHTTPstreamData;
 	    response->contetntType  = HTTP_CONTENT_JSON;
 	    response->status        = HTTP_STATUS_OK;
@@ -914,6 +925,10 @@ STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream )
 /*---------------------------------------------------------------------------------------------------*/
 STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
 {
+  stream->status = STREAM_END;
+  stream->length = uRESTmakeData( *( dataArray[stream->start] ), restBuffer );
+  restBuffer[stream->length] = 0U;
+  stream->content = restBuffer;
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/

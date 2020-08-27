@@ -48,6 +48,7 @@ EEPROM_STATUS eSTORAGEwriteCharts ( void );
 EEPROM_STATUS eSTORAGEreadCharts ( void );
 
 EEPROM_STATUS eSTORAGEgetData ( DATA_ADR n, uint16_t* data );
+EEPROM_STATUS eSTORAGEsaveData ( DATA_ADR n );
 EEPROM_STATUS eSTORAGEsetData ( DATA_ADR n, const uint16_t* data );
 //EEPROM_STATUS eSTORAGEwriteLogRecord( LOG_RECORD_TYPE* record );
 //EEPROM_STATUS eSTORAGEwriteLogQuant( uint16_t quant );

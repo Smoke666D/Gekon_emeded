@@ -428,10 +428,15 @@ EEPROM_STATUS eSTORAGEgetData ( DATA_ADR n, uint16_t* data )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEsaveData ( DATA_ADR n )
+{
+  return eEEPROMWriteMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )dataArray[n], 2U );
+}
+/*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEsetData ( DATA_ADR n, const uint16_t* data )
 {
   *(dataArray[n]) = *data;
-  return eEEPROMWriteMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )dataArray[n], 2U );
+  return eSTORAGEsaveData( ( STORAGE_DATA_ADR + 2 * n ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

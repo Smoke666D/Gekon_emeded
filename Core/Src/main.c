@@ -1003,14 +1003,14 @@ void StartDefaultTask(void *argument)
   {
     vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
   }
-  for ( i=0; i<DATA_SIZE; i++ )
+  /*for ( i=0; i<DATA_SIZE; i++ )
   {
     if ( eSTORAGEgetData( i, &data ) != EEPROM_OK )
     {
       vSYSSerial( ">>EEPROM data read: fail!\n\r" );
       break;
     }
-  }
+  }*/
   /* Infinite loop */
   for(;;)
   {

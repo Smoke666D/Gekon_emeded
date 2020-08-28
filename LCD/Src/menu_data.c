@@ -43,6 +43,7 @@ static char EventLog[][44U]=
 #define NET_MENU_COUNT         3U
 #define GENERATOR_MENU_COUNT   7U
 #define SETTINGS_MENU_COUNT    3U
+#define YESNO_MENU_COUNT       1U
 #define MENU_ADD_COUNT         1U
 #define MAX_HEADER_STRING_SIZE 40U
 #define LINE4_HIGTH            ( 64U / 4U )
@@ -59,13 +60,13 @@ static char EventLog[][44U]=
 
 
 static uint8_t Header[]       = { 0U, 1U, CENTER_ALIGN };
-static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN };
+static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN};
 static uint8_t LeftText[]     = { 0U, 1U, LEFT_ALIGN };
 static uint8_t HeaderParam[]  = { 1U, 0U, CENTER_ALIGN, 0U };
 static uint8_t HeaderParam1[] = { 0U, 0U, RIGTH_ALIGN, 0U };
 static uint8_t HeaderParam2[] = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
-static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  = { 0U, 1U, CENTER_ALIGN, 0U };
 static uint8_t InputParam3[]  = { 0U, 1U, CENTER_ALIGN, 0U };
 
@@ -326,7 +327,7 @@ static xScreenObjet BrigthScreen[]=
     {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА",NULL,0U},
     {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
     {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Ярокость % ",NULL,0U},
-    {1U,FONT_SIZE*13U,LINE1+6U,100U,LINE4_HIGTH,INPUT_HW_DATA,InputParam,NULL,(void*)&vGetStatusData,BRIGTH_ID},
+    {1U,FONT_SIZE*13U,LINE1+6U,40U,LINE4_HIGTH,INPUT_HW_DATA,InputParam,NULL,(void*)&vGetStatusData,BRIGTH_ID},
 };
 
 static xScreenObjet BrigthScreen1[]=
@@ -346,7 +347,13 @@ static xScreenObjet SettingsMainScreen[]=
   {1U,FONT_SIZE*10U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetStatusData,BRIGTH_ID},
 };
 
-
+static xScreenObjet xYesNoScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПРИМЕНИТЬ ИЗМЕНЕНИЯ",NULL,0U},
+  {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+  {0U,FONT_SIZE*3U,LINE2,30U,LINE4_HIGTH,DATA_STRING,InputParam1,"  ДА  ",NULL,0U},
+  {1U,FONT_SIZE*13U,LINE2,30U,LINE4_HIGTH,DATA_STRING,InputParam2,"  НЕТ  ",NULL,0U},
+};
 
 
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
@@ -396,5 +403,10 @@ static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
   { BrigthScreen1, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
   { SettingsMainScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
 
+};
+
+static xScreenType  xYesNoScreens[SETTINGS_MENU_COUNT]=
+{
+  { xYesNoScreen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
 };
 

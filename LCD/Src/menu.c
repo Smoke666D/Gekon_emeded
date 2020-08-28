@@ -28,13 +28,71 @@ static uint8_t           Blink          = 0U;
 
 /*---------------------------------------------------------------------------------------------------*/
 
+void xYesNoScreenKeyCallBack( xScreenSetObject* menu, char key )
+{
+
+    switch (key)
+    {
+      case KEY_STOP:
+	menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
+	menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
+	break;
+      case KEY_START:
+	menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =0U;
+        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =1U;
+      break;
+   case KEY_AUTO:
+     if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] ==1U)
+     {
+	 pCurObject->GetDtaFunction( mSAVE, NULL, pCurObject->DataID );
+     }
+     else
+     {
+	 menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
+	 menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
+	 pCurObject->GetDtaFunction( mESC, NULL, pCurObject->DataID );
+     }
+     pCurrMenu = menu->pHomeMenu[0].pUpScreenSet;
+     break;
+      default:
+        break;
+    }
+  return;
 
 
+}
+
+
+xScreenSetObject xYesNoMenu =
+{
+  xYesNoScreens,
+  ( YESNO_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xYesNoScreenKeyCallBack,
+};
 /*
  *
  */
 static uint8_t           ucActiveObject    = 0U;
 static uint8_t           ucAOCF	           = 0U;
+
+void vExitCurObject(void)
+{
+  if (ucActiveObject == 1)
+  {
+  	  pCurObject->ObjectParamert[3U] = 0U;
+  	  ucActiveObject = 0;
+  	  if (ucAOCF ==1)
+  	  {
+  	      xYesNoMenu.pHomeMenu[0].pUpScreenSet =pCurrMenu;
+  	      pCurrMenu = &xYesNoMenu;
+  	      ucAOCF =0;
+  	   }
+  }
+  return;
+}
+
+
 
 void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
@@ -45,17 +103,20 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
   switch ( key )
   {
     case KEY_STOP:
-      ucAOCF	= 1;
-      pCurObject->GetDtaFunction( mINC, NULL, pCurObject->DataID );
-      break;
     case KEY_START:
-      ucAOCF   = 1;
-      pCurObject->GetDtaFunction( mDEC, NULL, pCurObject->DataID );
+      if (ucActiveObject == 1)
+      {
+	  ucAOCF	= 1;
+	  if (key==KEY_START)
+	    pCurObject->GetDtaFunction( mINC, NULL, pCurObject->DataID );
+	  else
+	    pCurObject->GetDtaFunction( mDEC, NULL, pCurObject->DataID );
+      }
       break;
    case KEY_AUTO:
       if (ucActiveObject == 0)
       {
-	  for ( i=0U; ( i < MAX_SCREEN_OBJECT ) && ( pObjects[i].last == 0 ) ; i++ ) //Проверяем есть ли на экране динамические объекты
+	  for ( i=0U; i < MAX_SCREEN_OBJECT ; i++ ) //Проверяем есть ли на экране динамические объекты
 	  {
 	      if ( pObjects[i].xType == INPUT_HW_DATA )
               {
@@ -67,6 +128,7 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 		      break;
 		  }
               }
+	      if ( pObjects[i].last > 0 ) break;
 	  }
       }
      break;
@@ -83,31 +145,13 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 		  pMenu     = pCurrMenu;
 		}
 	  }
-	  if ( pMenu->pCurrIndex == pMenu->pMaxIndex )
-              pMenu->pCurrIndex = 0U;
-            else
-              pMenu->pCurrIndex++;
       }
       else
 	 DownScreen = 0U;
-      for ( i=0U; i<MAX_SCREEN_OBJECT; i++ ) //Проверяем есть ли на экране динамические объекты
-              {
-                 if ( pObjects[i].xType == INPUT_HW_DATA )
-                    	   pObjects[i].ObjectParamert[3U] = 0U;
-                 if (pObjects[i].last > 0U) break;
-              }
-      if (ucActiveObject == 1)
-      {
-	  if  (ucAOCF  == 1)
-	  {
-	      pCurObject->GetDtaFunction( mESC, NULL, pCurObject->DataID );
-	      ucAOCF   = 0;
-	  }
-	  ucActiveObject = 0;
-      }
+      vExitCurObject();
+
       break;
     case KEY_DOWN:
-
       if ( DownScreen == 0U )
            {
              if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
@@ -128,6 +172,7 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
                menu->pCurrIndex++;
              }
            }
+      vExitCurObject();
       break;
     default:
       break;
@@ -369,8 +414,8 @@ void vMenuTask( void )
     	pCurrMenu->pFunc( pCurrMenu, key );
     	if ( TempEvent.KeyCode == time_out )
         {
-    	    pCurrMenu = &xMainMenu;
-    	    pCurrMenu->pCurrIndex = 0U;
+    	   // pCurrMenu = &xMainMenu;
+    	  //  pCurrMenu->pCurrIndex = 0U;
          }
       }
   }
@@ -403,6 +448,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
         case HW_DATA:
           break;
         case INPUT_HW_DATA:
+        case DATA_STRING:
           Redraw = 1U;
           break;
         default:
@@ -437,7 +483,8 @@ void vDrawObject( xScreenObjet * pScreenObjects)
         case INPUT_HW_DATA:
         case HW_DATA:
         case TEXT_STRING:
-          if  (pScreenObjects[i].xType ==INPUT_HW_DATA)
+        case DATA_STRING:
+          if  ((pScreenObjects[i].xType ==INPUT_HW_DATA) || (pScreenObjects[i].xType ==DATA_STRING))
           {
               if ( pScreenObjects[i].ObjectParamert[3U] > 0U )
               {
@@ -467,9 +514,11 @@ void vDrawObject( xScreenObjet * pScreenObjects)
             case STRING:
               break;
             case TEXT_STRING:
+            case DATA_STRING:
               TEXT = pScreenObjects[i].pStringParametr;
               break;
             case HW_DATA:
+
             	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
             	/* Если поставить сюда break - не выводяться цифры*/
             	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
@@ -565,6 +614,11 @@ xScreenSetObject xSettingsMenu =
   ( void* )&xInputScreenKeyCallBack,
 };
 
+
+
+
+
+
 void vUCTOSTRING(uint8_t * str, uint8_t data)
 {
   uint8_t fb=0,i=0;
@@ -599,17 +653,17 @@ void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
              vUCTOSTRING(Data,ucLCDGetLedBrigth());
              break;
            case mINC:
-             vLCDSetLedBrigth(ucLCDGetLedBrigth()+1);
+            vLCDSetLedBrigth(ucLCDGetLedBrigth()+1);
              break;
            case mDEC:
              if (ucLCDGetLedBrigth() > 0)
-             {
-        	 vLCDSetLedBrigth(ucLCDGetLedBrigth()-1);
-             }
-             break;
-           case mSAVE:
-             displayBrightnesLevel.value[0U] = ucLCDGetLedBrigth();
-             break;
+            {
+       	 vLCDSetLedBrigth(ucLCDGetLedBrigth()-1);
+            }
+            break;
+          case mSAVE:
+            displayBrightnesLevel.value[0U] = ucLCDGetLedBrigth();
+            break;
            case mESC:
 	     vLCDSetLedBrigth( displayBrightnesLevel.value[0U]);
 	     break;

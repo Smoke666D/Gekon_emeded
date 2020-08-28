@@ -34,7 +34,7 @@
 #define FONT_TYPE4          ( u8g2_font_6x13_t_cyrillic )
 #define FONT_X_SIZE4        6U
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
-#define MAX_KEY_PRESS       10U
+#define MAX_KEY_PRESS
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {

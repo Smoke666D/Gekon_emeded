@@ -39,6 +39,12 @@ void vLCDInit( SemaphoreHandle_t temp )
   xSemaphore = temp;
   return;
 }
+
+void vLCDBrigthInit()
+{
+  lcd_brigth = displayBrightnesLevel.value[0U];
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция установки яркости подсветки индикатора
@@ -184,9 +190,9 @@ inline void vLCDWriteCommand( uint8_t com )
 
 void vST7920init(void)
 {
-  lcd_brigth = displayBrightnesLevel.value[0U];
-  HAL_TIM_Base_Start_IT( &htim7 );
 
+  HAL_TIM_Base_Start_IT( &htim7 );
+  vLCDBrigthInit();
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
 
   osDelay(40);

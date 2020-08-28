@@ -70,24 +70,29 @@ xScreenSetObject xYesNoMenu =
   0U,
   ( void* )&xYesNoScreenKeyCallBack,
 };
-/*
- *
- */
-static uint8_t           ucActiveObject    = 0U;
-static uint8_t           ucAOCF	           = 0U;
 
+
+
+#define NO_SELECT_D   0U
+#define SELECT_D      1U
+#define CHANGE_D      2U
+
+static uint8_t           ucActiveObject    = NO_SELECT_D;
+
+/*
+ *  Функция обработки экрана подтверждения
+ */
 void vExitCurObject(void)
 {
-  if (ucActiveObject == 1)
+  if (ucActiveObject != NO_SELECT_D)
   {
   	  pCurObject->ObjectParamert[3U] = 0U;
-  	  ucActiveObject = 0;
-  	  if (ucAOCF ==1)
+  	  if (ucActiveObject ==CHANGE_D)
   	  {
   	      xYesNoMenu.pHomeMenu[0].pUpScreenSet =pCurrMenu;
   	      pCurrMenu = &xYesNoMenu;
-  	      ucAOCF =0;
-  	   }
+  	 }
+  	 ucActiveObject = NO_SELECT_D;
   }
   return;
 }
@@ -97,16 +102,16 @@ void vExitCurObject(void)
 void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
   xScreenObjet* pObjects          = menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets;
-  uint8_t           index = menu->pCurrIndex;
-  xScreenSetObject* pMenu = menu;
+ // uint8_t           index = menu->pCurrIndex;
   uint8_t       i                 = 0U;
+
   switch ( key )
   {
     case KEY_STOP:
     case KEY_START:
-      if (ucActiveObject == 1)
+      if (ucActiveObject != NO_SELECT_D)
       {
-	  ucAOCF	= 1;
+	  ucActiveObject = CHANGE_D;
 	  if (key==KEY_START)
 	    pCurObject->GetDtaFunction( mINC, NULL, pCurObject->DataID );
 	  else
@@ -114,7 +119,7 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
       }
       break;
    case KEY_AUTO:
-      if (ucActiveObject == 0)
+      if (ucActiveObject == NO_SELECT_D)
       {
 	  for ( i=0U; i < MAX_SCREEN_OBJECT ; i++ ) //Проверяем есть ли на экране динамические объекты
 	  {
@@ -122,7 +127,7 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
               {
 		  if(pObjects[i].ObjectParamert[3U] == 0U)
 		  {
-		      ucActiveObject = 1;
+		      ucActiveObject = SELECT_D;
 		      pObjects[i].ObjectParamert[3U] = 1U;
 		      pCurObject = &pObjects[i];
 		      break;
@@ -131,6 +136,8 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 	      if ( pObjects[i].last > 0 ) break;
 	  }
       }
+      else
+	 vExitCurObject();
      break;
     case KEY_UP:
     case KEY_EXIT:
@@ -139,24 +146,23 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 	  if ( DownScreen > 0U )
 	  {
 	      DownScreen = 0U;
-	      if ( menu->pHomeMenu[index].pUpScreenSet != NULL )
+	      if ( menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet != NULL )
 		{
-		  pCurrMenu = menu->pHomeMenu[index].pUpScreenSet;
-		  pMenu     = pCurrMenu;
+		  pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+		  menu     = pCurrMenu;
 		}
 	  }
       }
       else
 	 DownScreen = 0U;
       vExitCurObject();
-
       break;
     case KEY_DOWN:
       if ( DownScreen == 0U )
            {
-             if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
+             if ( menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet != NULL )
              {
-               pCurrMenu  = menu->pHomeMenu[index].pDownScreenSet;
+               pCurrMenu  = menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet;
                DownScreen = 1U;
                pCurrMenu->pCurrIndex = 0U;
              }
@@ -363,7 +369,13 @@ void vMenuInit( u8g2_t* temp )
 void vMenuTask( void )
 {
     //Блок обработки нажатий на клавиши
-  osDelay( 200U );
+   uint32_t ulNotifiedValue;
+  xTaskNotifyWait(pdFALSE,0xFFFFFFF,&ulNotifiedValue,200U);
+  if ( ulNotifiedValue== 0x55)
+  {
+     vLCDBrigthInit();
+  }
+  //osDelay( 200U );
   temp_counter++;
   //Блок отрисовки экранов
   if ( temp_counter == 2U )
@@ -658,14 +670,14 @@ void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            case mDEC:
              if (ucLCDGetLedBrigth() > 0)
             {
-       	 vLCDSetLedBrigth(ucLCDGetLedBrigth()-1);
+        	 vLCDSetLedBrigth(ucLCDGetLedBrigth()-1);
             }
             break;
           case mSAVE:
             displayBrightnesLevel.value[0U] = ucLCDGetLedBrigth();
             break;
            case mESC:
-	     vLCDSetLedBrigth( displayBrightnesLevel.value[0U]);
+             vLCDBrigthInit();
 	     break;
            default:
              break;

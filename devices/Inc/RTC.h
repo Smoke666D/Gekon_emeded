@@ -14,6 +14,7 @@
 #define  RTC_DEVICE_ADR       0xD0U
 #define  RTC_MEMORY_SIZE      19U
 #define  RTC_TIMEOUT          1000U
+#define  RTC_SEMAPHORE_DELAY  ( ( TickType_t ) 10U )
 
 #define  RTC_SECONDS          0x00U
 #define  RTC_MINUTES          0x01U
@@ -87,6 +88,7 @@
 typedef enum
 {
   RTC_OK,
+  RTC_BUSY,
   RTC_ERROR,
   RTC_INIT_ERROR,
   RTC_FORMAT_ERROR,

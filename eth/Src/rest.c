@@ -11,6 +11,7 @@
 #include "stdlib.h"
 #include "fix16.h"
 #include "common.h"
+#include "dataAPI.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -102,8 +103,8 @@ uint32_t uRESTmakeChart( const eChartData* chart, char* output )
   position += uRESTmake16FixDigRecord( CHART_DATA_XMAX_STR,  chart->xmax,  REST_CONT_RECORD, &output[position] );
   position += uRESTmake16FixDigRecord( CHART_DATA_YMIN_STR,  chart->ymin,  REST_CONT_RECORD, &output[position] );
   position += uRESTmake16FixDigRecord( CHART_DATA_YMAX_STR,  chart->ymax,  REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord(      CHART_DATA_XUNIT_STR, chart->xunit, CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord(      CHART_DATA_YUNIT_STR, chart->yunit, CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord(      CHART_DATA_XUNIT_STR, ( uint16_t* )( &chart->xunit ), CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord(      CHART_DATA_YUNIT_STR, ( uint16_t* )( &chart->yunit ), CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord(      CHART_DATA_SIZE_STR,  chart->size,  REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDotArray(                             chart->dots,  chart->size,      &output[position] );
   position++;
@@ -166,8 +167,8 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
   position += uRESTmakeValueRecord( CONFIG_REG_VALUE_STR,       reg->value,        reg->atrib->len, reg->atrib->type , REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_MIN_STR,           reg->atrib->min,   REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_MAX_STR,           reg->atrib->max,   REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord( CONFIG_REG_UNITS_STR,         reg->units,        MAX_UNITS_LENGTH, REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          &reg->atrib->type, 1U, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord( CONFIG_REG_UNITS_STR,         ( uint16_t* )( &( reg->units ) ),        MAX_UNITS_LENGTH, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          ( uint16_t* )( &( reg->atrib->type ) ), 1U, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_BIT_MAP_SIZE_STR,  reg->atrib->bitMapSize, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeBitMapArray( reg->atrib->bitMapSize, reg->bitMap, &output[position] );
   position++;
@@ -263,38 +264,46 @@ REST_ERROR eRESTparsingData ( char* input, uint16_t* data )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-REST_ERROR eRESTparsingChart( char* input, eChartData* chart )
+REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
 {
-  REST_ERROR res   = REST_OK;
-  char*      pchSt = NULL;
+  REST_ERROR res    = REST_OK;
+  char*      pchSt  = NULL;
+  eChartData buffer;
 
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
   {
     if ( strstr( pchSt, "data" ) == NULL)
     {
-      res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMIN_STR, &chart->xmin );
+      res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMIN_STR, &buffer.xmin );
       if ( res == REST_OK )
       {
-        res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMAX_STR, &chart->xmax );
+        res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMAX_STR, &buffer.xmax );
         if ( res == REST_OK )
         {
-          res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMIN_STR, &chart->ymin );
+          res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMIN_STR, &buffer.ymin );
           if ( res == REST_OK )
           {
-            res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMAX_STR, &chart->ymax );
+            res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMAX_STR, &buffer.ymax );
             if ( res == REST_OK )
             {
-              res = eRESTparsingStrRecord( input, CHART_DATA_XUNIT_STR, chart->xunit, CHART_UNIT_LENGTH );
+              res = eRESTparsingStrRecord( input, CHART_DATA_XUNIT_STR, buffer.xunit, CHART_UNIT_LENGTH );
               if ( res == REST_OK )
               {
-                res = eRESTparsingStrRecord( input, CHART_DATA_YUNIT_STR, chart->yunit, CHART_UNIT_LENGTH );
+                res = eRESTparsingStrRecord( input, CHART_DATA_YUNIT_STR, buffer.yunit, CHART_UNIT_LENGTH );
                 if ( res == REST_OK )
                 {
-                  res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &chart->size );
-                  if ( ( res == REST_OK ) && ( chart->size > 0U ) )
+                  res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &buffer.size );
+                  if ( ( res == REST_OK ) && ( buffer.size > 0U ) )
                   {
-                    res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, chart->dots, chart->size );
+                    res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, buffer.dots, buffer.size );
+                    if ( res == REST_OK )
+                    {
+                      if ( eDATAAPIchart( DATA_API_CMD_WRITE, adr, &buffer ) != DATA_API_STAT_OK )
+                      {
+                	res = REST_RECORD_COPY_ERROR;
+                      }
+                    }
                   }
                 }
               }
@@ -311,28 +320,39 @@ REST_ERROR eRESTparsingChart( char* input, eChartData* chart )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-REST_ERROR eRESTparsingConfig ( char* input, eConfigReg* reg )
+REST_ERROR eRESTparsingConfig ( char* input, uint16_t adr )
 {
-  REST_ERROR res   = REST_OK;
-  char*      pchSt = NULL;
+  REST_ERROR    res   = REST_OK;
+  char*         pchSt = NULL;
+  uint16_t      valueBuf[MAX_VALUE_LENGTH];
+  signed char   scale  = 0U;
+  uint16_t      units[MAX_UNITS_LENGTH];
+  eConfigBitMap bitMap[MAX_BIT_MAP_LENGTH];
 
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
   {
     if ( res == REST_OK )
     {
-      res = eRESTparsingSignedRecord( input, CONFIG_REG_SCALE_STR, &reg->scale );
+      res = eRESTparsingSignedRecord( input, CONFIG_REG_SCALE_STR, &scale );
       if ( res == REST_OK )
       {
-        res = eRESTparsingStrRecord( input, CONFIG_REG_UNITS_STR, reg->units, MAX_UNITS_LENGTH );
+        res = eRESTparsingStrRecord( input, CONFIG_REG_UNITS_STR, units, MAX_UNITS_LENGTH );
         if ( res == REST_OK )
         {
-          res = eRESTparsingValueRecord( input, CONFIG_REG_VALUE_STR, reg->atrib->type, &reg->value[0U], reg->atrib->len );
+          res = eRESTparsingValueRecord( input, CONFIG_REG_VALUE_STR, configReg[adr]->atrib->type, valueBuf, configReg[adr]->atrib->len );
           if (res == REST_OK )
           {
-            if ( ( res == REST_OK ) && ( reg->atrib->bitMapSize > 0U ) )
+            if ( ( res == REST_OK ) && ( configReg[adr]->atrib->bitMapSize > 0U ) )
             {
-              res = eRESTparsingBitMapArray( input, CONFIG_REG_BIT_MAP_STR, &reg->bitMap[0], reg->atrib->bitMapSize );
+              res = eRESTparsingBitMapArray( input, CONFIG_REG_BIT_MAP_STR, bitMap, configReg[adr]->atrib->bitMapSize );
+            }
+            if ( res == REST_OK )
+            {
+              if ( eDATAAPIconfig( DATA_API_CMD_WRITE, adr, valueBuf, scale, units, bitMap ) != DATA_API_STAT_OK )
+              {
+                res = REST_RECORD_COPY_ERROR;
+              }
             }
           }
         }

@@ -6,12 +6,15 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "RTC.h"
-#include "cmsis_os2.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 #define  RTC_TIME_SIZE        7U
 #define  RTC_MEMORY_SIZE      19U
 /*----------------------- Structures ----------------------------------------------------------------*/
-static   I2C_HandleTypeDef*   i2c = NULL;
+static   I2C_HandleTypeDef*   i2c        = NULL;
+static   SemaphoreHandle_t    xRTCSemaphore;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -208,7 +211,8 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
  */
 void vRTCinit ( I2C_HandleTypeDef* hi2c )
 {
-  i2c = hi2c;
+  i2c           = hi2c;
+  xRTCSemaphore = xSemaphoreCreateMutex();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -242,16 +246,33 @@ RTC_STATUS eRTCgetStatus ( uint8_t* status )
 RTC_STATUS eRTCgetTime ( RTC_TIME* time )
 {
   uint8_t    buffer[RTC_TIME_SIZE];
-  RTC_STATUS res = eRTCread( RTC_SECONDS, buffer, RTC_TIME_SIZE );
-  if ( res == RTC_OK )
+  RTC_STATUS res = RTC_OK;
+
+  if ( xRTCSemaphore != NULL )
   {
-    time->sec   = bcdToDec( buffer[RTC_SECONDS] & RTC_SEC_MSK );
-    time->min   = bcdToDec( buffer[RTC_MINUTES] & RTC_MIN_MSK );
-    time->hour  = bcdToDec( buffer[RTC_HOURS] );
-    time->wday  = buffer[RTC_WDAY] & RTC_WDAY_MSK;
-    time->day   = bcdToDec( buffer[RTC_DAY] & RTC_DAY_MSK );
-    time->month = bcdToDec( buffer[RTC_MONTH] & RTC_MONTH_MSK );
-    time->year  = bcdToDec( buffer[RTC_YEAR] & RTC_YEAR_MSK );
+    if ( xSemaphoreTake( xRTCSemaphore, RTC_SEMAPHORE_DELAY ) == pdTRUE )
+    {
+      res = eRTCread( RTC_SECONDS, buffer, RTC_TIME_SIZE );
+      if ( res == RTC_OK )
+      {
+        time->sec   = bcdToDec( buffer[RTC_SECONDS] & RTC_SEC_MSK );
+        time->min   = bcdToDec( buffer[RTC_MINUTES] & RTC_MIN_MSK );
+        time->hour  = bcdToDec( buffer[RTC_HOURS] );
+        time->wday  = buffer[RTC_WDAY] & RTC_WDAY_MSK;
+        time->day   = bcdToDec( buffer[RTC_DAY] & RTC_DAY_MSK );
+        time->month = bcdToDec( buffer[RTC_MONTH] & RTC_MONTH_MSK );
+        time->year  = bcdToDec( buffer[RTC_YEAR] & RTC_YEAR_MSK );
+      }
+      xSemaphoreGive( xRTCSemaphore );
+    }
+    else
+    {
+      res = RTC_BUSY;
+    }
+  }
+  else
+  {
+    res = RTC_INIT_ERROR;
   }
   return res;
 }
@@ -264,17 +285,32 @@ RTC_STATUS vRTCsetTime ( RTC_TIME* time )
 {
   RTC_STATUS res = eVarifyTime( time );
   uint8_t    buffer[RTC_TIME_SIZE];
-  if ( res == RTC_OK )
+  if ( xRTCSemaphore != NULL )
   {
-    buffer[RTC_SECONDS] = decToBcd( time->sec );
-    buffer[RTC_MINUTES] = decToBcd( time->min );
-    buffer[RTC_HOURS]   = decToBcd( time->hour );
-    buffer[RTC_WDAY]    = ( uint8_t )time->wday;
-    buffer[RTC_DAY]     = decToBcd( time->day );
-    buffer[RTC_MONTH]   = decToBcd( ( uint8_t )time->month );
-    buffer[RTC_YEAR]    = decToBcd( time->year );
-    res = eRTCwrite( RTC_SECONDS, buffer, RTC_TIME_SIZE );
-    osDelay(10U);
+    if ( xSemaphoreTake( xRTCSemaphore, RTC_SEMAPHORE_DELAY ) == pdTRUE )
+    {
+      if ( res == RTC_OK )
+      {
+        buffer[RTC_SECONDS] = decToBcd( time->sec );
+        buffer[RTC_MINUTES] = decToBcd( time->min );
+        buffer[RTC_HOURS]   = decToBcd( time->hour );
+        buffer[RTC_WDAY]    = ( uint8_t )time->wday;
+        buffer[RTC_DAY]     = decToBcd( time->day );
+        buffer[RTC_MONTH]   = decToBcd( ( uint8_t )time->month );
+        buffer[RTC_YEAR]    = decToBcd( time->year );
+        res = eRTCwrite( RTC_SECONDS, buffer, RTC_TIME_SIZE );
+        osDelay(10U);
+      }
+      xSemaphoreGive( xRTCSemaphore );
+    }
+    else
+    {
+      res = RTC_BUSY;
+    }
+  }
+  else
+  {
+    res = RTC_INIT_ERROR;
   }
   return res;
 }

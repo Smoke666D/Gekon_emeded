@@ -417,26 +417,27 @@ EEPROM_STATUS eSTORAGEreadConfigs( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEgetData ( DATA_ADR n, uint16_t* data )
+EEPROM_STATUS eSTORAGEreadFreeData ( DATA_ADR n )
 {
-  EEPROM_STATUS res = EEPROM_OK;
-  res = eEEPROMReadMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )data, 2U );
+  EEPROM_STATUS res  = EEPROM_OK;
+  uint8_t       data[2U] = { 0U, 0U };
+  res = eEEPROMReadMemory( ( STORAGE_DATA_ADR + 2 * n ), data, 2U );
   if ( res == EEPROM_OK )
   {
-    *( dataArray[n] ) = *data;
+    *( freeDataArray[n] ) = ( ( ( uint16_t )data[0U] ) << 8U ) | ( ( uint16_t )data[0U] );
   }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEsaveData ( DATA_ADR n )
+EEPROM_STATUS eSTORAGEsaveFreeData ( DATA_ADR n )
 {
-  return eEEPROMWriteMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )dataArray[n], 2U );
+  return eEEPROMWriteMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )freeDataArray[n], 2U );
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEsetData ( DATA_ADR n, const uint16_t* data )
+EEPROM_STATUS eSTORAGEsetFreeData ( DATA_ADR n, const uint16_t* data )
 {
-  *(dataArray[n]) = *data;
-  return eSTORAGEsaveData( ( STORAGE_DATA_ADR + 2 * n ) );
+  *(freeDataArray[n]) = *data;
+  return eSTORAGEsaveFreeData( ( STORAGE_DATA_ADR + 2 * n ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

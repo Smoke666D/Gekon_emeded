@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-26 10:28:58
+ * Make time: 2020-08-28 13:09:26
  */
 #include   "config.h"
 
@@ -20,7 +20,7 @@ eConfigReg versionController =
    .scale      = 0U,
    .value      = versionControllerValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t versionFirmwareValue[1U] = { 1U };
@@ -39,7 +39,7 @@ eConfigReg versionFirmware =
    .scale      = 0U,
    .value      = versionFirmwareValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t serialNumberValue[6U] = { 0U, 0U, 0U, 0U, 0U, 0U };
@@ -58,7 +58,7 @@ eConfigReg serialNumber =
    .scale      = 0U,
    .value      = serialNumberValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t displayBrightnesLevelValue[1U] = { 50U };
@@ -77,7 +77,7 @@ eConfigReg displayBrightnesLevel =
    .scale      = 0U,
    .value      = displayBrightnesLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t displayContarstLevelValue[1U] = { 30U };
@@ -96,7 +96,7 @@ eConfigReg displayContarstLevel =
    .scale      = 0U,
    .value      = displayContarstLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t displaySleepDelayValue[1U] = { 10U };
@@ -115,7 +115,7 @@ eConfigReg displaySleepDelay =
    .scale      = 0U,
    .value      = displaySleepDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t hysteresisLevelValue[1U] = { 20U };
@@ -134,7 +134,7 @@ eConfigReg hysteresisLevel =
    .scale      = -1,
    .value      = hysteresisLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap moduleSetupBitMap[2U] = 
@@ -203,7 +203,7 @@ eConfigReg oilPressureAlarmLevel =
    .scale      = -2,
    .value      = oilPressureAlarmLevelValue,
    .units      = {'Б', 'а', 'р', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t oilPressurePreAlarmLevelValue[1U] = { 124U };
@@ -222,7 +222,7 @@ eConfigReg oilPressurePreAlarmLevel =
    .scale      = -2,
    .value      = oilPressurePreAlarmLevelValue,
    .units      = {'Б', 'а', 'р', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap coolantTempSetupBitMap[6U] = 
@@ -269,7 +269,7 @@ eConfigReg coolantHightTempAlarmLevel =
    .scale      = 0U,
    .value      = coolantHightTempAlarmLevelValue,
    .units      = {'C', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantHightTempPreAlarmLevelValue[1U] = { 90U };
@@ -288,7 +288,7 @@ eConfigReg coolantHightTempPreAlarmLevel =
    .scale      = 0U,
    .value      = coolantHightTempPreAlarmLevelValue,
    .units      = {'C', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempHeaterOffLevelValue[1U] = { 60U };
@@ -307,7 +307,7 @@ eConfigReg coolantTempHeaterOffLevel =
    .scale      = 0U,
    .value      = coolantTempHeaterOffLevelValue,
    .units      = {'C', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempHeaterOnLevelValue[1U] = { 10U };
@@ -326,7 +326,7 @@ eConfigReg coolantTempHeaterOnLevel =
    .scale      = 0U,
    .value      = coolantTempHeaterOnLevelValue,
    .units      = {'C', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempCoolerOffLevelValue[1U] = { 120U };
@@ -345,7 +345,7 @@ eConfigReg coolantTempCoolerOffLevel =
    .scale      = 0U,
    .value      = coolantTempCoolerOffLevelValue,
    .units      = {'C', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempCoolerOnLevelValue[1U] = { 80U };
@@ -364,7 +364,7 @@ eConfigReg coolantTempCoolerOnLevel =
    .scale      = 0U,
    .value      = coolantTempCoolerOnLevelValue,
    .units      = {'C', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap fuelLevelSetupBitMap[9U] = 
@@ -414,7 +414,7 @@ eConfigReg fuelLevelLowAlarmLevel =
    .scale      = 0U,
    .value      = fuelLevelLowAlarmLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelLowAlarmDelayValue[1U] = { 100U };
@@ -433,7 +433,7 @@ eConfigReg fuelLevelLowAlarmDelay =
    .scale      = 0U,
    .value      = fuelLevelLowAlarmDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelLowPreAlarmLevelValue[1U] = { 25U };
@@ -452,7 +452,7 @@ eConfigReg fuelLevelLowPreAlarmLevel =
    .scale      = 0U,
    .value      = fuelLevelLowPreAlarmLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelLowPreAlarmDelayValue[1U] = { 100U };
@@ -471,7 +471,7 @@ eConfigReg fuelLevelLowPreAlarmDelay =
    .scale      = 0U,
    .value      = fuelLevelLowPreAlarmDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightPreAlarmLevelValue[1U] = { 65U };
@@ -490,7 +490,7 @@ eConfigReg fuelLevelHightPreAlarmLevel =
    .scale      = 0U,
    .value      = fuelLevelHightPreAlarmLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightPreAlarmDelayValue[1U] = { 0U };
@@ -509,7 +509,7 @@ eConfigReg fuelLevelHightPreAlarmDelay =
    .scale      = 0U,
    .value      = fuelLevelHightPreAlarmDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightAlarmLevelValue[1U] = { 90U };
@@ -528,7 +528,7 @@ eConfigReg fuelLevelHightAlarmLevel =
    .scale      = 0U,
    .value      = fuelLevelHightAlarmLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightAlarmDelayValue[1U] = { 0U };
@@ -547,7 +547,7 @@ eConfigReg fuelLevelHightAlarmDelay =
    .scale      = 0U,
    .value      = fuelLevelHightAlarmDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelPumpOnLevelValue[1U] = { 30U };
@@ -566,7 +566,7 @@ eConfigReg fuelPumpOnLevel =
    .scale      = 0U,
    .value      = fuelPumpOnLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelPumpOffLevelValue[1U] = { 70U };
@@ -585,7 +585,7 @@ eConfigReg fuelPumpOffLevel =
    .scale      = 0U,
    .value      = fuelPumpOffLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap speedSetupBitMap[2U] = 
@@ -628,7 +628,7 @@ eConfigReg speedToothNumber =
    .scale      = 0U,
    .value      = speedToothNumberValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t speedLowAlarmLevelValue[1U] = { 1200U };
@@ -647,7 +647,7 @@ eConfigReg speedLowAlarmLevel =
    .scale      = 0U,
    .value      = speedLowAlarmLevelValue,
    .units      = {'R', 'P', 'M', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t speedHightAlarmLevelValue[1U] = { 1710U };
@@ -666,7 +666,7 @@ eConfigReg speedHightAlarmLevel =
    .scale      = 0U,
    .value      = speedHightAlarmLevelValue,
    .units      = {'R', 'P', 'M', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap diaSetupBitMap[4U] = 
@@ -711,7 +711,7 @@ eConfigReg diaDelay =
    .scale      = 0U,
    .value      = diaDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t diaMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
@@ -730,7 +730,7 @@ eConfigReg diaMessage =
    .scale      = 0U,
    .value      = diaMessageValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap dibSetupBitMap[4U] = 
@@ -775,7 +775,7 @@ eConfigReg dibDelay =
    .scale      = 0U,
    .value      = dibDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t dibMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
@@ -794,7 +794,7 @@ eConfigReg dibMessage =
    .scale      = 0U,
    .value      = dibMessageValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap dicSetupBitMap[4U] = 
@@ -839,7 +839,7 @@ eConfigReg dicDelay =
    .scale      = 0U,
    .value      = dicDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t dicMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
@@ -858,7 +858,7 @@ eConfigReg dicMessage =
    .scale      = 0U,
    .value      = dicMessageValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap didSetupBitMap[4U] = 
@@ -903,7 +903,7 @@ eConfigReg didDelay =
    .scale      = 0U,
    .value      = didDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t didMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
@@ -922,7 +922,7 @@ eConfigReg didMessage =
    .scale      = 0U,
    .value      = didMessageValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap doSetupBitMap[6U] = 
@@ -1041,7 +1041,7 @@ eConfigReg timerMainsTransientDelay =
    .scale      = -1,
    .value      = timerMainsTransientDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerStartDelayValue[1U] = { 5U };
@@ -1060,7 +1060,7 @@ eConfigReg timerStartDelay =
    .scale      = 0U,
    .value      = timerStartDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCrankingValue[1U] = { 10U };
@@ -1079,7 +1079,7 @@ eConfigReg timerCranking =
    .scale      = 0U,
    .value      = timerCrankingValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCrankDelayValue[1U] = { 10U };
@@ -1098,7 +1098,7 @@ eConfigReg timerCrankDelay =
    .scale      = 0U,
    .value      = timerCrankDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerStartupIdleTimeValue[1U] = { 10U };
@@ -1117,7 +1117,7 @@ eConfigReg timerStartupIdleTime =
    .scale      = 0U,
    .value      = timerStartupIdleTimeValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerNominalRPMDelayValue[1U] = { 10U };
@@ -1136,7 +1136,7 @@ eConfigReg timerNominalRPMDelay =
    .scale      = 0U,
    .value      = timerNominalRPMDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerSafetyOnDelayValue[1U] = { 10U };
@@ -1155,7 +1155,7 @@ eConfigReg timerSafetyOnDelay =
    .scale      = 0U,
    .value      = timerSafetyOnDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerWarmingValue[1U] = { 1U };
@@ -1174,7 +1174,7 @@ eConfigReg timerWarming =
    .scale      = 0U,
    .value      = timerWarmingValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerTransferDelayValue[1U] = { 6U };
@@ -1193,7 +1193,7 @@ eConfigReg timerTransferDelay =
    .scale      = -1,
    .value      = timerTransferDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerGenBreakerTripPulseValue[1U] = { 5U };
@@ -1212,7 +1212,7 @@ eConfigReg timerGenBreakerTripPulse =
    .scale      = -1,
    .value      = timerGenBreakerTripPulseValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerGenBreakerClosePulseValue[1U] = { 5U };
@@ -1231,7 +1231,7 @@ eConfigReg timerGenBreakerClosePulse =
    .scale      = -1,
    .value      = timerGenBreakerClosePulseValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerMainsBreakerTripPulseValue[1U] = { 5U };
@@ -1250,7 +1250,7 @@ eConfigReg timerMainsBreakerTripPulse =
    .scale      = -1,
    .value      = timerMainsBreakerTripPulseValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerMainsBreakerClosePulseValue[1U] = { 5U };
@@ -1269,7 +1269,7 @@ eConfigReg timerMainsBreakerClosePulse =
    .scale      = -1,
    .value      = timerMainsBreakerClosePulseValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerReturnDelayValue[1U] = { 30U };
@@ -1288,7 +1288,7 @@ eConfigReg timerReturnDelay =
    .scale      = 0U,
    .value      = timerReturnDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCoolingValue[1U] = { 60U };
@@ -1307,7 +1307,7 @@ eConfigReg timerCooling =
    .scale      = 0U,
    .value      = timerCoolingValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCoolingIdleValue[1U] = { 20U };
@@ -1326,7 +1326,7 @@ eConfigReg timerCoolingIdle =
    .scale      = 0U,
    .value      = timerCoolingIdleValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerSolenoidHoldValue[1U] = { 20U };
@@ -1345,7 +1345,7 @@ eConfigReg timerSolenoidHold =
    .scale      = 0U,
    .value      = timerSolenoidHoldValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerFailStopDelayValue[1U] = { 30U };
@@ -1364,7 +1364,7 @@ eConfigReg timerFailStopDelay =
    .scale      = 0U,
    .value      = timerFailStopDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerGenTransientDelayValue[1U] = { 10U };
@@ -1383,7 +1383,7 @@ eConfigReg timerGenTransientDelay =
    .scale      = -1,
    .value      = timerGenTransientDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap genSetupBitMap[2U] = 
@@ -1426,7 +1426,7 @@ eConfigReg genRatedActivePowerLevel =
    .scale      = 0U,
    .value      = genRatedActivePowerLevelValue,
    .units      = {'к', 'В', 'т', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genRatedReactivePowerLevelValue[1U] = { 0U };
@@ -1445,7 +1445,7 @@ eConfigReg genRatedReactivePowerLevel =
    .scale      = 0U,
    .value      = genRatedReactivePowerLevelValue,
    .units      = {'к', 'В', 'А', 'Р'},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genRatedApparentPowerLevelValue[1U] = { 200U };
@@ -1464,7 +1464,7 @@ eConfigReg genRatedApparentPowerLevel =
    .scale      = 0U,
    .value      = genRatedApparentPowerLevelValue,
    .units      = {'к', 'В', 'А', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genRatedFrequencyLevelValue[1U] = { 500U };
@@ -1483,7 +1483,7 @@ eConfigReg genRatedFrequencyLevel =
    .scale      = -1,
    .value      = genRatedFrequencyLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentPrimaryLevelValue[1U] = { 600U };
@@ -1502,7 +1502,7 @@ eConfigReg genCurrentPrimaryLevel =
    .scale      = 0U,
    .value      = genCurrentPrimaryLevelValue,
    .units      = {'А', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentFullLoadRatingLevelValue[1U] = { 500U };
@@ -1521,7 +1521,7 @@ eConfigReg genCurrentFullLoadRatingLevel =
    .scale      = 0U,
    .value      = genCurrentFullLoadRatingLevelValue,
    .units      = {'А', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap genAlarmsBitMap[12U] = 
@@ -1574,7 +1574,7 @@ eConfigReg genUnderVoltageAlarmLevel =
    .scale      = 0U,
    .value      = genUnderVoltageAlarmLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genUnderVoltagePreAlarmLevelValue[1U] = { 339U };
@@ -1593,7 +1593,7 @@ eConfigReg genUnderVoltagePreAlarmLevel =
    .scale      = 0U,
    .value      = genUnderVoltagePreAlarmLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverVoltagePreAlarmLevelValue[1U] = { 439U };
@@ -1612,7 +1612,7 @@ eConfigReg genOverVoltagePreAlarmLevel =
    .scale      = 0U,
    .value      = genOverVoltagePreAlarmLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverVoltageAlarmLevelValue[1U] = { 458U };
@@ -1631,7 +1631,7 @@ eConfigReg genOverVoltageAlarmLevel =
    .scale      = 0U,
    .value      = genOverVoltageAlarmLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genUnderFrequencyAlarmLevelValue[1U] = { 400U };
@@ -1650,7 +1650,7 @@ eConfigReg genUnderFrequencyAlarmLevel =
    .scale      = -1,
    .value      = genUnderFrequencyAlarmLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genUnderFrequencyPreAlarmLevelValue[1U] = { 420U };
@@ -1669,7 +1669,7 @@ eConfigReg genUnderFrequencyPreAlarmLevel =
    .scale      = -1,
    .value      = genUnderFrequencyPreAlarmLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverFrequencyPreAlarmLevelValue[1U] = { 540U };
@@ -1688,7 +1688,7 @@ eConfigReg genOverFrequencyPreAlarmLevel =
    .scale      = -1,
    .value      = genOverFrequencyPreAlarmLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverFrequencyAlarmLevelValue[1U] = { 550U };
@@ -1707,7 +1707,7 @@ eConfigReg genOverFrequencyAlarmLevel =
    .scale      = -1,
    .value      = genOverFrequencyAlarmLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentThermalProtectionLevelValue[1U] = { 20U };
@@ -1726,7 +1726,7 @@ eConfigReg genOverCurrentThermalProtectionLevel =
    .scale      = 0U,
    .value      = genOverCurrentThermalProtectionLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentCutoffLevelValue[1U] = { 40U };
@@ -1745,7 +1745,7 @@ eConfigReg genOverCurrentCutoffLevel =
    .scale      = 0U,
    .value      = genOverCurrentCutoffLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentAlarmLevelValue[1U] = { 100U };
@@ -1764,7 +1764,7 @@ eConfigReg genOverCurrentAlarmLevel =
    .scale      = 0U,
    .value      = genOverCurrentAlarmLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentAlarmDelayValue[1U] = { 60U };
@@ -1783,7 +1783,7 @@ eConfigReg genOverCurrentAlarmDelay =
    .scale      = 0U,
    .value      = genOverCurrentAlarmDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverloadProtectionLevelValue[1U] = { 100U };
@@ -1802,7 +1802,7 @@ eConfigReg genCurrentOverloadProtectionLevel =
    .scale      = 0U,
    .value      = genCurrentOverloadProtectionLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverloadProtectionDelayValue[1U] = { 5U };
@@ -1821,7 +1821,7 @@ eConfigReg genCurrentOverloadProtectionDelay =
    .scale      = 0U,
    .value      = genCurrentOverloadProtectionDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverPhaseImbalanceLevelValue[1U] = { 100U };
@@ -1840,7 +1840,7 @@ eConfigReg genCurrentOverPhaseImbalanceLevel =
    .scale      = 0U,
    .value      = genCurrentOverPhaseImbalanceLevelValue,
    .units      = {'%', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverPhaseImbalanceDelayValue[1U] = { 60U };
@@ -1859,7 +1859,7 @@ eConfigReg genCurrentOverPhaseImbalanceDelay =
    .scale      = 0U,
    .value      = genCurrentOverPhaseImbalanceDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap mainsSetupBitMap[2U] = 
@@ -1928,7 +1928,7 @@ eConfigReg mainsUnderVoltageAlarmLevel =
    .scale      = 0U,
    .value      = mainsUnderVoltageAlarmLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t mainsOverVoltageAlarmLevelValue[1U] = { 438U };
@@ -1947,7 +1947,7 @@ eConfigReg mainsOverVoltageAlarmLevel =
    .scale      = 0U,
    .value      = mainsOverVoltageAlarmLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t mainsUnderFrequencyAlarmLevelValue[1U] = { 450U };
@@ -1966,7 +1966,7 @@ eConfigReg mainsUnderFrequencyAlarmLevel =
    .scale      = -1,
    .value      = mainsUnderFrequencyAlarmLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t mainsOverFrequencyAlarmLevelValue[1U] = { 520U };
@@ -1985,7 +1985,7 @@ eConfigReg mainsOverFrequencyAlarmLevel =
    .scale      = -1,
    .value      = mainsOverFrequencyAlarmLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap engineSetupBitMap[2U] = 
@@ -2028,7 +2028,7 @@ eConfigReg enginePreHeatLevel =
    .scale      = 0U,
    .value      = enginePreHeatLevelValue,
    .units      = {'C', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t enginePreHeatDelayValue[1U] = { 0U };
@@ -2047,7 +2047,7 @@ eConfigReg enginePreHeatDelay =
    .scale      = 0U,
    .value      = enginePreHeatDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t engineWorkTimeInputValue[1U] = { 0U };
@@ -2066,7 +2066,7 @@ eConfigReg engineWorkTimeInput =
    .scale      = 0U,
    .value      = engineWorkTimeInputValue,
    .units      = {'ч', 'а', 'с', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t engineStartsNumberInputValue[1U] = { 0U };
@@ -2085,7 +2085,7 @@ eConfigReg engineStartsNumberInput =
    .scale      = 0U,
    .value      = engineStartsNumberInputValue,
    .units      = {' ', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap starterStopSetupBitMap[4U] = 
@@ -2130,7 +2130,7 @@ eConfigReg starterStopGenFreqLevel =
    .scale      = -1,
    .value      = starterStopGenFreqLevelValue,
    .units      = {'Г', 'ц', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t starterStopOilPressureLevelValue[1U] = { 20U };
@@ -2149,7 +2149,7 @@ eConfigReg starterStopOilPressureLevel =
    .scale      = -1,
    .value      = starterStopOilPressureLevelValue,
    .units      = {'Б', 'а', 'р', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t starterStopChargeAlternatorLevelValue[1U] = { 60U };
@@ -2168,7 +2168,7 @@ eConfigReg starterStopChargeAlternatorLevel =
    .scale      = -1,
    .value      = starterStopChargeAlternatorLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t starterStopSpeedLevelValue[1U] = { 15000U };
@@ -2187,7 +2187,7 @@ eConfigReg starterStopSpeedLevel =
    .scale      = -1,
    .value      = starterStopSpeedLevelValue,
    .units      = {'R', 'P', 'M', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap batteryAlarmsBitMap[4U] = 
@@ -2232,7 +2232,7 @@ eConfigReg batteryUnderVoltageLevel =
    .scale      = -1,
    .value      = batteryUnderVoltageLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryUnderVoltageDelayValue[1U] = { 60U };
@@ -2251,7 +2251,7 @@ eConfigReg batteryUnderVoltageDelay =
    .scale      = 0U,
    .value      = batteryUnderVoltageDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryOverVoltageLevelValue[1U] = { 300U };
@@ -2270,7 +2270,7 @@ eConfigReg batteryOverVoltageLevel =
    .scale      = -1,
    .value      = batteryOverVoltageLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryOverVoltageDelayValue[1U] = { 60U };
@@ -2289,7 +2289,7 @@ eConfigReg batteryOverVoltageDelay =
    .scale      = 0U,
    .value      = batteryOverVoltageDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeShutdownLevelValue[1U] = { 40U };
@@ -2308,7 +2308,7 @@ eConfigReg batteryChargeShutdownLevel =
    .scale      = -1,
    .value      = batteryChargeShutdownLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeShutdownDelayValue[1U] = { 5U };
@@ -2327,7 +2327,7 @@ eConfigReg batteryChargeShutdownDelay =
    .scale      = 0U,
    .value      = batteryChargeShutdownDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeWarningLevelValue[1U] = { 60U };
@@ -2346,7 +2346,7 @@ eConfigReg batteryChargeWarningLevel =
    .scale      = -1,
    .value      = batteryChargeWarningLevelValue,
    .units      = {'В', ' ', ' ', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeWarningDelayValue[1U] = { 5U };
@@ -2365,7 +2365,7 @@ eConfigReg batteryChargeWarningDelay =
    .scale      = 0U,
    .value      = batteryChargeWarningDelayValue,
    .units      = {'с', 'е', 'к', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap maintenanceAlarmsBitMap[6U] = 
@@ -2412,7 +2412,7 @@ eConfigReg maintenanceAlarmOilTime =
    .scale      = 0U,
    .value      = maintenanceAlarmOilTimeValue,
    .units      = {'ч', 'а', 'с', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t maintenanceAlarmAirTimeValue[1U] = { 10U };
@@ -2431,7 +2431,7 @@ eConfigReg maintenanceAlarmAirTime =
    .scale      = 0U,
    .value      = maintenanceAlarmAirTimeValue,
    .units      = {'ч', 'а', 'с', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t maintenanceAlarmFuelTimeValue[1U] = { 10U };
@@ -2450,7 +2450,7 @@ eConfigReg maintenanceAlarmFuelTime =
    .scale      = 0U,
    .value      = maintenanceAlarmFuelTimeValue,
    .units      = {'ч', 'а', 'с', ' '},
-   .bitMap     = NULL
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap logSetupBitMap[1U] = 

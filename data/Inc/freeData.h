@@ -10,7 +10,7 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
-#define  DATA_SIZE  5U
+#define  FREE_DATA_SIZE  5U
 
 typedef enum
 {
@@ -27,6 +27,6 @@ extern uint16_t maintenanceAlarmOilTimeLeft;  /* 2 */
 extern uint16_t maintenanceAlarmAirTimeLeft;  /* 3 */
 extern uint16_t maintenanceAlarmFuelTimeLeft; /* 4 */
 
-extern uint16_t* const dataArray[DATA_SIZE];
+extern uint16_t* const freeDataArray[FREE_DATA_SIZE];
 /*----------------------------------------------------------------------*/
 #endif /* INC_FREEDATA_H_ */

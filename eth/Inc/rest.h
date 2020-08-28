@@ -8,7 +8,7 @@
 #ifndef INC_REST_H_
 #define INC_REST_H_
 /*----------------------------- Includes -------------------------------------*/
-#include <freeData.h>
+#include "freeData.h"
 #include "stm32f2xx_hal.h"
 #include "config.h"
 #include "chart.h"
@@ -78,10 +78,10 @@ uint32_t     uRESTmakeConfig ( const eConfigReg* reg, char* output );
 uint32_t     uRESTmakeChart ( const eChartData* chart, char* output );
 uint32_t     uRESTmakeTime ( const RTC_TIME* time, char* output );
 uint32_t     uRESTmakeData( uint16_t data, char* output );
-REST_ERROR   eRESTparsingConfig ( char* input, eConfigReg* reg );
 REST_ADDRESS eRESTgetRequest ( char* path, REST_REQUEST* request, uint16_t* adr );
-REST_ERROR   eRESTparsingChart ( char* input, eChartData* chart );
-REST_ERROR   eRESTparsingTime( char* input, RTC_TIME* time );
+REST_ERROR   eRESTparsingConfig ( char* input, uint16_t adr );
+REST_ERROR   eRESTparsingChart ( char* input, uint16_t adr );
+REST_ERROR   eRESTparsingTime ( char* input, RTC_TIME* time );
 REST_ERROR   eRESTparsingData ( char* input, uint16_t* data );
 /*---------------------------------------------------------------------------------------------------*/
 

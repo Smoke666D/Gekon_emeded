@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-08-26 10:28:58
+ * Make time: 2020-08-28 13:09:26
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -9,6 +9,7 @@
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
+#define   MAX_BIT_MAP_LENGTH           12U
 #define   SETTING_REGISTER_NUMBER      122U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU

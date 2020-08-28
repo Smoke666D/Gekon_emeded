@@ -67,7 +67,7 @@ eChartData fuelSensorChart = {
   },
 };
 
-eChartData* charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart, &fuelSensorChart};
+eChartData* const charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart, &fuelSensorChart};
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Calculate line functions between dots of chart

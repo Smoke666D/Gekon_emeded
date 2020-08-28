@@ -39,6 +39,7 @@
 #include "EEPROM.h"
 #include "storage.h"
 #include "RTC.h"
+#include "dataAPI.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -213,14 +214,15 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
-  eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM init */
-  vRTCinit( &hi2c1 );                                           /* RTC init */
+  eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
+  vRTCinit( &hi2c1 );                                           /* RTC initialization */
+  vDATAAPIinit();                                               /* Data API initialization */
   /*-------------------- Version initialization ------------------------------*/
   vSYSgetUniqueID16( serialNumber.value );          /* Serial number */
-  versionFirmware.value[0U] = SOFTWARE_VERSION;     /* Software version */
+  versionFirmware.value[0U]   = SOFTWARE_VERSION;   /* Software version */
   versionController.value[0U] = HARDWARE_VERSION;   /* Hardware version */
   /*--------------------------------------------------------------------------*/
-  vSYSSerial("***********************\n\r");
+  vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();
@@ -911,8 +913,7 @@ void StartDefaultTask(void *argument)
   uint8_t   i         = 0U;
   uint8_t   j         = 0U;
   uint8_t   temp      = 0U;
-  uint16_t  data      = 0U;
-  uint32_t  waterMark = 0U;
+  //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
   for ( i=0U; i<6U; i++ )
@@ -927,7 +928,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
-  vSYSSerial("--------------EEPROM map:--------------\n\r");
+  vSYSSerial("------------- EEPROM map: -------------\n\r");
   vSYSSerial("EWA            : ");
   sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
   vSYSSerial( buf );
@@ -960,11 +961,11 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( " bytes )\n\r" );
 
-  vSYSSerial("Data           : ");
+  vSYSSerial("Free data      : ");
   sprintf( buf, "0x%06X", STORAGE_DATA_ADR );
   vSYSSerial( buf );
   vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_DATA_SIZE );
+  sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
   vSYSSerial( buf );
   vSYSSerial( " bytes )\n\r" );
 
@@ -977,17 +978,18 @@ void StartDefaultTask(void *argument)
   vSYSSerial( " bytes )\n\r" );
 
   vSYSSerial("Free           : ");
-  sprintf( buf, "%d", ( EEPROM_SIZE - STORAGE_REQUIRED_SIZE ) );
+  sprintf( buf, "%d", ( ( EEPROM_SIZE * 1024U ) - STORAGE_REQUIRED_SIZE ) );
   vSYSSerial( buf );
   vSYSSerial( " bytes \n\r" );
 
   vSYSSerial("End            : ");
-  sprintf( buf, "0x%06X", EEPROM_SIZE );
+  sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
   vSYSSerial("---------------------------------------\n\r");
-  if ( eSTORAGEreadConfigs() == EEPROM_OK )
+  //if ( eSTORAGEreadConfigs() == EEPROM_OK )
+  if ( eDATAAPIconfigValue( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
   {
     vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
   }
@@ -995,7 +997,7 @@ void StartDefaultTask(void *argument)
   {
     vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
   }
-  if ( eSTORAGEreadCharts() == EEPROM_OK )
+  if ( eDATAAPIchart( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
   {
     vSYSSerial( ">>EEPROM charts read: done!\n\r" );
   }
@@ -1003,14 +1005,12 @@ void StartDefaultTask(void *argument)
   {
     vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
   }
-  /*for ( i=0; i<DATA_SIZE; i++ )
-  {
-    if ( eSTORAGEgetData( i, &data ) != EEPROM_OK )
-    {
-      vSYSSerial( ">>EEPROM data read: fail!\n\r" );
-      break;
-    }
-  }*/
+  /*
+   if ( eDATAAPIfreeData( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
+   {
+     vSYSSerial( ">>EEPROM free data read: done!\n\r" );
+   }
+  */
   /* Infinite loop */
   for(;;)
   {

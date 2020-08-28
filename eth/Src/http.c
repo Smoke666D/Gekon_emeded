@@ -18,6 +18,7 @@
 #include "EEPROM.h"
 #include "storage.h"
 #include "RTC.h"
+#include "dataAPI.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static char     restBuffer[REST_BUFFER_SIZE];
 static RTC_TIME time;
@@ -246,7 +247,11 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
       case REST_CONFIGS:
         if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
         {
-          if ( eRESTparsingConfig( content, configReg[adr] ) == REST_OK )
+            if ( adr == 3U )
+              {
+        	adr = 3U;
+              }
+          if ( eRESTparsingConfig( content, adr ) == REST_OK )
           {
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
@@ -257,7 +262,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
       case REST_CHARTS:
         if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
         {
-          if ( eRESTparsingChart( content, charts[adr] ) == REST_OK )
+          if ( eRESTparsingChart( content, adr ) == REST_OK )
             {
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
@@ -266,7 +271,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
         }
         break;
       case REST_SAVE_CONFIGS:
-        if ( eSTORAGEwriteConfigs() == EEPROM_OK )
+        if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
         {
           response->contetntType  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_OK;
@@ -274,7 +279,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
         }
         break;
       case REST_SAVE_CHARTS:
-        if ( eSTORAGEwriteCharts() == EEPROM_OK )
+	if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
         {
           response->contetntType  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_OK;
@@ -293,11 +298,11 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
 	}
         break;
       case REST_DATA:
-	if ( adr < DATA_SIZE )
+	if ( adr < FREE_DATA_SIZE )
 	{
-	  if ( eRESTparsingData( content, dataArray[adr] ) == REST_OK )
+	  if ( eRESTparsingData( content, freeDataArray[adr] ) == REST_OK )
 	  {
-	    if ( eSTORAGEsaveData( adr ) )
+	    if ( eSTORAGEsaveFreeData( adr ) )
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
             response->contentLength = 0U;
@@ -454,13 +459,13 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
       case REST_DATA:
 	if ( adrFlag != REST_NO_ADR )
 	{
-	  if ( adr < DATA_SIZE )
+	  if ( adr < FREE_DATA_SIZE )
 	  {
 	    stream = &(response->stream);
 	    stream->size            = 1U;
 	    stream->start           = adr;
 	    stream->index           = 0U;
-	    response->contentLength = uRESTmakeData( *dataArray[stream->start], restBuffer );;
+	    response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
 	    response->callBack      = cHTTPstreamData;
 	    response->contetntType  = HTTP_CONTENT_JSON;
 	    response->status        = HTTP_STATUS_OK;
@@ -926,7 +931,7 @@ STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream )
 STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
 {
   stream->status = STREAM_END;
-  stream->length = uRESTmakeData( *( dataArray[stream->start] ), restBuffer );
+  stream->length = uRESTmakeData( *( freeDataArray[stream->start] ), restBuffer );
   restBuffer[stream->length] = 0U;
   stream->content = restBuffer;
   return stream->status;

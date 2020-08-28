@@ -13,8 +13,8 @@ uint16_t maintenanceAlarmOilTimeLeft  = 0U;  /* 2 */
 uint16_t maintenanceAlarmAirTimeLeft  = 0U;  /* 3 */
 uint16_t maintenanceAlarmFuelTimeLeft = 0U;  /* 4 */
 
-uint16_t* const dataArray[DATA_SIZE] = { &engineWorkTime,
-                                         &engineStartsNumber,
-					 &maintenanceAlarmOilTimeLeft,
-					 &maintenanceAlarmAirTimeLeft,
-					 &maintenanceAlarmFuelTimeLeft };
+uint16_t* const freeDataArray[FREE_DATA_SIZE] = { &engineWorkTime,
+                                                  &engineStartsNumber,
+					          &maintenanceAlarmOilTimeLeft,
+					          &maintenanceAlarmAirTimeLeft,
+					          &maintenanceAlarmFuelTimeLeft };

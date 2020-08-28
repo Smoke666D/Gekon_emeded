@@ -61,10 +61,10 @@ typedef struct
   eChartFunction  func[CHART_DOTS_SIZE - 1U];
 } eChartData;
 /*------------------------ Extern --------------------------------------*/
-extern eChartData  oilSensorChart;
-extern eChartData  coolantSensorChart;
-extern eChartData  fuelSensorChart;
-extern eChartData* charts[CHART_NUMBER];
+extern eChartData        oilSensorChart;
+extern eChartData        coolantSensorChart;
+extern eChartData        fuelSensorChart;
+extern eChartData* const charts[CHART_NUMBER];
 /*----------------------- Function -------------------------------------*/
 void           vCHARTcalcFunction( eChartData* chart );                 /* Calculate line functions between dots of chart */
 eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y );  /* Get value of chart functions */

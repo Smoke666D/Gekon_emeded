@@ -28,6 +28,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "common.h"
+#include "menu.h"
 #include "server.h"
 #include "http.h"
 #include "rtc.h"
@@ -105,14 +106,7 @@ osThreadId_t lcdTaskHandle;
 const osThreadAttr_t lcdTask_attributes = {
   .name = "lcdTask",
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 512
-};
-/* Definitions for lcdRedrawTask */
-osThreadId_t lcdRedrawTaskHandle;
-const osThreadAttr_t lcdRedrawTask_attributes = {
-  .name = "lcdRedrawTask",
-  .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 128
+  .stack_size = 1024
 };
 /* Definitions for usbTask */
 osThreadId_t usbTaskHandle;
@@ -159,8 +153,7 @@ static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void *argument);
 void StartNetTask(void *argument);
 void StartLcdTask(void *argument);
-extern void StartLcdRedrawTask(void *argument);
-extern void vStartUsbTask(void *argument);
+extern void StartUsbTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 extern void vKeyboardTask(void const * argument);
@@ -257,16 +250,13 @@ int main(void)
   /* creation of lcdTask */
   lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
 
-  /* creation of lcdRedrawTask */
-  lcdRedrawTaskHandle = osThreadNew(StartLcdRedrawTask, NULL, &lcdRedrawTask_attributes);
-
   /* creation of usbTask */
   usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 
-  keyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
-  SetupKeyboard();
+  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  vSetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
 
   vUSBinit( usbTaskHandle );
@@ -604,12 +594,12 @@ static void MX_SPI3_Init(void)
   /* SPI3 parameter configuration*/
   hspi3.Instance = SPI3;
   hspi3.Init.Mode = SPI_MODE_MASTER;
-  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi3.Init.Direction = SPI_DIRECTION_1LINE;
   hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi3.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi3.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -839,12 +829,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin KL_START_Pin KL_AUTO_Pin
-                           KL_STOP_Pin RS485_DE_Pin */
-  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|KL_START_Pin|KL_AUTO_Pin
-                          |KL_STOP_Pin|RS485_DE_Pin;
+  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin RS485_DE_Pin */
+  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|RS485_DE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : KL_START_Pin KL_AUTO_Pin KL_STOP_Pin */
+  GPIO_InitStruct.Pin = KL_START_Pin|KL_AUTO_Pin|KL_STOP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LED1_Pin LED3_Pin */
@@ -1071,11 +1065,11 @@ void StartNetTask(void *argument)
 void StartLcdTask(void *argument)
 {
   /* USER CODE BEGIN StartLcdTask */
-	vLCD_Init();
+  vLCD_Init();
   /* Infinite loop */
   for(;;)
   {
-    IncData();
+    vMenuTask();
   }
   /* USER CODE END StartLcdTask */
 }

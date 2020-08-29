@@ -38,7 +38,7 @@
 #define stop_key           0x04U
 #define start_key          0x08U
 #define auto_key           0x10U
-#define time_out           0x20U
+#define time_out           0x40U
 /*---------------------------- Structures --------------------------------------*/
 typedef struct
 {
@@ -56,11 +56,11 @@ typedef struct
   unsigned char cStatus;
 } xKeyEvent;
 /*----------------------------- Functions ------------------------------------*/
-unsigned long GetKeyTimeOut( void );
-void          SetKeyTimeOut( unsigned long data );
+unsigned long ulGetKeyTimeOut( void );
+void          vSetKeyTimeOut( unsigned long data );
 void          vKeyboardTask( void const * argument );
-void          SetupKeyboard( void );
+void          vSetupKeyboard( void );
 void          vKeyboardInit( uint32_t Message );
-QueueHandle_t GetKeyboardQueue( void );
+QueueHandle_t pGetKeyboardQueue( void );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_KEYBOARD_H_ */

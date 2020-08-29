@@ -8,7 +8,6 @@
 #include "menu.h"
 #include "lcd.h"
 #include "keyboard.h"
-#include "data_type.h"
 #include "menu_data.c"
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2           = NULL;
@@ -655,40 +654,36 @@ void vUCTOSTRING(uint8_t * str, uint8_t data)
 /*---------------------------------------------------------------------------------------------------*/
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
-
-   switch (ID)
-   {
-     case BRIGTH_ID:
-         switch (cmd)
+ switch ( ID )
+ {
+   case BRIGTH_ID:
+     switch (cmd)
+     {
+       case mREAD:
+         vUCTOSTRING( ( uint8_t* )Data, ucLCDGetLedBrigth() );
+         break;
+       case mINC:
+         vLCDSetLedBrigth( ucLCDGetLedBrigth() + 1U );
+         break;
+       case mDEC:
+         if ( ucLCDGetLedBrigth() > 0U )
          {
-           case mREAD:
-             vUCTOSTRING(Data,ucLCDGetLedBrigth());
-             break;
-           case mINC:
-            vLCDSetLedBrigth(ucLCDGetLedBrigth()+1);
-             break;
-           case mDEC:
-             if (ucLCDGetLedBrigth() > 0)
-            {
-        	 vLCDSetLedBrigth(ucLCDGetLedBrigth()-1);
-            }
-            break;
-          case mSAVE:
-            displayBrightnesLevel.value[0U] = ucLCDGetLedBrigth();
-            break;
-           case mESC:
-             vLCDBrigthInit();
-	     break;
-           default:
-             break;
+           vLCDSetLedBrigth( ucLCDGetLedBrigth() - 1U );
          }
+         break;
+       case mSAVE:
+         displayBrightnesLevel.value[0U] = ucLCDGetLedBrigth();
+         break;
+       case mESC:
+         vLCDBrigthInit();
 	 break;
-
-     default:
-        break;
-   }
-
-
+       default:
+         break;
+     }
+     break;
+   default:
+     break;
+  }
 }
 
 

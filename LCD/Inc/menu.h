@@ -11,6 +11,7 @@
 #include "u8g2.h"
 #include "main.h"
 #include "config.h"
+#include "data_type.h"
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
 #define CENTER_ALIGN        1U
@@ -93,5 +94,6 @@ void vDrawMenu( uint8_t temp, uint8_t* data );
 void vMenuInit( u8g2_t* temp );
 void vMenuTask( void );
 void vDrawObject( xScreenObjet* pScreenObjects );
+void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

@@ -327,7 +327,16 @@ static xScreenObjet BrigthScreen[]=
     {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА",NULL,0U},
     {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
     {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Ярокость % ",NULL,0U},
-    {1U,FONT_SIZE*13U,LINE1+6U,40U,LINE4_HIGTH,INPUT_HW_DATA,InputParam,NULL,(void*)&vGetStatusData,BRIGTH_ID},
+    {1U,
+	FONT_SIZE*13U,
+	LINE1+6U,
+	40U,
+	LINE4_HIGTH,
+	INPUT_HW_DATA,
+	InputParam,
+	NULL,
+	(void*)&vGetStatusData,
+	BRIGTH_ID},
 };
 
 static xScreenObjet BrigthScreen1[]=

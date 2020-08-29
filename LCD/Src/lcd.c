@@ -49,15 +49,15 @@ void vLCDBrigthInit()
 /*
  * Функция установки яркости подсветки индикатора
  */
-void vLCDSetLedBrigth(uint8_t brigth)
+void vLCDSetLedBrigth ( uint8_t brigth )
 {
-  if ( brigth <= displayBrightnesLevel.max)
+  if ( brigth <= displayBrightnesLevel.atrib->max )
   {
     lcd_brigth = brigth;
   }
   else
   {
-    lcd_brigth = displayBrightnesLevel.max;
+    lcd_brigth = displayBrightnesLevel.atrib->max;
   }
   return;
 }

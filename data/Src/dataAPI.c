@@ -6,8 +6,6 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "dataAPI.h"
-#include "cmsis_os.h"
-#include "FreeRTOS.h"
 #include "semphr.h"
 #include "storage.h"
 #include "storage.h"
@@ -16,17 +14,30 @@
 static SemaphoreHandle_t xSemaphore;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
+static TaskHandle_t* notifyTargets[NOTIFY_TARGETS_NUMBER];
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-
+void vDATAAPInotfyAll ( uint32_t value )
+{
+  uint8_t i = 0U;
+  for (i=0U; i<NOTIFY_TARGETS_NUMBER; i++ )
+  {
+    xTaskNotify( *notifyTargets[i], value, eSetValueWithOverwrite );
+  }
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vDATAAPIinit ( void )
+void vDATAAPIinit ( TaskHandle_t* targets )
 {
+  uint8_t i = 0U;
+  for ( i=0U; i<NOTIFY_TARGETS_NUMBER; i++ )
+  {
+    notifyTargets[i] = targets[i];
+  }
   xSemaphore = xSemaphoreCreateMutex();
   return;
 }
@@ -120,6 +131,10 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             if ( eSTORAGEwriteConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
+            }
+            else
+            {
+              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
             }
             break;
           case DATA_API_CMD_INC:
@@ -259,6 +274,10 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             if ( eSTORAGEwriteConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
+            }
+            else
+            {
+              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
             }
             break;
           case DATA_API_CMD_INC:

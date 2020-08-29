@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include <freeData.h>
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
@@ -27,6 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "task.h"
 #include "common.h"
 #include "menu.h"
 #include "server.h"
@@ -41,6 +41,7 @@
 #include "storage.h"
 #include "RTC.h"
 #include "dataAPI.h"
+#include "freeData.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -134,6 +135,7 @@ const osThreadAttr_t keyboardTask_attributes = {
  * 4. lcdRedrawTask - 128
  * 5. usbTask       - 768
  * */
+static TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -209,7 +211,7 @@ int main(void)
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit();                                               /* Data API initialization */
+  vDATAAPIinit( notifyTrg );                                    /* Data API initialization */
   /*-------------------- Version initialization ------------------------------*/
   vSYSgetUniqueID16( serialNumber.value );          /* Serial number */
   versionFirmware.value[0U]   = SOFTWARE_VERSION;   /* Software version */

@@ -9,15 +9,24 @@
 #define INC_DATAAPI_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include "EEPROM.h"
 #include "freeData.h"
 #include "config.h"
 #include "chart.h"
 /*------------------------ Define --------------------------------------*/
-#define  SEMAPHORE_TAKE_DELAY  ( ( TickType_t ) 10U )
+#define  SEMAPHORE_TAKE_DELAY   ( ( TickType_t ) 10U )
+#define  NOTIFY_TARGETS_NUMBER  1U
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/
+typedef enum
+{
+  DATA_API_MESSAGE_REINIT = 0x55,
+} DATA_API_MESSAGE;
+
 typedef enum
 {
   DATA_API_CMD_WRITE,    /* Save data from external data buffer to the data register */
@@ -42,7 +51,7 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 
 /*------------------------ Functions -----------------------------------*/
-void            vDATAAPIinit ( void );
+void            vDATAAPIinit ( TaskHandle_t* targets );
 DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
 DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char scale, uint16_t* units, eConfigBitMap* bitMap );
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart );

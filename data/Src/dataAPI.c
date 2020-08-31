@@ -102,12 +102,22 @@ void vDATAAPIdataInit ( void )
       {
         vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
       }
-      /*
-      if ( eDATAAPIfreeData( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
+      for ( i=0U; i<FREE_DATA_SIZE; i++ )
+      {
+        res = eSTORAGEreadFreeData( i );
+        if ( res != EEPROM_OK )
+        {
+          break;
+        }
+      }
+      if ( res == EEPROM_OK )
       {
         vSYSSerial( ">>EEPROM free data read: done!\n\r" );
       }
-      */
+      else
+      {
+        vSYSSerial( ">>EEPROM free data read: fail!\n\r" );
+      }
       initDone = 1U;
     }
     xSemaphoreGive( xSemaphore );
@@ -395,10 +405,10 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
                 res = DATA_API_STAT_EEPROM_ERROR;
                 break;
               }
-              if ( res == DATA_API_STAT_OK )
-              {
-                vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
-              }
+            }
+            if ( res == DATA_API_STAT_OK )
+            {
+              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
             }
             xSemaphoreGive( xSemaphore );
           }

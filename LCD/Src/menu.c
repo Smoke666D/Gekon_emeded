@@ -26,32 +26,35 @@ static uint8_t           Blink          = 0U;
 
 
 /*---------------------------------------------------------------------------------------------------*/
-
+/*
+ * Функция обработки клавишей меню да-нет?
+ */
 void xYesNoScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
 
     switch (key)
     {
-      case KEY_STOP:
-	menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
-	menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
-	break;
-      case KEY_START:
-	menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =0U;
+      case KEY_STOP:  //Если клавиша стоп, то подсвечиваем объект "ДА"
+        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
+        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
+        break;
+      case KEY_START://Если клавиша старт, то подсвечиваем объект "НЕТ"
+        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =0U;
         menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =1U;
       break;
-   case KEY_AUTO:
-     if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] ==1U)
-     {
-	 pCurObject->GetDtaFunction( mSAVE, NULL, pCurObject->DataID );
-     }
-     else
-     {
-	 menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
-	 menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
-	 pCurObject->GetDtaFunction( mESC, NULL, pCurObject->DataID );
-     }
-     pCurrMenu = menu->pHomeMenu[0].pUpScreenSet;
+      case KEY_AUTO:
+                    //Если каливаша AUTO то проверяем объеты меню, если выбран ДА.
+        if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] ==1U)
+        {
+          pCurObject->GetDtaFunction( mSAVE, NULL, pCurObject->DataID );
+        }
+        else
+        {
+          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
+          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
+          pCurObject->GetDtaFunction( mESC, NULL, pCurObject->DataID );
+        }
+        pCurrMenu = menu->pHomeMenu[0].pUpScreenSet;
      break;
       default:
         break;
@@ -649,29 +652,29 @@ void vUCTOSTRING(uint8_t * str, uint8_t data)
 /*---------------------------------------------------------------------------------------------------*/
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
+  uint16_t buff;
  switch ( ID )
  {
    case DISPLAY_BRIGHTNES_LEVEL_ADR:
      switch (cmd)
      {
        case mREAD:
-	// eDATAAPIconfigValue(DATA_API_CMD_INC,displayBrightnesLevel.atrib->adr,NULL);
-
-         vUCTOSTRING( ( uint8_t* )Data, ucLCDGetLedBrigth() );
+	       eDATAAPIconfigValue(DATA_API_CMD_READ,displayBrightnesLevel.atrib->adr,&buff);
+         vUCTOSTRING( ( uint8_t* )Data, (uint8_t) buff );
          break;
        case mINC:
-	 eDATAAPIconfigValue(DATA_API_CMD_INC,displayBrightnesLevel.atrib->adr,NULL);
-	 vLCDBrigthInit();
+         eDATAAPIconfigValue(DATA_API_CMD_INC,displayBrightnesLevel.atrib->adr,NULL);
+         vLCDBrigthInit();
          break;
        case mDEC:
-	 eDATAAPIconfigValue(DATA_API_CMD_DEC,displayBrightnesLevel.atrib->adr,NULL);
-	 vLCDBrigthInit();
+         eDATAAPIconfigValue(DATA_API_CMD_DEC,displayBrightnesLevel.atrib->adr,NULL);
+         vLCDBrigthInit();
          break;
        case mSAVE:
-	 eDATAAPIconfigValue(DATA_API_CMD_SAVE,displayBrightnesLevel.atrib->adr,NULL);
+         eDATAAPIconfigValue(DATA_API_CMD_SAVE,displayBrightnesLevel.atrib->adr,NULL);
          break;
        case mESC:
-	 eDATAAPIconfigValue(DATA_API_CMD_LOAD,displayBrightnesLevel.atrib->adr,NULL);
+         eDATAAPIconfigValue(DATA_API_CMD_LOAD,displayBrightnesLevel.atrib->adr,NULL);
          vLCDBrigthInit();
 	 break;
        default:

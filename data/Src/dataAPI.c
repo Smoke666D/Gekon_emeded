@@ -8,13 +8,15 @@
 #include "dataAPI.h"
 #include "semphr.h"
 #include "storage.h"
-#include "storage.h"
 #include "freeData.h"
+#include "common.h"
+#include "version.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t xSemaphore;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 static TaskHandle_t* notifyTargets[NOTIFY_TARGETS_NUMBER];
+static uint8_t       initDone = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -31,6 +33,88 @@ void vDATAAPInotfyAll ( uint32_t value )
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+void vDATAAPIdataInit ( void )
+{
+  EEPROM_STATUS res              = EEPROM_OK;
+  uint8_t       sr               = 0xFFU;
+  uint16_t      i                = 0U;
+  uint16_t      serialBuffer[serialNumber.atrib->len];
+
+  if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+  {
+    res = eEEPROMreadMemory( STORAGE_SR_ADR, &sr, 1U );
+    if ( sr == STORAGE_SR_EMPTY )
+    {
+      vSYSSerial( ">>EEPROM empty. All data is default.\n\r" );
+      vSYSgetUniqueID16( serialBuffer );                                                   /* Get serial number */
+      for ( i=0U; i<serialNumber.atrib->len; i++ )
+      {
+        serialNumber.value[i] = serialBuffer[i];
+      }
+      versionController.value[0U] = HARDWARE_VERSION;
+      versionFirmware.value[0U]   = SOFTWARE_VERSION;
+      res = eSTORAGEwriteConfigs();
+      if ( res == EEPROM_OK )
+      {
+        res = eSTORAGEwriteCharts();
+        if ( res == EEPROM_OK )
+        {
+          for ( i=0U; i<FREE_DATA_SIZE; i++ )
+          {
+            res = eSTORAGEsaveFreeData( i );
+            if ( res != EEPROM_OK )
+            {
+              break;
+            }
+          }
+          if ( res == EEPROM_OK )
+          {
+            sr  = 0x00U;
+            res = eEEPROMwriteMemory( STORAGE_SR_ADR, &sr, 1U );
+            if ( res == EEPROM_OK )
+            {
+              vSYSSerial( ">>EEPROM data initialization: done!\n\r" );
+              initDone = 1U;
+            }
+          }
+        }
+      }
+      if ( initDone == 0U )
+      {
+        vSYSSerial( ">>EEPROM data initialization: fail!\n\r" );
+      }
+    }
+    else
+    {
+      if ( eSTORAGEreadConfigs() == EEPROM_OK )
+      {
+        vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
+      }
+      else
+      {
+        vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
+      }
+      if ( eSTORAGEreadCharts() == EEPROM_OK )
+      {
+        vSYSSerial( ">>EEPROM charts read: done!\n\r" );
+      }
+      else
+      {
+        vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
+      }
+      /*
+      if ( eDATAAPIfreeData( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
+      {
+        vSYSSerial( ">>EEPROM free data read: done!\n\r" );
+      }
+      */
+      initDone = 1U;
+    }
+    xSemaphoreGive( xSemaphore );
+  }
+  return;
+}
+
 void vDATAAPIinit ( TaskHandle_t* targets )
 {
   uint8_t i = 0U;
@@ -48,7 +132,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
 
   if ( adr < CHART_NUMBER )
   {
-    if ( xSemaphore != NULL )
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U) )
     {
       switch ( cmd )
       {
@@ -121,14 +205,14 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char scale, uint16_t* units, eConfigBitMap* bitMap )
+DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char* scale, uint16_t* units, eConfigBitMap* bitMap )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint8_t         i   = 0U;
 
   if ( adr < SETTING_REGISTER_NUMBER )
   {
-    if ( xSemaphore != NULL )
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
     {
       switch ( cmd )
       {
@@ -137,7 +221,7 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
           {
             value[i] = configReg[adr]->value[i];
           }
-          scale = configReg[adr]->scale;
+          *scale = configReg[adr]->scale;
           for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
           {
             units[i] = configReg[adr]->units[i];
@@ -155,7 +239,7 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             {
               configReg[adr]->value[i] = value[i];
             }
-            configReg[adr]->scale = scale;
+            configReg[adr]->scale = *scale;
             for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
             {
               configReg[adr]->units[i] = units[i];
@@ -227,24 +311,24 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t data )
+DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint16_t        i   = 0U;
 
   if ( adr < FREE_DATA_SIZE )
   {
-    if ( xSemaphore != NULL )
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
     {
       switch ( cmd )
       {
         case DATA_API_CMD_READ:
-          data = *freeDataArray[adr];
+          *data = *freeDataArray[adr];
           break;
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            *freeDataArray[adr] = data;
+            *freeDataArray[adr] = *data;
             xSemaphoreGive( xSemaphore );
           }
           else
@@ -329,7 +413,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
 
   if ( adr < SETTING_REGISTER_NUMBER )
   {
-    if ( xSemaphore != NULL )
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
     {
       switch ( cmd )
       {

@@ -337,7 +337,7 @@ EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint3
  *         len  - length to read
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMReadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
+EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS   res    = EEPROM_OK;
   EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
@@ -397,7 +397,7 @@ EEPROM_STATUS eEEPROMReadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
  *         len  - length to write
  * Output: Status of operation
  */
-EEPROM_STATUS eEEPROMWriteMemory ( uint32_t adr, uint8_t* data, uint16_t len )
+EEPROM_STATUS eEEPROMwriteMemory ( uint32_t adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS   res    = EEPROM_OK;
   uint16_t        i      = 0U;

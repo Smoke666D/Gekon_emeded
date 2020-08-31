@@ -22,7 +22,7 @@ static QueueHandle_t     pKeyboard;
 static uint8_t           key            = 0U;
 static xScreenObjet*     pCurDrawScreen = NULL;
 static uint8_t           Blink          = 0U;
-
+static uint16_t          uiSetting      = 10U;
 
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -628,6 +628,7 @@ xScreenSetObject xSettingsMenu =
 
 
 
+
 void vUCTOSTRING(uint8_t * str, uint8_t data)
 {
   uint8_t fb=0,i=0;
@@ -648,6 +649,17 @@ void vUCTOSTRING(uint8_t * str, uint8_t data)
   str[i]=0;
 
 }
+
+void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+
+  if ((ID == SETTING_ID) && (cmd == mREAD))
+  {
+    vUCTOSTRING( ( uint8_t* )Data, (uint8_t) uiSetting);
+  }
+
+}
+
 
 /*---------------------------------------------------------------------------------------------------*/
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )

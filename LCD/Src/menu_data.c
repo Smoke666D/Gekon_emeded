@@ -50,7 +50,7 @@ static char EventLog[][44U]=
 #define LINE5_HIGTH            ( 64U / 5U )
 
 #define BRIGTH_ID    3U
-
+#define SETTING_ID   1U
 #define LEFT_OFFSET  2U
 #define LINE1        12U
 #define LINE2        30U
@@ -327,23 +327,14 @@ static xScreenObjet BrigthScreen[]=
     {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА",NULL,0U},
     {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
     {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Ярокость % ",NULL,0U},
-    {1U,
-	FONT_SIZE*13U,
-	LINE1+6U,
-	40U,
-	LINE4_HIGTH,
-	INPUT_HW_DATA,
-	InputParam,
-	NULL,
-	(void*)&vGetStatusData,
-	BRIGTH_ID},
+    {1U,FONT_SIZE*13U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetStatusData,BRIGTH_ID},
 };
 
 static xScreenObjet BrigthScreen1[]=
 {
-    {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА1",NULL,0U},
+    {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НОМЕР УСТАВКИ",NULL,0U},
     {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
-    {1U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Ярокость тестовая ",NULL,0U},
+    {1U,FONT_SIZE*13U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,SETTING_ID},
 
 };
 

@@ -175,7 +175,15 @@ EEPROM_STATUS eSTORAGEwriteCharts ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEreadCharts( void )
+EEPROM_STATUS eSTORAGEinit ( void )
+{
+  EEPROM_STATUS res = EEPROM_OK;
+  uint8_t       sr  = 0U;
+  res = eEEPROMReadMemory( STORAGE_SR_ADR, &sr, 1U );
+  return res;
+}
+
+EEPROM_STATUS eSTORAGEreadCharts ( void )
 {
   EEPROM_STATUS res        = EEPROM_OK;
   uint8_t       i          = 0U;

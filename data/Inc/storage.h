@@ -14,6 +14,7 @@
 #include "config.h"
 //#include "logicCommon.h"
 /*------------------------ Define --------------------------------------*/
+#define  STORAGE_SR_SIZE        1U                                 /* byte */
 #define  STORAGE_WEB_SIZE       307200U                            /* byte */
 #define  STORAGE_RESERVE_SIZE   10240U                             /* byte */
 #define  STORAGE_CONFIG_SIZE    CONFIG_TOTAL_SIZE                  /* byte */
@@ -27,13 +28,16 @@
 #endif
 
 #define  STORAGE_START_ADR      0x0000U
-#define  STORAGE_EWA_ADR        ( STORAGE_START_ADR )
+#define  STORAGE_SR_ADR         ( STORAGE_START_ADR )
+#define  STORAGE_EWA_ADR        ( STORAGE_SR_ADR + STORAGE_SR_SIZE )
 #define  STORAGE_EWA_DATA_ADR   ( STORAGE_START_ADR + EEPROM_LENGTH_SIZE )
 #define  STORAGE_RESERVE_ADR    ( STORAGE_EWA_ADR + STORAGE_WEB_SIZE )
 #define  STORAGE_CONFIG_ADR     ( STORAGE_RESERVE_ADR + STORAGE_RESERVE_SIZE )
 #define  STORAGE_CHART_ADR      ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE )
 #define  STORAGE_DATA_ADR       ( STORAGE_CHART_ADR + CHART_CHART_SIZE )
 #define  STORAGE_LOG_ADR        ( STORAGE_DATA_ADR + STORAGE_FREE_DATA_SIZE )
+
+#define  STORAGE_SR_EMPTY       0x01U  /* The register as default is 0xFF */
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/

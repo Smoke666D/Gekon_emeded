@@ -49,7 +49,7 @@ static char EventLog[][44U]=
 #define LINE4_HIGTH            ( 64U / 4U )
 #define LINE5_HIGTH            ( 64U / 5U )
 
-#define BRIGTH_ID    1U
+#define BRIGTH_ID    3U
 
 #define LEFT_OFFSET  2U
 #define LINE1        12U

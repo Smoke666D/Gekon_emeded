@@ -52,10 +52,11 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 
 /*------------------------ Functions -----------------------------------*/
+void            vDATAAPIdataInit ( void );
 void            vDATAAPIinit ( TaskHandle_t* targets );
 DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
-DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char scale, uint16_t* units, eConfigBitMap* bitMap );
+DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char* scale, uint16_t* units, eConfigBitMap* bitMap );
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart );
-DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t data );
+DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAAPI_H_ */

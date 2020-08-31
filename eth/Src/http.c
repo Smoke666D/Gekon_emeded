@@ -347,11 +347,11 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
   strStr = strstr(path, "index" );
   if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
   {
-    eEEPROMReadMemory( STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
+    eEEPROMreadMemory( STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
     ewaLen = ( ( ( uint32_t )( buffer[0U] ) ) << 16U ) |
              ( ( ( uint32_t )( buffer[1U] ) ) <<  8U ) |
                ( ( uint32_t )( buffer[2U] ) );
-    eEEPROMReadMemory( ( STORAGE_EWA_DATA_ADR + ewaLen - 2U ), buffer, EEPROM_LENGTH_SIZE );
+    eEEPROMreadMemory( ( STORAGE_EWA_DATA_ADR + ewaLen - 2U ), buffer, EEPROM_LENGTH_SIZE );
     if ( ( buffer[0U] != 0x00U ) && ( buffer[0U] != 0xFFU ) && ( buffer[1U] == 0x00U ) )
     {
       stream                  = &(response->stream);
@@ -814,7 +814,7 @@ STREAM_STATUS cHTTPstreamFileEEPROM ( HTTP_STREAM* stream )
     length = stream->size - stream->index;
     stream->status = STREAM_END;
   }
-  eEEPROMReadMemory( ( STORAGE_EWA_DATA_ADR + stream->index ), ( uint8_t* )restBuffer, length );
+  eEEPROMreadMemory( ( STORAGE_EWA_DATA_ADR + stream->index ), ( uint8_t* )restBuffer, length );
   stream->index += length;
   stream->length = length;
   restBuffer[stream->length] = 0U;

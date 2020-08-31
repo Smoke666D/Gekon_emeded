@@ -212,10 +212,6 @@ int main(void)
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
   vDATAAPIinit( notifyTrg );                                    /* Data API initialization */
-  /*-------------------- Version initialization ------------------------------*/
-  vSYSgetUniqueID16( serialNumber.value );          /* Serial number */
-  versionFirmware.value[0U]   = SOFTWARE_VERSION;   /* Software version */
-  versionController.value[0U] = HARDWARE_VERSION;   /* Hardware version */
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
@@ -910,6 +906,8 @@ void StartDefaultTask(void *argument)
   uint8_t   j         = 0U;
   uint8_t   temp      = 0U;
   //uint32_t  waterMark = 0U;
+
+  vDATAAPIdataInit();
   vSYSSerial( ">>Start Default Task!\n\r" );
   vSYSSerial( ">>Serial number: " );
   for ( i=0U; i<6U; i++ )
@@ -925,6 +923,14 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "\n\r" );
 
   vSYSSerial("------------- EEPROM map: -------------\n\r");
+  vSYSSerial("Syatem register: ");
+  sprintf( buf, "0x%06X", STORAGE_SR_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_SR_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
   vSYSSerial("EWA            : ");
   sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
   vSYSSerial( buf );
@@ -984,29 +990,6 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "\n\r" );
 
   vSYSSerial("---------------------------------------\n\r");
-  //if ( eSTORAGEreadConfigs() == EEPROM_OK )
-  if ( eDATAAPIconfigValue( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
-  {
-    vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
-  }
-  else
-  {
-    vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
-  }
-  if ( eDATAAPIchart( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
-  {
-    vSYSSerial( ">>EEPROM charts read: done!\n\r" );
-  }
-  else
-  {
-    vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
-  }
-  /*
-   if ( eDATAAPIfreeData( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
-   {
-     vSYSSerial( ">>EEPROM free data read: done!\n\r" );
-   }
-  */
   /* Infinite loop */
   for(;;)
   {

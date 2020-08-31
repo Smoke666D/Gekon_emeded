@@ -50,27 +50,56 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
   {
     if ( xSemaphore != NULL )
     {
-      if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+      switch ( cmd )
       {
-        switch ( cmd )
-        {
+        case DATA_API_CMD_READ:
+          *chart = *charts[adr];
+          break;
         case DATA_API_CMD_WRITE:
-          *charts[adr] = *chart;
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            *charts[adr] = *chart;
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
           break;
         case DATA_API_CMD_SAVE:
-          if ( eSTORAGEwriteCharts() != EEPROM_OK )
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            res = DATA_API_STAT_EEPROM_ERROR;
+            if ( eSTORAGEwriteCharts() != EEPROM_OK )
+            {
+              res = DATA_API_STAT_EEPROM_ERROR;
+            }
+            else
+            {
+              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
           }
           break;
         case DATA_API_CMD_INC:
           res = DATA_API_STAT_CMD_ERROR;
           break;
         case DATA_API_CMD_LOAD:
-          if ( eSTORAGEreadCharts() != EEPROM_OK )
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            if ( eSTORAGEreadCharts() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
             }
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
           break;
         case DATA_API_CMD_DEC:
           res = DATA_API_STAT_CMD_ERROR;
@@ -78,12 +107,6 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
         default:
           res = DATA_API_STAT_CMD_ERROR;
           break;
-        }
-        xSemaphoreGive( xSemaphore );
-      }
-      else
-      {
-        res = DATA_API_STAT_BUSY;
       }
     }
     else
@@ -107,11 +130,27 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
   {
     if ( xSemaphore != NULL )
     {
-      if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+      switch ( cmd )
       {
-        switch ( cmd )
-        {
-          case DATA_API_CMD_WRITE:
+        case DATA_API_CMD_READ:
+          for ( i=0; i<configReg[adr]->atrib->len; i++ )
+          {
+            value[i] = configReg[adr]->value[i];
+          }
+          scale = configReg[adr]->scale;
+          for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
+          {
+            units[i] = configReg[adr]->units[i];
+          }
+          for ( i=0U; i<configReg[adr]->atrib->bitMapSize; i++ )
+          {
+            bitMap[i].mask  = configReg[adr]->bitMap[i].mask;
+            bitMap[i].shift = configReg[adr]->bitMap[i].shift;
+          }
+          break;
+        case DATA_API_CMD_WRITE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             for ( i=0; i<configReg[adr]->atrib->len; i++ )
             {
               configReg[adr]->value[i] = value[i];
@@ -126,8 +165,16 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
               configReg[adr]->bitMap[i].mask  = bitMap[i].mask;
               configReg[adr]->bitMap[i].shift = bitMap[i].shift;
             }
-            break;
-          case DATA_API_CMD_SAVE:
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_SAVE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             if ( eSTORAGEwriteConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -136,40 +183,48 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             {
               vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
             }
-            break;
-          case DATA_API_CMD_INC:
-            res = DATA_API_STAT_CMD_ERROR;
-            break;
-          case DATA_API_CMD_LOAD:
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_INC:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
+        case DATA_API_CMD_LOAD:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             if ( eSTORAGEreadConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
             }
-            break;
-          case DATA_API_CMD_DEC:
-            res = DATA_API_STAT_CMD_ERROR;
-            break;
-          default:
-            res = DATA_API_STAT_CMD_ERROR;
-            break;
+            xSemaphoreGive( xSemaphore );
           }
-          xSemaphoreGive( xSemaphore );
-        }
-        else
-        {
-          res = DATA_API_STAT_BUSY;
-        }
-      }
-      else
-      {
-        res = DATA_API_STAT_INIT_ERROR;
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_DEC:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
+        default:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
       }
     }
     else
     {
-      res = DATA_API_STAT_ADR_ERROR;
+      res = DATA_API_STAT_INIT_ERROR;
     }
-    return res;
+  }
+  else
+  {
+    res = DATA_API_STAT_ADR_ERROR;
+  }
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t data )
@@ -179,49 +234,79 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t 
 
   if ( adr < FREE_DATA_SIZE )
   {
-     if ( xSemaphore != NULL )
-     {
-       switch ( cmd )
-       {
-       case DATA_API_CMD_WRITE:
-         *freeDataArray[adr] = data;
-         break;
-       case DATA_API_CMD_SAVE:
-         for ( i=0U; i<FREE_DATA_SIZE; i++ )
-         {
-           if ( eSTORAGEsaveFreeData( i ) != EEPROM_OK )
-           {
-             res = DATA_API_STAT_EEPROM_ERROR;
-             break;
-           }
-         }
-         break;
-       case DATA_API_CMD_INC:
-         res = DATA_API_STAT_CMD_ERROR;
-         break;
-       case DATA_API_CMD_LOAD:
-         for ( i=0U; i<FREE_DATA_SIZE; i++ )
-         {
-           if ( eSTORAGEreadFreeData( i ) != EEPROM_OK )
-           {
-             res = DATA_API_STAT_EEPROM_ERROR;
-             break;
-           }
-         }
-         break;
-       case DATA_API_CMD_DEC:
-         res = DATA_API_STAT_CMD_ERROR;
-         break;
-       default:
-         res = DATA_API_STAT_CMD_ERROR;
-         break;
-       }
-       xSemaphoreGive( xSemaphore );
-     }
-     else
-     {
-       res = DATA_API_STAT_INIT_ERROR;
-     }
+    if ( xSemaphore != NULL )
+    {
+      switch ( cmd )
+      {
+        case DATA_API_CMD_READ:
+          data = *freeDataArray[adr];
+          break;
+        case DATA_API_CMD_WRITE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            *freeDataArray[adr] = data;
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_SAVE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            for ( i=0U; i<FREE_DATA_SIZE; i++ )
+            {
+              if ( eSTORAGEsaveFreeData( i ) != EEPROM_OK )
+              {
+                res = DATA_API_STAT_EEPROM_ERROR;
+                break;
+              }
+              if ( res == DATA_API_STAT_OK )
+              {
+                vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+              }
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_INC:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
+        case DATA_API_CMD_LOAD:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            for ( i=0U; i<FREE_DATA_SIZE; i++ )
+            {
+              if ( eSTORAGEreadFreeData( i ) != EEPROM_OK )
+              {
+                res = DATA_API_STAT_EEPROM_ERROR;
+                break;
+              }
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_DEC:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
+        default:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
+      }
+    }
+    else
+    {
+      res = DATA_API_STAT_INIT_ERROR;
+    }
   }
   else
   {
@@ -246,11 +331,17 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
   {
     if ( xSemaphore != NULL )
     {
-      if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+      switch ( cmd )
       {
-        switch ( cmd )
-        {
-          case DATA_API_CMD_WRITE:
+        case DATA_API_CMD_READ:
+          for ( i=0U; i<configReg[adr]->atrib->len; i++ )
+          {
+            data[i] = configReg[adr]->value[i];
+          }
+          break;
+        case DATA_API_CMD_WRITE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             if ( configReg[adr]->atrib->max != 0U )
             {
               if ( data[0U] > configReg[adr]->atrib->max )
@@ -269,8 +360,16 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
                 configReg[adr]->value[i] = data[i];
               }
             }
-            break;
-          case DATA_API_CMD_SAVE:
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_SAVE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             if ( eSTORAGEwriteConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -279,8 +378,16 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             {
               vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
             }
-            break;
-          case DATA_API_CMD_INC:
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_INC:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             if ( ( configReg[adr]->atrib->max != 0U ) && ( configReg[adr]->value[0U] < configReg[adr]->atrib->max ) )
             {
               configReg[adr]->value[0U]++;
@@ -289,14 +396,30 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             {
               res = DATA_API_STAT_MAX_ERROR;
             }
-            break;
-          case DATA_API_CMD_LOAD:
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_LOAD:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             if ( eSTORAGEreadConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
             }
-            break;
-          case DATA_API_CMD_DEC:
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_DEC:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
             if ( ( configReg[adr]->atrib->max != 0U ) && ( configReg[adr]->value[0U] > configReg[adr]->atrib->min ) )
             {
               configReg[adr]->value[0U]--;
@@ -305,16 +428,16 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             {
               res = DATA_API_STAT_MAX_ERROR;
             }
-            break;
-          default:
-            res = DATA_API_STAT_CMD_ERROR;
-            break;
-        }
-        xSemaphoreGive( xSemaphore );
-      }
-      else
-      {
-        res = DATA_API_STAT_BUSY;
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        default:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
       }
     }
     else

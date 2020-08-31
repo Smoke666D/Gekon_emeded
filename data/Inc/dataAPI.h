@@ -29,6 +29,7 @@ typedef enum
 
 typedef enum
 {
+  DATA_API_CMD_READ,     /* Read data from local register */
   DATA_API_CMD_WRITE,    /* Save data from external data buffer to the data register */
   DATA_API_CMD_INC,      /* Increment data in the register, the external data buffer is ignored */
   DATA_API_CMD_DEC,      /* Decrement data in the register, the external data buffer is ignored */

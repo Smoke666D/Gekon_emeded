@@ -42,7 +42,7 @@ static char EventLog[][44U]=
 #define ENGINE_MENU_COUNT      3U
 #define NET_MENU_COUNT         3U
 #define GENERATOR_MENU_COUNT   7U
-#define SETTINGS_MENU_COUNT    3U
+#define SETTINGS_MENU_COUNT    1U
 #define YESNO_MENU_COUNT       1U
 #define MENU_ADD_COUNT         1U
 #define MAX_HEADER_STRING_SIZE 40U
@@ -341,10 +341,11 @@ static xScreenObjet BrigthScreen1[]=
 
 static xScreenObjet SettingsMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКИ",NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
-  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"ПОДСВЕТКА ",NULL,0U},
-  {1U,FONT_SIZE*10U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetStatusData,BRIGTH_ID},
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText," ",NULL,0U},
+  {0U,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsNumber,NULL},
+  {1U,FONT_SIZE*10U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,NULL},
 };
 
 static xScreenObjet xYesNoScreen[]=
@@ -399,10 +400,7 @@ static xScreenType  xNetScreens[NET_MENU_COUNT]=
 
 static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
 {
-  { BrigthScreen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
-  { BrigthScreen1, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
   { SettingsMainScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
-
 };
 
 static xScreenType  xYesNoScreens[SETTINGS_MENU_COUNT]=

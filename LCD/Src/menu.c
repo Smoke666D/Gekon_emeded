@@ -22,7 +22,7 @@ static QueueHandle_t     pKeyboard;
 static uint8_t           key            = 0U;
 static xScreenObjet*     pCurDrawScreen = NULL;
 static uint8_t           Blink          = 0U;
-static uint16_t          uiSetting      = 10U;
+static uint16_t          uiSetting      = 3U;
 
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -99,6 +99,94 @@ void vExitCurObject(void)
   return;
 }
 
+
+
+void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
+{
+  xScreenObjet* pObjects          = menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets;
+ // uint8_t           index = menu->pCurrIndex;
+  uint8_t       i                 = 0U;
+
+  switch ( key )
+  {
+  /*  case KEY_STOP:
+    case KEY_START:
+      if (ucActiveObject != NO_SELECT_D)
+      {
+    ucActiveObject = CHANGE_D;
+    if (key==KEY_START)
+      pCurObject->GetDtaFunction( mINC, NULL, pCurObject->DataID );
+    else
+      pCurObject->GetDtaFunction( mDEC, NULL, pCurObject->DataID );
+      }
+      break;
+   case KEY_AUTO:
+      if (ucActiveObject == NO_SELECT_D)
+      {
+    for ( i=0U; i < MAX_SCREEN_OBJECT ; i++ ) //Проверяем есть ли на экране динамические объекты
+    {
+        if ( pObjects[i].xType == INPUT_HW_DATA )
+              {
+      if(pObjects[i].ObjectParamert[3U] == 0U)
+      {
+          ucActiveObject = SELECT_D;
+          pObjects[i].ObjectParamert[3U] = 1U;
+          pCurObject = &pObjects[i];
+          break;
+      }
+              }
+        if ( pObjects[i].last > 0 ) break;
+    }
+      }
+      else
+   vExitCurObject();
+     break;
+    case KEY_UP:
+    case KEY_EXIT:
+      if (key == KEY_UP)
+      {
+    if ( DownScreen > 0U )
+    {
+        DownScreen = 0U;
+        if ( menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet != NULL )
+        {
+      pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+        }
+    }
+      }
+      else
+   DownScreen = 0U;
+      vExitCurObject();
+      break;*/
+    case KEY_DOWN:
+      uiSetting++;
+      /*if ( DownScreen == 0U )
+           {
+             if ( menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet != NULL )
+             {
+               pCurrMenu  = menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet;
+               DownScreen = 1U;
+               pCurrMenu->pCurrIndex = 0U;
+             }
+           }
+           else
+           {
+             if ( menu->pCurrIndex == menu->pMaxIndex )
+             {
+               menu->pCurrIndex = 0U;
+             }
+             else
+             {
+               menu->pCurrIndex++;
+             }
+           }
+    //  vExitCurObject();*/
+      break;
+    default:
+      break;
+  }
+  return;
+}
 
 
 void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
@@ -264,7 +352,7 @@ void xLineScreenKeyCallBack( xScreenSetObject* menu, char key )
           }
         }
         break;
-      case KEY_EXIT:
+     /* case KEY_EXIT:
         //Если текущий Screen являтется ScreenSet то переводи глобальный указатель на меню нижнего уровня
         if ( menu->pHomeMenu[index].pUpScreenSet != NULL )
         {
@@ -278,7 +366,7 @@ void xLineScreenKeyCallBack( xScreenSetObject* menu, char key )
         {
           ;
         }
-        break;
+        break;*/
       default:
         break;
     }
@@ -620,7 +708,7 @@ xScreenSetObject xSettingsMenu =
   xSettingsScreens,
   ( SETTINGS_MENU_COUNT - 1U ),
   0U,
-  ( void* )&xInputScreenKeyCallBack,
+  ( void* )&xSettingsScreenKeyCallBack,
 };
 
 
@@ -650,16 +738,64 @@ void vUCTOSTRING(uint8_t * str, uint8_t data)
 
 }
 
-void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+void vITOSTRING(uint8_t * str, uint16_t data)
 {
-
-  if ((ID == SETTING_ID) && (cmd == mREAD))
+  uint8_t fb=0,i=0;
+  uint8_t DD =10000;
+  for (uint8_t k=0;k<5;k++)
   {
-    vUCTOSTRING( ( uint8_t* )Data, (uint8_t) uiSetting);
+    if (fb)
+      str[i++]=data/(DD) +'0';
+    else
+      if (data/DD)
+  {
+    str[i++]=data/(DD) +'0';
+    fb=1;
   }
+    data = data%(DD);
+    DD=DD/10;
+  }
+  str[i]=0;
 
 }
 
+
+
+void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  eConfigAttributes xAtrib;
+  uint16_t buff;
+  Data[0]=0;
+  switch (cmd)
+  {
+    case mREAD:
+      eDATAAPIconfigAtrib (DATA_API_CMD_READ, uiSetting, &xAtrib );
+       if (xAtrib.bitMapSize==0U)
+       {
+         if (xAtrib.len == 1U)
+         {
+           eDATAAPIconfigValue(DATA_API_CMD_READ,uiSetting,&buff);
+           vITOSTRING( ( uint8_t* )Data, buff );
+         }
+
+       }
+    break;
+    default:
+
+    break;
+
+  }
+}
+
+void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+
+  if (cmd == mREAD)
+  {
+    vUCTOSTRING( ( uint8_t* )Data, (uint8_t) uiSetting);
+  }
+  return;
+}
 
 /*---------------------------------------------------------------------------------------------------*/
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )

@@ -983,7 +983,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
 
-  vSYSSerial("---------------------------------------\n\r");
+ /* vSYSSerial("---------------------------------------\n\r");
   //if ( eSTORAGEreadConfigs() == EEPROM_OK )
   if ( eDATAAPIconfigValue( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
   {

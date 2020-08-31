@@ -93,6 +93,7 @@ void vExitCurObject(void)
   	 }
   	 ucActiveObject = NO_SELECT_D;
   }
+  DownScreen = 0U;
   return;
 }
 
@@ -529,10 +530,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
               TEXT = pScreenObjects[i].pStringParametr;
               break;
             case HW_DATA:
-
-            	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-            	/* Если поставить сюда break - не выводяться цифры*/
-            	/*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
             case INPUT_HW_DATA:
               if ( pScreenObjects[i].DataID > 0U )
               {
@@ -660,31 +657,36 @@ void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
      switch (cmd)
      {
        case mREAD:
+	// eDATAAPIconfigValue(DATA_API_CMD_INC,displayBrightnesLevel.atrib->adr,NULL);
+
          vUCTOSTRING( ( uint8_t* )Data, ucLCDGetLedBrigth() );
          break;
        case mINC:
-         vLCDSetLedBrigth( ucLCDGetLedBrigth() + 1U );
+	 eDATAAPIconfigValue(DATA_API_CMD_INC,displayBrightnesLevel.atrib->adr,NULL);
+	 vLCDBrigthInit();
          break;
        case mDEC:
-         if ( ucLCDGetLedBrigth() > 0U )
-         {
-           vLCDSetLedBrigth( ucLCDGetLedBrigth() - 1U );
-         }
+	 eDATAAPIconfigValue(DATA_API_CMD_DEC,displayBrightnesLevel.atrib->adr,NULL);
+	 vLCDBrigthInit();
          break;
        case mSAVE:
-         displayBrightnesLevel.value[0U] = ucLCDGetLedBrigth();
+	 eDATAAPIconfigValue(DATA_API_CMD_SAVE,displayBrightnesLevel.atrib->adr,NULL);
          break;
        case mESC:
+	 eDATAAPIconfigValue(DATA_API_CMD_LOAD,displayBrightnesLevel.atrib->adr,NULL);
          vLCDBrigthInit();
 	 break;
        default:
          break;
      }
+
      break;
    default:
      break;
   }
 }
+
+
 
 
 void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )

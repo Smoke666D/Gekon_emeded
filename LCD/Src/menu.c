@@ -93,7 +93,6 @@ void vExitCurObject(void)
   	 }
   	 ucActiveObject = NO_SELECT_D;
   }
-  DownScreen = 0U;
   return;
 }
 
@@ -147,10 +146,9 @@ void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
 	  {
 	      DownScreen = 0U;
 	      if ( menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet != NULL )
-		{
+	      {
 		  pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-		  menu     = pCurrMenu;
-		}
+	      }
 	  }
       }
       else
@@ -653,7 +651,7 @@ void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
  switch ( ID )
  {
-   case BRIGTH_ID:
+   case DISPLAY_BRIGHTNES_LEVEL_ADR:
      switch (cmd)
      {
        case mREAD:

@@ -978,9 +978,8 @@ void StartDefaultTask(void *argument)
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
-
   vSYSSerial("------------- EEPROM map: -------------\n\r");
-  vSYSSerial("Syatem register: ");
+  vSYSSerial("System register: ");
   sprintf( buf, "0x%06X", STORAGE_SR_ADR );
   vSYSSerial( buf );
   vSYSSerial( "( ");

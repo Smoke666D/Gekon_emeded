@@ -114,7 +114,7 @@ void vDATAAPIdataInit ( void )
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void vDATAAPIinit ( TaskHandle_t* targets )
 {
   uint8_t i = 0U;
@@ -124,6 +124,17 @@ void vDATAAPIinit ( TaskHandle_t* targets )
   }
   xSemaphore = xSemaphoreCreateMutex();
   return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+DATA_API_STATUS eDATAAPIisInit ( void )
+{
+  DATA_API_STATUS res = DATA_API_STAT_INIT_ERROR;
+
+  if ( ( xSemaphore != NULL ) && ( initDone > 0U) )
+  {
+    res = DATA_API_STAT_OK;
+  }
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart )
@@ -302,6 +313,44 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
     else
     {
       res = DATA_API_STAT_INIT_ERROR;
+    }
+  }
+  else
+  {
+    res = DATA_API_STAT_ADR_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib )
+{
+  DATA_API_STATUS res = DATA_API_STAT_OK;
+
+  if ( adr < FREE_DATA_SIZE )
+  {
+    switch ( cmd )
+    {
+      case DATA_API_CMD_READ:
+        *atrib = *configReg[adr]->atrib;
+        break;
+      case DATA_API_CMD_WRITE:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+      case DATA_API_CMD_INC:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+      case DATA_API_CMD_DEC:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+      case DATA_API_CMD_SAVE:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+      case DATA_API_CMD_LOAD:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+      default:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
     }
   }
   else

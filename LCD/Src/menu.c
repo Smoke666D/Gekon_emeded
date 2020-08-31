@@ -25,6 +25,9 @@ static uint8_t           Blink          = 0U;
 static uint16_t          uiSetting      = 3U;
 
 
+void  xSettingsInputKeyCallBack( xScreenSetObject* menu, char key);
+
+
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция обработки клавишей меню да-нет?
@@ -65,6 +68,14 @@ void xYesNoScreenKeyCallBack( xScreenSetObject* menu, char key )
 }
 
 
+xScreenSetObject xSettingsInput =
+{
+  xSettingsScreens,
+  ( SETTINGS_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xSettingsInputKeyCallBack,
+};
+
 xScreenSetObject xYesNoMenu =
 {
   xYesNoScreens,
@@ -101,86 +112,57 @@ void vExitCurObject(void)
 
 
 
-void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
+void  xSettingsInputKeyCallBack( xScreenSetObject* menu, char key )
 {
-  xScreenObjet* pObjects          = menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets;
- // uint8_t           index = menu->pCurrIndex;
-  uint8_t       i                 = 0U;
-
   switch ( key )
   {
-  /*  case KEY_STOP:
-    case KEY_START:
-      if (ucActiveObject != NO_SELECT_D)
-      {
-    ucActiveObject = CHANGE_D;
-    if (key==KEY_START)
-      pCurObject->GetDtaFunction( mINC, NULL, pCurObject->DataID );
-    else
-      pCurObject->GetDtaFunction( mDEC, NULL, pCurObject->DataID );
-      }
+
+    case KEY_STOP:
+   //   if (uiSetting >= 1)  uiSetting--;
       break;
+    case KEY_START:
+    //  if (uiSetting <= (SETTING_REGISTER_NUMBER-2)) uiSetting++;
+      break;
+
    case KEY_AUTO:
-      if (ucActiveObject == NO_SELECT_D)
-      {
-    for ( i=0U; i < MAX_SCREEN_OBJECT ; i++ ) //Проверяем есть ли на экране динамические объекты
-    {
-        if ( pObjects[i].xType == INPUT_HW_DATA )
-              {
-      if(pObjects[i].ObjectParamert[3U] == 0U)
-      {
-          ucActiveObject = SELECT_D;
-          pObjects[i].ObjectParamert[3U] = 1U;
-          pCurObject = &pObjects[i];
-          break;
-      }
-              }
-        if ( pObjects[i].last > 0 ) break;
-    }
-      }
-      else
-   vExitCurObject();
+    // xSettingsInput.pHomeMenu[0].pUpScreenSet =pCurrMenu;
+    // pCurrMenu = &xSettingsInput;
      break;
     case KEY_UP:
     case KEY_EXIT:
-      if (key == KEY_UP)
-      {
-    if ( DownScreen > 0U )
-    {
-        DownScreen = 0U;
-        if ( menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet != NULL )
-        {
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-        }
-    }
-      }
-      else
-   DownScreen = 0U;
-      vExitCurObject();
-      break;*/
+      break;
+    default:
+      break;
+  }
+  return;
+
+
+}
+
+
+void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
+{
+  switch ( key )
+  {
+
+    case KEY_STOP:
+      if (uiSetting >= 1)  uiSetting--;
+      break;
+    case KEY_START:
+      if (uiSetting <= (SETTING_REGISTER_NUMBER-2)) uiSetting++;
+      break;
     case KEY_DOWN:
-      uiSetting++;
-      /*if ( DownScreen == 0U )
-           {
-             if ( menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet != NULL )
-             {
-               pCurrMenu  = menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet;
-               DownScreen = 1U;
-               pCurrMenu->pCurrIndex = 0U;
-             }
-           }
-           else
-           {
-             if ( menu->pCurrIndex == menu->pMaxIndex )
-             {
-               menu->pCurrIndex = 0U;
-             }
-             else
-             {
-               menu->pCurrIndex++;
-             }
-           }
-    //  vExitCurObject();*/
+      if  (uiSetting<= (SETTING_REGISTER_NUMBER-12))
+          uiSetting=+10;
+      break;
+   case KEY_AUTO:
+     xSettingsInput.pHomeMenu[0].pUpScreenSet =pCurrMenu;
+     pCurrMenu = &xSettingsInput;
+     break;
+    case KEY_UP:
+    case KEY_EXIT:
+      pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
       break;
     default:
       break;
@@ -741,7 +723,7 @@ void vUCTOSTRING(uint8_t * str, uint8_t data)
 void vITOSTRING(uint8_t * str, uint16_t data)
 {
   uint8_t fb=0,i=0;
-  uint8_t DD =10000;
+  uint16_t DD =10000;
   for (uint8_t k=0;k<5;k++)
   {
     if (fb)
@@ -758,6 +740,54 @@ void vITOSTRING(uint8_t * str, uint16_t data)
   str[i]=0;
 
 }
+/*
+ * Функция преобразования безнакового в строку
+ */
+void vUToStr(uint8_t * str, uint16_t data, int8_t scale)
+{
+  uint8_t fb=0,i=0;
+  uint16_t DD =10000;
+
+  uint8_t offset,point = 0;
+  offset = scale;
+
+  if (scale < 0U)
+  {
+    offset = 1U;
+    point = 1;
+  }
+
+
+  for (uint8_t k=0;k<5+offset;k++)
+  {
+      if (( point==0 ) && ( k >= 5U ))  //Если scael был больше 0, то нужно домножить число, фактический добавить в вывод 0
+      {
+         str[i++] = '0';
+      }
+      else
+        if (( point ==1 ) && (k == (-scale)))
+        {
+          str[i++] = '.';
+        }
+        else
+         if (( point ==1U ) && (k == (-scale)-1) && (fb == 0U))
+         {
+           fb = 1U;
+         }
+         if (fb == 1U)
+            str[i++]=data/(DD) +'0';
+          else
+            if (data/DD)
+            {
+              str[i++]=data/(DD) +'0';
+              fb= 1U;
+            }
+         data = data%(DD);
+         DD=DD/10;
+  }
+  str[i]=0;
+}
+
 
 
 
@@ -765,6 +795,10 @@ void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   eConfigAttributes xAtrib;
   uint16_t buff;
+  int8_t scale;
+  uint16_t units[MAX_UNITS_LENGTH];
+  eConfigBitMap* bitMap;
+  int16_t  sbuff;
   Data[0]=0;
   switch (cmd)
   {
@@ -774,14 +808,24 @@ void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        {
          if (xAtrib.len == 1U)
          {
-           eDATAAPIconfigValue(DATA_API_CMD_READ,uiSetting,&buff);
-           vITOSTRING( ( uint8_t* )Data, buff );
+
+           switch (xAtrib.type)
+           {
+             case 'U':
+                 eDATAAPIconfig(DATA_API_CMD_READ,uiSetting,&buff,&scale,units,bitMap);
+                 vUToStr ( ( uint8_t* )Data, buff, scale);
+                 break;
+             case 'S':
+                 eDATAAPIconfigValue(DATA_API_CMD_READ,uiSetting,&sbuff);
+                 //vITOSTRING( ( uint8_t* )Data, buff );
+                 break;
+             case 'C':
+               break;
+           }
          }
-
-       }
-    break;
+      }
+      break;
     default:
-
     break;
 
   }

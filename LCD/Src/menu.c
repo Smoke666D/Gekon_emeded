@@ -22,7 +22,7 @@ static QueueHandle_t     pKeyboard;
 static uint8_t           key            = 0U;
 static xScreenObjet*     pCurDrawScreen = NULL;
 static uint8_t           Blink          = 0U;
-static uint16_t          uiSetting      = 25U;
+static uint16_t          uiSetting      = 3U;
 
 
 void  xSettingsInputKeyCallBack( xScreenSetObject* menu, char key);
@@ -147,22 +147,37 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
   {
 
     case KEY_STOP:
-      if (uiSetting >= 1)  uiSetting--;
+      if (uiSetting >= 1)
+      {
+        uiSetting--;
+      }
       break;
     case KEY_START:
-      if (uiSetting <= (SETTING_REGISTER_NUMBER-2)) uiSetting++;
+      if (uiSetting <= (SETTING_REGISTER_NUMBER-2))
+      {
+        uiSetting++;
+      }
       break;
     case KEY_DOWN:
-      if  (uiSetting<= (SETTING_REGISTER_NUMBER-12))
-          uiSetting=+10;
+      if  (uiSetting>=10)
+      {
+          uiSetting-=10;
+      }
       break;
    case KEY_AUTO:
      xSettingsInput.pHomeMenu[0].pUpScreenSet =pCurrMenu;
      pCurrMenu = &xSettingsInput;
      break;
     case KEY_UP:
+      if  (uiSetting<= (SETTING_REGISTER_NUMBER-12))
+      {
+                uiSetting+=10;
+      }
+      break;
     case KEY_EXIT:
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+      DownScreen = 0U;
+      uiSetting = 0U;
       break;
     default:
       break;
@@ -436,11 +451,13 @@ void vMenuInit( u8g2_t* temp )
   pKeyboard = pGetKeyboardQueue();
   return;
 }
+
+static uint8_t EXIT_KEY_F =0;
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuTask( void )
 {
     //Блок обработки нажатий на клавиши
-   uint32_t ulNotifiedValue;
+  uint32_t ulNotifiedValue;
   xTaskNotifyWait(pdFALSE,0xFFFFFFF,&ulNotifiedValue,200U);
   if ( ulNotifiedValue== 0x55)
   {
@@ -457,25 +474,23 @@ void vMenuTask( void )
   if ( xQueueReceive( pKeyboard, &TempEvent, 0U ) == pdPASS )
   {
     key = 0U;
-    if ( ( TempEvent.Status == MAKECODE ) && ( BufferEvent.Status == MAKECODE ) &&
-    ( ( TempEvent.KeyCode | BufferEvent.KeyCode) == 0x03U ) )
+      if ( ( TempEvent.Status == MAKECODE ) && ( BufferEvent.Status == MAKECODE ) &&
+          ( ( TempEvent.KeyCode | BufferEvent.KeyCode) == 0x03U ) )
+      {
         key = KEY_EXIT;
-    else
-    {
+        EXIT_KEY_F = 0x03;
+      }
+      else
+      {
       BufferEvent = TempEvent;
      //Если зафиксировано нажатие клавиши
+
       if ( TempEvent.Status == MAKECODE )
         {
           switch ( TempEvent.KeyCode )
           {
             case stop_key:
               key = KEY_STOP;
-              break;
-            case up_key:
-              key = KEY_UP;
-              break;
-            case down_key:
-              key = KEY_DOWN;
               break;
             case start_key:
               key = KEY_AUTO;
@@ -490,7 +505,28 @@ void vMenuTask( void )
               break;
           }
         }
+        if ( TempEvent.Status == BRAKECODE )
+        {
+           switch ( TempEvent.KeyCode )
+           {
+             case up_key:
+                if (EXIT_KEY_F ==0)
+                    key = KEY_UP;
+                else
+                   EXIT_KEY_F =0;
+                break;
+            case down_key:
+               if (EXIT_KEY_F ==0)
+                   key = KEY_DOWN;
+               else
+                  EXIT_KEY_F =0;
+               break;
+            default:
+               break;
+            }
+         }
       }
+
       if ( key > 0U )
       {
     	pCurrMenu->pFunc( pCurrMenu, key );
@@ -711,6 +747,10 @@ void vUCTOSTRING(uint8_t * str, uint8_t data)
     data = data%(DD);
     DD=DD/10;
   }
+  if (i==0U)
+  {
+    str[i++]='0';
+  }
   str[i]=0;
 
 }
@@ -764,11 +804,12 @@ void vUToStr(uint8_t * str, uint16_t data, signed char scale)
           str[i++] = '.';
         }
         else
-         if (( point ==1U ) && (k == 5 + scale ) && (fb == 0U))
-         {
-           fb = 1U;
-         }
-         if ((fb == 1U) || (k==5+scale-1))
+        {
+          if (( point ==1U ) && (k == 5 + scale ) && (fb == 0U))
+          {
+            fb = 1U;
+          }
+          if ((fb == 1U) || (k==5+scale-1))
             str[i++]=data/(DD) +'0';
           else
             if (data/DD)
@@ -776,14 +817,49 @@ void vUToStr(uint8_t * str, uint16_t data, signed char scale)
               str[i++]=data/(DD) +'0';
               fb= 1U;
             }
-         data = data%(DD);
-         DD=DD/10;
+          data = data%(DD);
+          DD=DD/10;
+        }
   }
   str[i]=0;
 }
 
 
+void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+    eConfigAttributes xAtrib;
+    uint8_t k =0;
+    uint16_t buff;
+    uint8_t i;
+    int8_t scale;
+    uint16_t units[MAX_UNITS_LENGTH];
+    eConfigBitMap* bitMap;
+    Data[0]=0;
+    switch (cmd)
+    {
+      case mREAD:
+          eDATAAPIconfigAtrib (DATA_API_CMD_READ, uiSetting, &xAtrib );
+         if (xAtrib.bitMapSize==0U)
+         {
+           if (xAtrib.len == 1U)
+           {
+            eDATAAPIconfig(DATA_API_CMD_READ,uiSetting,&buff,&scale,units,bitMap);
+             for ( i=0;i<MAX_UNITS_LENGTH;i++)
+             {
+                if ((units[i] >>8)!=0)  Data[k++] =    units[i] >>8;
+                   Data[k++] =  units[i] & 0x00FF;
+             }
+             Data[k] = 0;
+           }
+        }
+        break;
+      default:
+      break;
 
+    }
+
+
+}
 
 void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {

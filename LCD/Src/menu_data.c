@@ -344,8 +344,9 @@ static xScreenObjet SettingsScreen[]=
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText," ",NULL,0U},
-  {0U,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, INPUT_HW_DATA, InputParamSelect,NULL,(void*)&vGetSettingsNumber,NULL},
-  {1U,FONT_SIZE*10U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,NULL},
+  {0U,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsNumber,NULL},
+  {0U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsUnit,NULL},
+  {1U,FONT_SIZE*5U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,NULL},
 };
 
 

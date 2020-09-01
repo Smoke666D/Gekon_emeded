@@ -96,6 +96,7 @@ void vMenuInit( u8g2_t* temp );
 void vMenuTask( void );
 void vDrawObject( xScreenObjet* pScreenObjects );
 void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 /*----------------------------------------------------------------------------*/

@@ -247,10 +247,10 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
       case REST_CONFIGS:
         if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
         {
-            if ( adr == 3U )
-              {
-        	adr = 3U;
-              }
+          if ( adr == 3U )
+          {
+        	  adr = 3U;
+          }
           if ( eRESTparsingConfig( content, adr ) == REST_OK )
           {
             response->contetntType  = HTTP_CONTENT_JSON;
@@ -279,7 +279,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
         }
         break;
       case REST_SAVE_CHARTS:
-	if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
+	      if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
         {
           response->contetntType  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_OK;
@@ -287,27 +287,29 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
         }
         break;
       case REST_TIME:
-	if ( eRESTparsingTime( content, &time ) == REST_OK )
-	{
-	  if ( vRTCsetTime( &time ) == RTC_OK )
-	  {
+	      if ( eRESTparsingTime( content, &time ) == REST_OK )
+	      {
+	        if ( vRTCsetTime( &time ) == RTC_OK )
+	        {
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
             response->contentLength = 0U;
-	  }
-	}
+	        }
+	      }
         break;
-      case REST_DATA:
-	if ( adr < FREE_DATA_SIZE )
-	{
-	  if ( eRESTparsingData( content, freeDataArray[adr] ) == REST_OK )
-	  {
-	    if ( eSTORAGEsaveFreeData( adr ) )
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->contentLength = 0U;
-	  }
-	}
+      case REST_FREE_DATA:
+	      if ( adr < FREE_DATA_SIZE )
+	      {
+	        if ( eRESTparsingData( content, freeDataArray[adr] ) == REST_OK )
+	        {
+	          if ( eSTORAGEsaveFreeData( adr ) )
+	          {
+              response->contetntType  = HTTP_CONTENT_JSON;
+              response->status        = HTTP_STATUS_OK;
+              response->contentLength = 0U;
+	          }
+	        }
+	      }
         break;
       case REST_REQUEST_ERROR:
         break;
@@ -326,11 +328,11 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
  */
 void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
 {
-  char          *strStr = NULL;
+  char*         strStr  = NULL;
   uint16_t      adr     = 0xFFFFU;
   REST_REQUEST  request = REST_REQUEST_ERROR;
   REST_ADDRESS  adrFlag = REST_NO_ADR;
-  HTTP_STREAM   *stream = NULL;
+  HTTP_STREAM*  stream  = NULL;
   uint32_t      i       = 0U;
   uint32_t      ewaLen  = 0U;
   uint8_t       buffer[EEPROM_LENGTH_SIZE];
@@ -456,7 +458,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
           response->status        = HTTP_STATUS_OK;
         }
         break;
-      case REST_DATA:
+      case REST_FREE_DATA:
 	if ( adrFlag != REST_NO_ADR )
 	{
 	  if ( adr < FREE_DATA_SIZE )

@@ -13,7 +13,7 @@
 #define  RTC_TIME_SIZE        7U
 #define  RTC_MEMORY_SIZE      19U
 /*----------------------- Structures ----------------------------------------------------------------*/
-static   I2C_HandleTypeDef*   i2c        = NULL;
+static   I2C_HandleTypeDef*   RTCi2c        = NULL;
 static   SemaphoreHandle_t    xRTCSemaphore;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -22,7 +22,7 @@ RTC_STATUS eRTCsend ( uint8_t* data, uint8_t size );
 RTC_STATUS eRTCget ( uint8_t* data, uint8_t size );
 RTC_STATUS eRTCwrite ( uint8_t adr, uint8_t* data, uint8_t size );
 RTC_STATUS eRTCread ( uint8_t adr, uint8_t* data, uint8_t size );
-RTC_STATUS eRTCgetStatus ( uint8_t* status );                /**/
+RTC_STATUS eRTCgetStatus ( uint8_t* status );
 uint8_t    bcdToDec ( uint8_t num );
 uint8_t    decToBcd ( uint8_t num );
 RTC_STATUS uRTCpoolSRUntil ( uint8_t target );
@@ -43,7 +43,7 @@ RTC_STATUS eRTCsend ( uint8_t* data, uint8_t size )
   HAL_StatusTypeDef hal = HAL_OK;
   do
   {
-    hal = HAL_I2C_Master_Transmit( i2c, ( uint16_t )RTC_DEVICE_ADR, data, ( uint16_t )size, ( uint32_t )RTC_TIMEOUT );
+    hal = HAL_I2C_Master_Transmit( RTCi2c, ( uint16_t )RTC_DEVICE_ADR, data, ( uint16_t )size, ( uint32_t )RTC_TIMEOUT );
     if ( hal == HAL_BUSY )
     {
       osDelay( 1U );
@@ -68,7 +68,7 @@ RTC_STATUS eRTCget ( uint8_t* data, uint8_t size )
   HAL_StatusTypeDef hal = HAL_OK;
   do
   {
-    hal = HAL_I2C_Master_Receive( i2c, ( uint16_t )RTC_DEVICE_ADR, data, ( uint16_t )size, ( uint32_t )RTC_TIMEOUT );
+    hal = HAL_I2C_Master_Receive( RTCi2c, ( uint16_t )RTC_DEVICE_ADR, data, ( uint16_t )size, ( uint32_t )RTC_TIMEOUT );
     if ( hal == HAL_BUSY )
     {
       osDelay( 1U );
@@ -94,7 +94,7 @@ RTC_STATUS eRTCwrite ( uint8_t adr, uint8_t* data, uint8_t size )
   uint8_t    i   = 0U;
   uint8_t    buffer[RTC_TIME_SIZE + 1U];
 
-  if ( i2c != NULL)
+  if ( RTCi2c != NULL)
   {
     buffer[0U] = adr;
     for ( i=0U; i<size; i++ )
@@ -121,7 +121,7 @@ RTC_STATUS eRTCread ( uint8_t adr, uint8_t* data, uint8_t size )
 {
   RTC_STATUS res = RTC_OK;
 
-  if ( i2c != NULL)
+  if ( RTCi2c != NULL)
   {
     res = eRTCsend( &adr, 0x01U );
     if ( res == RTC_OK )
@@ -211,7 +211,7 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
  */
 void vRTCinit ( I2C_HandleTypeDef* hi2c )
 {
-  i2c           = hi2c;
+  RTCi2c           = hi2c;
   xRTCSemaphore = xSemaphoreCreateMutex();
   return;
 }

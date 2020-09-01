@@ -72,7 +72,7 @@ typedef enum
 } EEPROM_SR_STATE;
 /*----------------------- Functions ------------------------------------*/
 EEPROM_STATUS eEEPROMInit ( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssGPIO, uint32_t nssPIN ); /* Installation of EEPROM */
-EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len );          /* Read memory of EEPROM */
-EEPROM_STATUS eEEPROMwriteMemory ( uint32_t adr, uint8_t* data, uint16_t len );         /* Write data to memory of EEPROM */
+EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len );                 /* Read memory of EEPROM */
+EEPROM_STATUS eEEPROMwriteMemory ( uint32_t adr, uint8_t* data, uint16_t len );                /* Write data to memory of EEPROM */
 /*----------------------------------------------------------------------*/
 #endif /* INC_EEPROM_H_ */

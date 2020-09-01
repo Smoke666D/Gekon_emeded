@@ -22,7 +22,7 @@ static QueueHandle_t     pKeyboard;
 static uint8_t           key            = 0U;
 static xScreenObjet*     pCurDrawScreen = NULL;
 static uint8_t           Blink          = 0U;
-static uint16_t          uiSetting      = 3U;
+static uint16_t          uiSetting      = 25U;
 
 
 void  xSettingsInputKeyCallBack( xScreenSetObject* menu, char key);
@@ -738,15 +738,14 @@ void vITOSTRING(uint8_t * str, uint16_t data)
 /*
  * Функция преобразования безнакового в строку
  */
-void vUToStr(uint8_t * str, uint16_t data, int8_t scale)
+void vUToStr(uint8_t * str, uint16_t data, signed char scale)
 {
   uint8_t fb=0,i=0;
   uint16_t DD =10000;
-
-  uint8_t offset,point = 0;
+  signed char offset=0;
+  uint8_t point = 0;
   offset = scale;
-
-  if (scale < 0U)
+  if (offset & 0x80)
   {
     offset = 1U;
     point = 1;
@@ -760,16 +759,16 @@ void vUToStr(uint8_t * str, uint16_t data, int8_t scale)
          str[i++] = '0';
       }
       else
-        if (( point ==1 ) && (k == (-scale)))
+        if (( point ==1 ) && (k == 6 + scale))
         {
           str[i++] = '.';
         }
         else
-         if (( point ==1U ) && (k == (-scale)-1) && (fb == 0U))
+         if (( point ==1U ) && (k == 5 + scale ) && (fb == 0U))
          {
            fb = 1U;
          }
-         if (fb == 1U)
+         if ((fb == 1U) || (k==5+scale-1))
             str[i++]=data/(DD) +'0';
           else
             if (data/DD)

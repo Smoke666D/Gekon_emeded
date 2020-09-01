@@ -8,7 +8,22 @@
 
 #include "adc.h"
 
+static EventGroupHandle_t xADCEvent;
+static StaticEventGroup_t xADCCreatedEventGroup;
+volatile uint16_t ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS];   //ADC1 input data buffer
+volatile uint16_t ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS];   //ADC2 input data buffer
+volatile uint16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input data buffer
+volatile uint16_t ADC3_ADD_IN_Buffer[ADC_ADD_FRAME_SIZE* ADC3_ADD_CHANNEL];
+
+
 extern TIM_HandleTypeDef htim3;
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+extern ADC_HandleTypeDef hadc3;
+extern DMA_HandleTypeDef hdma_adc1;
+extern DMA_HandleTypeDef hdma_adc2;
+extern DMA_HandleTypeDef hdma_adc3;
+
 
 float  fADC3Init(uint16_t freq)
 {
@@ -45,7 +60,37 @@ float  fADC3Init(uint16_t freq)
 
 void vADCInit(void)
 {
+  //Создаем флаг готовности АПЦ
+   xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
+
   HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
+  HAL_ADC_Start_DMA(&hdma_adc3,(uint32_t*)&ADC3_ADD_IN_Buffer,ADC_ADD_FRAME_SIZE);
+}
+
+
+void ADC1_Ready()
+{
+  static portBASE_TYPE xHigherPriorityTaskWoken;
+  xHigherPriorityTaskWoken = pdFALSE;
+  xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
+  HAL_ADC_Stop_DMA(&hdma_adc1);
+  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+}
+void ADC2_Ready()
+{
+  static portBASE_TYPE xHigherPriorityTaskWoken;
+  xHigherPriorityTaskWoken = pdFALSE;
+  xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
+  HAL_ADC_Stop_DMA(&hdma_adc2);
+  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+}
+void ADC3_Ready()
+{
+  static portBASE_TYPE xHigherPriorityTaskWoken;
+  xHigherPriorityTaskWoken = pdFALSE;
+  xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
+  HAL_ADC_Stop_DMA(&hdma_adc3);
+  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
 
 

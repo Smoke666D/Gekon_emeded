@@ -96,8 +96,6 @@ void ADC3_Ready()
 
 void StartADCTask(void *argument)
 {
-
-
    vADCInit();
    for(;;)
    {

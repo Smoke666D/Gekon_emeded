@@ -25,16 +25,12 @@ static uint8_t           Blink          = 0U;
 static uint16_t          uiSetting      = 3U;
 
 
-void  xSettingsInputKeyCallBack( xScreenSetObject* menu, char key);
-
-
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция обработки клавишей меню да-нет?
  */
 void xYesNoScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
-
     switch (key)
     {
       case KEY_STOP:  //Если клавиша стоп, то подсвечиваем объект "ДА"
@@ -49,33 +45,23 @@ void xYesNoScreenKeyCallBack( xScreenSetObject* menu, char key )
                     //Если каливаша AUTO то проверяем объеты меню, если выбран ДА.
         if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] ==1U)
         {
-          pCurObject->GetDtaFunction( mSAVE, NULL, pCurObject->DataID );
+          eDATAAPIconfigValue(DATA_API_CMD_SAVE,uiSetting,NULL);
+
         }
         else
         {
           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
-          pCurObject->GetDtaFunction( mESC, NULL, pCurObject->DataID );
+         // pCurObject->GetDtaFunction( mESC, NULL, pCurObject->DataID );
         }
-        pCurrMenu = menu->pHomeMenu[0].pUpScreenSet;
+        eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
+
      break;
       default:
         break;
     }
   return;
-
-
 }
-
-
-xScreenSetObject xSettingsInput =
-{
-  xSettingsScreens,
-  ( SETTINGS_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xSettingsInputKeyCallBack,
-};
-
 xScreenSetObject xYesNoMenu =
 {
   xYesNoScreens,
@@ -112,70 +98,71 @@ void vExitCurObject(void)
 
 
 
-void  xSettingsInputKeyCallBack( xScreenSetObject* menu, char key )
-{
-  switch ( key )
-  {
-
-    case KEY_STOP:
-   //   if (uiSetting >= 1)  uiSetting--;
-      break;
-    case KEY_START:
-    //  if (uiSetting <= (SETTING_REGISTER_NUMBER-2)) uiSetting++;
-      break;
-
-   case KEY_AUTO:
-    // xSettingsInput.pHomeMenu[0].pUpScreenSet =pCurrMenu;
-    // pCurrMenu = &xSettingsInput;
-     break;
-    case KEY_UP:
-    case KEY_EXIT:
-      pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-      break;
-    default:
-      break;
-  }
-  return;
-
-
-}
-
-
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
   switch ( key )
   {
-
     case KEY_STOP:
-      if (uiSetting >= 1)
+      if  ( ( ucActiveObject == NO_SELECT_D )  &&  ( uiSetting >= 1 ) )
       {
         uiSetting--;
       }
+      if ( ucActiveObject != NO_SELECT_D )
+      {
+        ucActiveObject = SELECT_D;
+        eDATAAPIconfigValue(DATA_API_CMD_DEC,uiSetting,NULL);
+      }
       break;
     case KEY_START:
-      if (uiSetting <= (SETTING_REGISTER_NUMBER-2))
+      if ( ( ucActiveObject == NO_SELECT_D )  && (uiSetting <= (SETTING_REGISTER_NUMBER-2)))
       {
         uiSetting++;
       }
+      if ( ucActiveObject != NO_SELECT_D )
+      {
+         ucActiveObject = SELECT_D;
+         eDATAAPIconfigValue(DATA_API_CMD_INC,uiSetting,NULL);
+      }
       break;
     case KEY_DOWN:
-      if  (uiSetting>=10)
+      if ( ( ucActiveObject == NO_SELECT_D)  &&  (uiSetting>=10) )
       {
           uiSetting-=10;
       }
+      if ( ucActiveObject != NO_SELECT_D )
+      {
+         ucActiveObject = SELECT_D;
+         for (uint8_t i=0;i<10;i++)
+           eDATAAPIconfigValue(DATA_API_CMD_DEC,uiSetting,NULL);
+      }
       break;
-   case KEY_AUTO:
-     xSettingsInput.pHomeMenu[0].pUpScreenSet =pCurrMenu;
-     pCurrMenu = &xSettingsInput;
-     break;
     case KEY_UP:
-      if  (uiSetting<= (SETTING_REGISTER_NUMBER-12))
+      if ( ( ucActiveObject == NO_SELECT_D)  && (uiSetting<= (SETTING_REGISTER_NUMBER-12)) )
       {
                 uiSetting+=10;
+      }
+      if ( ucActiveObject != NO_SELECT_D )
+      {
+         ucActiveObject = SELECT_D;
+         for (uint8_t i=0;i<10;i++)
+            eDATAAPIconfigValue(DATA_API_CMD_INC,uiSetting,NULL);
+      }
+      break;
+    case KEY_AUTO:
+      if ( ucActiveObject == NO_SELECT_D)
+      {
+            ucActiveObject =SELECT_D;
+            menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5].ObjectParamert[3U] =1U;
+      }
+      if ( ucActiveObject != NO_SELECT_D )
+      {
+         pCurObject = &menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5];
+         vExitCurObject();
       }
       break;
     case KEY_EXIT:
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+      vExitCurObject();
       DownScreen = 0U;
       uiSetting = 0U;
       break;
@@ -186,91 +173,6 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 }
 
 
-void xInputScreenKeyCallBack( xScreenSetObject* menu, char key )
-{
-  xScreenObjet* pObjects          = menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets;
- // uint8_t           index = menu->pCurrIndex;
-  uint8_t       i                 = 0U;
-
-  switch ( key )
-  {
-    case KEY_STOP:
-    case KEY_START:
-      if (ucActiveObject != NO_SELECT_D)
-      {
-	  ucActiveObject = CHANGE_D;
-	  if (key==KEY_START)
-	    pCurObject->GetDtaFunction( mINC, NULL, pCurObject->DataID );
-	  else
-	    pCurObject->GetDtaFunction( mDEC, NULL, pCurObject->DataID );
-      }
-      break;
-   case KEY_AUTO:
-      if (ucActiveObject == NO_SELECT_D)
-      {
-	  for ( i=0U; i < MAX_SCREEN_OBJECT ; i++ ) //Проверяем есть ли на экране динамические объекты
-	  {
-	      if ( pObjects[i].xType == INPUT_HW_DATA )
-              {
-		  if(pObjects[i].ObjectParamert[3U] == 0U)
-		  {
-		      ucActiveObject = SELECT_D;
-		      pObjects[i].ObjectParamert[3U] = 1U;
-		      pCurObject = &pObjects[i];
-		      break;
-		  }
-              }
-	      if ( pObjects[i].last > 0 ) break;
-	  }
-      }
-      else
-	 vExitCurObject();
-     break;
-    case KEY_UP:
-    case KEY_EXIT:
-      if (key == KEY_UP)
-      {
-	  if ( DownScreen > 0U )
-	  {
-	      DownScreen = 0U;
-	      if ( menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet != NULL )
-	      {
-		  pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-	      }
-	  }
-      }
-      else
-	 DownScreen = 0U;
-      vExitCurObject();
-      break;
-    case KEY_DOWN:
-      if ( DownScreen == 0U )
-           {
-             if ( menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet != NULL )
-             {
-               pCurrMenu  = menu->pHomeMenu[menu->pCurrIndex].pDownScreenSet;
-               DownScreen = 1U;
-               pCurrMenu->pCurrIndex = 0U;
-             }
-           }
-           else
-           {
-             if ( menu->pCurrIndex == menu->pMaxIndex )
-             {
-               menu->pCurrIndex = 0U;
-             }
-             else
-             {
-               menu->pCurrIndex++;
-             }
-           }
-      vExitCurObject();
-      break;
-    default:
-      break;
-  }
-  return;
-}
 /*---------------------------------------------------------------------------------------------------*/
 void xLineScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
@@ -486,7 +388,7 @@ void vMenuTask( void )
      //Если зафиксировано нажатие клавиши
 
       if ( TempEvent.Status == MAKECODE )
-        {
+      {
           switch ( TempEvent.KeyCode )
           {
             case stop_key:
@@ -504,7 +406,7 @@ void vMenuTask( void )
             default:
               break;
           }
-        }
+       }
         if ( TempEvent.Status == BRAKECODE )
         {
            switch ( TempEvent.KeyCode )

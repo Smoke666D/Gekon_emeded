@@ -23,7 +23,7 @@ static unsigned char STATUS[KEYBOARD_COUNT]   = { 0U, 0U, 0U, 0U, 0U };
 static unsigned int  COUNTERS[KEYBOARD_COUNT] = { 0U, 0U, 0U, 0U, 0U };
 static unsigned char CODES[KEYBOARD_COUNT]    = { up_key, down_key, stop_key, auto_key, start_key };
 static unsigned long KeyNorPressTimeOut       = 0U;
-static unsigned long KEY_TIME_OUT             = 6000U;
+static unsigned long KEY_TIME_OUT             = 60000U;
 static char          cKeyDelay                = 0U;
 uint8_t KeyboardBuffer[ 16U * sizeof( KeyEvent ) ];
 /*---------------------------------------------------------------------------------------------------*/

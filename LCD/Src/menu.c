@@ -446,7 +446,6 @@ void vMenuTask( void )
   {
      vLCDBrigthInit();
   }
-  //osDelay( 200U );
   temp_counter++;
   //Блок отрисовки экранов
   if ( temp_counter == 2U )
@@ -537,11 +536,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
         default:
           break;
       }
-      if ( Redraw > 0U )
-      {
-    	break;
-      }
-      if  ( pScreenObjects[i].last > 0U )
+      if  (( pScreenObjects[i].last > 0U ) || (Redraw != 0) )
       {
           	break;
       }
@@ -803,7 +798,7 @@ void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   switch (cmd)
   {
     case mREAD:
-      eDATAAPIconfigAtrib (DATA_API_CMD_READ, uiSetting, &xAtrib );
+        eDATAAPIconfigAtrib (DATA_API_CMD_READ, uiSetting, &xAtrib );
        if (xAtrib.bitMapSize==0U)
        {
          if (xAtrib.len == 1U)

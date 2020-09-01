@@ -16,4 +16,5 @@
 
 void vADCInit(void);
 void StartADCTask(void *argument);
+float  fADC3Init(uint16_t freq);
 #endif /* INC_ADC_H_ */

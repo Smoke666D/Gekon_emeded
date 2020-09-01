@@ -793,6 +793,8 @@ void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
                  break;
              case 'C':
                break;
+             default:
+               break;
            }
          }
       }

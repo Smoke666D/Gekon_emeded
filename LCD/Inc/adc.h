@@ -26,6 +26,20 @@
 #define ADC_FRAME_SIZE  512
 #define ADC_ADD_FRAME_SIZE 10
 
+
+
+typedef enum
+{
+  DC,
+  AC,
+  IDLE,
+} xADCFSMType;
+
+void vADC1_Ready(void);
+void vADC2_Ready(void);
+void vADC3_Ready(void);
+
+
 void vADCInit(void);
 void StartADCTask(void *argument);
 float  fADC3Init(uint16_t freq);

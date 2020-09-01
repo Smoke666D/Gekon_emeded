@@ -14,7 +14,7 @@ volatile uint16_t ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS];   //ADC1 input d
 volatile uint16_t ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS];   //ADC2 input data buffer
 volatile uint16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input data buffer
 volatile uint16_t ADC3_ADD_IN_Buffer[ADC_ADD_FRAME_SIZE* ADC3_ADD_CHANNEL];
-
+static xADCFSMType xADCFSM = DC;
 
 extern TIM_HandleTypeDef htim3;
 extern ADC_HandleTypeDef hadc1;
@@ -58,17 +58,97 @@ float  fADC3Init(uint16_t freq)
 }
 
 
-void vADCInit(void)
+void vADC3DCInit(void)
 {
-  //Создаем флаг готовности АПЦ
-   xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
-
-  HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
-  HAL_ADC_Start_DMA(&hdma_adc3,(uint32_t*)&ADC3_ADD_IN_Buffer,ADC_ADD_FRAME_SIZE);
+  ADC_ChannelConfTypeDef sConfig = {0};
+  hadc3.Instance = ADC3;
+  hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc3.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc3.Init.ScanConvMode = ENABLE;
+  hadc3.Init.ContinuousConvMode = DISABLE;
+  hadc3.Init.DiscontinuousConvMode = DISABLE;
+  hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
+  hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc3.Init.NbrOfConversion = 5;
+  hadc3.Init.DMAContinuousRequests = ENABLE;
+  hadc3.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  if (HAL_ADC_Init(&hadc3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_15;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_14;
+  sConfig.Rank = 2;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_13;
+  sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_12;
+  sConfig.Rank = 4;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Rank = 5;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 
-void ADC1_Ready()
+void vADCInit(void)
+{
+
+
+  switch (xADCFSM)
+  {
+    case DC:
+      HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
+      vADC3DCInit();
+      HAL_ADC_Start_DMA(&hdma_adc3,(uint32_t*)&ADC3_ADD_IN_Buffer,ADC_ADD_FRAME_SIZE);
+      fADC3Init(10000);
+      break;
+    case AC:
+      HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
+      break;
+    case IDLE:
+      HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
+      HAL_TIM_Base_Stop_IT( &htim3 );
+      break;
+
+
+  }
+
+
+}
+
+
+void vADC1_Ready(void)
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   xHigherPriorityTaskWoken = pdFALSE;
@@ -76,7 +156,7 @@ void ADC1_Ready()
   HAL_ADC_Stop_DMA(&hdma_adc1);
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
-void ADC2_Ready()
+void vADC2_Ready(void)
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   xHigherPriorityTaskWoken = pdFALSE;
@@ -84,7 +164,7 @@ void ADC2_Ready()
   HAL_ADC_Stop_DMA(&hdma_adc2);
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
-void ADC3_Ready()
+void vADC3_Ready(void)
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   xHigherPriorityTaskWoken = pdFALSE;
@@ -94,13 +174,26 @@ void ADC3_Ready()
 }
 
 
+
+
+
+
 void StartADCTask(void *argument)
 {
-   vADCInit();
+  //Создаем флаг готовности АПЦ
+   xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    for(;;)
    {
-
-
+     vADCInit();
+     switch (xADCFSM)
+     {
+       case AC:
+         xEventGroupWaitBits(xADCEvent,ADC1_READY | ADC2_READY | ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+         break;
+       case DC:
+         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+         break;
+     }
    }
 
 }

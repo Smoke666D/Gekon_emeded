@@ -463,7 +463,7 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
   USB_Status      res           = USB_DONE;
   uint8_t         length        = 0U;
   static uint32_t index         = 0U;
-  EEPROM_STATUS   status        = EEPROM_OK;
+  DATA_API_STATUS status        = DATA_API_STAT_OK;
   uint16_t        i             = 0;
   uint32_t        checkAdr      = 0U;
   uint8_t         checkData[4U] = {0U};
@@ -485,19 +485,19 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
     }
     if ( length > 0U )
     {
-      status = eEEPROMwriteMemory( ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
-      if ( status == EEPROM_OK )
+      status = eDATAAPIewa( DATA_API_CMD_SAVE, ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
+      if ( status == DATA_API_STAT_OK )
       {
 	      checkAdr = STORAGE_EWA_DATA_ADR + index;
 	      for ( i=0; i<length; i++ )
 	      {
-	        status = eEEPROMreadMemory( checkAdr, checkData, 1U );
-	        checkAdr++;
-	        if ( ( report->data[i] != checkData[0U] ) || ( status != EEPROM_OK ) )
+	        status = eDATAAPIewa( DATA_API_CMD_LOAD, checkAdr, checkData, 1U );
+	        if ( ( report->data[i] != checkData[0U] ) || ( status != DATA_API_STAT_OK ) )
 	        {
 	          res = USB_STORAGE_ERROR;
 	          break;
 	        }
+	        checkAdr++;
 	      }
         if ( res != USB_STORAGE_ERROR )
         {
@@ -509,8 +509,8 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
           else if ( index == report->length )
           {
             index  = 0U;
-            status = eEEPROMwriteMemory( STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), 3U );
-            if ( status == EEPROM_OK )
+            status = eDATAAPIewa( DATA_API_CMD_SAVE, STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), EEPROM_LENGTH_SIZE );
+            if ( status == DATA_API_STAT_OK )
             {
               res = USB_DONE;
             }

@@ -19,6 +19,7 @@
 /*------------------------ Define --------------------------------------*/
 #define  SEMAPHORE_TAKE_DELAY   ( ( TickType_t ) 10U )
 #define  NOTIFY_TARGETS_NUMBER  1U
+#define  EWA_ERASE_SIZE         8U
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/
@@ -35,6 +36,7 @@ typedef enum
   DATA_API_CMD_DEC,      /* Decrement data in the register, the external data buffer is ignored */
   DATA_API_CMD_SAVE,     /* Save all data registers to the EEPROM. The input data is ignore */
   DATA_API_CMD_LOAD,     /* Load all data registers from the EEPROM. The input data is ignore */
+  DATA_API_CMD_ERASE,    /* Erase memory sector in EEPORM */
 } DATA_API_COMMAND;
 
 typedef enum
@@ -60,5 +62,6 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
 DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char* scale, uint16_t* units, eConfigBitMap* bitMap );
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart );
 DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
+DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAAPI_H_ */

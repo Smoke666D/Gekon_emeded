@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-09-01 12:22:02
+ * Make time: 2020-09-02 08:53:37
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -42,6 +42,14 @@ typedef enum
   CONFIG_UNITS = 0x03U,
 } CONFIG_FILD;
 
+typedef enum
+{
+  CONFIG_TYPE_UNSIGNED  = 'U',
+  CONFIG_TYPE_SIGNED    = 'S',
+  CONFIG_TYPE_CHAR      = 'C',
+  CONFIG_TYPE_BITMAP    = 'B',
+} CONFIG_TYPE;
+
 typedef struct
 {
   uint16_t  mask;
@@ -53,7 +61,7 @@ typedef struct
   uint16_t         adr;         // R
   uint16_t         min;         // R
   uint16_t         max;         // R
-  uint16_t         type;        // R
+  CONFIG_TYPE      type;        // R
   uint8_t          len;         // R
   uint8_t          bitMapSize;  // R
 } eConfigAttributes;
@@ -307,6 +315,6 @@ extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg logSetup;
 extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];
-extern const char dictionaryArray[SETTING_REGISTER_NUMBER];
+extern const char* dictionaryArray[SETTING_REGISTER_NUMBER];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

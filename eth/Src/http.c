@@ -336,6 +336,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
   uint32_t      i       = 0U;
   uint32_t      ewaLen  = 0U;
   uint8_t       buffer[EEPROM_LENGTH_SIZE];
+  DATA_API_STATUS status = DATA_API_STAT_OK;
   /*----------------- Common header -----------------*/
   strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
@@ -349,11 +350,13 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
   strStr = strstr(path, "index" );
   if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
   {
-    eEEPROMreadMemory( STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
+    status = eDATAAPIewa( DATA_API_CMD_LOAD, STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
+    //eEEPROMreadMemory( STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
     ewaLen = ( ( ( uint32_t )( buffer[0U] ) ) << 16U ) |
              ( ( ( uint32_t )( buffer[1U] ) ) <<  8U ) |
                ( ( uint32_t )( buffer[2U] ) );
-    eEEPROMreadMemory( ( STORAGE_EWA_DATA_ADR + ewaLen - 2U ), buffer, EEPROM_LENGTH_SIZE );
+    status = eDATAAPIewa( DATA_API_CMD_LOAD, ( STORAGE_EWA_DATA_ADR + ewaLen - 2U ), buffer, EEPROM_LENGTH_SIZE );
+    //eEEPROMreadMemory( ( STORAGE_EWA_DATA_ADR + ewaLen - 2U ), buffer, EEPROM_LENGTH_SIZE );
     if ( ( buffer[0U] != 0x00U ) && ( buffer[0U] != 0xFFU ) && ( buffer[1U] == 0x00U ) )
     {
       stream                  = &(response->stream);
@@ -808,7 +811,8 @@ STREAM_STATUS cHTTPstreamFile ( HTTP_STREAM* stream )
  */
 STREAM_STATUS cHTTPstreamFileEEPROM ( HTTP_STREAM* stream )
 {
-  uint16_t length = HTTP_EWA_TRANSFER_SIZE;
+  uint16_t        length = HTTP_EWA_TRANSFER_SIZE;
+  DATA_API_STATUS status = DATA_API_STAT_ERROR;
 
   stream->status = STREAM_CONTINUES;
   if ( length > ( stream->size - stream->index ) )
@@ -816,7 +820,14 @@ STREAM_STATUS cHTTPstreamFileEEPROM ( HTTP_STREAM* stream )
     length = stream->size - stream->index;
     stream->status = STREAM_END;
   }
-  eEEPROMreadMemory( ( STORAGE_EWA_DATA_ADR + stream->index ), ( uint8_t* )restBuffer, length );
+  while ( status != DATA_API_STAT_OK )
+  {
+    status = eDATAAPIewa( DATA_API_CMD_LOAD, ( STORAGE_EWA_DATA_ADR + stream->index ), ( uint8_t* )restBuffer, length );
+    if ( status != DATA_API_STAT_OK )
+    {
+      osDelay( 10U );
+    }
+  }
   stream->index += length;
   stream->length = length;
   restBuffer[stream->length] = 0U;

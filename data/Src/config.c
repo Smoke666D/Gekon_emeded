@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-09-01 12:22:02
+ * Make time: 2020-09-02 08:53:37
  */
 #include   "config.h"
 
@@ -10,7 +10,7 @@ const eConfigAttributes versionControllerAtrib =
    .adr        = 0U,
    .min        = 0U,
    .max        = 0U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -29,7 +29,7 @@ const eConfigAttributes versionFirmwareAtrib =
    .adr        = 1U,
    .min        = 0U,
    .max        = 0U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -48,7 +48,7 @@ const eConfigAttributes serialNumberAtrib =
    .adr        = 2U,
    .min        = 0U,
    .max        = 0U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 6U,
    .bitMapSize = 0U,
 };
@@ -67,7 +67,7 @@ const eConfigAttributes displayBrightnesLevelAtrib =
    .adr        = 3U,
    .min        = 0U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -86,7 +86,7 @@ const eConfigAttributes displayContarstLevelAtrib =
    .adr        = 4U,
    .min        = 0U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -105,7 +105,7 @@ const eConfigAttributes displaySleepDelayAtrib =
    .adr        = 5U,
    .min        = 2U,
    .max        = 600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -124,7 +124,7 @@ const eConfigAttributes hysteresisLevelAtrib =
    .adr        = 6U,
    .min        = 0U,
    .max        = 1000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -148,7 +148,7 @@ const eConfigAttributes moduleSetupAtrib =
    .adr        = 7U,
    .min        = 0U,
    .max        = 3U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
 };
@@ -174,7 +174,7 @@ const eConfigAttributes oilPressureSetupAtrib =
    .adr        = 8U,
    .min        = 0U,
    .max        = 63U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -193,7 +193,7 @@ const eConfigAttributes oilPressureAlarmLevelAtrib =
    .adr        = 9U,
    .min        = 0U,
    .max        = 1030U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -212,7 +212,7 @@ const eConfigAttributes oilPressurePreAlarmLevelAtrib =
    .adr        = 10U,
    .min        = 0U,
    .max        = 1030U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -240,7 +240,7 @@ const eConfigAttributes coolantTempSetupAtrib =
    .adr        = 11U,
    .min        = 0U,
    .max        = 63U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 6U,
 };
@@ -259,7 +259,7 @@ const eConfigAttributes coolantHightTempAlarmLevelAtrib =
    .adr        = 12U,
    .min        = 0U,
    .max        = 250U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -278,7 +278,7 @@ const eConfigAttributes coolantHightTempPreAlarmLevelAtrib =
    .adr        = 13U,
    .min        = 0U,
    .max        = 250U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -297,7 +297,7 @@ const eConfigAttributes coolantTempHeaterOffLevelAtrib =
    .adr        = 14U,
    .min        = 0U,
    .max        = 250U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -316,7 +316,7 @@ const eConfigAttributes coolantTempHeaterOnLevelAtrib =
    .adr        = 15U,
    .min        = 0U,
    .max        = 250U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -335,7 +335,7 @@ const eConfigAttributes coolantTempCoolerOffLevelAtrib =
    .adr        = 16U,
    .min        = 0U,
    .max        = 250U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -354,7 +354,7 @@ const eConfigAttributes coolantTempCoolerOnLevelAtrib =
    .adr        = 17U,
    .min        = 0U,
    .max        = 250U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -385,7 +385,7 @@ const eConfigAttributes fuelLevelSetupAtrib =
    .adr        = 18U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 9U,
 };
@@ -404,7 +404,7 @@ const eConfigAttributes fuelLevelLowAlarmLevelAtrib =
    .adr        = 19U,
    .min        = 0U,
    .max        = 95U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -423,7 +423,7 @@ const eConfigAttributes fuelLevelLowAlarmDelayAtrib =
    .adr        = 20U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -442,7 +442,7 @@ const eConfigAttributes fuelLevelLowPreAlarmLevelAtrib =
    .adr        = 21U,
    .min        = 1U,
    .max        = 96U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -461,7 +461,7 @@ const eConfigAttributes fuelLevelLowPreAlarmDelayAtrib =
    .adr        = 22U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -480,7 +480,7 @@ const eConfigAttributes fuelLevelHightPreAlarmLevelAtrib =
    .adr        = 23U,
    .min        = 3U,
    .max        = 98U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -499,7 +499,7 @@ const eConfigAttributes fuelLevelHightPreAlarmDelayAtrib =
    .adr        = 24U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -518,7 +518,7 @@ const eConfigAttributes fuelLevelHightAlarmLevelAtrib =
    .adr        = 25U,
    .min        = 5U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -537,7 +537,7 @@ const eConfigAttributes fuelLevelHightAlarmDelayAtrib =
    .adr        = 26U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -556,7 +556,7 @@ const eConfigAttributes fuelPumpOnLevelAtrib =
    .adr        = 27U,
    .min        = 0U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -575,7 +575,7 @@ const eConfigAttributes fuelPumpOffLevelAtrib =
    .adr        = 28U,
    .min        = 0U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -599,7 +599,7 @@ const eConfigAttributes speedSetupAtrib =
    .adr        = 29U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
 };
@@ -618,7 +618,7 @@ const eConfigAttributes speedToothNumberAtrib =
    .adr        = 30U,
    .min        = 10U,
    .max        = 500U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -637,7 +637,7 @@ const eConfigAttributes speedLowAlarmLevelAtrib =
    .adr        = 31U,
    .min        = 0U,
    .max        = 6000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -656,7 +656,7 @@ const eConfigAttributes speedHightAlarmLevelAtrib =
    .adr        = 32U,
    .min        = 0U,
    .max        = 6000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -682,7 +682,7 @@ const eConfigAttributes diaSetupAtrib =
    .adr        = 33U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -701,7 +701,7 @@ const eConfigAttributes diaDelayAtrib =
    .adr        = 34U,
    .min        = 0U,
    .max        = 60U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -720,7 +720,7 @@ const eConfigAttributes diaMessageAtrib =
    .adr        = 35U,
    .min        = 0U,
    .max        = 0U,
-   .type       = 'S',
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
    .bitMapSize = 0U,
 };
@@ -746,7 +746,7 @@ const eConfigAttributes dibSetupAtrib =
    .adr        = 36U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -765,7 +765,7 @@ const eConfigAttributes dibDelayAtrib =
    .adr        = 37U,
    .min        = 0U,
    .max        = 60U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -784,7 +784,7 @@ const eConfigAttributes dibMessageAtrib =
    .adr        = 38U,
    .min        = 0U,
    .max        = 0U,
-   .type       = 'S',
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
    .bitMapSize = 0U,
 };
@@ -810,7 +810,7 @@ const eConfigAttributes dicSetupAtrib =
    .adr        = 39U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -829,7 +829,7 @@ const eConfigAttributes dicDelayAtrib =
    .adr        = 40U,
    .min        = 0U,
    .max        = 60U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -848,7 +848,7 @@ const eConfigAttributes dicMessageAtrib =
    .adr        = 41U,
    .min        = 0U,
    .max        = 0U,
-   .type       = 'S',
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
    .bitMapSize = 0U,
 };
@@ -874,7 +874,7 @@ const eConfigAttributes didSetupAtrib =
    .adr        = 42U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -893,7 +893,7 @@ const eConfigAttributes didDelayAtrib =
    .adr        = 43U,
    .min        = 0U,
    .max        = 60U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -912,7 +912,7 @@ const eConfigAttributes didMessageAtrib =
    .adr        = 44U,
    .min        = 0U,
    .max        = 0U,
-   .type       = 'S',
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
    .bitMapSize = 0U,
 };
@@ -942,7 +942,7 @@ const eConfigAttributes doSetupAtrib =
    .adr        = 45U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 8U,
 };
@@ -966,7 +966,7 @@ const eConfigAttributes docdTypeAtrib =
    .adr        = 46U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
 };
@@ -990,7 +990,7 @@ const eConfigAttributes doefTypeAtrib =
    .adr        = 47U,
    .min        = 0U,
    .max        = 1023U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
 };
@@ -1009,7 +1009,7 @@ const eConfigAttributes timerMainsTransientDelayAtrib =
    .adr        = 48U,
    .min        = 1U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1028,7 +1028,7 @@ const eConfigAttributes timerStartDelayAtrib =
    .adr        = 49U,
    .min        = 0U,
    .max        = 300U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1047,7 +1047,7 @@ const eConfigAttributes timerCrankingAtrib =
    .adr        = 50U,
    .min        = 1U,
    .max        = 30U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1066,7 +1066,7 @@ const eConfigAttributes timerCrankDelayAtrib =
    .adr        = 51U,
    .min        = 1U,
    .max        = 30U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1085,7 +1085,7 @@ const eConfigAttributes timerStartupIdleTimeAtrib =
    .adr        = 52U,
    .min        = 0U,
    .max        = 300U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1104,7 +1104,7 @@ const eConfigAttributes timerNominalRPMDelayAtrib =
    .adr        = 53U,
    .min        = 1U,
    .max        = 30U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1123,7 +1123,7 @@ const eConfigAttributes timerSafetyOnDelayAtrib =
    .adr        = 54U,
    .min        = 1U,
    .max        = 60U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1142,7 +1142,7 @@ const eConfigAttributes timerWarmingAtrib =
    .adr        = 55U,
    .min        = 0U,
    .max        = 300U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1161,7 +1161,7 @@ const eConfigAttributes timerTransferDelayAtrib =
    .adr        = 56U,
    .min        = 1U,
    .max        = 300U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1180,7 +1180,7 @@ const eConfigAttributes timerGenBreakerTripPulseAtrib =
    .adr        = 57U,
    .min        = 1U,
    .max        = 50U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1199,7 +1199,7 @@ const eConfigAttributes timerGenBreakerClosePulseAtrib =
    .adr        = 58U,
    .min        = 1U,
    .max        = 50U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1218,7 +1218,7 @@ const eConfigAttributes timerMainsBreakerTripPulseAtrib =
    .adr        = 59U,
    .min        = 1U,
    .max        = 50U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1237,7 +1237,7 @@ const eConfigAttributes timerMainsBreakerClosePulseAtrib =
    .adr        = 60U,
    .min        = 1U,
    .max        = 50U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1256,7 +1256,7 @@ const eConfigAttributes timerReturnDelayAtrib =
    .adr        = 61U,
    .min        = 0U,
    .max        = 300U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1275,7 +1275,7 @@ const eConfigAttributes timerCoolingAtrib =
    .adr        = 62U,
    .min        = 0U,
    .max        = 300U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1294,7 +1294,7 @@ const eConfigAttributes timerCoolingIdleAtrib =
    .adr        = 63U,
    .min        = 0U,
    .max        = 300U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1313,7 +1313,7 @@ const eConfigAttributes timerSolenoidHoldAtrib =
    .adr        = 64U,
    .min        = 0U,
    .max        = 60U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1332,7 +1332,7 @@ const eConfigAttributes timerFailStopDelayAtrib =
    .adr        = 65U,
    .min        = 1U,
    .max        = 60U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1351,7 +1351,7 @@ const eConfigAttributes timerGenTransientDelayAtrib =
    .adr        = 66U,
    .min        = 1U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1375,7 +1375,7 @@ const eConfigAttributes genSetupAtrib =
    .adr        = 67U,
    .min        = 0U,
    .max        = 255U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
 };
@@ -1394,7 +1394,7 @@ const eConfigAttributes genRatedActivePowerLevelAtrib =
    .adr        = 68U,
    .min        = 0U,
    .max        = 10000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1413,7 +1413,7 @@ const eConfigAttributes genRatedReactivePowerLevelAtrib =
    .adr        = 69U,
    .min        = 0U,
    .max        = 10000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1432,7 +1432,7 @@ const eConfigAttributes genRatedApparentPowerLevelAtrib =
    .adr        = 70U,
    .min        = 0U,
    .max        = 10000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1451,7 +1451,7 @@ const eConfigAttributes genRatedFrequencyLevelAtrib =
    .adr        = 71U,
    .min        = 2U,
    .max        = 747U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1470,7 +1470,7 @@ const eConfigAttributes genCurrentPrimaryLevelAtrib =
    .adr        = 72U,
    .min        = 5U,
    .max        = 8000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1489,7 +1489,7 @@ const eConfigAttributes genCurrentFullLoadRatingLevelAtrib =
    .adr        = 73U,
    .min        = 5U,
    .max        = 8000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1523,7 +1523,7 @@ const eConfigAttributes genAlarmsAtrib =
    .adr        = 74U,
    .min        = 0U,
    .max        = 65535U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 12U,
 };
@@ -1542,7 +1542,7 @@ const eConfigAttributes genUnderVoltageAlarmLevelAtrib =
    .adr        = 75U,
    .min        = 86U,
    .max        = 708U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1561,7 +1561,7 @@ const eConfigAttributes genUnderVoltagePreAlarmLevelAtrib =
    .adr        = 76U,
    .min        = 88U,
    .max        = 710U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1580,7 +1580,7 @@ const eConfigAttributes genOverVoltagePreAlarmLevelAtrib =
    .adr        = 77U,
    .min        = 93U,
    .max        = 715U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1599,7 +1599,7 @@ const eConfigAttributes genOverVoltageAlarmLevelAtrib =
    .adr        = 78U,
    .min        = 95U,
    .max        = 717U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1618,7 +1618,7 @@ const eConfigAttributes genUnderFrequencyAlarmLevelAtrib =
    .adr        = 79U,
    .min        = 0U,
    .max        = 744U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1637,7 +1637,7 @@ const eConfigAttributes genUnderFrequencyPreAlarmLevelAtrib =
    .adr        = 80U,
    .min        = 1U,
    .max        = 745U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1656,7 +1656,7 @@ const eConfigAttributes genOverFrequencyPreAlarmLevelAtrib =
    .adr        = 81U,
    .min        = 4U,
    .max        = 747U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1675,7 +1675,7 @@ const eConfigAttributes genOverFrequencyAlarmLevelAtrib =
    .adr        = 82U,
    .min        = 5U,
    .max        = 749U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1694,7 +1694,7 @@ const eConfigAttributes genOverCurrentThermalProtectionLevelAtrib =
    .adr        = 83U,
    .min        = 90U,
    .max        = 200U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1713,7 +1713,7 @@ const eConfigAttributes genOverCurrentCutoffLevelAtrib =
    .adr        = 84U,
    .min        = 200U,
    .max        = 500U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1732,7 +1732,7 @@ const eConfigAttributes genOverCurrentAlarmLevelAtrib =
    .adr        = 85U,
    .min        = 50U,
    .max        = 120U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1751,7 +1751,7 @@ const eConfigAttributes genOverCurrentAlarmDelayAtrib =
    .adr        = 86U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1770,7 +1770,7 @@ const eConfigAttributes genCurrentOverloadProtectionLevelAtrib =
    .adr        = 87U,
    .min        = 1U,
    .max        = 125U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1789,7 +1789,7 @@ const eConfigAttributes genCurrentOverloadProtectionDelayAtrib =
    .adr        = 88U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1808,7 +1808,7 @@ const eConfigAttributes genCurrentOverPhaseImbalanceLevelAtrib =
    .adr        = 89U,
    .min        = 1U,
    .max        = 125U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1827,7 +1827,7 @@ const eConfigAttributes genCurrentOverPhaseImbalanceDelayAtrib =
    .adr        = 90U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1851,7 +1851,7 @@ const eConfigAttributes mainsSetupAtrib =
    .adr        = 91U,
    .min        = 0U,
    .max        = 31U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
 };
@@ -1877,7 +1877,7 @@ const eConfigAttributes mainsAlarmsAtrib =
    .adr        = 92U,
    .min        = 0U,
    .max        = 15U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -1896,7 +1896,7 @@ const eConfigAttributes mainsUnderVoltageAlarmLevelAtrib =
    .adr        = 93U,
    .min        = 86U,
    .max        = 713U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1915,7 +1915,7 @@ const eConfigAttributes mainsOverVoltageAlarmLevelAtrib =
    .adr        = 94U,
    .min        = 90U,
    .max        = 717U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1934,7 +1934,7 @@ const eConfigAttributes mainsUnderFrequencyAlarmLevelAtrib =
    .adr        = 95U,
    .min        = 0U,
    .max        = 747U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1953,7 +1953,7 @@ const eConfigAttributes mainsOverFrequencyAlarmLevelAtrib =
    .adr        = 96U,
    .min        = 2U,
    .max        = 749U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -1977,7 +1977,7 @@ const eConfigAttributes engineSetupAtrib =
    .adr        = 97U,
    .min        = 0U,
    .max        = 63U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
 };
@@ -1996,7 +1996,7 @@ const eConfigAttributes enginePreHeatLevelAtrib =
    .adr        = 98U,
    .min        = 0U,
    .max        = 100U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2015,7 +2015,7 @@ const eConfigAttributes enginePreHeatDelayAtrib =
    .adr        = 99U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2041,7 +2041,7 @@ const eConfigAttributes starterStopSetupAtrib =
    .adr        = 100U,
    .min        = 0U,
    .max        = 7U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -2060,7 +2060,7 @@ const eConfigAttributes starterStopGenFreqLevelAtrib =
    .adr        = 101U,
    .min        = 0U,
    .max        = 400U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2079,7 +2079,7 @@ const eConfigAttributes starterStopOilPressureLevelAtrib =
    .adr        = 102U,
    .min        = 5U,
    .max        = 40U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2098,7 +2098,7 @@ const eConfigAttributes starterStopChargeAlternatorLevelAtrib =
    .adr        = 103U,
    .min        = 0U,
    .max        = 400U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2117,7 +2117,7 @@ const eConfigAttributes starterStopSpeedLevelAtrib =
    .adr        = 104U,
    .min        = 0U,
    .max        = 60000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2143,7 +2143,7 @@ const eConfigAttributes batteryAlarmsAtrib =
    .adr        = 105U,
    .min        = 0U,
    .max        = 15U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
 };
@@ -2162,7 +2162,7 @@ const eConfigAttributes batteryUnderVoltageLevelAtrib =
    .adr        = 106U,
    .min        = 0U,
    .max        = 397U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2181,7 +2181,7 @@ const eConfigAttributes batteryUnderVoltageDelayAtrib =
    .adr        = 107U,
    .min        = 0U,
    .max        = 65535U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2200,7 +2200,7 @@ const eConfigAttributes batteryOverVoltageLevelAtrib =
    .adr        = 108U,
    .min        = 2U,
    .max        = 400U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2219,7 +2219,7 @@ const eConfigAttributes batteryOverVoltageDelayAtrib =
    .adr        = 109U,
    .min        = 0U,
    .max        = 65535U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2238,7 +2238,7 @@ const eConfigAttributes batteryChargeShutdownLevelAtrib =
    .adr        = 110U,
    .min        = 0U,
    .max        = 388U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2257,7 +2257,7 @@ const eConfigAttributes batteryChargeShutdownDelayAtrib =
    .adr        = 111U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2276,7 +2276,7 @@ const eConfigAttributes batteryChargeWarningLevelAtrib =
    .adr        = 112U,
    .min        = 1U,
    .max        = 390U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2295,7 +2295,7 @@ const eConfigAttributes batteryChargeWarningDelayAtrib =
    .adr        = 113U,
    .min        = 0U,
    .max        = 3600U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2323,7 +2323,7 @@ const eConfigAttributes maintenanceAlarmsAtrib =
    .adr        = 114U,
    .min        = 0U,
    .max        = 63U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 6U,
 };
@@ -2342,7 +2342,7 @@ const eConfigAttributes maintenanceAlarmOilTimeAtrib =
    .adr        = 115U,
    .min        = 10U,
    .max        = 5000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2361,7 +2361,7 @@ const eConfigAttributes maintenanceAlarmAirTimeAtrib =
    .adr        = 116U,
    .min        = 10U,
    .max        = 5000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2380,7 +2380,7 @@ const eConfigAttributes maintenanceAlarmFuelTimeAtrib =
    .adr        = 117U,
    .min        = 10U,
    .max        = 5000U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
 };
@@ -2403,7 +2403,7 @@ const eConfigAttributes logSetupAtrib =
    .adr        = 118U,
    .min        = 0U,
    .max        = 65535U,
-   .type       = 'U',
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 1U,
 };
@@ -2417,5 +2417,5 @@ eConfigReg logSetup =
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* const configReg[SETTING_REGISTER_NUMBER] = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &hysteresisLevel, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &speedSetup, &speedToothNumber, &speedLowAlarmLevel, &speedHightAlarmLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &docdType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerGenBreakerTripPulse, &timerGenBreakerClosePulse, &timerMainsBreakerTripPulse, &timerMainsBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &starterStopSetup, &starterStopGenFreqLevel, &starterStopOilPressureLevel, &starterStopChargeAlternatorLevel, &starterStopSpeedLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime, &logSetup};
-//const char configDictionary[SETTING_REGISTER_NUMBER] = { "Версия контроллера", "Версия прошивки", "Серийный номер", "Яркость дисплея", "Контрастность дисплея", "Время переходя в спящий режим", "Величина гизтерезиса", "", "Настройки давления масла", "Аварийный уровень двления масла", "Предупредительный уровень давления масла", "Настройки температуры ОЖ", "Аварийный уровень температуры ОЖ", "Предупредительный уровень температуры ОЖ ", "Уровень отключения нагревателя ОЖ", "Уровень включения нагревателя ОЖ", "Уровень отключения охладителя ОЖ", "Уровень включения нагревателя ОЖ", "Настройки уровня топлива", "Нижний аварийный уровень топлива", "Задержка нижнего аварийного сигнала уровня топлива", "Нижний предупредительный уровень топлива", "Задержка нижнего предупредительного сигнала уровня топлива", "Верхний предупредительный уровень топлива", "Задержка верхнего предупредительного сигнала уровня топлива", "Верхний аварийный уровень топлива", "Задержка аерхнего аварийного сигнала уровня топлива", "Уровень включения подкачки топлива", "Уровень выключения подкачки топлива", "Настройки оборотов двигателя", "Количество зубьев маховика", "Нижний аварийный уровень оборотов двигателя", "Верхний аварийный уровень оборотов двигателя", "Настройки цифрового входа А", "Задержка", "Сообщение", "Настройки цифрового входа B", "Задержка", "Сообщение", "Настройки цифрового входа C", "Задержка", "Сообщение", "Настройки цифрового входа D", "Задержка", "Сообщение", "Настройки цифровых выходов", "none", "none", "Коммутационные скачки сети", "Задержка запуска", "Время пркрутки стартера", "Пауза между прокрутками стартера", "Время работы на холостых оборотах", "Задержка перехода на номинальные обороты", "Время блокировки контроля параметров при старте", "Время прогрева", "Пауза между переключениями", "Длина импульса отключения генераторного автомата", "Длина импульса включения генераторного автомата", "Длина импульса отключения сетевого автомата", "Длина импульса включения сетевого автомата", "Задержка останова", "Время охлаждения", "Время охлаждения на холостых оборотах", "Время работы стопового соленоида", "Задержка сигнала «Сбой останова»", "Коммутационные скачки параметров генератора", "Настройки генератора", "Номинальная активная мощность генератора", "Номинальная реактивная мощность генеартора", "Номинальная полная мощность генератора", "Номинальная частота генератора", "Первичный ток трансформатора", "Полная номинальная нагрузка", "Настройки событий генератора", "Нижний аварийный уровень напряжения генератора", "Нижний предупредтельный уровень напряжения генератора", "Верхний предупредительный уровень напряжения генератора", "Верхний аварийный уровень напряжения генератора", "Нижний аварийный уровень частоты генератора", "Нижний предупредительный уровень частоты генератора", "Верхний предупредительный уровень частоты генератора", "Верхний аварийный уровень частоты генератора", "Тепловая защита генератора", "Токовая отсечка генератора", "Верхний аварийный уровень тока генератора", "Задержка верхнего аваарийного сигнала тревоги тока генератора", "Уровень защиты от перегрузки генератора", "Задержка срабатывания защиты от перегрузки генератора", "Уровень допустимого перекоса фаз генератора", "Задержка срабатывания защиты перекоса фаз генератора", "Настройки сети", "Настройки событий сети", "Нижний аварийный уровень напряжения сети", "Верхний аварийный уровень напряжения сети", "Нижний аварийный уровень частоты сети", "Верхний аварийный уровень частоты сети", "Настройки двигателя", "Уровень включения свечей накаливания", "Длительность работы свечей накаливания", "Настройки стартера", "Отключить стартер по частоте генератора", "Давление масла отключения стартера", "Напряжение зарядного генератора отключения стартаера", "Обороты двигателя отключения стартера", "Настройки событий АКБ", "Нижний аварийный уровень напряжения АКБ", "Задержка нижнего аварийного сигнала напряжения АКБ", "Верхний аварийный уровень напряжения АКБ ", "Задержка верхнего аварийного сигнала напряжения АКБ", "Уровень аварийного сигнала зарядного генератора", "Задержка аварийного сигнала зарядного генератора", "Уровень предупредительного сигнала зарядного генератора", "Задержка предупредительного сигнала зарядного генератора", "Настройки событий ТО", "Периодв срабатывания ТО масло", "Периодв срабатывания ТО воздух", "Периодв срабатывания ТО топливо", "Настройки журнала"};
+eConfigReg* const configReg[SETTING_REGISTER_NUMBER]  = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &hysteresisLevel, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &speedSetup, &speedToothNumber, &speedLowAlarmLevel, &speedHightAlarmLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &docdType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerGenBreakerTripPulse, &timerGenBreakerClosePulse, &timerMainsBreakerTripPulse, &timerMainsBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &starterStopSetup, &starterStopGenFreqLevel, &starterStopOilPressureLevel, &starterStopChargeAlternatorLevel, &starterStopSpeedLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime, &logSetup};
+const char* configDictionary[SETTING_REGISTER_NUMBER] = { "Версия контроллера", "Версия прошивки", "Серийный номер", "Яркость дисплея", "Контрастность дисплея", "Время переходя в спящий режим", "Величина гизтерезиса", "", "Настройки давления масла", "Аварийный уровень двления масла", "Предупредительный уровень давления масла", "Настройки температуры ОЖ", "Аварийный уровень температуры ОЖ", "Предупредительный уровень температуры ОЖ ", "Уровень отключения нагревателя ОЖ", "Уровень включения нагревателя ОЖ", "Уровень отключения охладителя ОЖ", "Уровень включения нагревателя ОЖ", "Настройки уровня топлива", "Нижний аварийный уровень топлива", "Задержка нижнего аварийного сигнала уровня топлива", "Нижний предупредительный уровень топлива", "Задержка нижнего предупредительного сигнала уровня топлива", "Верхний предупредительный уровень топлива", "Задержка верхнего предупредительного сигнала уровня топлива", "Верхний аварийный уровень топлива", "Задержка аерхнего аварийного сигнала уровня топлива", "Уровень включения подкачки топлива", "Уровень выключения подкачки топлива", "Настройки оборотов двигателя", "Количество зубьев маховика", "Нижний аварийный уровень оборотов двигателя", "Верхний аварийный уровень оборотов двигателя", "Настройки цифрового входа А", "Задержка", "Сообщение", "Настройки цифрового входа B", "Задержка", "Сообщение", "Настройки цифрового входа C", "Задержка", "Сообщение", "Настройки цифрового входа D", "Задержка", "Сообщение", "Настройки цифровых выходов", "none", "none", "Коммутационные скачки сети", "Задержка запуска", "Время пркрутки стартера", "Пауза между прокрутками стартера", "Время работы на холостых оборотах", "Задержка перехода на номинальные обороты", "Время блокировки контроля параметров при старте", "Время прогрева", "Пауза между переключениями", "Длина импульса отключения генераторного автомата", "Длина импульса включения генераторного автомата", "Длина импульса отключения сетевого автомата", "Длина импульса включения сетевого автомата", "Задержка останова", "Время охлаждения", "Время охлаждения на холостых оборотах", "Время работы стопового соленоида", "Задержка сигнала «Сбой останова»", "Коммутационные скачки параметров генератора", "Настройки генератора", "Номинальная активная мощность генератора", "Номинальная реактивная мощность генеартора", "Номинальная полная мощность генератора", "Номинальная частота генератора", "Первичный ток трансформатора", "Полная номинальная нагрузка", "Настройки событий генератора", "Нижний аварийный уровень напряжения генератора", "Нижний предупредтельный уровень напряжения генератора", "Верхний предупредительный уровень напряжения генератора", "Верхний аварийный уровень напряжения генератора", "Нижний аварийный уровень частоты генератора", "Нижний предупредительный уровень частоты генератора", "Верхний предупредительный уровень частоты генератора", "Верхний аварийный уровень частоты генератора", "Тепловая защита генератора", "Токовая отсечка генератора", "Верхний аварийный уровень тока генератора", "Задержка верхнего аваарийного сигнала тревоги тока генератора", "Уровень защиты от перегрузки генератора", "Задержка срабатывания защиты от перегрузки генератора", "Уровень допустимого перекоса фаз генератора", "Задержка срабатывания защиты перекоса фаз генератора", "Настройки сети", "Настройки событий сети", "Нижний аварийный уровень напряжения сети", "Верхний аварийный уровень напряжения сети", "Нижний аварийный уровень частоты сети", "Верхний аварийный уровень частоты сети", "Настройки двигателя", "Уровень включения свечей накаливания", "Длительность работы свечей накаливания", "Настройки стартера", "Отключить стартер по частоте генератора", "Давление масла отключения стартера", "Напряжение зарядного генератора отключения стартаера", "Обороты двигателя отключения стартера", "Настройки событий АКБ", "Нижний аварийный уровень напряжения АКБ", "Задержка нижнего аварийного сигнала напряжения АКБ", "Верхний аварийный уровень напряжения АКБ ", "Задержка верхнего аварийного сигнала напряжения АКБ", "Уровень аварийного сигнала зарядного генератора", "Задержка аварийного сигнала зарядного генератора", "Уровень предупредительного сигнала зарядного генератора", "Задержка предупредительного сигнала зарядного генератора", "Настройки событий ТО", "Периодв срабатывания ТО масло", "Периодв срабатывания ТО воздух", "Периодв срабатывания ТО топливо", "Настройки журнала"};

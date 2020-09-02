@@ -301,7 +301,7 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
                     {
                       if ( eDATAAPIchart( DATA_API_CMD_WRITE, adr, &buffer ) != DATA_API_STAT_OK )
                       {
-                	res = REST_RECORD_COPY_ERROR;
+                	      res = REST_RECORD_COPY_ERROR;
                       }
                     }
                   }
@@ -550,9 +550,9 @@ REST_ERROR eRESTparsingStrRecord( const char* input, const char* header, uint16_
   REST_ERROR  res         = REST_OK;
   uint8_t     i           = 0U;
   uint8_t     j           = 0U;
-  char        buffer[24U] = {0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U,0U};
-  char        cBuf[2U]    = {0U,0U};
-  uint8_t     hexBuf[8U]  = {0U,0U,0U,0U,0U,0U,0U,0U};
+  char        buffer[24U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        cBuf[2U]    = { 0U, 0U };
+  uint8_t     hexBuf[8U]  = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )

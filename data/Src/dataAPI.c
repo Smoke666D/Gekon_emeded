@@ -336,7 +336,7 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
 
-  if ( adr < FREE_DATA_SIZE )
+  if ( adr < SETTING_REGISTER_NUMBER )
   {
     switch ( cmd )
     {

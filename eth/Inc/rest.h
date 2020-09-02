@@ -40,7 +40,7 @@ typedef enum
   REST_SAVE_CONFIGS  = 0x02U,
   REST_SAVE_CHARTS   = 0x03U,
   REST_TIME          = 0x04U,
-  REST_DATA          = 0x05U,
+  REST_FREE_DATA     = 0x05U,
   REST_REQUEST_ERROR = 0xFFU,
 } REST_REQUEST;
 

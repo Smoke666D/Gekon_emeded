@@ -272,7 +272,7 @@ int main(void)
   usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-
+  ADCTaskHandle =osThreadNew(StartADCTask, NULL, &ADCTask_attributes);
   keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   vSetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );

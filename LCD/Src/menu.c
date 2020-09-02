@@ -23,8 +23,21 @@ static uint8_t           key            = 0U;
 static xScreenObjet*     pCurDrawScreen = NULL;
 static uint8_t           Blink          = 0U;
 static uint16_t          uiSetting      = 3U;
+#define NO_SELECT_D   0U
+#define SELECT_D      1U
+#define CHANGE_D      2U
 
+static uint8_t           ucActiveObject    = NO_SELECT_D;
 
+void xYesNoScreenKeyCallBack( xScreenSetObject* menu, char key );
+
+xScreenSetObject xYesNoMenu =
+{
+  xYesNoScreens,
+  ( YESNO_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xYesNoScreenKeyCallBack,
+};
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция обработки клавишей меню да-нет?
@@ -42,41 +55,24 @@ void xYesNoScreenKeyCallBack( xScreenSetObject* menu, char key )
         menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =1U;
       break;
       case KEY_AUTO:
-                    //Если каливаша AUTO то проверяем объеты меню, если выбран ДА.
+        //Если каливаша AUTO то проверяем объеты меню, если выбран ДА.
         if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] ==1U)
         {
           eDATAAPIconfigValue(DATA_API_CMD_SAVE,uiSetting,NULL);
-
         }
         else
         {
           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2].ObjectParamert[3U] =1U;
           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3].ObjectParamert[3U] =0U;
-         // pCurObject->GetDtaFunction( mESC, NULL, pCurObject->DataID );
         }
         eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
-
-     break;
+        pCurrMenu = xYesNoMenu.pHomeMenu[0].pUpScreenSet;
+        break;
       default:
         break;
     }
   return;
 }
-xScreenSetObject xYesNoMenu =
-{
-  xYesNoScreens,
-  ( YESNO_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xYesNoScreenKeyCallBack,
-};
-
-
-
-#define NO_SELECT_D   0U
-#define SELECT_D      1U
-#define CHANGE_D      2U
-
-static uint8_t           ucActiveObject    = NO_SELECT_D;
 
 /*
  *  Функция обработки экрана подтверждения
@@ -109,7 +105,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
       }
       if ( ucActiveObject != NO_SELECT_D )
       {
-        ucActiveObject = SELECT_D;
+        ucActiveObject = CHANGE_D;
         eDATAAPIconfigValue(DATA_API_CMD_DEC,uiSetting,NULL);
       }
       break;
@@ -120,7 +116,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
       }
       if ( ucActiveObject != NO_SELECT_D )
       {
-         ucActiveObject = SELECT_D;
+         ucActiveObject = CHANGE_D;
          eDATAAPIconfigValue(DATA_API_CMD_INC,uiSetting,NULL);
       }
       break;
@@ -131,7 +127,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
       }
       if ( ucActiveObject != NO_SELECT_D )
       {
-         ucActiveObject = SELECT_D;
+         ucActiveObject = CHANGE_D;
          for (uint8_t i=0;i<10;i++)
            eDATAAPIconfigValue(DATA_API_CMD_DEC,uiSetting,NULL);
       }
@@ -143,7 +139,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
       }
       if ( ucActiveObject != NO_SELECT_D )
       {
-         ucActiveObject = SELECT_D;
+         ucActiveObject =CHANGE_D;
          for (uint8_t i=0;i<10;i++)
             eDATAAPIconfigValue(DATA_API_CMD_INC,uiSetting,NULL);
       }
@@ -154,7 +150,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
             ucActiveObject =SELECT_D;
             menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5].ObjectParamert[3U] =1U;
       }
-      if ( ucActiveObject != NO_SELECT_D )
+      else
       {
          pCurObject = &menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5];
          vExitCurObject();

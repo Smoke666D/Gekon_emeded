@@ -233,6 +233,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
   uint16_t      adr       = 0xFFFFU;
   REST_REQUEST  request   = 0U;
   REST_ADDRESS  adrFlag   = REST_NO_ADR;
+  uint16_t      data      = 0U;
 
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
   response->cache         = HTTP_CACHE_NO_CACHE_STORE;
@@ -300,13 +301,16 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
       case REST_FREE_DATA:
 	      if ( adr < FREE_DATA_SIZE )
 	      {
-	        if ( eRESTparsingData( content, freeDataArray[adr] ) == REST_OK )
+	        if ( eRESTparsingData( content, &data ) == REST_OK )
 	        {
-	          if ( eSTORAGEsaveFreeData( adr ) )
+	          if ( eDATAAPIfreeData( DATA_API_CMD_WRITE, adr, &data ) == DATA_API_STAT_OK )
 	          {
-              response->contetntType  = HTTP_CONTENT_JSON;
-              response->status        = HTTP_STATUS_OK;
-              response->contentLength = 0U;
+	            if ( eDATAAPIfreeData( DATA_API_CMD_SAVE, adr, &data ) == DATA_API_STAT_OK )
+	            {
+                response->contetntType  = HTTP_CONTENT_JSON;
+                response->status        = HTTP_STATUS_OK;
+                response->contentLength = 0U;
+	            }
 	          }
 	        }
 	      }

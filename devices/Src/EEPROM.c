@@ -2,14 +2,14 @@
 #include "EEPROM.h"
 #include "cmsis_os2.h"
 /*-------------------------------- Structures --------------------------------*/
-static SPI_HandleTypeDef* EEPROM_SPI      = NULL;
-static GPIO_TypeDef*      EEPROM_NSS_PORT = NULL;
+static SPI_HandleTypeDef* EEPROMspi      = NULL;
+static GPIO_TypeDef*      EEPROMnssPort = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
-static uint32_t           EEPROM_NSS_PIN  = 0U;
+static uint32_t           EEPROMnssPin  = 0U;
 /*---------------------------------- Macros ----------------------------------*/
-#define EEPROM_NSS_RESET  HAL_GPIO_WritePin( EEPROM_NSS_PORT, EEPROM_NSS_PIN, GPIO_PIN_RESET )
-#define EEPROM_NSS_SET    HAL_GPIO_WritePin( EEPROM_NSS_PORT, EEPROM_NSS_PIN, GPIO_PIN_SET )
+#define EEPROM_NSS_RESET  HAL_GPIO_WritePin( EEPROMnssPort, EEPROMnssPin, GPIO_PIN_RESET )
+#define EEPROM_NSS_SET    HAL_GPIO_WritePin( EEPROMnssPort, EEPROMnssPin, GPIO_PIN_SET )
 /*-------------------------------- Functions ---------------------------------*/
 EEPROM_STATUS eEEPROMwrite ( uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size ); /* Send data via SPI to the EEPROM */
 EEPROM_STATUS eEEPROMread ( uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size );  /* Get data via SPI from EEPROM */
@@ -45,28 +45,28 @@ EEPROM_STATUS eEEPROMwrite( uint8_t cmd, const uint32_t* adr, uint8_t* data, uin
   EEPROM_STATUS     res        = EEPROM_OK;
   uint8_t           buffer[4U] = { cmd, 0x00U, 0x00U, 0x00U };
   uint8_t           bufferLen  = 1U;
-  if ( EEPROM_SPI != NULL )
+  if ( EEPROMspi != NULL )
   {
     if ( adr != NULL )
     {
       vEEPROMmakeAdr( *adr, &buffer[1U] );
       bufferLen  = 4U;
     }
-    while ( EEPROM_SPI->State != HAL_SPI_STATE_READY )
+    while ( EEPROMspi->State != HAL_SPI_STATE_READY )
     {
       osDelay( EEPROM_TIMEOUT );
     }
     EEPROM_NSS_RESET;
-    hal = HAL_SPI_Transmit( EEPROM_SPI, buffer, bufferLen, EEPROM_TIMEOUT );
+    hal = HAL_SPI_Transmit( EEPROMspi, buffer, bufferLen, EEPROM_TIMEOUT );
     if ( hal == HAL_OK )
     {
       if ( size > 0U )
       {
-        while ( EEPROM_SPI->State != HAL_SPI_STATE_READY )
+        while ( EEPROMspi->State != HAL_SPI_STATE_READY )
         {
     	  osDelay( EEPROM_TIMEOUT );
         }
-        hal = HAL_SPI_Transmit( EEPROM_SPI, data, size, EEPROM_TIMEOUT );
+        hal = HAL_SPI_Transmit( EEPROMspi, data, size, EEPROM_TIMEOUT );
         EEPROM_NSS_SET;
         if ( hal != HAL_OK )
         {
@@ -100,28 +100,28 @@ EEPROM_STATUS eEEPROMread( uint8_t cmd, const uint32_t* adr, uint8_t* data, uint
   EEPROM_STATUS     res        = EEPROM_OK;
   uint8_t           buffer[4U] = { cmd, 0x00U, 0x00U, 0x00U };
   uint8_t           bufferLen  = 1U;
-  if ( EEPROM_SPI != NULL )
+  if ( EEPROMspi != NULL )
   {
     if ( adr != NULL )
     {
       vEEPROMmakeAdr( *adr, &buffer[1U] );
       bufferLen  = 4U;
     }
-    while ( EEPROM_SPI->State != HAL_SPI_STATE_READY )
+    while ( EEPROMspi->State != HAL_SPI_STATE_READY )
     {
       osDelay( EEPROM_TIMEOUT );
     }
     EEPROM_NSS_RESET;
-    hal = HAL_SPI_Transmit( EEPROM_SPI, buffer, bufferLen, EEPROM_TIMEOUT );
+    hal = HAL_SPI_Transmit( EEPROMspi, buffer, bufferLen, EEPROM_TIMEOUT );
     if ( hal == HAL_OK )
     {
       if ( size > 0U )
       {
-        while ( EEPROM_SPI->State != HAL_SPI_STATE_READY )
+        while ( EEPROMspi->State != HAL_SPI_STATE_READY )
         {
           osDelay( EEPROM_TIMEOUT );
         }
-        hal = HAL_SPI_Receive( EEPROM_SPI, data, size, EEPROM_TIMEOUT );
+        hal = HAL_SPI_Receive( EEPROMspi, data, size, EEPROM_TIMEOUT );
         EEPROM_NSS_SET;
         if ( hal != HAL_OK )
         {
@@ -318,9 +318,9 @@ EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint3
 {
   EEPROM_STATUS res = EEPROM_OK;
 
-  EEPROM_SPI      = hspi;
-  EEPROM_NSS_PIN  = nssPIN;
-  EEPROM_NSS_PORT = nssPORT;
+  EEPROMspi      = hspi;
+  EEPROMnssPin  = nssPIN;
+  EEPROMnssPort = nssPORT;
   EEPROM_NSS_SET;
   res = eEEPROMblock();
   if ( res == EEPROM_OK )

@@ -188,16 +188,16 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
 /*---------------------------------------------------------------------------------------------------*/
 void startNetClientTask ( void const * argument )
 {
-  struct netconn * netcon      = ( struct netconn * )argument;
-  struct netbuf *  nb;
-  char*            input       = pvPortMalloc( HTTP_INPUT_BUFFER_SIZE );
-  char*            endInput    = input;
-  RECEIVE_MESSAGE  endMessage  = RECEIVE_MESSAGE_CONTINUES;
-  char*            output      = pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
+  struct netconn*  netcon     = ( struct netconn * )argument;
+  struct netbuf*   nb         = NULL;
+  char*            input      = pvPortMalloc( HTTP_INPUT_BUFFER_SIZE );
+  char*            endInput   = input;
+  RECEIVE_MESSAGE  endMessage = RECEIVE_MESSAGE_CONTINUES;
+  char*            output     = pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
   HTTP_RESPONSE    response;
   HTTP_REQUEST     request;
-  uint32_t         len         = 0U;
-  STREAM_STATUS    status      = STREAM_CONTINUES;
+  uint32_t         len        = 0U;
+  STREAM_STATUS    status     = STREAM_CONTINUES;
 
   for (;;)
   {
@@ -284,11 +284,31 @@ SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
               netbuf_delete( nbr );
               httpStr[len] = 0U;
             }
-          } else res = SERVER_WRITE_ERROR;
-        } else res = SERVER_REMOTE_CONNECT_ERROR;
-      } else res = SERVER_BIND_ERROR;
-    } else res = SERVER_NEW_CONNECT_ERROR;
-  } else res = SERVER_DNS_ERROR;
+          }
+          else
+          {
+            res = SERVER_WRITE_ERROR;
+          }
+        }
+        else
+        {
+          res = SERVER_REMOTE_CONNECT_ERROR;
+        }
+      }
+      else
+      {
+        res = SERVER_BIND_ERROR;
+      }
+    }
+    else
+    {
+      res = SERVER_NEW_CONNECT_ERROR;
+    }
+  }
+  else
+  {
+    res = SERVER_DNS_ERROR;
+  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -311,7 +331,6 @@ HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char*
       res = eHTTPparsingResponse( buffer, output, response );
     }
   }
-
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

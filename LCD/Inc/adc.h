@@ -14,6 +14,7 @@
 #include "dataAPI.h"
 #include "FreeRTOS.h"
 #include "event_groups.h"
+#include "menu.h"
 
 #define ADC1_READY  0x01
 #define ADC2_READY  0x01
@@ -24,7 +25,7 @@
 #define ADC3_CHANNELS 4
 #define ADC3_ADD_CHANNEL 5
 #define ADC_FRAME_SIZE  512
-#define ADC_ADD_FRAME_SIZE 10
+#define ADC_ADD_FRAME_SIZE ADC3_ADD_CHANNEL*4
 
 
 
@@ -43,4 +44,5 @@ void vADC3_Ready(void);
 void vADCInit(void);
 void StartADCTask(void *argument);
 float  fADC3Init(uint16_t freq);
+void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 #endif /* INC_ADC_H_ */

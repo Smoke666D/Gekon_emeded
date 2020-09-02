@@ -108,7 +108,7 @@ const osThreadAttr_t netTask_attributes = {
 osThreadId_t lcdTaskHandle;
 const osThreadAttr_t lcdTask_attributes = {
   .name = "lcdTask",
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 1024
 };
 /* Definitions for usbTask */
@@ -142,7 +142,7 @@ const osThreadAttr_t keyboardTask_attributes = {
 osThreadId_t ADCTaskHandle;
 const osThreadAttr_t ADCTask_attributes = {
   .name = "ADCTask",
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 512
 };
 /* Optimization of stack sizes:

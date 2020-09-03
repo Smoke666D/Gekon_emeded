@@ -13,7 +13,6 @@ static StaticEventGroup_t xADCCreatedEventGroup;
 volatile uint16_t ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS];   //ADC1 input data buffer
 volatile uint16_t ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS];   //ADC2 input data buffer
 volatile uint16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input data buffer
-volatile uint16_t ADC3_ADD_IN_Buffer[ADC_ADD_FRAME_SIZE* ADC3_ADD_CHANNEL];
 static xADCFSMType xADCFSM = DC;
 
 extern TIM_HandleTypeDef htim3;
@@ -167,8 +166,9 @@ void vADCInit(void)
     case DC:
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       vADC3DCInit();
-      fADC3Init(10000);
-      HAL_ADC_Start_DMA(&hadc3,(uint32_t*)&ADC3_ADD_IN_Buffer,ADC_ADD_FRAME_SIZE);
+      fADC3Init(15000);
+
+      HAL_ADC_Start_DMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
       break;
     case AC:
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
@@ -204,12 +204,24 @@ void vADC2_Ready(void)
   HAL_ADC_Stop_DMA(&hadc2);
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
+
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+
+//void vADC3R(DMA_HandleTypeDef *_hdma)
+{
+   static portBASE_TYPE xHigherPriorityTaskWoken;
+   xHigherPriorityTaskWoken = pdFALSE;
+   xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
+   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+
+}
+
 void vADC3_Ready(void)
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   xHigherPriorityTaskWoken = pdFALSE;
   xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
-
   HAL_TIM_Base_Stop_IT( &htim3 );
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
 }
@@ -240,26 +252,45 @@ void vADCCommonDeInit(void)
 
 void StartADCTask(void *argument)
 {
+   uint32_t tt=0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
+   HAL_TIM_Base_Start_IT( &htim3 );
    for(;;)
    {
-    osDelay(500);
+     osDelay(500);
      switch (xADCFSM)
      {
        case AC:
          xEventGroupWaitBits(xADCEvent,ADC1_READY | ADC2_READY | ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
          break;
        case DC:
-         HAL_TIM_Base_Start_IT( &htim3 );
-         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-         ADCDATA[0] = (ADC3_ADD_IN_Buffer[0]+ADC3_ADD_IN_Buffer[5]+ADC3_ADD_IN_Buffer[10]+ADC3_ADD_IN_Buffer[15])>>2;
-         ADCDATA[1] = (ADC3_ADD_IN_Buffer[1]+ADC3_ADD_IN_Buffer[6]+ADC3_ADD_IN_Buffer[11]+ADC3_ADD_IN_Buffer[16])>>2;
-         ADCDATA[2] = (ADC3_ADD_IN_Buffer[2]+ADC3_ADD_IN_Buffer[7]+ADC3_ADD_IN_Buffer[12]+ADC3_ADD_IN_Buffer[17])>>2;
-         ADCDATA[3] = (ADC3_ADD_IN_Buffer[3]+ADC3_ADD_IN_Buffer[8]+ADC3_ADD_IN_Buffer[13]+ADC3_ADD_IN_Buffer[18])>>2;
-         ADCDATA[4] = (ADC3_ADD_IN_Buffer[4]+ADC3_ADD_IN_Buffer[9]+ADC3_ADD_IN_Buffer[14]+ADC3_ADD_IN_Buffer[19])>>2;
-         break;
+
+        HAL_ADC_Start_DMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
+
+         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,500);
+
+
+            if (__HAL_ADC_GET_FLAG(&hadc3,ADC_FLAG_OVR ) != RESET)
+
+          {
+            __HAL_ADC_CLEAR_FLAG(&hadc3,ADC_FLAG_OVR);
+            tt++;
+          }
+        //    else
+      //      {
+              ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
+                         ADCDATA[1] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
+                         ADCDATA[2] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
+                         ADCDATA[3] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
+                         ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
+
+        //    }
+
+        // HAL_ADC_Stop_DMA(&hadc3);
+
+       break;
      }
    }
 

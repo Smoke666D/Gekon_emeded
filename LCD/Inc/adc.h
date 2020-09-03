@@ -15,6 +15,7 @@
 #include "FreeRTOS.h"
 #include "event_groups.h"
 #include "menu.h"
+#include "stm32f2xx_hal.h"
 
 #define ADC1_READY  0x01
 #define ADC2_READY  0x01
@@ -40,7 +41,7 @@ void vADC1_Ready(void);
 void vADC2_Ready(void);
 void vADC3_Ready(void);
 
-
+void vADC3R(DMA_HandleTypeDef *_hdma);
 void vADCInit(void);
 void StartADCTask(void *argument);
 float  fADC3Init(uint16_t freq);

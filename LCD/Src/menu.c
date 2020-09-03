@@ -462,7 +462,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
       switch ( pScreenObjects[i].xType )
       {
         case HW_DATA:
-          break;
         case INPUT_HW_DATA:
         case DATA_STRING:
           Redraw = 1U;

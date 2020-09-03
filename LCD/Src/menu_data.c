@@ -305,7 +305,13 @@ static xScreenObjet InfoMainScreen[]=
 static xScreenObjet StatusMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СТАТУС",NULL,0U},
-  { 1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U }
+  { 0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"АЦП1 ",NULL,0U},
+  {0U,FONT_SIZE*6U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,1U},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"АЦП3",NULL,0U},
+  {0U,FONT_SIZE*6U,LINE2+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,3U},
+  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"АЦП5",NULL,0U},
+  {1U,FONT_SIZE*6U,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,5U}
 };
 
 
@@ -338,6 +344,7 @@ static xScreenObjet xYesNoScreen[]=
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   //  {ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
+    {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},
@@ -346,7 +353,7 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
   {AlarmMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {EventMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {InfoMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
-  {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+
 
 
 };

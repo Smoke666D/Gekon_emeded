@@ -424,7 +424,7 @@ EEPROM_STATUS eSTORAGEreadFreeData ( DATA_ADR n )
   res = eEEPROMreadMemory( ( STORAGE_DATA_ADR + 2 * n ), data, 2U );
   if ( res == EEPROM_OK )
   {
-    *( freeDataArray[n] ) = ( ( ( uint16_t )data[0U] ) << 8U ) | ( ( uint16_t )data[0U] );
+    *freeDataArray[n] = ( ( ( uint16_t )data[0U] ) << 8U ) | ( ( uint16_t )data[0U] );
   }
   return res;
 }
@@ -436,7 +436,7 @@ EEPROM_STATUS eSTORAGEsaveFreeData ( DATA_ADR n )
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEsetFreeData ( DATA_ADR n, const uint16_t* data )
 {
-  *(freeDataArray[n]) = *data;
+  *freeDataArray[n] = *data;
   return eSTORAGEsaveFreeData( ( STORAGE_DATA_ADR + 2 * n ) );
 }
 /*---------------------------------------------------------------------------------------------------*/

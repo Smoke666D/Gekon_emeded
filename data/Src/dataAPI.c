@@ -102,12 +102,22 @@ void vDATAAPIdataInit ( void )
       {
         vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
       }
-      /*
-      if ( eDATAAPIfreeData( DATA_API_CMD_LOAD, 0U, NULL ) == DATA_API_STAT_OK )
+      for ( i=0U; i<FREE_DATA_SIZE; i++ )
+      {
+        res = eSTORAGEreadFreeData( i );
+        if ( res != EEPROM_OK )
+        {
+          break;
+        }
+      }
+      if ( res == EEPROM_OK )
       {
         vSYSSerial( ">>EEPROM free data read: done!\n\r" );
       }
-      */
+      else
+      {
+        vSYSSerial( ">>EEPROM free data read: fail!\n\r" );
+      }
       initDone = 1U;
     }
     xSemaphoreGive( xSemaphore );
@@ -207,6 +217,80 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
     else
     {
       res = DATA_API_STAT_INIT_ERROR;
+    }
+  }
+  else
+  {
+    res = DATA_API_STAT_ADR_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length )
+{
+  DATA_API_STATUS res     = DATA_API_STAT_OK;
+  uint32_t        i       = 0U;
+  uint8_t         buf[EWA_ERASE_SIZE];
+
+  if ( ( adr + length ) < STORAGE_WEB_SIZE )
+  {
+    if ( xSemaphore != NULL )
+    {
+      switch ( cmd )
+      {
+        case DATA_API_CMD_SAVE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            if ( eEEPROMwriteMemory( adr, data, length )  != EEPROM_OK )
+            {
+              res = DATA_API_STAT_EEPROM_ERROR;
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_LOAD:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            if ( eEEPROMreadMemory( adr, data, length )  != EEPROM_OK )
+            {
+              res = DATA_API_STAT_EEPROM_ERROR;
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_ERASE:
+          for ( i=0U; i<EWA_ERASE_SIZE; i++ )
+          {
+            buf[i] = 0xFF;
+          }
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            for ( i=0; i<( STORAGE_WEB_SIZE / EWA_ERASE_SIZE ); i++ )
+            {
+              if ( eEEPROMwriteMemory( ( STORAGE_EWA_ADR + i * EWA_ERASE_SIZE ), buf, EWA_ERASE_SIZE )  != EEPROM_OK )
+              {
+                res = DATA_API_STAT_EEPROM_ERROR;
+                break;
+              }
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
+          break;
+        default:
+          break;
+      }
     }
   }
   else
@@ -395,10 +479,10 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
                 res = DATA_API_STAT_EEPROM_ERROR;
                 break;
               }
-              if ( res == DATA_API_STAT_OK )
-              {
-                vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
-              }
+            }
+            if ( res == DATA_API_STAT_OK )
+            {
+              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
             }
             xSemaphoreGive( xSemaphore );
           }

@@ -17,10 +17,10 @@
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *restRequeststr[REST_REQUEST_NUMBER] = { REST_REQUEST_CONFIGS,
                                                     REST_REQUEST_CHARTS,
-                                                    REST_REQUEST_SAVE_CONFIGS,
-                                                    REST_REQUEST_SAVE_CHARTS,
-                                                    REST_REQUEST_TIME,
-                                                    REST_REQUEST_DATA };
+						                                        REST_REQUEST_SAVE_CONFIGS,
+						                                        REST_REQUEST_SAVE_CHARTS,
+						                                        REST_REQUEST_TIME,
+						                                        REST_REQUEST_DATA };
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 uint8_t    uRESTmakeStartRecord ( const char* header, char* output );

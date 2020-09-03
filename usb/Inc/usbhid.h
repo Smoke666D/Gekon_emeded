@@ -55,8 +55,8 @@ typedef enum
   USB_SAVE_CHART_CMD  = 0x07U,
   USB_GET_TIME        = 0x08U,
   USB_PUT_TIME        = 0x09U,
-  USB_GET_DATA        = 0x0AU,
-  USB_PUT_DATA        = 0x0BU,
+  USB_GET_FREE_DATA   = 0x0AU,
+  USB_PUT_FREE_DATA   = 0x0BU,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

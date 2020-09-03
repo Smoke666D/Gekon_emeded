@@ -128,9 +128,9 @@ void vUSBtimeToReport ( const RTC_TIME* time, USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBdataToReport ( uint16_t adr, USB_REPORT* report )
+void vUSBfreeDataToReport ( uint16_t adr, USB_REPORT* report )
 {
-  report->cmd      = USB_GET_TIME;
+  report->cmd      = USB_GET_FREE_DATA;
   report->dir      = USB_OUTPUT;
   report->stat     = USB_OK_STAT;
   report->adr      = adr;
@@ -314,12 +314,15 @@ USB_Status eUSBReportToTime ( USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_Status eUSBReportToFreeData ( USB_REPORT* report )
 {
-  USB_Status res = USB_DONE;
+  USB_Status res   = USB_DONE;
+  uint16_t   value = 0U;
   if ( report->length >= 2U )
   {
     if ( report->adr <= FREE_DATA_SIZE )
     {
-      *freeDataArray[ report->adr ] = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
+      value = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
+      eDATAAPIfreeData( DATA_API_CMD_WRITE, report->adr, &value );
+      eDATAAPIfreeData( DATA_API_CMD_SAVE,  report->adr, NULL );
     }
     else
     {
@@ -460,7 +463,7 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
   USB_Status      res           = USB_DONE;
   uint8_t         length        = 0U;
   static uint32_t index         = 0U;
-  EEPROM_STATUS   status        = EEPROM_OK;
+  DATA_API_STATUS status        = DATA_API_STAT_OK;
   uint16_t        i             = 0;
   uint32_t        checkAdr      = 0U;
   uint8_t         checkData[4U] = {0U};
@@ -482,19 +485,19 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
     }
     if ( length > 0U )
     {
-      status = eEEPROMwriteMemory( ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
-      if ( status == EEPROM_OK )
+      status = eDATAAPIewa( DATA_API_CMD_SAVE, ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
+      if ( status == DATA_API_STAT_OK )
       {
 	      checkAdr = STORAGE_EWA_DATA_ADR + index;
 	      for ( i=0; i<length; i++ )
 	      {
-	        status = eEEPROMreadMemory( checkAdr, checkData, 1U );
-	        checkAdr++;
-	        if ( ( report->data[i] != checkData[0U] ) || ( status != EEPROM_OK ) )
+	        status = eDATAAPIewa( DATA_API_CMD_LOAD, checkAdr, checkData, 1U );
+	        if ( ( report->data[i] != checkData[0U] ) || ( status != DATA_API_STAT_OK ) )
 	        {
 	          res = USB_STORAGE_ERROR;
 	          break;
 	        }
+	        checkAdr++;
 	      }
         if ( res != USB_STORAGE_ERROR )
         {
@@ -506,8 +509,8 @@ USB_Status eUSBReportToEWA ( USB_REPORT* report )
           else if ( index == report->length )
           {
             index  = 0U;
-            status = eEEPROMwriteMemory( STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), 3U );
-            if ( status == EEPROM_OK )
+            status = eDATAAPIewa( DATA_API_CMD_SAVE, STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), EEPROM_LENGTH_SIZE );
+            if ( status == DATA_API_STAT_OK )
             {
               res = USB_DONE;
             }
@@ -862,7 +865,7 @@ void vUSBgetData ( USB_REPORT* report )
   uint8_t    i        = 0U;
   USB_REPORT response =
   {
-    .cmd    = USB_PUT_DATA,
+    .cmd    = USB_PUT_FREE_DATA,
     .stat   = USB_OK_STAT,
     .adr    = report->adr,
     .length = 0U,
@@ -892,7 +895,7 @@ void vUSBsendData ( uint16_t adr )
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  vUSBdataToReport( adr, &report );
+  vUSBfreeDataToReport( adr, &report );
   vUSBmakeReport( &report );
   while ( eUSBwrite( report.buf ) == USBD_BUSY )
   {
@@ -1008,10 +1011,10 @@ void vStartUsbTask ( void *argument )
         case USB_PUT_TIME:
           vUSBgetTime( &report );
           break;
-        case USB_GET_DATA:
+        case USB_GET_FREE_DATA:             // PC->DEVICE
           vUSBsendData( report.adr );
           break;
-        case USB_PUT_DATA:
+        case USB_PUT_FREE_DATA:
           vUSBgetData( &report );
           break;
         default:

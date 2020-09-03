@@ -171,6 +171,8 @@ void vADCInit(void)
       HAL_ADC_Start_DMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
       break;
     case AC:
+      fADC12Init(15000);
+      fADC3Init(15000);
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
       HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_ADD_FRAME_SIZE);
       HAL_ADC_Start_DMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_ADD_FRAME_SIZE);
@@ -188,43 +190,31 @@ void vADCInit(void)
 }
 
 
-void vADC1_Ready(void)
-{
-  static portBASE_TYPE xHigherPriorityTaskWoken;
-  xHigherPriorityTaskWoken = pdFALSE;
-  xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
-  HAL_ADC_Stop_DMA(&hadc1);
-  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
-}
-void vADC2_Ready(void)
-{
-  static portBASE_TYPE xHigherPriorityTaskWoken;
-  xHigherPriorityTaskWoken = pdFALSE;
-  xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
-  HAL_ADC_Stop_DMA(&hadc2);
-  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
-}
-
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
-
-//void vADC3R(DMA_HandleTypeDef *_hdma)
 {
    static portBASE_TYPE xHigherPriorityTaskWoken;
+   HAL_ADC_Stop(&hadc);
    xHigherPriorityTaskWoken = pdFALSE;
+   if  (hadc->Instance == ADC3)
+   {
+       xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
+   }
+   if  (hadc->Instance == ADC2)
+   {
+       xEventGroupSetBitsFromISR(xADCEvent,ADC2_READY,&xHigherPriorityTaskWoken);
+   }
+   if  (hadc->Instance == ADC1)
+   {
+       xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
+   }
    xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
    portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+   return;
 
 }
 
-void vADC3_Ready(void)
-{
-  static portBASE_TYPE xHigherPriorityTaskWoken;
-  xHigherPriorityTaskWoken = pdFALSE;
-  xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
-  HAL_TIM_Base_Stop_IT( &htim3 );
-  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
-}
+
 
 
 

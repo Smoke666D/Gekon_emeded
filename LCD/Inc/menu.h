@@ -9,6 +9,11 @@
 #define INC_MENU_H_
 /*----------------------- Includes -------------------------------------*/
 #include "u8g2.h"
+#include "main.h"
+#include "config.h"
+#include "data_type.h"
+#include "dataAPI.h"
+#include "adc.h"
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
 #define CENTER_ALIGN        1U
@@ -32,7 +37,7 @@
 #define FONT_TYPE4          ( u8g2_font_6x13_t_cyrillic )
 #define FONT_X_SIZE4        6U
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
-#define MAX_KEY_PRESS       10U
+#define MAX_KEY_PRESS
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -82,14 +87,19 @@ typedef struct
 typedef struct
 {
   xScreenType*  pHomeMenu;               /* Указатель на массив экранов верхнего уровня. */
-  uint8_t	    pMaxIndex;	             /* Индекс домашнего экрана в маасиве экранов верхнего уровня */
-  uint8_t	    pCurrIndex;	             /* Индексе текущего экрана */
+  uint8_t       pMaxIndex;	             /* Индекс домашнего экрана в маасиве экранов верхнего уровня */
+  uint8_t       pCurrIndex;	             /* Индексе текущего экрана */
   void          (* pFunc)(void *,char);  /* Функция обработки нажатий */
 } xScreenSetObject;
 /*----------------------------- Functions ------------------------------------*/
-void DrawMenu( uint8_t temp, uint8_t* data );
+void vDrawMenu( uint8_t temp, uint8_t* data );
 void vMenuInit( u8g2_t* temp );
 void vMenuTask( void );
-void DrawObject( xScreenObjet* pScreenObjects );
+void vDrawObject( xScreenObjet* pScreenObjects );
+void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vUToStr(uint8_t * str, uint16_t data, signed char scale);
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

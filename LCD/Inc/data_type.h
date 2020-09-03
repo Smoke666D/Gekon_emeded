@@ -10,11 +10,11 @@
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
-	READ,
-	SAVE,
-	ESC,
-	INC,
-	DEC,
+  mREAD,
+  mSAVE,
+  mESC,
+  mINC,
+  mDEC,
 } DATA_COMMNAD_TYPE;
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATA_TYPE_H_ */

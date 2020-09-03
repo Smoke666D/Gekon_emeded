@@ -18,7 +18,7 @@ eChartData oilSensorChart = {
   .dots[0]  =
   {
     .x = 0x00000000U,
-	.y = 0x00000000U,
+    .y = 0x00000000U,
   },
   .dots[1]  =
   {
@@ -38,7 +38,7 @@ eChartData coolantSensorChart = {
   .dots[0]  =
   {
     .x = 0x00000000U,
-	.y = 0x00000000U,
+    .y = 0x00000000U,
   },
   .dots[1]  =
   {
@@ -55,19 +55,19 @@ eChartData fuelSensorChart = {
   .xunit    = {'О','м',' '},
   .yunit    = {'Б','а','р'},
   .size     = 2U,
-  .dots[0]  =
+  .dots[0U]  =
   {
     .x = 0x00000000U,
-	.y = 0x00000000U,
+    .y = 0x00000000U,
   },
-  .dots[1]  =
+  .dots[1U]  =
   {
     .x = 0x05DC0000U,
     .y = 0x000F0000U,
   },
 };
 
-eChartData* charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart, &fuelSensorChart};
+eChartData* const charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart, &fuelSensorChart};
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Calculate line functions between dots of chart
@@ -79,8 +79,8 @@ void vCHARTcalcFunction( eChartData* chart )
   uint16_t i = 0U;
   for( i=0U; i<(chart->size - 1U); i++ )
   {
-	chart->func[i].k = fix16_div( fix16_sub( chart->dots[i + 1U].y, chart->dots[i].y ), fix16_sub( chart->dots[i + 1U].x, chart->dots[i].x ) );
-	chart->func[i].b = fix16_sub( chart->dots[i].y, fix16_mul( chart->func[i].k, chart->dots[i].x ) );
+    chart->func[i].k = fix16_div( fix16_sub( chart->dots[i + 1U].y, chart->dots[i].y ), fix16_sub( chart->dots[i + 1U].x, chart->dots[i].x ) );
+    chart->func[i].b = fix16_sub( chart->dots[i].y, fix16_mul( chart->func[i].k, chart->dots[i].x ) );
   }
   return;
 }
@@ -99,22 +99,25 @@ eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y )
 
   if ( x <= chart->xmax )
   {
-	if ( x >= chart->xmin)
-	{
+    if ( x >= chart->xmin)
+    {
       for( i=0U; i<chart->size; i++ )
       {
-    	if ( x > chart->dots[i].x )
-    	{
-    	  break;
-    	}
+        if ( x > chart->dots[i].x )
+        {
+          break;
+        }
       }
       if ( i != chart->size)
       {
-    	*y = fix16_add( fix16_mul( chart->func[i].k, x ), chart->func[i].b );
-      } else res = FUNC_SIZE_ERROR;
-	} else res = FUNC_OVER_MIN_X_ERROR;
+        *y = fix16_add( fix16_mul( chart->func[i].k, x ), chart->func[i].b );
+      }
+      else
+      {
+	res = FUNC_SIZE_ERROR;
+      }
+    } else res = FUNC_OVER_MIN_X_ERROR;
   } else res = FUNC_OVER_MAX_X_ERROR;
-
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

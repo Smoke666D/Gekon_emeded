@@ -25,9 +25,10 @@ typedef enum
 
 typedef enum
 {
-  USB_DONE,
-  USB_CONT,
-  USB_ERROR_LENGTH,
+  USB_DONE,          /* Operation done */
+  USB_CONT,          /* Message is not end. Wait for new package */
+  USB_ERROR_LENGTH,  /* Error in declared and received length of data*/
+  USB_STORAGE_ERROR, /* Error in storage process ( EEPROM or RTC )  */
 } USB_Status;
 
 typedef enum
@@ -45,21 +46,38 @@ typedef enum
 
 typedef enum
 {
-  USB_GET_CONFIG_CMD = 0x01U,
-  USB_PUT_CONFIG_CMD = 0x02U,
-  USB_GET_CHART_CMD  = 0x03U,
-  USB_PUT_CHART_CMD  = 0x04U,
+  USB_GET_CONFIG_CMD  = 0x01U,
+  USB_PUT_CONFIG_CMD  = 0x02U,
+  USB_GET_CHART_CMD   = 0x03U,
+  USB_PUT_CHART_CMD   = 0x04U,
+  USB_PUT_EWA_CMD     = 0x05U,
+  USB_SAVE_CONFIG_CMD = 0x06U,
+  USB_SAVE_CHART_CMD  = 0x07U,
+  USB_GET_TIME        = 0x08U,
+  USB_PUT_TIME        = 0x09U,
+  USB_GET_FREE_DATA   = 0x0AU,
+  USB_PUT_FREE_DATA   = 0x0BU,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U
 #define USB_QUEUE_SIZE        10U
-#define	BUFFER_DATA_SHIFT     6U
-#define USB_DATA_SIZE         ( USB_REPORT_SIZE - BUFFER_DATA_SHIFT )
 /*------------------------------ Report --------------------------------------*/
 /*
- * | 0  |  1  |  2   |  4   |  5   |  6  | ...  | ... |  64 |
- * | ID | CMD | STAT | ADR1 | ADR0 | LEN | DATA | ... | ... |
+ * |  0  |  1  |  2   |  3   |  4   |  5   |  6   |  7   |  ...  | ... |  64 |
+ * | DIR | CMD | STAT | ADR1 | ADR0 | LEN2 | LEN1 | LEN0 | DATA  | ... | ... |
  */
+#define USB_DIR_BYTE          0x00U
+#define USB_CMD_BYTE          0x01U
+#define USB_STAT_BYTE         0x02U
+#define USB_ADR1_BYTE         0x03U
+#define USB_ADR0_BYTE         0x04U
+#define USB_LEN2_BYTE         0x05U
+#define USB_LEN1_BYTE         0x06U
+#define USB_LEN0_BYTE         0x07U
+#define USB_DATA_BYTE         0x08U
+
+#define USB_DATA_SIZE         ( USB_REPORT_SIZE - USB_DATA_BYTE )
+
 #define USB_INPUT_REPORT_ID   0x01U    /* Direction - first byte in report */
 #define USB_OUTPUT_REPORT_ID  0x02U    /* Direction - first byte in report */
 /*------------------------------ Macros --------------------------------------*/
@@ -80,16 +98,16 @@ typedef struct
   USB_ReportStat stat;    /* Status of transaction */
   uint16_t       adr;     /* Address of register */
   uint8_t*       data;    /* Data array */
-  uint8_t        length;  /* Length of data array */
+  uint32_t       length;  /* Length of data array */
   uint8_t*       buf;     /* Pointer to the IO buffer */
   uint8_t        multi;   /* Number of USB messages for one report*/
 } USB_REPORT;
 /*------------------------------ Extern --------------------------------------*/
 
 /*----------------------------- Functions ------------------------------------*/
-void               vUSBinit( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
-void               StartUsbTask( void *argument );       /* Processing USB input task */
-USB_StatusConnect  eUSBgetStatus( void );                /* Get connection status of USB device */
-void               vUSBreceiveHandler( void );           /* Handler of USB input interrupt */
+void              vUSBinit ( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
+void              vStartUsbTask ( void *argument );       /* Processing USB input task */
+USB_StatusConnect eUSBgetStatus ( void );                /* Get connection status of USB device */
+void              vUSBreceiveHandler ( void );           /* Handler of USB input interrupt */
 /*----------------------------------------------------------------------------*/
 #endif /* INC_USBHID_H_ */

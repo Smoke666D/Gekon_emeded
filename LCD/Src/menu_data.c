@@ -13,6 +13,7 @@ extern xScreenSetObject xMainMenu;
 extern xScreenSetObject xGeneratorMenu;
 extern xScreenSetObject xEngineMenu;
 extern xScreenSetObject xNetMenu;
+extern xScreenSetObject xSettingsMenu;
 
 extern void xInfoScreenCallBack( xScreenSetObject * menu, char key );
 extern void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
@@ -37,16 +38,20 @@ static char EventLog[][44U]=
   "Напряж. ген. высок",
   "Напряжение ген.",
 };
-#define MENU_LEVEL1_COUNT      8U
+#define MENU_LEVEL1_COUNT      9U
 #define ENGINE_MENU_COUNT      3U
 #define NET_MENU_COUNT         3U
 #define GENERATOR_MENU_COUNT   7U
-#define MENU_ADD_COUNT         1U
+#define SETTINGS_MENU_COUNT    1U
+#define YESNO_MENU_COUNT       1U
+
+
 #define MAX_HEADER_STRING_SIZE 40U
 #define LINE4_HIGTH            ( 64U / 4U )
 #define LINE5_HIGTH            ( 64U / 5U )
 
-
+#define BRIGTH_ID    3U
+#define SETTING_ID   1U
 #define LEFT_OFFSET  2U
 #define LINE1        12U
 #define LINE2        30U
@@ -56,33 +61,19 @@ static char EventLog[][44U]=
 
 
 static uint8_t Header[]       = { 0U, 1U, CENTER_ALIGN };
-static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN };
+static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN};
 static uint8_t LeftText[]     = { 0U, 1U, LEFT_ALIGN };
 static uint8_t HeaderParam[]  = { 1U, 0U, CENTER_ALIGN, 0U };
-static uint8_t HeaderParam1[] = { 0U, 0U, RIGTH_ALIGN, 0U };
-static uint8_t HeaderParam2[] = { 0U, 1U, LEFT_ALIGN, 0U };
-static uint8_t InputParam[]   = { 0U, 1U, CENTER_ALIGN, 0U };
-static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  = { 0U, 1U, CENTER_ALIGN, 0U };
-static uint8_t InputParam3[]  = { 0U, 1U, CENTER_ALIGN, 0U };
 
 extern void GetTime( char* Data );
 extern void GetInt( char* Data );
 extern void vdmGetData( uint8_t command, uint16_t DataID, uint8_t* pchTextString );
 extern void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 
-/*
 
-static xScreenObjet ScreenLev1_1[]=
-{  {0,0,0,128,LINE4_HIGTH,STRING,HeaderParam,HEADERSTRINGS[0],NULL,0},
-   {0,0,LINE4_HIGTH+1,128,LINE4_HIGTH,HW_DATA,HeaderParam,NULL,(void*)&vRTCGetTime,0},
-   {0,10,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam1,NULL,(void*)&vRTCCorrectTime,RTC_HOUR},
-   {0,25,2*(LINE4_HIGTH+1),9,LINE4_HIGTH,STRING,InputParam,":",NULL,0},
-   {0,35,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam2,NULL,&vRTCCorrectTime,RTC_MIN},
-   {0,50,2*(LINE4_HIGTH+1),9,LINE4_HIGTH,STRING,InputParam,":",NULL,0},
-   {0,60,2*(LINE4_HIGTH+1),15,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,&vRTCCorrectTime,RTC_SEC},
-   {1,0,0,0,0,STRING,NULL,NULL}  };
-*/
 
 //
 static xScreenObjet EngineMainScreen[]=
@@ -314,13 +305,47 @@ static xScreenObjet InfoMainScreen[]=
 static xScreenObjet StatusMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СТАТУС",NULL,0U},
-  { 1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U }
+  { 0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"АЦП1 ",NULL,0U},
+  {0U,FONT_SIZE*6U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,1U},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"АЦП3",NULL,0U},
+  {0U,FONT_SIZE*6U,LINE2+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,3U},
+  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"АЦП5",NULL,0U},
+  {1U,FONT_SIZE*6U,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,5U}
+};
+
+
+static xScreenObjet SettingsScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
+  {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText," ",NULL,0U},
+  {0U,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsNumber, 0U},
+  {0U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsUnit, 0U},
+  {1U,FONT_SIZE*5U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData, 0U},
+};
+
+
+static xScreenObjet SettingsMainScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКИ",NULL,0U},
+  {1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+};
+
+static xScreenObjet xYesNoScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПРИМЕНИТЬ ИЗМЕНЕНИЯ",NULL,0U},
+  {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
+  {0U,FONT_SIZE*3U,LINE2,30U,LINE4_HIGTH,DATA_STRING,InputParam1,"  ДА  ",NULL,0U},
+  {1U,FONT_SIZE*13U,LINE2,30U,LINE4_HIGTH,DATA_STRING,InputParam2,"  НЕТ  ",NULL,0U},
 };
 
 
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   //  {ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
+    {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+  {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},
   {NetMainScreen,&xMainMenu,&xNetMenu,PASSIVE,0U,0U,NULL},
@@ -328,7 +353,9 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
   {AlarmMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {EventMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {InfoMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
-  {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+
+
+
 };
 
 static xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
@@ -356,4 +383,13 @@ static xScreenType  xNetScreens[NET_MENU_COUNT]=
   { NetMainScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
 };
 
+static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
+{
+  { SettingsScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
+};
+
+static xScreenType  xYesNoScreens[SETTINGS_MENU_COUNT]=
+{
+  { xYesNoScreen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
+};
 

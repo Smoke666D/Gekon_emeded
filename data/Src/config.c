@@ -1,1906 +1,2421 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-05-27 10:17:27
+ * Make time: 2020-09-02 08:53:37
  */
 #include   "config.h"
 
 uint16_t versionControllerValue[1U] = { 1U };
+const eConfigAttributes versionControllerAtrib =
+{
+   .adr        = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
 eConfigReg versionController =
 {
-   .page       = 0U,
-   .adr        = 0U,
+   .atrib      = &versionControllerAtrib,
    .scale      = 0U,
    .value      = versionControllerValue,
-   .min        = 0U,
-   .max        = 0U,
    .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_ONLY,
-   .len        = 1U,
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-uint16_t versionFirmwareValue[1U] = { 2U };
-eConfigReg versionFirmware =
+uint16_t versionFirmwareValue[1U] = { 1U };
+const eConfigAttributes versionFirmwareAtrib =
 {
-   .page       = 0U,
    .adr        = 1U,
-   .scale      = 0U,
-   .value      = versionFirmwareValue,
    .min        = 0U,
    .max        = 0U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_ONLY,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg versionFirmware =
+{
+   .atrib      = &versionFirmwareAtrib,
+   .scale      = 0U,
+   .value      = versionFirmwareValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t serialNumberValue[6U] = { 0U, 0U, 0U, 0U, 0U, 0U };
-eConfigReg serialNumber =
+const eConfigAttributes serialNumberAtrib =
 {
-   .page       = 0U,
    .adr        = 2U,
-   .scale      = 0U,
-   .value      = serialNumberValue,
    .min        = 0U,
    .max        = 0U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_ONLY,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 6U,
+   .bitMapSize = 0U,
+};
+eConfigReg serialNumber =
+{
+   .atrib      = &serialNumberAtrib,
+   .scale      = 0U,
+   .value      = serialNumberValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t displayBrightnesLevelValue[1U] = { 50U };
-eConfigReg displayBrightnesLevel =
+const eConfigAttributes displayBrightnesLevelAtrib =
 {
-   .page       = 0U,
    .adr        = 3U,
-   .scale      = 0U,
-   .value      = displayBrightnesLevelValue,
    .min        = 0U,
    .max        = 100U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg displayBrightnesLevel =
+{
+   .atrib      = &displayBrightnesLevelAtrib,
+   .scale      = 0U,
+   .value      = displayBrightnesLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t displayContarstLevelValue[1U] = { 30U };
-eConfigReg displayContarstLevel =
+const eConfigAttributes displayContarstLevelAtrib =
 {
-   .page       = 0U,
    .adr        = 4U,
-   .scale      = 0U,
-   .value      = displayContarstLevelValue,
    .min        = 0U,
    .max        = 100U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg displayContarstLevel =
+{
+   .atrib      = &displayContarstLevelAtrib,
+   .scale      = 0U,
+   .value      = displayContarstLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t displaySleepDelayValue[1U] = { 10U };
-eConfigReg displaySleepDelay =
+const eConfigAttributes displaySleepDelayAtrib =
 {
-   .page       = 0U,
    .adr        = 5U,
-   .scale      = 0U,
-   .value      = displaySleepDelayValue,
    .min        = 2U,
    .max        = 600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg displaySleepDelay =
+{
+   .atrib      = &displaySleepDelayAtrib,
+   .scale      = 0U,
+   .value      = displaySleepDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+uint16_t hysteresisLevelValue[1U] = { 20U };
+const eConfigAttributes hysteresisLevelAtrib =
+{
+   .adr        = 6U,
+   .min        = 0U,
+   .max        = 1000U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg hysteresisLevel =
+{
+   .atrib      = &hysteresisLevelAtrib,
+   .scale      = -1,
+   .value      = hysteresisLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap moduleSetupBitMap[2U] = 
 {
-   { 1U, 0U, 0U, 1U },     // moduleType
-   { 2U, 1U, 0U, 1U },     // alarmAllBlock
+   { 1U, 0U },     // moduleType
+   { 2U, 1U },     // alarmAllBlock
 };
 uint16_t moduleSetupValue[1U] = { 3U };
-eConfigReg moduleSetup =
+const eConfigAttributes moduleSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 6U,
-   .scale      = 0U,
-   .value      = moduleSetupValue,
+   .adr        = 7U,
    .min        = 0U,
    .max        = 3U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
+};
+eConfigReg moduleSetup =
+{
+   .atrib      = &moduleSetupAtrib,
+   .scale      = 0U,
+   .value      = moduleSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = moduleSetupBitMap
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap oilPressureSetupBitMap[4U] = 
 {
-   { 15U, 0U, 0U, 11U },     // oilPressureSensorType
-   { 16U, 4U, 0U, 1U },     // oilPressureOpenCircuitAlarmEnb
-   { 32U, 5U, 0U, 1U },     // oilPressureAlarmEnb
-   { 64U, 6U, 0U, 1U },     // oilPressurePreAlarmEnb
+   { 15U, 0U },     // oilPressureSensorType
+   { 16U, 4U },     // oilPressureOpenCircuitAlarmEnb
+   { 32U, 5U },     // oilPressureAlarmEnb
+   { 64U, 6U },     // oilPressurePreAlarmEnb
 };
-uint16_t oilPressureSetupValue[1U] = { 50U };
-eConfigReg oilPressureSetup =
+uint16_t oilPressureSetupValue[1U] = { 51U };
+const eConfigAttributes oilPressureSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 7U,
-   .scale      = 0U,
-   .value      = oilPressureSetupValue,
+   .adr        = 8U,
    .min        = 0U,
    .max        = 63U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
+};
+eConfigReg oilPressureSetup =
+{
+   .atrib      = &oilPressureSetupAtrib,
+   .scale      = 0U,
+   .value      = oilPressureSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = oilPressureSetupBitMap
 };
 /*----------------------------------------------------------------*/
-uint16_t oilPressureAlarmLevelValue[1U] = { 13U };
+uint16_t oilPressureAlarmLevelValue[1U] = { 103U };
+const eConfigAttributes oilPressureAlarmLevelAtrib =
+{
+   .adr        = 9U,
+   .min        = 0U,
+   .max        = 1030U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
 eConfigReg oilPressureAlarmLevel =
 {
-   .page       = 0U,
-   .adr        = 8U,
-   .scale      = -1,
+   .atrib      = &oilPressureAlarmLevelAtrib,
+   .scale      = -2,
    .value      = oilPressureAlarmLevelValue,
-   .min        = 0U,
-   .max        = 103U,
    .units      = {'Б', 'а', 'р', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-uint16_t oilPressurePreAlarmLevelValue[1U] = { 5U };
+uint16_t oilPressurePreAlarmLevelValue[1U] = { 124U };
+const eConfigAttributes oilPressurePreAlarmLevelAtrib =
+{
+   .adr        = 10U,
+   .min        = 0U,
+   .max        = 1030U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
 eConfigReg oilPressurePreAlarmLevel =
 {
-   .page       = 0U,
-   .adr        = 9U,
-   .scale      = -1,
+   .atrib      = &oilPressurePreAlarmLevelAtrib,
+   .scale      = -2,
    .value      = oilPressurePreAlarmLevelValue,
-   .min        = 0U,
-   .max        = 103U,
    .units      = {'Б', 'а', 'р', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap coolantTempSetupBitMap[6U] = 
 {
-   { 15U, 0U, 0U, 11U },     // coolantTempSensorType
-   { 16U, 4U, 0U, 1U },     // coolantTempOpenCircuitAlarmEnb
-   { 32U, 5U, 0U, 1U },     // coolantHightTempAlarmEnb
-   { 64U, 6U, 0U, 1U },     // coolantHightTempPreAlarmEnb
-   { 128U, 7U, 0U, 1U },     // coolantTempHeaterEnb
-   { 256U, 8U, 0U, 1U },     // coolantTempCoolerEnb
+   { 15U, 0U },     // coolantTempSensorType
+   { 16U, 4U },     // coolantTempOpenCircuitAlarmEnb
+   { 32U, 5U },     // coolantHightTempAlarmEnb
+   { 64U, 6U },     // coolantHightTempPreAlarmEnb
+   { 128U, 7U },     // coolantTempHeaterEnb
+   { 256U, 8U },     // coolantTempCoolerEnb
 };
 uint16_t coolantTempSetupValue[1U] = { 51U };
-eConfigReg coolantTempSetup =
+const eConfigAttributes coolantTempSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 10U,
-   .scale      = 0U,
-   .value      = coolantTempSetupValue,
+   .adr        = 11U,
    .min        = 0U,
    .max        = 63U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 6U,
+};
+eConfigReg coolantTempSetup =
+{
+   .atrib      = &coolantTempSetupAtrib,
+   .scale      = 0U,
+   .value      = coolantTempSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = coolantTempSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantHightTempAlarmLevelValue[1U] = { 96U };
-eConfigReg coolantHightTempAlarmLevel =
+const eConfigAttributes coolantHightTempAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 11U,
-   .scale      = 0U,
-   .value      = coolantHightTempAlarmLevelValue,
+   .adr        = 12U,
    .min        = 0U,
    .max        = 250U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg coolantHightTempAlarmLevel =
+{
+   .atrib      = &coolantHightTempAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = coolantHightTempAlarmLevelValue,
+   .units      = {'C', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantHightTempPreAlarmLevelValue[1U] = { 90U };
-eConfigReg coolantHightTempPreAlarmLevel =
+const eConfigAttributes coolantHightTempPreAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 12U,
-   .scale      = 0U,
-   .value      = coolantHightTempPreAlarmLevelValue,
+   .adr        = 13U,
    .min        = 0U,
    .max        = 250U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg coolantHightTempPreAlarmLevel =
+{
+   .atrib      = &coolantHightTempPreAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = coolantHightTempPreAlarmLevelValue,
+   .units      = {'C', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempHeaterOffLevelValue[1U] = { 60U };
-eConfigReg coolantTempHeaterOffLevel =
+const eConfigAttributes coolantTempHeaterOffLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 13U,
-   .scale      = 0U,
-   .value      = coolantTempHeaterOffLevelValue,
+   .adr        = 14U,
    .min        = 0U,
    .max        = 250U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg coolantTempHeaterOffLevel =
+{
+   .atrib      = &coolantTempHeaterOffLevelAtrib,
+   .scale      = 0U,
+   .value      = coolantTempHeaterOffLevelValue,
+   .units      = {'C', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempHeaterOnLevelValue[1U] = { 10U };
-eConfigReg coolantTempHeaterOnLevel =
+const eConfigAttributes coolantTempHeaterOnLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 14U,
-   .scale      = 0U,
-   .value      = coolantTempHeaterOnLevelValue,
+   .adr        = 15U,
    .min        = 0U,
    .max        = 250U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg coolantTempHeaterOnLevel =
+{
+   .atrib      = &coolantTempHeaterOnLevelAtrib,
+   .scale      = 0U,
+   .value      = coolantTempHeaterOnLevelValue,
+   .units      = {'C', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempCoolerOffLevelValue[1U] = { 120U };
-eConfigReg coolantTempCoolerOffLevel =
+const eConfigAttributes coolantTempCoolerOffLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 15U,
-   .scale      = 0U,
-   .value      = coolantTempCoolerOffLevelValue,
+   .adr        = 16U,
    .min        = 0U,
    .max        = 250U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg coolantTempCoolerOffLevel =
+{
+   .atrib      = &coolantTempCoolerOffLevelAtrib,
+   .scale      = 0U,
+   .value      = coolantTempCoolerOffLevelValue,
+   .units      = {'C', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t coolantTempCoolerOnLevelValue[1U] = { 80U };
-eConfigReg coolantTempCoolerOnLevel =
+const eConfigAttributes coolantTempCoolerOnLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 16U,
-   .scale      = 0U,
-   .value      = coolantTempCoolerOnLevelValue,
+   .adr        = 17U,
    .min        = 0U,
    .max        = 250U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg coolantTempCoolerOnLevel =
+{
+   .atrib      = &coolantTempCoolerOnLevelAtrib,
+   .scale      = 0U,
+   .value      = coolantTempCoolerOnLevelValue,
+   .units      = {'C', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap fuelLevelSetupBitMap[8U] = 
+static eConfigBitMap fuelLevelSetupBitMap[9U] = 
 {
-   { 7U, 0U, 0U, 5U },     // fuelLevelSensorType
-   { 8U, 3U, 0U, 1U },     // fuelLevelLowAlarmEnb
-   { 16U, 4U, 0U, 1U },     // fuelLevelLowAlarmAction
-   { 32U, 5U, 0U, 1U },     // fuelLevelLowPreAlarmEnb
-   { 64U, 6U, 0U, 1U },     // fuelLevelHightPreAlarmEnb
-   { 128U, 7U, 0U, 1U },     // fuelLevelHightAlarmEnb
-   { 256U, 8U, 0U, 1U },     // fuelLevelHightAlarmAction
-   { 512U, 9U, 0U, 1U },     // fuelPumpEnb
+   { 7U, 0U },     // fuelLevelSensorType
+   { 8U, 3U },     // fuelLevelOpenCircuitAlarmEnb
+   { 16U, 4U },     // fuelLevelLowAlarmEnb
+   { 32U, 5U },     // fuelLevelLowAlarmAction
+   { 64U, 6U },     // fuelLevelLowPreAlarmEnb
+   { 128U, 7U },     // fuelLevelHightPreAlarmEnb
+   { 256U, 8U },     // fuelLevelHightAlarmEnb
+   { 512U, 9U },     // fuelLevelHightAlarmAction
+   { 0U, 10U },     // fuelPumpEnb
 };
-uint16_t fuelLevelSetupValue[1U] = { 665U };
-eConfigReg fuelLevelSetup =
+uint16_t fuelLevelSetupValue[1U] = { 1339U };
+const eConfigAttributes fuelLevelSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 17U,
-   .scale      = 0U,
-   .value      = fuelLevelSetupValue,
+   .adr        = 18U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 8U,
+   .bitMapSize = 9U,
+};
+eConfigReg fuelLevelSetup =
+{
+   .atrib      = &fuelLevelSetupAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = fuelLevelSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelLowAlarmLevelValue[1U] = { 10U };
-eConfigReg fuelLevelLowAlarmLevel =
+const eConfigAttributes fuelLevelLowAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 18U,
-   .scale      = 0U,
-   .value      = fuelLevelLowAlarmLevelValue,
+   .adr        = 19U,
    .min        = 0U,
    .max        = 95U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelLowAlarmLevel =
+{
+   .atrib      = &fuelLevelLowAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelLowAlarmLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelLowAlarmDelayValue[1U] = { 100U };
-eConfigReg fuelLevelLowAlarmDelay =
+const eConfigAttributes fuelLevelLowAlarmDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 19U,
-   .scale      = 0U,
-   .value      = fuelLevelLowAlarmDelayValue,
+   .adr        = 20U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelLowAlarmDelay =
+{
+   .atrib      = &fuelLevelLowAlarmDelayAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelLowAlarmDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelLowPreAlarmLevelValue[1U] = { 25U };
-eConfigReg fuelLevelLowPreAlarmLevel =
+const eConfigAttributes fuelLevelLowPreAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 20U,
-   .scale      = 0U,
-   .value      = fuelLevelLowPreAlarmLevelValue,
+   .adr        = 21U,
    .min        = 1U,
    .max        = 96U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelLowPreAlarmLevel =
+{
+   .atrib      = &fuelLevelLowPreAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelLowPreAlarmLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelLowPreAlarmDelayValue[1U] = { 100U };
-eConfigReg fuelLevelLowPreAlarmDelay =
+const eConfigAttributes fuelLevelLowPreAlarmDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 21U,
-   .scale      = 0U,
-   .value      = fuelLevelLowPreAlarmDelayValue,
+   .adr        = 22U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelLowPreAlarmDelay =
+{
+   .atrib      = &fuelLevelLowPreAlarmDelayAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelLowPreAlarmDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightPreAlarmLevelValue[1U] = { 65U };
-eConfigReg fuelLevelHightPreAlarmLevel =
+const eConfigAttributes fuelLevelHightPreAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 22U,
-   .scale      = 0U,
-   .value      = fuelLevelHightPreAlarmLevelValue,
+   .adr        = 23U,
    .min        = 3U,
    .max        = 98U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelHightPreAlarmLevel =
+{
+   .atrib      = &fuelLevelHightPreAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelHightPreAlarmLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightPreAlarmDelayValue[1U] = { 0U };
-eConfigReg fuelLevelHightPreAlarmDelay =
+const eConfigAttributes fuelLevelHightPreAlarmDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 23U,
-   .scale      = 0U,
-   .value      = fuelLevelHightPreAlarmDelayValue,
+   .adr        = 24U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelHightPreAlarmDelay =
+{
+   .atrib      = &fuelLevelHightPreAlarmDelayAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelHightPreAlarmDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightAlarmLevelValue[1U] = { 90U };
-eConfigReg fuelLevelHightAlarmLevel =
+const eConfigAttributes fuelLevelHightAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 24U,
-   .scale      = 0U,
-   .value      = fuelLevelHightAlarmLevelValue,
+   .adr        = 25U,
    .min        = 5U,
    .max        = 100U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelHightAlarmLevel =
+{
+   .atrib      = &fuelLevelHightAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelHightAlarmLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelLevelHightAlarmDelayValue[1U] = { 0U };
-eConfigReg fuelLevelHightAlarmDelay =
+const eConfigAttributes fuelLevelHightAlarmDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 25U,
-   .scale      = 0U,
-   .value      = fuelLevelHightAlarmDelayValue,
+   .adr        = 26U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelLevelHightAlarmDelay =
+{
+   .atrib      = &fuelLevelHightAlarmDelayAtrib,
+   .scale      = 0U,
+   .value      = fuelLevelHightAlarmDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelPumpOnLevelValue[1U] = { 30U };
-eConfigReg fuelPumpOnLevel =
+const eConfigAttributes fuelPumpOnLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 26U,
-   .scale      = 0U,
-   .value      = fuelPumpOnLevelValue,
+   .adr        = 27U,
    .min        = 0U,
    .max        = 100U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelPumpOnLevel =
+{
+   .atrib      = &fuelPumpOnLevelAtrib,
+   .scale      = 0U,
+   .value      = fuelPumpOnLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t fuelPumpOffLevelValue[1U] = { 70U };
-eConfigReg fuelPumpOffLevel =
+const eConfigAttributes fuelPumpOffLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 27U,
-   .scale      = 0U,
-   .value      = fuelPumpOffLevelValue,
+   .adr        = 28U,
    .min        = 0U,
    .max        = 100U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg fuelPumpOffLevel =
+{
+   .atrib      = &fuelPumpOffLevelAtrib,
+   .scale      = 0U,
+   .value      = fuelPumpOffLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+static eConfigBitMap speedSetupBitMap[2U] = 
+{
+   { 1U, 0U },     // speedEnb
+   { 2U, 1U },     // speedLowAlarmEnb
+};
+uint16_t speedSetupValue[1U] = { 0U };
+const eConfigAttributes speedSetupAtrib =
+{
+   .adr        = 29U,
+   .min        = 0U,
+   .max        = 1023U,
+   .type       = CONFIG_TYPE_BITMAP,
+   .len        = 1U,
+   .bitMapSize = 2U,
+};
+eConfigReg speedSetup =
+{
+   .atrib      = &speedSetupAtrib,
+   .scale      = 0U,
+   .value      = speedSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = speedSetupBitMap
+};
+/*----------------------------------------------------------------*/
+uint16_t speedToothNumberValue[1U] = { 190U };
+const eConfigAttributes speedToothNumberAtrib =
+{
+   .adr        = 30U,
+   .min        = 10U,
+   .max        = 500U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg speedToothNumber =
+{
+   .atrib      = &speedToothNumberAtrib,
+   .scale      = 0U,
+   .value      = speedToothNumberValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+uint16_t speedLowAlarmLevelValue[1U] = { 1200U };
+const eConfigAttributes speedLowAlarmLevelAtrib =
+{
+   .adr        = 31U,
+   .min        = 0U,
+   .max        = 6000U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg speedLowAlarmLevel =
+{
+   .atrib      = &speedLowAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = speedLowAlarmLevelValue,
+   .units      = {'R', 'P', 'M', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+uint16_t speedHightAlarmLevelValue[1U] = { 1710U };
+const eConfigAttributes speedHightAlarmLevelAtrib =
+{
+   .adr        = 32U,
+   .min        = 0U,
+   .max        = 6000U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg speedHightAlarmLevel =
+{
+   .atrib      = &speedHightAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = speedHightAlarmLevelValue,
+   .units      = {'R', 'P', 'M', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap diaSetupBitMap[4U] = 
 {
-   { 31U, 0U, 0U, 27U },     // diaFunction
-   { 32U, 5U, 0U, 1U },     // diaPolarity
-   { 192U, 6U, 0U, 3U },     // diaAction
-   { 768U, 8U, 0U, 4U },     // diaArming
+   { 31U, 0U },     // diaFunction
+   { 32U, 5U },     // diaPolarity
+   { 192U, 6U },     // diaAction
+   { 768U, 8U },     // diaArming
 };
-uint16_t diaSetupValue[1U] = { 14U };
-eConfigReg diaSetup =
+uint16_t diaSetupValue[1U] = { 0U };
+const eConfigAttributes diaSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 28U,
-   .scale      = 0U,
-   .value      = diaSetupValue,
+   .adr        = 33U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
+};
+eConfigReg diaSetup =
+{
+   .atrib      = &diaSetupAtrib,
+   .scale      = 0U,
+   .value      = diaSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = diaSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t diaDelayValue[1U] = { 15U };
-eConfigReg diaDelay =
+const eConfigAttributes diaDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 29U,
-   .scale      = 0U,
-   .value      = diaDelayValue,
+   .adr        = 34U,
    .min        = 0U,
    .max        = 60U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg diaDelay =
+{
+   .atrib      = &diaDelayAtrib,
+   .scale      = 0U,
+   .value      = diaDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t diaMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
-eConfigReg diaMessage =
+const eConfigAttributes diaMessageAtrib =
 {
-   .page       = 0U,
-   .adr        = 30U,
-   .scale      = 0U,
-   .value      = diaMessageValue,
+   .adr        = 35U,
    .min        = 0U,
    .max        = 0U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'S',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
+   .bitMapSize = 0U,
+};
+eConfigReg diaMessage =
+{
+   .atrib      = &diaMessageAtrib,
+   .scale      = 0U,
+   .value      = diaMessageValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap dibSetupBitMap[4U] = 
 {
-   { 31U, 0U, 0U, 27U },     // dibFunction
-   { 32U, 5U, 0U, 1U },     // dibPolarity
-   { 192U, 6U, 0U, 3U },     // dibAction
-   { 768U, 8U, 0U, 4U },     // dibArming
+   { 31U, 0U },     // dibFunction
+   { 32U, 5U },     // dibPolarity
+   { 192U, 6U },     // dibAction
+   { 768U, 8U },     // dibArming
 };
 uint16_t dibSetupValue[1U] = { 0U };
-eConfigReg dibSetup =
+const eConfigAttributes dibSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 31U,
-   .scale      = 0U,
-   .value      = dibSetupValue,
+   .adr        = 36U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
+};
+eConfigReg dibSetup =
+{
+   .atrib      = &dibSetupAtrib,
+   .scale      = 0U,
+   .value      = dibSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = dibSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t dibDelayValue[1U] = { 15U };
-eConfigReg dibDelay =
+const eConfigAttributes dibDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 32U,
-   .scale      = 0U,
-   .value      = dibDelayValue,
+   .adr        = 37U,
    .min        = 0U,
    .max        = 60U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg dibDelay =
+{
+   .atrib      = &dibDelayAtrib,
+   .scale      = 0U,
+   .value      = dibDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t dibMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
-eConfigReg dibMessage =
+const eConfigAttributes dibMessageAtrib =
 {
-   .page       = 0U,
-   .adr        = 33U,
-   .scale      = 0U,
-   .value      = dibMessageValue,
+   .adr        = 38U,
    .min        = 0U,
    .max        = 0U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'S',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
+   .bitMapSize = 0U,
+};
+eConfigReg dibMessage =
+{
+   .atrib      = &dibMessageAtrib,
+   .scale      = 0U,
+   .value      = dibMessageValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap dicSetupBitMap[4U] = 
 {
-   { 31U, 0U, 0U, 27U },     // dicFunction
-   { 32U, 5U, 0U, 1U },     // dicPolarity
-   { 192U, 6U, 0U, 3U },     // dicAction
-   { 768U, 8U, 0U, 4U },     // dicArming
+   { 31U, 0U },     // dicFunction
+   { 32U, 5U },     // dicPolarity
+   { 192U, 6U },     // dicAction
+   { 768U, 8U },     // dicArming
 };
 uint16_t dicSetupValue[1U] = { 0U };
-eConfigReg dicSetup =
+const eConfigAttributes dicSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 34U,
-   .scale      = 0U,
-   .value      = dicSetupValue,
+   .adr        = 39U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
+};
+eConfigReg dicSetup =
+{
+   .atrib      = &dicSetupAtrib,
+   .scale      = 0U,
+   .value      = dicSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = dicSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t dicDelayValue[1U] = { 15U };
-eConfigReg dicDelay =
+const eConfigAttributes dicDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 35U,
-   .scale      = 0U,
-   .value      = dicDelayValue,
+   .adr        = 40U,
    .min        = 0U,
    .max        = 60U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg dicDelay =
+{
+   .atrib      = &dicDelayAtrib,
+   .scale      = 0U,
+   .value      = dicDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t dicMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
-eConfigReg dicMessage =
+const eConfigAttributes dicMessageAtrib =
 {
-   .page       = 0U,
-   .adr        = 36U,
-   .scale      = 0U,
-   .value      = dicMessageValue,
+   .adr        = 41U,
    .min        = 0U,
    .max        = 0U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'S',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
+   .bitMapSize = 0U,
+};
+eConfigReg dicMessage =
+{
+   .atrib      = &dicMessageAtrib,
+   .scale      = 0U,
+   .value      = dicMessageValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap didSetupBitMap[4U] = 
 {
-   { 31U, 0U, 0U, 27U },     // didFunction
-   { 32U, 5U, 0U, 1U },     // didPolarity
-   { 192U, 6U, 0U, 3U },     // didAction
-   { 768U, 8U, 0U, 4U },     // didArming
+   { 31U, 0U },     // didFunction
+   { 32U, 5U },     // didPolarity
+   { 192U, 6U },     // didAction
+   { 768U, 8U },     // didArming
 };
 uint16_t didSetupValue[1U] = { 64U };
-eConfigReg didSetup =
+const eConfigAttributes didSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 37U,
-   .scale      = 0U,
-   .value      = didSetupValue,
+   .adr        = 42U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
+};
+eConfigReg didSetup =
+{
+   .atrib      = &didSetupAtrib,
+   .scale      = 0U,
+   .value      = didSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = didSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t didDelayValue[1U] = { 15U };
-eConfigReg didDelay =
+const eConfigAttributes didDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 38U,
-   .scale      = 0U,
-   .value      = didDelayValue,
+   .adr        = 43U,
    .min        = 0U,
    .max        = 60U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg didDelay =
+{
+   .atrib      = &didDelayAtrib,
+   .scale      = 0U,
+   .value      = didDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t didMessageValue[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
-eConfigReg didMessage =
+const eConfigAttributes didMessageAtrib =
 {
-   .page       = 0U,
-   .adr        = 39U,
-   .scale      = 0U,
-   .value      = didMessageValue,
+   .adr        = 44U,
    .min        = 0U,
    .max        = 0U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'S',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_SIGNED,
    .len        = 16U,
+   .bitMapSize = 0U,
+};
+eConfigReg didMessage =
+{
+   .atrib      = &didMessageAtrib,
+   .scale      = 0U,
+   .value      = didMessageValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap doSetupBitMap[6U] = 
+static eConfigBitMap doSetupBitMap[8U] = 
 {
-   { 1U, 0U, 0U, 1U },     // doaNOC
-   { 2U, 1U, 0U, 1U },     // dobNOC
-   { 4U, 2U, 0U, 1U },     // docNOC
-   { 8U, 3U, 0U, 1U },     // dodNOC
-   { 16U, 4U, 0U, 1U },     // doeNOC
-   { 32U, 5U, 0U, 1U },     // dofNOC
+   { 1U, 0U },     // doaNOC
+   { 2U, 1U },     // dobNOC
+   { 4U, 2U },     // docNOC
+   { 8U, 3U },     // dodNOC
+   { 16U, 4U },     // doeNOC
+   { 32U, 5U },     // dofNOC
+   { 16320U, 6U },     // doaType
+   { 4177920U, 14U },     // dobType
 };
 uint16_t doSetupValue[1U] = { 0U };
-eConfigReg doSetup =
+const eConfigAttributes doSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 40U,
-   .scale      = 0U,
-   .value      = doSetupValue,
+   .adr        = 45U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 6U,
+   .bitMapSize = 8U,
+};
+eConfigReg doSetup =
+{
+   .atrib      = &doSetupAtrib,
+   .scale      = 0U,
+   .value      = doSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = doSetupBitMap
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap doabTypeBitMap[2U] = 
+static eConfigBitMap docdTypeBitMap[2U] = 
 {
-   { 255U, 0U, 0U, 255U },     // doaType
-   { 65280U, 8U, 0U, 255U },     // dobType
+   { 255U, 0U },     // docType
+   { 65280U, 8U },     // dodType
 };
-uint16_t doabTypeValue[1U] = { 0U };
-eConfigReg doabType =
+uint16_t docdTypeValue[1U] = { 0U };
+const eConfigAttributes docdTypeAtrib =
 {
-   .page       = 0U,
-   .adr        = 41U,
-   .scale      = 0U,
-   .value      = doabTypeValue,
+   .adr        = 46U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
-   .bitMap     = doabTypeBitMap
 };
-/*----------------------------------------------------------------*/
-static eConfigBitMap dodTypeBitMap[2U] = 
+eConfigReg docdType =
 {
-   { 255U, 0U, 0U, 255U },     // docType
-   { 65280U, 8U, 0U, 255U },     // doType
-};
-uint16_t dodTypeValue[1U] = { 0U };
-eConfigReg dodType =
-{
-   .page       = 0U,
-   .adr        = 42U,
+   .atrib      = &docdTypeAtrib,
    .scale      = 0U,
-   .value      = dodTypeValue,
-   .min        = 0U,
-   .max        = 1023U,
+   .value      = docdTypeValue,
    .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
-   .bitMapSize = 2U,
-   .bitMap     = dodTypeBitMap
+   .bitMap     = docdTypeBitMap
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap doefTypeBitMap[2U] = 
 {
-   { 255U, 0U, 0U, 255U },     // doeType
-   { 65280U, 8U, 0U, 255U },     // dofType
+   { 255U, 0U },     // doeType
+   { 65280U, 8U },     // dofType
 };
 uint16_t doefTypeValue[1U] = { 0U };
-eConfigReg doefType =
+const eConfigAttributes doefTypeAtrib =
 {
-   .page       = 0U,
-   .adr        = 43U,
-   .scale      = 0U,
-   .value      = doefTypeValue,
+   .adr        = 47U,
    .min        = 0U,
    .max        = 1023U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 2U,
+};
+eConfigReg doefType =
+{
+   .atrib      = &doefTypeAtrib,
+   .scale      = 0U,
+   .value      = doefTypeValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = doefTypeBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t timerMainsTransientDelayValue[1U] = { 1U };
-eConfigReg timerMainsTransientDelay =
+const eConfigAttributes timerMainsTransientDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 44U,
-   .scale      = -1,
-   .value      = timerMainsTransientDelayValue,
+   .adr        = 48U,
    .min        = 1U,
    .max        = 100U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerMainsTransientDelay =
+{
+   .atrib      = &timerMainsTransientDelayAtrib,
+   .scale      = -1,
+   .value      = timerMainsTransientDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerStartDelayValue[1U] = { 5U };
+const eConfigAttributes timerStartDelayAtrib =
+{
+   .adr        = 49U,
+   .min        = 0U,
+   .max        = 300U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
 eConfigReg timerStartDelay =
 {
-   .page       = 0U,
-   .adr        = 45U,
+   .atrib      = &timerStartDelayAtrib,
    .scale      = 0U,
    .value      = timerStartDelayValue,
-   .min        = 0U,
-   .max        = 300U,
    .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
-};
-/*----------------------------------------------------------------*/
-uint16_t timerPreheatingValue[1U] = { 5U };
-eConfigReg timerPreheating =
-{
-   .page       = 0U,
-   .adr        = 46U,
-   .scale      = 0U,
-   .value      = timerPreheatingValue,
-   .min        = 0U,
-   .max        = 300U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCrankingValue[1U] = { 10U };
-eConfigReg timerCranking =
+const eConfigAttributes timerCrankingAtrib =
 {
-   .page       = 0U,
-   .adr        = 47U,
-   .scale      = 0U,
-   .value      = timerCrankingValue,
+   .adr        = 50U,
    .min        = 1U,
    .max        = 30U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerCranking =
+{
+   .atrib      = &timerCrankingAtrib,
+   .scale      = 0U,
+   .value      = timerCrankingValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCrankDelayValue[1U] = { 10U };
-eConfigReg timerCrankDelay =
+const eConfigAttributes timerCrankDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 48U,
-   .scale      = 0U,
-   .value      = timerCrankDelayValue,
+   .adr        = 51U,
    .min        = 1U,
    .max        = 30U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerCrankDelay =
+{
+   .atrib      = &timerCrankDelayAtrib,
+   .scale      = 0U,
+   .value      = timerCrankDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerStartupIdleTimeValue[1U] = { 10U };
-eConfigReg timerStartupIdleTime =
+const eConfigAttributes timerStartupIdleTimeAtrib =
 {
-   .page       = 0U,
-   .adr        = 49U,
-   .scale      = 0U,
-   .value      = timerStartupIdleTimeValue,
+   .adr        = 52U,
    .min        = 0U,
    .max        = 300U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerStartupIdleTime =
+{
+   .atrib      = &timerStartupIdleTimeAtrib,
+   .scale      = 0U,
+   .value      = timerStartupIdleTimeValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerNominalRPMDelayValue[1U] = { 10U };
-eConfigReg timerNominalRPMDelay =
+const eConfigAttributes timerNominalRPMDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 50U,
-   .scale      = 0U,
-   .value      = timerNominalRPMDelayValue,
+   .adr        = 53U,
    .min        = 1U,
    .max        = 30U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerNominalRPMDelay =
+{
+   .atrib      = &timerNominalRPMDelayAtrib,
+   .scale      = 0U,
+   .value      = timerNominalRPMDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerSafetyOnDelayValue[1U] = { 10U };
-eConfigReg timerSafetyOnDelay =
+const eConfigAttributes timerSafetyOnDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 51U,
-   .scale      = 0U,
-   .value      = timerSafetyOnDelayValue,
+   .adr        = 54U,
    .min        = 1U,
    .max        = 60U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerSafetyOnDelay =
+{
+   .atrib      = &timerSafetyOnDelayAtrib,
+   .scale      = 0U,
+   .value      = timerSafetyOnDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerWarmingValue[1U] = { 1U };
-eConfigReg timerWarming =
+const eConfigAttributes timerWarmingAtrib =
 {
-   .page       = 0U,
-   .adr        = 52U,
-   .scale      = 0U,
-   .value      = timerWarmingValue,
+   .adr        = 55U,
    .min        = 0U,
    .max        = 300U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerWarming =
+{
+   .atrib      = &timerWarmingAtrib,
+   .scale      = 0U,
+   .value      = timerWarmingValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerTransferDelayValue[1U] = { 6U };
-eConfigReg timerTransferDelay =
+const eConfigAttributes timerTransferDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 53U,
-   .scale      = -1,
-   .value      = timerTransferDelayValue,
+   .adr        = 56U,
    .min        = 1U,
    .max        = 300U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerTransferDelay =
+{
+   .atrib      = &timerTransferDelayAtrib,
+   .scale      = -1,
+   .value      = timerTransferDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-uint16_t timerBreakerTripPulseValue[1U] = { 5U };
-eConfigReg timerBreakerTripPulse =
+uint16_t timerGenBreakerTripPulseValue[1U] = { 5U };
+const eConfigAttributes timerGenBreakerTripPulseAtrib =
 {
-   .page       = 0U,
-   .adr        = 54U,
-   .scale      = -1,
-   .value      = timerBreakerTripPulseValue,
+   .adr        = 57U,
    .min        = 1U,
    .max        = 50U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerGenBreakerTripPulse =
+{
+   .atrib      = &timerGenBreakerTripPulseAtrib,
+   .scale      = -1,
+   .value      = timerGenBreakerTripPulseValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-uint16_t timerBreakerClosePulseValue[1U] = { 5U };
-eConfigReg timerBreakerClosePulse =
+uint16_t timerGenBreakerClosePulseValue[1U] = { 5U };
+const eConfigAttributes timerGenBreakerClosePulseAtrib =
 {
-   .page       = 0U,
-   .adr        = 55U,
-   .scale      = -1,
-   .value      = timerBreakerClosePulseValue,
+   .adr        = 58U,
    .min        = 1U,
    .max        = 50U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerGenBreakerClosePulse =
+{
+   .atrib      = &timerGenBreakerClosePulseAtrib,
+   .scale      = -1,
+   .value      = timerGenBreakerClosePulseValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+uint16_t timerMainsBreakerTripPulseValue[1U] = { 5U };
+const eConfigAttributes timerMainsBreakerTripPulseAtrib =
+{
+   .adr        = 59U,
+   .min        = 1U,
+   .max        = 50U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerMainsBreakerTripPulse =
+{
+   .atrib      = &timerMainsBreakerTripPulseAtrib,
+   .scale      = -1,
+   .value      = timerMainsBreakerTripPulseValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+uint16_t timerMainsBreakerClosePulseValue[1U] = { 5U };
+const eConfigAttributes timerMainsBreakerClosePulseAtrib =
+{
+   .adr        = 60U,
+   .min        = 1U,
+   .max        = 50U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerMainsBreakerClosePulse =
+{
+   .atrib      = &timerMainsBreakerClosePulseAtrib,
+   .scale      = -1,
+   .value      = timerMainsBreakerClosePulseValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerReturnDelayValue[1U] = { 30U };
-eConfigReg timerReturnDelay =
+const eConfigAttributes timerReturnDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 56U,
-   .scale      = 0U,
-   .value      = timerReturnDelayValue,
+   .adr        = 61U,
    .min        = 0U,
    .max        = 300U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerReturnDelay =
+{
+   .atrib      = &timerReturnDelayAtrib,
+   .scale      = 0U,
+   .value      = timerReturnDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCoolingValue[1U] = { 60U };
-eConfigReg timerCooling =
+const eConfigAttributes timerCoolingAtrib =
 {
-   .page       = 0U,
-   .adr        = 57U,
-   .scale      = 0U,
-   .value      = timerCoolingValue,
+   .adr        = 62U,
    .min        = 0U,
    .max        = 300U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerCooling =
+{
+   .atrib      = &timerCoolingAtrib,
+   .scale      = 0U,
+   .value      = timerCoolingValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerCoolingIdleValue[1U] = { 20U };
-eConfigReg timerCoolingIdle =
+const eConfigAttributes timerCoolingIdleAtrib =
 {
-   .page       = 0U,
-   .adr        = 58U,
-   .scale      = 0U,
-   .value      = timerCoolingIdleValue,
+   .adr        = 63U,
    .min        = 0U,
    .max        = 300U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerCoolingIdle =
+{
+   .atrib      = &timerCoolingIdleAtrib,
+   .scale      = 0U,
+   .value      = timerCoolingIdleValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerSolenoidHoldValue[1U] = { 20U };
-eConfigReg timerSolenoidHold =
+const eConfigAttributes timerSolenoidHoldAtrib =
 {
-   .page       = 0U,
-   .adr        = 59U,
-   .scale      = 0U,
-   .value      = timerSolenoidHoldValue,
+   .adr        = 64U,
    .min        = 0U,
    .max        = 60U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerSolenoidHold =
+{
+   .atrib      = &timerSolenoidHoldAtrib,
+   .scale      = 0U,
+   .value      = timerSolenoidHoldValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerFailStopDelayValue[1U] = { 30U };
-eConfigReg timerFailStopDelay =
+const eConfigAttributes timerFailStopDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 60U,
-   .scale      = 0U,
-   .value      = timerFailStopDelayValue,
+   .adr        = 65U,
    .min        = 1U,
    .max        = 60U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerFailStopDelay =
+{
+   .atrib      = &timerFailStopDelayAtrib,
+   .scale      = 0U,
+   .value      = timerFailStopDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t timerGenTransientDelayValue[1U] = { 10U };
-eConfigReg timerGenTransientDelay =
+const eConfigAttributes timerGenTransientDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 61U,
-   .scale      = -1,
-   .value      = timerGenTransientDelayValue,
+   .adr        = 66U,
    .min        = 1U,
    .max        = 100U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg timerGenTransientDelay =
+{
+   .atrib      = &timerGenTransientDelayAtrib,
+   .scale      = -1,
+   .value      = timerGenTransientDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap genSetupBitMap[4U] = 
+static eConfigBitMap genSetupBitMap[2U] = 
 {
-   { 1U, 0U, 0U, 1U },     // genPowerGeneratorControlEnb
-   { 30U, 1U, 0U, 16U },     // genPoles
-   { 224U, 5U, 0U, 5U },     // genAcSys
-   { 256U, 8U, 0U, 1U },     // genLocationCurrentTransformer
+   { 1U, 0U },     // genPowerGeneratorControlEnb
+   { 6U, 1U },     // genAcSys
 };
-uint16_t genSetupValue[1U] = { 104U };
-eConfigReg genSetup =
+uint16_t genSetupValue[1U] = { 1U };
+const eConfigAttributes genSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 62U,
-   .scale      = 0U,
-   .value      = genSetupValue,
+   .adr        = 67U,
    .min        = 0U,
    .max        = 255U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 4U,
+   .bitMapSize = 2U,
+};
+eConfigReg genSetup =
+{
+   .atrib      = &genSetupAtrib,
+   .scale      = 0U,
+   .value      = genSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = genSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t genRatedActivePowerLevelValue[1U] = { 40000U };
-eConfigReg genRatedActivePowerLevel =
+const eConfigAttributes genRatedActivePowerLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 63U,
-   .scale      = 0U,
-   .value      = genRatedActivePowerLevelValue,
+   .adr        = 68U,
    .min        = 0U,
    .max        = 10000U,
-   .units      = {'к', 'В', 'т', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genRatedActivePowerLevel =
+{
+   .atrib      = &genRatedActivePowerLevelAtrib,
+   .scale      = 0U,
+   .value      = genRatedActivePowerLevelValue,
+   .units      = {'к', 'В', 'т', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genRatedReactivePowerLevelValue[1U] = { 0U };
-eConfigReg genRatedReactivePowerLevel =
+const eConfigAttributes genRatedReactivePowerLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 64U,
-   .scale      = 0U,
-   .value      = genRatedReactivePowerLevelValue,
+   .adr        = 69U,
    .min        = 0U,
    .max        = 10000U,
-   .units      = {'к', 'В', 'А', 'Р'},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genRatedReactivePowerLevel =
+{
+   .atrib      = &genRatedReactivePowerLevelAtrib,
+   .scale      = 0U,
+   .value      = genRatedReactivePowerLevelValue,
+   .units      = {'к', 'В', 'А', 'Р'},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genRatedApparentPowerLevelValue[1U] = { 200U };
-eConfigReg genRatedApparentPowerLevel =
+const eConfigAttributes genRatedApparentPowerLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 65U,
-   .scale      = 0U,
-   .value      = genRatedApparentPowerLevelValue,
+   .adr        = 70U,
    .min        = 0U,
    .max        = 10000U,
-   .units      = {'к', 'В', 'А', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genRatedApparentPowerLevel =
+{
+   .atrib      = &genRatedApparentPowerLevelAtrib,
+   .scale      = 0U,
+   .value      = genRatedApparentPowerLevelValue,
+   .units      = {'к', 'В', 'А', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genRatedFrequencyLevelValue[1U] = { 500U };
-eConfigReg genRatedFrequencyLevel =
+const eConfigAttributes genRatedFrequencyLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 66U,
-   .scale      = -1,
-   .value      = genRatedFrequencyLevelValue,
+   .adr        = 71U,
    .min        = 2U,
    .max        = 747U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genRatedFrequencyLevel =
+{
+   .atrib      = &genRatedFrequencyLevelAtrib,
+   .scale      = -1,
+   .value      = genRatedFrequencyLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentPrimaryLevelValue[1U] = { 600U };
-eConfigReg genCurrentPrimaryLevel =
+const eConfigAttributes genCurrentPrimaryLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 67U,
-   .scale      = 0U,
-   .value      = genCurrentPrimaryLevelValue,
+   .adr        = 72U,
    .min        = 5U,
    .max        = 8000U,
-   .units      = {'А', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genCurrentPrimaryLevel =
+{
+   .atrib      = &genCurrentPrimaryLevelAtrib,
+   .scale      = 0U,
+   .value      = genCurrentPrimaryLevelValue,
+   .units      = {'А', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentFullLoadRatingLevelValue[1U] = { 500U };
-eConfigReg genCurrentFullLoadRatingLevel =
+const eConfigAttributes genCurrentFullLoadRatingLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 68U,
-   .scale      = 0U,
-   .value      = genCurrentFullLoadRatingLevelValue,
+   .adr        = 73U,
    .min        = 5U,
    .max        = 8000U,
-   .units      = {'А', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genCurrentFullLoadRatingLevel =
+{
+   .atrib      = &genCurrentFullLoadRatingLevelAtrib,
+   .scale      = 0U,
+   .value      = genCurrentFullLoadRatingLevelValue,
+   .units      = {'А', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap genAlarmsBitMap[12U] = 
 {
-   { 1U, 0U, 0U, 1U },     // genUnderVoltageAlarmEnb
-   { 2U, 1U, 0U, 1U },     // genUnderVoltagePreAlarmEnb
-   { 4U, 2U, 0U, 1U },     // genOverVoltagePreAlarmEnb
-   { 8U, 3U, 0U, 1U },     // genUnderFrequencyAlarmEnb
-   { 16U, 4U, 0U, 1U },     // genUnderFrequencyPreAlarmEnb
-   { 32U, 5U, 0U, 1U },     // genOverFrequencyPreAlarmEnb
-   { 64U, 6U, 0U, 1U },     // genOverFrequencyAlarmEnb
-   { 128U, 7U, 0U, 1U },     // genCurrentOverloadProtectionEnb
-   { 256U, 8U, 0U, 1U },     // genCurrentOverPhaseImbalanceEnb
-   { 1536U, 9U, 0U, 3U },     // genCurrentOverAlarmAction
-   { 2048U, 11U, 0U, 1U },     // genCurrentOverloadProtectionAction
-   { 4096U, 12U, 0U, 1U },     // genCurrentOverPhaseImbalanceAction
+   { 1U, 0U },     // genUnderVoltageAlarmEnb
+   { 2U, 1U },     // genUnderVoltagePreAlarmEnb
+   { 4U, 2U },     // genOverVoltagePreAlarmEnb
+   { 8U, 3U },     // genUnderFrequencyAlarmEnb
+   { 16U, 4U },     // genUnderFrequencyPreAlarmEnb
+   { 32U, 5U },     // genOverFrequencyPreAlarmEnb
+   { 64U, 6U },     // genOverFrequencyAlarmEnb
+   { 128U, 7U },     // genCurrentOverloadProtectionEnb
+   { 256U, 8U },     // genCurrentOverPhaseImbalanceEnb
+   { 1536U, 9U },     // genCurrentOverAlarmAction
+   { 2048U, 11U },     // genCurrentOverloadProtectionAction
+   { 4096U, 12U },     // genCurrentOverPhaseImbalanceAction
 };
 uint16_t genAlarmsValue[1U] = { 7167U };
-eConfigReg genAlarms =
+const eConfigAttributes genAlarmsAtrib =
 {
-   .page       = 0U,
-   .adr        = 69U,
-   .scale      = 0U,
-   .value      = genAlarmsValue,
+   .adr        = 74U,
    .min        = 0U,
    .max        = 65535U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 12U,
+};
+eConfigReg genAlarms =
+{
+   .atrib      = &genAlarmsAtrib,
+   .scale      = 0U,
+   .value      = genAlarmsValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = genAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t genUnderVoltageAlarmLevelValue[1U] = { 318U };
-eConfigReg genUnderVoltageAlarmLevel =
+const eConfigAttributes genUnderVoltageAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 70U,
-   .scale      = 0U,
-   .value      = genUnderVoltageAlarmLevelValue,
+   .adr        = 75U,
    .min        = 86U,
    .max        = 708U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genUnderVoltageAlarmLevel =
+{
+   .atrib      = &genUnderVoltageAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = genUnderVoltageAlarmLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genUnderVoltagePreAlarmLevelValue[1U] = { 339U };
-eConfigReg genUnderVoltagePreAlarmLevel =
+const eConfigAttributes genUnderVoltagePreAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 71U,
-   .scale      = 0U,
-   .value      = genUnderVoltagePreAlarmLevelValue,
+   .adr        = 76U,
    .min        = 88U,
    .max        = 710U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genUnderVoltagePreAlarmLevel =
+{
+   .atrib      = &genUnderVoltagePreAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = genUnderVoltagePreAlarmLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverVoltagePreAlarmLevelValue[1U] = { 439U };
-eConfigReg genOverVoltagePreAlarmLevel =
+const eConfigAttributes genOverVoltagePreAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 72U,
-   .scale      = 0U,
-   .value      = genOverVoltagePreAlarmLevelValue,
+   .adr        = 77U,
    .min        = 93U,
    .max        = 715U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genOverVoltagePreAlarmLevel =
+{
+   .atrib      = &genOverVoltagePreAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = genOverVoltagePreAlarmLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverVoltageAlarmLevelValue[1U] = { 458U };
-eConfigReg genOverVoltageAlarmLevel =
+const eConfigAttributes genOverVoltageAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 73U,
-   .scale      = 0U,
-   .value      = genOverVoltageAlarmLevelValue,
+   .adr        = 78U,
    .min        = 95U,
    .max        = 717U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genOverVoltageAlarmLevel =
+{
+   .atrib      = &genOverVoltageAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = genOverVoltageAlarmLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genUnderFrequencyAlarmLevelValue[1U] = { 400U };
-eConfigReg genUnderFrequencyAlarmLevel =
+const eConfigAttributes genUnderFrequencyAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 74U,
-   .scale      = -1,
-   .value      = genUnderFrequencyAlarmLevelValue,
+   .adr        = 79U,
    .min        = 0U,
    .max        = 744U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genUnderFrequencyAlarmLevel =
+{
+   .atrib      = &genUnderFrequencyAlarmLevelAtrib,
+   .scale      = -1,
+   .value      = genUnderFrequencyAlarmLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genUnderFrequencyPreAlarmLevelValue[1U] = { 420U };
-eConfigReg genUnderFrequencyPreAlarmLevel =
+const eConfigAttributes genUnderFrequencyPreAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 75U,
-   .scale      = -1,
-   .value      = genUnderFrequencyPreAlarmLevelValue,
+   .adr        = 80U,
    .min        = 1U,
    .max        = 745U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genUnderFrequencyPreAlarmLevel =
+{
+   .atrib      = &genUnderFrequencyPreAlarmLevelAtrib,
+   .scale      = -1,
+   .value      = genUnderFrequencyPreAlarmLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverFrequencyPreAlarmLevelValue[1U] = { 540U };
-eConfigReg genOverFrequencyPreAlarmLevel =
+const eConfigAttributes genOverFrequencyPreAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 76U,
-   .scale      = -1,
-   .value      = genOverFrequencyPreAlarmLevelValue,
+   .adr        = 81U,
    .min        = 4U,
    .max        = 747U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genOverFrequencyPreAlarmLevel =
+{
+   .atrib      = &genOverFrequencyPreAlarmLevelAtrib,
+   .scale      = -1,
+   .value      = genOverFrequencyPreAlarmLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverFrequencyAlarmLevelValue[1U] = { 550U };
-eConfigReg genOverFrequencyAlarmLevel =
+const eConfigAttributes genOverFrequencyAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 77U,
-   .scale      = -1,
-   .value      = genOverFrequencyAlarmLevelValue,
+   .adr        = 82U,
    .min        = 5U,
    .max        = 749U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genOverFrequencyAlarmLevel =
+{
+   .atrib      = &genOverFrequencyAlarmLevelAtrib,
+   .scale      = -1,
+   .value      = genOverFrequencyAlarmLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentThermalProtectionLevelValue[1U] = { 20U };
+const eConfigAttributes genOverCurrentThermalProtectionLevelAtrib =
+{
+   .adr        = 83U,
+   .min        = 90U,
+   .max        = 200U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
 eConfigReg genOverCurrentThermalProtectionLevel =
 {
-   .page       = 0U,
-   .adr        = 78U,
+   .atrib      = &genOverCurrentThermalProtectionLevelAtrib,
    .scale      = 0U,
    .value      = genOverCurrentThermalProtectionLevelValue,
-   .min        = 0U,
-   .max        = 120U,
    .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentCutoffLevelValue[1U] = { 40U };
+const eConfigAttributes genOverCurrentCutoffLevelAtrib =
+{
+   .adr        = 84U,
+   .min        = 200U,
+   .max        = 500U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
 eConfigReg genOverCurrentCutoffLevel =
 {
-   .page       = 0U,
-   .adr        = 79U,
+   .atrib      = &genOverCurrentCutoffLevelAtrib,
    .scale      = 0U,
    .value      = genOverCurrentCutoffLevelValue,
-   .min        = 0U,
-   .max        = 120U,
    .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentAlarmLevelValue[1U] = { 100U };
-eConfigReg genOverCurrentAlarmLevel =
+const eConfigAttributes genOverCurrentAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 80U,
-   .scale      = 0U,
-   .value      = genOverCurrentAlarmLevelValue,
+   .adr        = 85U,
    .min        = 50U,
    .max        = 120U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genOverCurrentAlarmLevel =
+{
+   .atrib      = &genOverCurrentAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = genOverCurrentAlarmLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genOverCurrentAlarmDelayValue[1U] = { 60U };
-eConfigReg genOverCurrentAlarmDelay =
+const eConfigAttributes genOverCurrentAlarmDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 81U,
-   .scale      = 0U,
-   .value      = genOverCurrentAlarmDelayValue,
+   .adr        = 86U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genOverCurrentAlarmDelay =
+{
+   .atrib      = &genOverCurrentAlarmDelayAtrib,
+   .scale      = 0U,
+   .value      = genOverCurrentAlarmDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverloadProtectionLevelValue[1U] = { 100U };
-eConfigReg genCurrentOverloadProtectionLevel =
+const eConfigAttributes genCurrentOverloadProtectionLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 82U,
-   .scale      = 0U,
-   .value      = genCurrentOverloadProtectionLevelValue,
+   .adr        = 87U,
    .min        = 1U,
    .max        = 125U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genCurrentOverloadProtectionLevel =
+{
+   .atrib      = &genCurrentOverloadProtectionLevelAtrib,
+   .scale      = 0U,
+   .value      = genCurrentOverloadProtectionLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverloadProtectionDelayValue[1U] = { 5U };
-eConfigReg genCurrentOverloadProtectionDelay =
+const eConfigAttributes genCurrentOverloadProtectionDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 83U,
-   .scale      = 0U,
-   .value      = genCurrentOverloadProtectionDelayValue,
+   .adr        = 88U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genCurrentOverloadProtectionDelay =
+{
+   .atrib      = &genCurrentOverloadProtectionDelayAtrib,
+   .scale      = 0U,
+   .value      = genCurrentOverloadProtectionDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverPhaseImbalanceLevelValue[1U] = { 100U };
-eConfigReg genCurrentOverPhaseImbalanceLevel =
+const eConfigAttributes genCurrentOverPhaseImbalanceLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 84U,
-   .scale      = 0U,
-   .value      = genCurrentOverPhaseImbalanceLevelValue,
+   .adr        = 89U,
    .min        = 1U,
    .max        = 125U,
-   .units      = {'%', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genCurrentOverPhaseImbalanceLevel =
+{
+   .atrib      = &genCurrentOverPhaseImbalanceLevelAtrib,
+   .scale      = 0U,
+   .value      = genCurrentOverPhaseImbalanceLevelValue,
+   .units      = {'%', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t genCurrentOverPhaseImbalanceDelayValue[1U] = { 60U };
-eConfigReg genCurrentOverPhaseImbalanceDelay =
+const eConfigAttributes genCurrentOverPhaseImbalanceDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 85U,
-   .scale      = 0U,
-   .value      = genCurrentOverPhaseImbalanceDelayValue,
+   .adr        = 90U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg genCurrentOverPhaseImbalanceDelay =
+{
+   .atrib      = &genCurrentOverPhaseImbalanceDelayAtrib,
+   .scale      = 0U,
+   .value      = genCurrentOverPhaseImbalanceDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap mainsSetupBitMap[3U] = 
+static eConfigBitMap mainsSetupBitMap[2U] = 
 {
-   { 1U, 0U, 0U, 1U },     // mainsControlEnb
-   { 2U, 1U, 0U, 1U },     // mainsPowerOffImmediatelyEnb
-   { 28U, 2U, 0U, 5U },     // mainAcSys
+   { 1U, 0U },     // mainsControlEnb
+   { 2U, 1U },     // mainsPowerOffImmediatelyEnb
 };
-uint16_t mainsSetupValue[1U] = { 13U };
-eConfigReg mainsSetup =
+uint16_t mainsSetupValue[1U] = { 1U };
+const eConfigAttributes mainsSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 86U,
-   .scale      = 0U,
-   .value      = mainsSetupValue,
+   .adr        = 91U,
    .min        = 0U,
    .max        = 31U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 3U,
+   .bitMapSize = 2U,
+};
+eConfigReg mainsSetup =
+{
+   .atrib      = &mainsSetupAtrib,
+   .scale      = 0U,
+   .value      = mainsSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = mainsSetupBitMap
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap mainsAlarmsBitMap[4U] = 
 {
-   { 1U, 0U, 0U, 1U },     // mainsUnderVoltageAlarmEnb
-   { 2U, 1U, 0U, 1U },     // mainsOverVoltageAlarmEnb
-   { 4U, 2U, 0U, 1U },     // mainsUnderFrequencyAlarmEnb
-   { 8U, 3U, 0U, 1U },     // mainsOverFrequencyAlarmEnb
+   { 1U, 0U },     // mainsUnderVoltageAlarmEnb
+   { 2U, 1U },     // mainsOverVoltageAlarmEnb
+   { 4U, 2U },     // mainsUnderFrequencyAlarmEnb
+   { 8U, 3U },     // mainsOverFrequencyAlarmEnb
 };
 uint16_t mainsAlarmsValue[1U] = { 15U };
-eConfigReg mainsAlarms =
+const eConfigAttributes mainsAlarmsAtrib =
 {
-   .page       = 0U,
-   .adr        = 87U,
-   .scale      = 0U,
-   .value      = mainsAlarmsValue,
+   .adr        = 92U,
    .min        = 0U,
    .max        = 15U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
+};
+eConfigReg mainsAlarms =
+{
+   .atrib      = &mainsAlarmsAtrib,
+   .scale      = 0U,
+   .value      = mainsAlarmsValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = mainsAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t mainsUnderVoltageAlarmLevelValue[1U] = { 318U };
-eConfigReg mainsUnderVoltageAlarmLevel =
+const eConfigAttributes mainsUnderVoltageAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 88U,
-   .scale      = 0U,
-   .value      = mainsUnderVoltageAlarmLevelValue,
+   .adr        = 93U,
    .min        = 86U,
    .max        = 713U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg mainsUnderVoltageAlarmLevel =
+{
+   .atrib      = &mainsUnderVoltageAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = mainsUnderVoltageAlarmLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t mainsOverVoltageAlarmLevelValue[1U] = { 438U };
-eConfigReg mainsOverVoltageAlarmLevel =
+const eConfigAttributes mainsOverVoltageAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 89U,
-   .scale      = 0U,
-   .value      = mainsOverVoltageAlarmLevelValue,
+   .adr        = 94U,
    .min        = 90U,
    .max        = 717U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg mainsOverVoltageAlarmLevel =
+{
+   .atrib      = &mainsOverVoltageAlarmLevelAtrib,
+   .scale      = 0U,
+   .value      = mainsOverVoltageAlarmLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t mainsUnderFrequencyAlarmLevelValue[1U] = { 450U };
-eConfigReg mainsUnderFrequencyAlarmLevel =
+const eConfigAttributes mainsUnderFrequencyAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 90U,
-   .scale      = -1,
-   .value      = mainsUnderFrequencyAlarmLevelValue,
+   .adr        = 95U,
    .min        = 0U,
    .max        = 747U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg mainsUnderFrequencyAlarmLevel =
+{
+   .atrib      = &mainsUnderFrequencyAlarmLevelAtrib,
+   .scale      = -1,
+   .value      = mainsUnderFrequencyAlarmLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t mainsOverFrequencyAlarmLevelValue[1U] = { 520U };
-eConfigReg mainsOverFrequencyAlarmLevel =
+const eConfigAttributes mainsOverFrequencyAlarmLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 91U,
-   .scale      = -1,
-   .value      = mainsOverFrequencyAlarmLevelValue,
+   .adr        = 96U,
    .min        = 2U,
    .max        = 749U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg mainsOverFrequencyAlarmLevel =
+{
+   .atrib      = &mainsOverFrequencyAlarmLevelAtrib,
+   .scale      = -1,
+   .value      = mainsOverFrequencyAlarmLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap engineSetupBitMap[3U] = 
+static eConfigBitMap engineSetupBitMap[2U] = 
 {
-   { 15U, 0U, 1U, 9U },     // engineStartAttempts
-   { 16U, 4U, 0U, 1U },     // enginePreHeatEnb
-   { 32U, 5U, 0U, 1U },     // enginePostHeatEnb
+   { 15U, 0U },     // engineStartAttempts
+   { 16U, 4U },     // enginePreHeatEnb
 };
-uint16_t engineSetupValue[1U] = { 51U };
-eConfigReg engineSetup =
+uint16_t engineSetupValue[1U] = { 3U };
+const eConfigAttributes engineSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 92U,
-   .scale      = 0U,
-   .value      = engineSetupValue,
+   .adr        = 97U,
    .min        = 0U,
    .max        = 63U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 3U,
+   .bitMapSize = 2U,
+};
+eConfigReg engineSetup =
+{
+   .atrib      = &engineSetupAtrib,
+   .scale      = 0U,
+   .value      = engineSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = engineSetupBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t enginePreHeatLevelValue[1U] = { 50U };
-eConfigReg enginePreHeatLevel =
+const eConfigAttributes enginePreHeatLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 93U,
-   .scale      = 0U,
-   .value      = enginePreHeatLevelValue,
+   .adr        = 98U,
    .min        = 0U,
    .max        = 100U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg enginePreHeatLevel =
+{
+   .atrib      = &enginePreHeatLevelAtrib,
+   .scale      = 0U,
+   .value      = enginePreHeatLevelValue,
+   .units      = {'C', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t enginePreHeatDelayValue[1U] = { 0U };
+const eConfigAttributes enginePreHeatDelayAtrib =
+{
+   .adr        = 99U,
+   .min        = 0U,
+   .max        = 3600U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
 eConfigReg enginePreHeatDelay =
 {
-   .page       = 0U,
-   .adr        = 94U,
+   .atrib      = &enginePreHeatDelayAtrib,
    .scale      = 0U,
    .value      = enginePreHeatDelayValue,
-   .min        = 0U,
-   .max        = 3600U,
    .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-uint16_t enginePostHeatLevelValue[1U] = { 50U };
-eConfigReg enginePostHeatLevel =
+static eConfigBitMap starterStopSetupBitMap[4U] = 
 {
-   .page       = 0U,
-   .adr        = 95U,
-   .scale      = 0U,
-   .value      = enginePostHeatLevelValue,
-   .min        = 0U,
-   .max        = 100U,
-   .units      = {'C', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
+   { 1U, 0U },     // starterOilPressureCheckOnStartEnb
+   { 2U, 1U },     // starterStopOilPressureEnb
+   { 4U, 2U },     // starterStopChargeAlternatorEnb
+   { 8U, 3U },     // starterStopSpeedEnb
 };
-/*----------------------------------------------------------------*/
-uint16_t enginePostHeatDelayValue[1U] = { 0U };
-eConfigReg enginePostHeatDelay =
+uint16_t starterStopSetupValue[1U] = { 5U };
+const eConfigAttributes starterStopSetupAtrib =
 {
-   .page       = 0U,
-   .adr        = 96U,
-   .scale      = 0U,
-   .value      = enginePostHeatDelayValue,
-   .min        = 0U,
-   .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
-   .len        = 1U,
-};
-/*----------------------------------------------------------------*/
-static eConfigBitMap crankSetupBitMap[4U] = 
-{
-   { 1U, 0U, 0U, 1U },     // crankDisconnectOilPressureEnb
-   { 2U, 1U, 0U, 1U },     // crankOilPressureCheckOnStartEnb
-   { 4U, 2U, 0U, 1U },     // crankDisconnectOilPressureEnb
-   { 8U, 3U, 0U, 1U },     // crankDisconnectChargeAlternatorEnb
-};
-uint16_t crankSetupValue[1U] = { 10U };
-eConfigReg crankSetup =
-{
-   .page       = 0U,
-   .adr        = 97U,
-   .scale      = 0U,
-   .value      = crankSetupValue,
+   .adr        = 100U,
    .min        = 0U,
    .max        = 7U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
-   .bitMap     = crankSetupBitMap
+};
+eConfigReg starterStopSetup =
+{
+   .atrib      = &starterStopSetupAtrib,
+   .scale      = 0U,
+   .value      = starterStopSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = starterStopSetupBitMap
 };
 /*----------------------------------------------------------------*/
-uint16_t crankDisconnectgenFreqLevelValue[1U] = { 210U };
-eConfigReg crankDisconnectgenFreqLevel =
+uint16_t starterStopGenFreqLevelValue[1U] = { 210U };
+const eConfigAttributes starterStopGenFreqLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 98U,
-   .scale      = -1,
-   .value      = crankDisconnectgenFreqLevelValue,
+   .adr        = 101U,
    .min        = 0U,
    .max        = 400U,
-   .units      = {'Г', 'ц', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg starterStopGenFreqLevel =
+{
+   .atrib      = &starterStopGenFreqLevelAtrib,
+   .scale      = -1,
+   .value      = starterStopGenFreqLevelValue,
+   .units      = {'Г', 'ц', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-uint16_t crankDisconnectOilPressureLevelValue[1U] = { 20U };
-eConfigReg crankDisconnectOilPressureLevel =
+uint16_t starterStopOilPressureLevelValue[1U] = { 20U };
+const eConfigAttributes starterStopOilPressureLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 99U,
-   .scale      = -1,
-   .value      = crankDisconnectOilPressureLevelValue,
+   .adr        = 102U,
    .min        = 5U,
    .max        = 40U,
-   .units      = {'Б', 'а', 'р', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg starterStopOilPressureLevel =
+{
+   .atrib      = &starterStopOilPressureLevelAtrib,
+   .scale      = -1,
+   .value      = starterStopOilPressureLevelValue,
+   .units      = {'Б', 'а', 'р', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-uint16_t crankDisconnectChargeAlternatorLevelValue[1U] = { 60U };
-eConfigReg crankDisconnectChargeAlternatorLevel =
+uint16_t starterStopChargeAlternatorLevelValue[1U] = { 60U };
+const eConfigAttributes starterStopChargeAlternatorLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 100U,
-   .scale      = -1,
-   .value      = crankDisconnectChargeAlternatorLevelValue,
+   .adr        = 103U,
    .min        = 0U,
    .max        = 400U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg starterStopChargeAlternatorLevel =
+{
+   .atrib      = &starterStopChargeAlternatorLevelAtrib,
+   .scale      = -1,
+   .value      = starterStopChargeAlternatorLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+uint16_t starterStopSpeedLevelValue[1U] = { 15000U };
+const eConfigAttributes starterStopSpeedLevelAtrib =
+{
+   .adr        = 104U,
+   .min        = 0U,
+   .max        = 60000U,
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg starterStopSpeedLevel =
+{
+   .atrib      = &starterStopSpeedLevelAtrib,
+   .scale      = -1,
+   .value      = starterStopSpeedLevelValue,
+   .units      = {'R', 'P', 'M', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap batteryAlarmsBitMap[4U] = 
 {
-   { 1U, 0U, 0U, 1U },     // batteryUnderVoltageEnb
-   { 2U, 1U, 0U, 1U },     // batteryOverVoltageEnb
-   { 4U, 2U, 0U, 1U },     // batteryChargeShutdownEnb
-   { 8U, 3U, 0U, 1U },     // batteryChargeWarningEnb
+   { 1U, 0U },     // batteryUnderVoltageEnb
+   { 2U, 1U },     // batteryOverVoltageEnb
+   { 4U, 2U },     // batteryChargeShutdownEnb
+   { 8U, 3U },     // batteryChargeWarningEnb
 };
 uint16_t batteryAlarmsValue[1U] = { 15U };
-eConfigReg batteryAlarms =
+const eConfigAttributes batteryAlarmsAtrib =
 {
-   .page       = 0U,
-   .adr        = 101U,
-   .scale      = 0U,
-   .value      = batteryAlarmsValue,
+   .adr        = 105U,
    .min        = 0U,
    .max        = 15U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 4U,
+};
+eConfigReg batteryAlarms =
+{
+   .atrib      = &batteryAlarmsAtrib,
+   .scale      = 0U,
+   .value      = batteryAlarmsValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = batteryAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryUnderVoltageLevelValue[1U] = { 100U };
-eConfigReg batteryUnderVoltageLevel =
+const eConfigAttributes batteryUnderVoltageLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 102U,
-   .scale      = -1,
-   .value      = batteryUnderVoltageLevelValue,
+   .adr        = 106U,
    .min        = 0U,
    .max        = 397U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryUnderVoltageLevel =
+{
+   .atrib      = &batteryUnderVoltageLevelAtrib,
+   .scale      = -1,
+   .value      = batteryUnderVoltageLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryUnderVoltageDelayValue[1U] = { 60U };
-eConfigReg batteryUnderVoltageDelay =
+const eConfigAttributes batteryUnderVoltageDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 103U,
-   .scale      = 0U,
-   .value      = batteryUnderVoltageDelayValue,
+   .adr        = 107U,
    .min        = 0U,
    .max        = 65535U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryUnderVoltageDelay =
+{
+   .atrib      = &batteryUnderVoltageDelayAtrib,
+   .scale      = 0U,
+   .value      = batteryUnderVoltageDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryOverVoltageLevelValue[1U] = { 300U };
-eConfigReg batteryOverVoltageLevel =
+const eConfigAttributes batteryOverVoltageLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 104U,
-   .scale      = -1,
-   .value      = batteryOverVoltageLevelValue,
+   .adr        = 108U,
    .min        = 2U,
    .max        = 400U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryOverVoltageLevel =
+{
+   .atrib      = &batteryOverVoltageLevelAtrib,
+   .scale      = -1,
+   .value      = batteryOverVoltageLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryOverVoltageDelayValue[1U] = { 60U };
-eConfigReg batteryOverVoltageDelay =
+const eConfigAttributes batteryOverVoltageDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 105U,
-   .scale      = 0U,
-   .value      = batteryOverVoltageDelayValue,
+   .adr        = 109U,
    .min        = 0U,
    .max        = 65535U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryOverVoltageDelay =
+{
+   .atrib      = &batteryOverVoltageDelayAtrib,
+   .scale      = 0U,
+   .value      = batteryOverVoltageDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeShutdownLevelValue[1U] = { 40U };
-eConfigReg batteryChargeShutdownLevel =
+const eConfigAttributes batteryChargeShutdownLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 106U,
-   .scale      = -1,
-   .value      = batteryChargeShutdownLevelValue,
+   .adr        = 110U,
    .min        = 0U,
    .max        = 388U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryChargeShutdownLevel =
+{
+   .atrib      = &batteryChargeShutdownLevelAtrib,
+   .scale      = -1,
+   .value      = batteryChargeShutdownLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeShutdownDelayValue[1U] = { 5U };
-eConfigReg batteryChargeShutdownDelay =
+const eConfigAttributes batteryChargeShutdownDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 107U,
-   .scale      = 0U,
-   .value      = batteryChargeShutdownDelayValue,
+   .adr        = 111U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryChargeShutdownDelay =
+{
+   .atrib      = &batteryChargeShutdownDelayAtrib,
+   .scale      = 0U,
+   .value      = batteryChargeShutdownDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeWarningLevelValue[1U] = { 60U };
-eConfigReg batteryChargeWarningLevel =
+const eConfigAttributes batteryChargeWarningLevelAtrib =
 {
-   .page       = 0U,
-   .adr        = 108U,
-   .scale      = -1,
-   .value      = batteryChargeWarningLevelValue,
+   .adr        = 112U,
    .min        = 1U,
    .max        = 390U,
-   .units      = {'В', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryChargeWarningLevel =
+{
+   .atrib      = &batteryChargeWarningLevelAtrib,
+   .scale      = -1,
+   .value      = batteryChargeWarningLevelValue,
+   .units      = {'В', ' ', ' ', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t batteryChargeWarningDelayValue[1U] = { 5U };
-eConfigReg batteryChargeWarningDelay =
+const eConfigAttributes batteryChargeWarningDelayAtrib =
 {
-   .page       = 0U,
-   .adr        = 109U,
-   .scale      = 0U,
-   .value      = batteryChargeWarningDelayValue,
+   .adr        = 113U,
    .min        = 0U,
    .max        = 3600U,
-   .units      = {'с', 'е', 'к', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg batteryChargeWarningDelay =
+{
+   .atrib      = &batteryChargeWarningDelayAtrib,
+   .scale      = 0U,
+   .value      = batteryChargeWarningDelayValue,
+   .units      = {'с', 'е', 'к', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 static eConfigBitMap maintenanceAlarmsBitMap[6U] = 
 {
-   { 1U, 0U, 0U, 1U },     // maintenanceAlarmOilEnb
-   { 2U, 1U, 0U, 1U },     // maintenanceAlarmOilAction
-   { 4U, 2U, 0U, 1U },     // maintenanceAlarmAirEnb
-   { 8U, 3U, 0U, 1U },     // maintenanceAlarmAirAction
-   { 16U, 4U, 0U, 1U },     // maintenanceAlarmFuelEnb
-   { 32U, 5U, 0U, 1U },     // maintenanceAlarmFuelAction
+   { 1U, 0U },     // maintenanceAlarmOilEnb
+   { 2U, 1U },     // maintenanceAlarmOilAction
+   { 4U, 2U },     // maintenanceAlarmAirEnb
+   { 8U, 3U },     // maintenanceAlarmAirAction
+   { 16U, 4U },     // maintenanceAlarmFuelEnb
+   { 32U, 5U },     // maintenanceAlarmFuelAction
 };
 uint16_t maintenanceAlarmsValue[1U] = { 42U };
-eConfigReg maintenanceAlarms =
+const eConfigAttributes maintenanceAlarmsAtrib =
 {
-   .page       = 0U,
-   .adr        = 110U,
-   .scale      = 0U,
-   .value      = maintenanceAlarmsValue,
+   .adr        = 114U,
    .min        = 0U,
    .max        = 63U,
-   .units      = {' ', ' ', ' ', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 6U,
+};
+eConfigReg maintenanceAlarms =
+{
+   .atrib      = &maintenanceAlarmsAtrib,
+   .scale      = 0U,
+   .value      = maintenanceAlarmsValue,
+   .units      = {' ', ' ', ' ', ' '},
    .bitMap     = maintenanceAlarmsBitMap
 };
 /*----------------------------------------------------------------*/
 uint16_t maintenanceAlarmOilTimeValue[1U] = { 10U };
-eConfigReg maintenanceAlarmOilTime =
+const eConfigAttributes maintenanceAlarmOilTimeAtrib =
 {
-   .page       = 0U,
-   .adr        = 111U,
-   .scale      = 0U,
-   .value      = maintenanceAlarmOilTimeValue,
+   .adr        = 115U,
    .min        = 10U,
    .max        = 5000U,
-   .units      = {'ч', 'а', 'с', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg maintenanceAlarmOilTime =
+{
+   .atrib      = &maintenanceAlarmOilTimeAtrib,
+   .scale      = 0U,
+   .value      = maintenanceAlarmOilTimeValue,
+   .units      = {'ч', 'а', 'с', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t maintenanceAlarmAirTimeValue[1U] = { 10U };
-eConfigReg maintenanceAlarmAirTime =
+const eConfigAttributes maintenanceAlarmAirTimeAtrib =
 {
-   .page       = 0U,
-   .adr        = 112U,
-   .scale      = 0U,
-   .value      = maintenanceAlarmAirTimeValue,
+   .adr        = 116U,
    .min        = 10U,
    .max        = 5000U,
-   .units      = {'ч', 'а', 'с', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg maintenanceAlarmAirTime =
+{
+   .atrib      = &maintenanceAlarmAirTimeAtrib,
+   .scale      = 0U,
+   .value      = maintenanceAlarmAirTimeValue,
+   .units      = {'ч', 'а', 'с', ' '},
+   .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
 uint16_t maintenanceAlarmFuelTimeValue[1U] = { 10U };
-eConfigReg maintenanceAlarmFuelTime =
+const eConfigAttributes maintenanceAlarmFuelTimeAtrib =
 {
-   .page       = 0U,
-   .adr        = 113U,
-   .scale      = 0U,
-   .value      = maintenanceAlarmFuelTimeValue,
+   .adr        = 117U,
    .min        = 10U,
    .max        = 5000U,
-   .units      = {'ч', 'а', 'с', ' '},
-   .type       = 'U',
-   .rw         = CONFIG_READ_WRITE,
+   .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
+   .bitMapSize = 0U,
+};
+eConfigReg maintenanceAlarmFuelTime =
+{
+   .atrib      = &maintenanceAlarmFuelTimeAtrib,
+   .scale      = 0U,
+   .value      = maintenanceAlarmFuelTimeValue,
+   .units      = {'ч', 'а', 'с', ' '},
+   .bitMap     = NULL,
+};
+/*----------------------------------------------------------------*/
+static eConfigBitMap logSetupBitMap[1U] = 
+{
+   { 1U, 0U },     // logSaveWarningEventsEnb
+};
+uint16_t logSetupValue[1U] = { 1U };
+const eConfigAttributes logSetupAtrib =
+{
+   .adr        = 118U,
+   .min        = 0U,
+   .max        = 65535U,
+   .type       = CONFIG_TYPE_BITMAP,
+   .len        = 1U,
+   .bitMapSize = 1U,
+};
+eConfigReg logSetup =
+{
+   .atrib      = &logSetupAtrib,
+   .scale      = 0U,
+   .value      = logSetupValue,
+   .units      = {' ', ' ', ' ', ' '},
+   .bitMap     = logSetupBitMap
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* configReg[SETTING_REGISTER_NUMBER] = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &doabType, &dodType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerPreheating, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerBreakerTripPulse, &timerBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &enginePostHeatLevel, &enginePostHeatDelay, &crankSetup, &crankDisconnectgenFreqLevel, &crankDisconnectOilPressureLevel, &crankDisconnectChargeAlternatorLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime};
+eConfigReg* const configReg[SETTING_REGISTER_NUMBER]  = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &hysteresisLevel, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &speedSetup, &speedToothNumber, &speedLowAlarmLevel, &speedHightAlarmLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &docdType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerGenBreakerTripPulse, &timerGenBreakerClosePulse, &timerMainsBreakerTripPulse, &timerMainsBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &starterStopSetup, &starterStopGenFreqLevel, &starterStopOilPressureLevel, &starterStopChargeAlternatorLevel, &starterStopSpeedLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime, &logSetup};
+const char* configDictionary[SETTING_REGISTER_NUMBER] = { "Версия контроллера", "Версия прошивки", "Серийный номер", "Яркость дисплея", "Контрастность дисплея", "Время переходя в спящий режим", "Величина гизтерезиса", "", "Настройки давления масла", "Аварийный уровень двления масла", "Предупредительный уровень давления масла", "Настройки температуры ОЖ", "Аварийный уровень температуры ОЖ", "Предупредительный уровень температуры ОЖ ", "Уровень отключения нагревателя ОЖ", "Уровень включения нагревателя ОЖ", "Уровень отключения охладителя ОЖ", "Уровень включения нагревателя ОЖ", "Настройки уровня топлива", "Нижний аварийный уровень топлива", "Задержка нижнего аварийного сигнала уровня топлива", "Нижний предупредительный уровень топлива", "Задержка нижнего предупредительного сигнала уровня топлива", "Верхний предупредительный уровень топлива", "Задержка верхнего предупредительного сигнала уровня топлива", "Верхний аварийный уровень топлива", "Задержка аерхнего аварийного сигнала уровня топлива", "Уровень включения подкачки топлива", "Уровень выключения подкачки топлива", "Настройки оборотов двигателя", "Количество зубьев маховика", "Нижний аварийный уровень оборотов двигателя", "Верхний аварийный уровень оборотов двигателя", "Настройки цифрового входа А", "Задержка", "Сообщение", "Настройки цифрового входа B", "Задержка", "Сообщение", "Настройки цифрового входа C", "Задержка", "Сообщение", "Настройки цифрового входа D", "Задержка", "Сообщение", "Настройки цифровых выходов", "none", "none", "Коммутационные скачки сети", "Задержка запуска", "Время пркрутки стартера", "Пауза между прокрутками стартера", "Время работы на холостых оборотах", "Задержка перехода на номинальные обороты", "Время блокировки контроля параметров при старте", "Время прогрева", "Пауза между переключениями", "Длина импульса отключения генераторного автомата", "Длина импульса включения генераторного автомата", "Длина импульса отключения сетевого автомата", "Длина импульса включения сетевого автомата", "Задержка останова", "Время охлаждения", "Время охлаждения на холостых оборотах", "Время работы стопового соленоида", "Задержка сигнала «Сбой останова»", "Коммутационные скачки параметров генератора", "Настройки генератора", "Номинальная активная мощность генератора", "Номинальная реактивная мощность генеартора", "Номинальная полная мощность генератора", "Номинальная частота генератора", "Первичный ток трансформатора", "Полная номинальная нагрузка", "Настройки событий генератора", "Нижний аварийный уровень напряжения генератора", "Нижний предупредтельный уровень напряжения генератора", "Верхний предупредительный уровень напряжения генератора", "Верхний аварийный уровень напряжения генератора", "Нижний аварийный уровень частоты генератора", "Нижний предупредительный уровень частоты генератора", "Верхний предупредительный уровень частоты генератора", "Верхний аварийный уровень частоты генератора", "Тепловая защита генератора", "Токовая отсечка генератора", "Верхний аварийный уровень тока генератора", "Задержка верхнего аваарийного сигнала тревоги тока генератора", "Уровень защиты от перегрузки генератора", "Задержка срабатывания защиты от перегрузки генератора", "Уровень допустимого перекоса фаз генератора", "Задержка срабатывания защиты перекоса фаз генератора", "Настройки сети", "Настройки событий сети", "Нижний аварийный уровень напряжения сети", "Верхний аварийный уровень напряжения сети", "Нижний аварийный уровень частоты сети", "Верхний аварийный уровень частоты сети", "Настройки двигателя", "Уровень включения свечей накаливания", "Длительность работы свечей накаливания", "Настройки стартера", "Отключить стартер по частоте генератора", "Давление масла отключения стартера", "Напряжение зарядного генератора отключения стартаера", "Обороты двигателя отключения стартера", "Настройки событий АКБ", "Нижний аварийный уровень напряжения АКБ", "Задержка нижнего аварийного сигнала напряжения АКБ", "Верхний аварийный уровень напряжения АКБ ", "Задержка верхнего аварийного сигнала напряжения АКБ", "Уровень аварийного сигнала зарядного генератора", "Задержка аварийного сигнала зарядного генератора", "Уровень предупредительного сигнала зарядного генератора", "Задержка предупредительного сигнала зарядного генератора", "Настройки событий ТО", "Периодв срабатывания ТО масло", "Периодв срабатывания ТО воздух", "Периодв срабатывания ТО топливо", "Настройки журнала"};

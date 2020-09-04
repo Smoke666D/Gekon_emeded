@@ -9,7 +9,7 @@
 #define INC_FPI_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
-#include "logicCommon.h"
+#include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 #define  FPI_USER_MESSAGE_LENGTH  16U

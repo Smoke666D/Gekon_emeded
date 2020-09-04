@@ -53,7 +53,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
     case ACTION_WARNING:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGwriteRecord( event );
+        vLOGaddRecord( event );
       }
       // >>Send warning to LCD
       break;
@@ -61,13 +61,13 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
     case ACTION_EMERGENCY_STOP:
       controller.state = CONTROLLER_STATUS_ALARM;
       xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
-      vLOGwriteRecord( event );
+      vLOGaddRecord( event );
       break;
 
     case ACTION_LOAD_GENERATOR:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGwriteRecord( event );
+        vLOGaddRecord( event );
       }
       // >>Send warning to LCD
       controller.state = CONTROLLER_STATUS_START;
@@ -81,7 +81,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_LOAD_SHUTDOWN:
-      vLOGwriteRecord( event );
+      vLOGaddRecord( event );
       controller.state = CONTROLLER_STATUS_SHUTDOWN;
       break;
 

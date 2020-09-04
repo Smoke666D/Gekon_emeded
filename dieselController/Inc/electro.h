@@ -10,7 +10,7 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #include "fix16.h"
-#include "logicCommon.h"
+#include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 #define  GENERATOR_LINE_NUMBER             4U

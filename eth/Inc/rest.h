@@ -13,6 +13,7 @@
 #include "config.h"
 #include "chart.h"
 #include "RTC.h"
+#include "controllerTypes.h"
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -41,6 +42,8 @@ typedef enum
   REST_SAVE_CHARTS   = 0x03U,
   REST_TIME          = 0x04U,
   REST_FREE_DATA     = 0x05U,
+  REST_LOG           = 0x06U,
+  REST_LOG_ERASE     = 0x07U,
   REST_REQUEST_ERROR = 0xFFU,
 } REST_REQUEST;
 
@@ -54,13 +57,15 @@ typedef enum
 #define	QUOTES_ANCII              0x22U
 #define	REST_BUFFER_SIZE          700U
 #define	REST_DIGIT_BUFFER_SIZE    7U
-#define	REST_REQUEST_NUMBER       6U            // Number of active REST requests
+#define	REST_REQUEST_NUMBER       8U            // Number of active REST requests
 #define	REST_REQUEST_CONFIGS      "configs"     // GET and PUT configuration
 #define	REST_REQUEST_CHARTS       "charts"      // GET and PUT chart
 #define REST_REQUEST_SAVE_CONFIGS "saveConfigs" // PUT command to save all configurations to EEPROM
 #define REST_REQUEST_SAVE_CHARTS  "saveCharts"  // PUT command to save all charts to EEPROM
 #define REST_REQUEST_TIME         "time"        // GET and PUT time
 #define REST_REQUEST_DATA         "data"        // GET and PUT data ( 2 byte data )
+#define REST_REQUEST_LOG          "log"         // GET log
+#define REST_REQUEST_LOG_ERASE    "eraseLog"    // PUT command erase log
 
 #define TIME_HOUR_STR             "hour"
 #define TIME_MIN_STR              "min"
@@ -71,13 +76,18 @@ typedef enum
 #define TIME_WDAY_STR             "wday"
 
 #define FREE_DATA_STR             "value"
+
+#define LOG_TIME_STR              "time"
+#define LOG_TYPE_STR              "type"
+#define LOG_ACTION_STR            "action"
 /*------------------------------ Extern --------------------------------------*/
 extern const char 	*restRequeststr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/
 uint32_t     uRESTmakeConfig ( const eConfigReg* reg, char* output );
 uint32_t     uRESTmakeChart ( const eChartData* chart, char* output );
 uint32_t     uRESTmakeTime ( const RTC_TIME* time, char* output );
-uint32_t     uRESTmakeData( uint16_t data, char* output );
+uint32_t     uRESTmakeData ( uint16_t data, char* output );
+uint32_t     uRESTmakeLog ( const LOG_RECORD_TYPE* record, char* output );
 REST_ADDRESS eRESTgetRequest ( char* path, REST_REQUEST* request, uint16_t* adr );
 REST_ERROR   eRESTparsingConfig ( char* input, uint16_t adr );
 REST_ERROR   eRESTparsingChart ( char* input, uint16_t adr );

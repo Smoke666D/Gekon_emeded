@@ -20,11 +20,13 @@ const char *restRequeststr[REST_REQUEST_NUMBER] = { REST_REQUEST_CONFIGS,
 						                                        REST_REQUEST_SAVE_CONFIGS,
 						                                        REST_REQUEST_SAVE_CHARTS,
 						                                        REST_REQUEST_TIME,
-						                                        REST_REQUEST_DATA };
+						                                        REST_REQUEST_DATA,
+						                                        REST_REQUEST_LOG,
+                                                    REST_REQUEST_LOG_ERASE};
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 uint8_t    uRESTmakeStartRecord ( const char* header, char* output );
-uint8_t    uRESTmakeDigRecord ( const char* header, uint16_t data, RESTrecordPos last, char* output );
+uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output );
 uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
 uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
 uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );
@@ -172,6 +174,19 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
   position += uRESTmakeDigRecord( CONFIG_REG_BIT_MAP_SIZE_STR,  reg->atrib->bitMapSize, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeBitMapArray( reg->atrib->bitMapSize, reg->bitMap, &output[position] );
   position++;
+  output[position] = '}';
+  position++;
+  return position;
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint32_t uRESTmakeLog ( const LOG_RECORD_TYPE* record, char* output )
+{
+  uint32_t position = 1U;
+
+  output[0U] = '{';
+  position += uRESTmakeDigRecord( LOG_TIME_STR,   record->time,         REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeDigRecord( LOG_TYPE_STR,   record->event.type,   REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeDigRecord( LOG_ACTION_STR, record->event.action, REST_LAST_RECORD, &output[position] );
   output[position] = '}';
   position++;
   return position;
@@ -865,7 +880,7 @@ uint8_t uRESTmakeValueRecord( const char* header, uint16_t* data, uint16_t len, 
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uRESTmakeDigRecord( const char* header, uint16_t data, RESTrecordPos last, char* output )
+uint8_t uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
   char*   pStr  = NULL;
@@ -880,7 +895,7 @@ uint8_t uRESTmakeDigRecord( const char* header, uint16_t data, RESTrecordPos las
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uRESTmake16FixDigRecord( const char* header, fix16_t data, RESTrecordPos last, char* output )
+uint8_t uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
   char*   pStr  = NULL;

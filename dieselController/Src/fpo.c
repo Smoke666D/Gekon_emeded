@@ -15,7 +15,7 @@
 /*-------------------------------- Structures --------------------------------*/
 static FPO fpos[FPO_NUMBER];
 /*--------------------------------- Constant ---------------------------------*/
-const FPO_FUNCTION eFPOfuctionList[FPO_FUNCTION_NUMBER] =
+const uint8_t eFPOfuctionList[FPO_FUNCTION_NUMBER] =
 {
   FPO_FUN_NONE,
   FPO_FUN_AUTO_MODE,

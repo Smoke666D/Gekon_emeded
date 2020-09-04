@@ -532,6 +532,97 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record )
+{
+  DATA_API_STATUS res      = DATA_API_STAT_OK;
+  uint16_t        pointer  = 0U;
+  uint16_t        i        = 0U;
+  SYSTEM_EVENT    eraseEv  = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
+  LOG_RECORD_TYPE eraseRec = { .time = 0U, .event = eraseEv };
+
+  if ( adr < LOG_SIZE )
+  {
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
+    {
+      switch ( cmd )
+      {
+        case DATA_API_CMD_ADD:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
+            {
+              if ( pointer < LOG_SIZE )
+              {
+                pointer++;
+              }
+              else
+              {
+                pointer = 0U;
+              }
+              if ( eSTORAGEwriteLogRecord( pointer, record ) == EEPROM_OK )
+              {
+                if ( eSTORAGEwriteLogPointer( pointer ) != EEPROM_OK )
+                {
+                  res = DATA_API_STAT_EEPROM_ERROR;
+                }
+              }
+              else
+              {
+                res = DATA_API_STAT_EEPROM_ERROR;
+              }
+            }
+            else
+            {
+              res = DATA_API_STAT_EEPROM_ERROR;
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          break;
+        case DATA_API_CMD_LOAD:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            if ( eSTORAGEreadLogRecord( adr, record ) != EEPROM_OK )
+            {
+              res = DATA_API_STAT_EEPROM_ERROR;
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          break;
+        case DATA_API_CMD_ERASE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            for ( i=0U; i<LOG_SIZE; i++ )
+            {
+              if ( eSTORAGEwriteLogRecord( i, &eraseRec ) != EEPROM_OK )
+              {
+                res = DATA_API_STAT_EEPROM_ERROR;
+                break;
+              }
+              if ( res == DATA_API_STAT_OK )
+              {
+                if ( eSTORAGEwriteLogPointer( 0U ) != EEPROM_OK )
+                {
+                  res = DATA_API_STAT_EEPROM_ERROR;
+                }
+              }
+            }
+            xSemaphoreGive( xSemaphore );
+          }
+          break;
+        default:
+          res = DATA_API_STAT_CMD_ERROR;
+          break;
+
+      }
+    }
+  }
+  else
+  {
+    res = DATA_API_STAT_ADR_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Write API for configurations
  * input:  cmd  - command for operation

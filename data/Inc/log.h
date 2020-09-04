@@ -8,6 +8,7 @@
 #define INC_LOG_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
 #define	LOG_RCORD_MESSAGE_LENGTH	30U
 /*------------------------- Enum ---------------------------------------*/
@@ -19,9 +20,9 @@ typedef enum
 
 typedef enum
 {
-	MESSAGE,
-	WARNING,
-	ERROR,
+  RECORD_PRIORITY_MESSAGE,
+  RECORD_PRIORITY_WARNING,
+  RECORD_PRIORITY_ERROR,
 } RECORD_PRIORITY;
 /*----------------------- Structures -----------------------------------*/
 typedef struct

@@ -40,6 +40,7 @@ STREAM_STATUS cHTTPstreamConfigs ( HTTP_STREAM* );                              
 STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* );                                  /* Stream call back for charts data transfer */
 STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream );                             /* Stream call back for RTC time */
 STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream );
+STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream );
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -315,6 +316,14 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
 	        }
 	      }
         break;
+      case REST_LOG_ERASE:
+        if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) == DATA_API_STAT_OK )
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_OK;
+          response->contentLength = 0U;
+        }
+        break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -332,15 +341,16 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
  */
 void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
 {
-  char*         strStr  = NULL;
-  uint16_t      adr     = 0xFFFFU;
-  REST_REQUEST  request = REST_REQUEST_ERROR;
-  REST_ADDRESS  adrFlag = REST_NO_ADR;
-  HTTP_STREAM*  stream  = NULL;
-  uint32_t      i       = 0U;
-  uint32_t      ewaLen  = 0U;
-  uint8_t       buffer[EEPROM_LENGTH_SIZE];
+  char*           strStr  = NULL;
+  uint16_t        adr     = 0xFFFFU;
+  REST_REQUEST    request = REST_REQUEST_ERROR;
+  REST_ADDRESS    adrFlag = REST_NO_ADR;
+  HTTP_STREAM*    stream  = NULL;
+  uint32_t        i       = 0U;
+  uint32_t        ewaLen  = 0U;
+  uint8_t         buffer[EEPROM_LENGTH_SIZE];
   DATA_API_STATUS status = DATA_API_STAT_OK;
+  LOG_RECORD_TYPE record;
   /*----------------- Common header -----------------*/
   strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
@@ -466,20 +476,39 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
         }
         break;
       case REST_FREE_DATA:
-	if ( adrFlag != REST_NO_ADR )
-	{
-	  if ( adr < FREE_DATA_SIZE )
-	  {
-	    stream = &(response->stream);
-	    stream->size            = 1U;
-	    stream->start           = adr;
-	    stream->index           = 0U;
-	    response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
-	    response->callBack      = cHTTPstreamData;
-	    response->contetntType  = HTTP_CONTENT_JSON;
-	    response->status        = HTTP_STATUS_OK;
-	  }
-	}
+	      if ( adrFlag != REST_NO_ADR )
+	      {
+	        if ( adr < FREE_DATA_SIZE )
+	        {
+	          stream = &(response->stream);
+	          stream->size            = 1U;
+	          stream->start           = adr;
+	          stream->index           = 0U;
+	          response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
+	          response->callBack      = cHTTPstreamData;
+	          response->contetntType  = HTTP_CONTENT_JSON;
+	          response->status        = HTTP_STATUS_OK;
+	        }
+	      }
+        break;
+      case REST_LOG:
+        if ( adrFlag == REST_NO_ADR )
+        {
+          stream = &(response->stream);
+          stream->size       = LOG_SIZE;
+          stream->index      = 0U;
+          stream->start      = 0U;
+          response->callBack = cHTTPstreamLog;
+          for( i=0U; i<stream->size; i++ )
+          {
+            status = eDATAAPIlog( DATA_API_CMD_LOAD, i, &record );
+            response->contentLength += uRESTmakeLog( &record, restBuffer );
+          }
+          response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+          response->contetntType   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_OK;
+          response->data           = restBuffer;
+        }
         break;
       case REST_REQUEST_ERROR:
         break;
@@ -951,6 +980,43 @@ STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
   stream->length = uRESTmakeData( *( freeDataArray[stream->start] ), restBuffer );
   restBuffer[stream->length] = 0U;
   stream->content = restBuffer;
+  return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream )
+{
+  LOG_RECORD_TYPE record;
+  uint8_t         shift  = 0U;
+  if ( stream->index >= ( stream->size - 1U ) )
+  {
+    stream->status = STREAM_END;
+  }
+  else
+  {
+    stream->status = STREAM_CONTINUES;
+    if ( stream->index == 0 ) {
+      shift = 1U;
+      restBuffer[0U] = '[';
+    }
+  }
+  if ( eDATAAPIlog( DATA_API_CMD_LOAD, stream->index, &record ) != DATA_API_STAT_OK )
+  {
+    stream->status = STREAM_ERROR;
+  }
+  stream->length = shift + uRESTmakeLog( &record, &restBuffer[shift] );
+  if ( stream->status == STREAM_CONTINUES )
+  {
+    restBuffer[stream->length] = ',';
+    stream->length++;
+  }
+  if ( stream->status == STREAM_END )
+  {
+    restBuffer[stream->length] = ']';
+    stream->length++;
+  }
+  stream->index++;
+  restBuffer[stream->length] = 0U;
+  stream->content            = restBuffer;
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/

@@ -1067,6 +1067,14 @@ void StartDefaultTask(void *argument)
   vSYSSerial( buf );
   vSYSSerial( " bytes )\n\r" );
 
+  vSYSSerial("Log length     : ");
+  sprintf( buf, "0x%06X", STORAGE_LOG_POINTER_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_LOG_POINTER_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
   vSYSSerial("Log            : ");
   sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
   vSYSSerial( buf );

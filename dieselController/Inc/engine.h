@@ -11,7 +11,7 @@
 #include "stm32f2xx_hal.h"
 #include "chart.h"
 #include "fix16.h"
-#include "logicCommon.h"
+#include "controllerTypes.h"
 #include "fpo.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/

@@ -33,6 +33,11 @@ void vDATAAPInotfyAll ( uint32_t value )
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * All data initialization
+ * input:  none
+ * output: none
+ */
 void vDATAAPIdataInit ( void )
 {
   EEPROM_STATUS res              = EEPROM_OK;
@@ -141,6 +146,11 @@ void vDATAAPIdataInit ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Structures initialization
+ * input:  array of task for notifications
+ * output: none
+ */
 void vDATAAPIinit ( TaskHandle_t* targets )
 {
   uint8_t i = 0U;
@@ -152,6 +162,11 @@ void vDATAAPIinit ( TaskHandle_t* targets )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Check data initialization
+ * input:  none
+ * output: initialization status
+ */
 DATA_API_STATUS eDATAAPIisInit ( void )
 {
   DATA_API_STATUS res = DATA_API_STAT_INIT_ERROR;
@@ -163,6 +178,22 @@ DATA_API_STATUS eDATAAPIisInit ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for charts
+ * input:  cmd   - command
+ *         adr   - address
+ *         chart - chart structure
+ * output: dtstus of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - return chart with address from local storage
+ * 2. DATA_API_CMD_WRITE - write chart with address to local storage
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - save all charts from locale storage to the EEPROM
+ * 6. DATA_API_CMD_LOAD  - load all charts from the EEPROM to local storage
+ * 7. DATA_API_CMD_ERASE - none
+ * 8. DATA_API_CMD_ADD   - none
+ */
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -205,9 +236,6 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
             res = DATA_API_STAT_BUSY;
           }
           break;
-        case DATA_API_CMD_INC:
-          res = DATA_API_STAT_CMD_ERROR;
-          break;
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
@@ -242,6 +270,23 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for Embedded Web Application
+ * input:  cmd    - command
+ *         adr    - absolute address in the EEPROM
+ *         data   - EWA data array
+ *         length - length of the EWA data
+ * output: dtstus of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - none
+ * 2. DATA_API_CMD_WRITE - none
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - save data to the EEPROM
+ * 6. DATA_API_CMD_LOAD  - load data from the EEPROM
+ * 7. DATA_API_CMD_ERASE - erase all EWA sector in EEPROM
+ * 8. DATA_API_CMD_ADD   - none
+ */
 DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length )
 {
   DATA_API_STATUS res     = DATA_API_STAT_OK;
@@ -305,6 +350,7 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
           }
           break;
         default:
+          res = DATA_API_STAT_CMD_ERROR;
           break;
       }
     }
@@ -316,6 +362,25 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for Embedded Web Application
+ * input:  cmd    - command
+ *         adr    - configuration address in local storage
+ *         value  - configuration value array
+ *         scale  - configuration scale
+ *         units  - configuration units array
+ *         bitMap - bit map structure of configuration
+ * output: dtstus of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - read configuration from the locale storage
+ * 2. DATA_API_CMD_WRITE - write configuration to the locale storage
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - save all configurations from the locale storage to the EEPROM
+ * 6. DATA_API_CMD_LOAD  - save all configurations from the EEPROM to the locale storage
+ * 7. DATA_API_CMD_ERASE - none
+ * 8. DATA_API_CMD_ADD   - none
+ */
 DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char* scale, uint16_t* units, eConfigBitMap* bitMap )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -385,9 +450,6 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             res = DATA_API_STAT_BUSY;
           }
           break;
-        case DATA_API_CMD_INC:
-          res = DATA_API_STAT_CMD_ERROR;
-          break;
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
@@ -401,9 +463,6 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
           {
             res = DATA_API_STAT_BUSY;
           }
-          break;
-        case DATA_API_CMD_DEC:
-          res = DATA_API_STAT_CMD_ERROR;
           break;
         default:
           res = DATA_API_STAT_CMD_ERROR;
@@ -422,6 +481,22 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for Embedded Web Application
+ * input:  cmd    - command
+ *         adr    - configuration address in local storage
+ *         atrib  - configuration attributes
+ * output: dtstus of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - read configuration from the locale storage
+ * 2. DATA_API_CMD_WRITE - none
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - none
+ * 6. DATA_API_CMD_LOAD  - none
+ * 7. DATA_API_CMD_ERASE - none
+ * 8. DATA_API_CMD_ADD   - none
+ */
 DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -432,21 +507,6 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
     {
       case DATA_API_CMD_READ:
         *atrib = *configReg[adr]->atrib;
-        break;
-      case DATA_API_CMD_WRITE:
-        res = DATA_API_STAT_CMD_ERROR;
-        break;
-      case DATA_API_CMD_INC:
-        res = DATA_API_STAT_CMD_ERROR;
-        break;
-      case DATA_API_CMD_DEC:
-        res = DATA_API_STAT_CMD_ERROR;
-        break;
-      case DATA_API_CMD_SAVE:
-        res = DATA_API_STAT_CMD_ERROR;
-        break;
-      case DATA_API_CMD_LOAD:
-        res = DATA_API_STAT_CMD_ERROR;
         break;
       default:
         res = DATA_API_STAT_CMD_ERROR;
@@ -460,6 +520,22 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for Embedded Web Application
+ * input:  cmd  - command
+ *         adr  - free data address in local storage
+ *         data - free data value
+ * output: dtstus of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - read free data value from the locale storage
+ * 2. DATA_API_CMD_WRITE - write free data value to the locale storage
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - save all free data to the EEPROM from the locale storage
+ * 6. DATA_API_CMD_LOAD  - load all free data to the local storage from the EEPROM
+ * 7. DATA_API_CMD_ERASE - none
+ * 8. DATA_API_CMD_ADD   - none
+ */
 DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -507,9 +583,6 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
             res = DATA_API_STAT_BUSY;
           }
           break;
-        case DATA_API_CMD_INC:
-          res = DATA_API_STAT_CMD_ERROR;
-          break;
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
@@ -528,9 +601,6 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
             res = DATA_API_STAT_BUSY;
           }
           break;
-        case DATA_API_CMD_DEC:
-          res = DATA_API_STAT_CMD_ERROR;
-          break;
         default:
           res = DATA_API_STAT_CMD_ERROR;
           break;
@@ -548,6 +618,21 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for Embedded Web Application
+ * input:  cmd - command
+ *         pas - password structure
+ * output: status of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - read password from the locale storage
+ * 2. DATA_API_CMD_WRITE - write password to the locale storage
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - save password to the EEPROM from the locale storage
+ * 6. DATA_API_CMD_LOAD  - load password to the local storage from the EEPROM
+ * 7. DATA_API_CMD_ERASE - reset password from the local storage and the EEPROM
+ * 8. DATA_API_CMD_ADD   - none
+ */
 DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -563,8 +648,15 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
       case DATA_API_CMD_WRITE:
         if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
         {
-          systemPassword.data   = pas->data;
-          systemPassword.status = pas->status;
+          if ( pas->status <= PASSWORD_SET )
+          {
+            systemPassword.data   = pas->data;
+            systemPassword.status = pas->status;
+          }
+          else
+          {
+            res = DATA_API_STAT_ERROR;
+          }
           xSemaphoreGive( xSemaphore );
         }
         else
@@ -617,6 +709,7 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
         }
         break;
       default:
+        res = DATA_API_STAT_CMD_ERROR;
         break;
     }
   }
@@ -627,6 +720,22 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for Embedded Web Application
+ * input:  cmd    - command
+ *         adr    - address of log record
+ *         record - log record structure
+ * output: status of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - none
+ * 2. DATA_API_CMD_WRITE - none
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - none
+ * 6. DATA_API_CMD_LOAD  - load addressed log record to the buffer
+ * 7. DATA_API_CMD_ERASE - erase all log records
+ * 8. DATA_API_CMD_ADD   - add new log record to the EEPROM
+ */
 DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record )
 {
   DATA_API_STATUS res      = DATA_API_STAT_OK;
@@ -724,6 +833,15 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
  *         adr  - address of configuration in configReg array
  *         data - pointer to the external buffer. The length of buffer is in attribute of configuration
  * output: status of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - read addressed configuration value from the local storage tj th buffer
+ * 2. DATA_API_CMD_WRITE - write addressed configuration value to the locale storage
+ * 3. DATA_API_CMD_INC   - increment addressed configuration value in locale storage
+ * 4. DATA_API_CMD_DEC   - decrement addressed configuration value in locale storage
+ * 5. DATA_API_CMD_SAVE  - save all configurations to the EEPROM from the locale storage
+ * 6. DATA_API_CMD_LOAD  - load all configurations from the EEPROM to the locale storage
+ * 7. DATA_API_CMD_ERASE - none
+ * 8. DATA_API_CMD_ADD   - none
  */
 DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data )
 {

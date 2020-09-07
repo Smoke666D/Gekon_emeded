@@ -139,6 +139,28 @@ void vUSBfreeDataToReport ( uint16_t adr, USB_REPORT* report )
   report->data[1U] = ( uint8_t )( *freeDataArray[adr] );
   return;
 }
+
+void vUSBlogToReport ( uint16_t adr, USB_REPORT* report )
+{
+  LOG_RECORD_TYPE record;
+
+  report->cmd      = USB_GET_LOG;
+  report->dir      = USB_OUTPUT;
+  report->stat     = USB_BAD_REQ_STAT;
+  report->adr      = adr;
+  report->length   = 6U;
+  if ( eDATAAPIlog( DATA_API_CMD_LOAD, adr, &record ) == DATA_API_STAT_OK )
+  {
+    report->stat     = USB_OK_STAT;
+    report->data[0U] = ( uint8_t )( record.time << 24U );
+    report->data[1U] = ( uint8_t )( record.time << 16U );
+    report->data[2U] = ( uint8_t )( record.time << 8U );
+    report->data[3U] = ( uint8_t )( record.time );
+    report->data[4U] = ( uint8_t )( record.event.type );
+    report->data[5U] = ( uint8_t )( record.event.action );
+  }
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Transfer configuration register to the report structure
@@ -860,7 +882,7 @@ void vUSBsendTime ()
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBgetData ( USB_REPORT* report )
+void vUSBgetFreeData ( USB_REPORT* report )
 {
   uint8_t    i        = 0U;
   USB_REPORT response =
@@ -888,7 +910,7 @@ void vUSBgetData ( USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBsendData ( uint16_t adr )
+void vUSBsendFreeData ( uint16_t adr )
 {
   USB_REPORT report =
   {
@@ -902,6 +924,49 @@ void vUSBsendData ( uint16_t adr )
     osDelay( 2U );
   }
   return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBsendLog( uint16_t adr )
+{
+  USB_REPORT report =
+  {
+    .buf  = usbBuffer,
+    .data = &usbBuffer[USB_DATA_BYTE],
+  };
+  vUSBlogToReport( adr, &report );
+  vUSBmakeReport( &report );
+  while ( eUSBwrite( report.buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBeraseLOG ( USB_REPORT* report )
+{
+  uint8_t    i        = 0U;
+  USB_REPORT response =
+  {
+    .cmd    = report->cmd,
+    .stat   = USB_OK_STAT,
+    .adr    = report->adr,
+    .length = report->length,
+    .buf    = usbBuffer,
+    .data   = &usbBuffer[USB_DATA_BYTE],
+  };
+  if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) != DATA_API_STAT_OK )
+  {
+    response.stat = USB_BAD_REQ_STAT;
+  }
+  for( i=0U; i<USB_REPORT_SIZE; i++ )
+  {
+    usbBuffer[i] = 0U;
+  }
+  vUSBmakeReport( &response );
+  while ( eUSBwrite( response.buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
+  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -1012,10 +1077,16 @@ void vStartUsbTask ( void *argument )
           vUSBgetTime( &report );
           break;
         case USB_GET_FREE_DATA:             // PC->DEVICE
-          vUSBsendData( report.adr );
+          vUSBsendFreeData( report.adr );
           break;
         case USB_PUT_FREE_DATA:
-          vUSBgetData( &report );
+          vUSBgetFreeData( &report );
+          break;
+        case USB_GET_LOG:
+          vUSBsendLog( report.adr );
+          break;
+        case USB_ERASE_LOG:
+          vUSBeraseLOG( &report );
           break;
         default:
           break;

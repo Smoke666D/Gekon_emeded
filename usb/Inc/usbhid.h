@@ -57,6 +57,8 @@ typedef enum
   USB_PUT_TIME        = 0x09U,
   USB_GET_FREE_DATA   = 0x0AU,
   USB_PUT_FREE_DATA   = 0x0BU,
+  USB_GET_LOG         = 0x0CU,
+  USB_ERASE_LOG       = 0x0DU
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U
@@ -106,7 +108,7 @@ typedef struct
 
 /*----------------------------- Functions ------------------------------------*/
 void              vUSBinit ( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
-void              vStartUsbTask ( void *argument );       /* Processing USB input task */
+void              vStartUsbTask ( void *argument );      /* Processing USB input task */
 USB_StatusConnect eUSBgetStatus ( void );                /* Get connection status of USB device */
 void              vUSBreceiveHandler ( void );           /* Handler of USB input interrupt */
 /*----------------------------------------------------------------------------*/

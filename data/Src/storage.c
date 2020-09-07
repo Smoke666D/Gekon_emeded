@@ -382,11 +382,34 @@ EEPROM_STATUS eSTORAGEreadLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEsavePassword ( void )
+{
+  uint8_t buffer[PASSWORD_SIZE];
+  buffer[0U] = ( uint8_t )( systemPassword.status     );
+  buffer[1U] = ( uint8_t )( systemPassword.data >> 8U );
+  buffer[2U] = ( uint8_t )( systemPassword.data       );
+  return eEEPROMwriteMemory( STORAGE_PASSWORD_ADR, buffer, PASSWORD_SIZE );
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEloadPassword ( void )
+{
+  uint8_t       buffer[PASSWORD_SIZE];
+  EEPROM_STATUS res = EEPROM_OK;
+
+  res = eEEPROMreadMemory( STORAGE_PASSWORD_ADR, buffer, PASSWORD_SIZE );
+  if ( res == EEPROM_OK )
+  {
+    systemPassword.status = buffer[0U];
+    systemPassword.data   = ( ( ( uint16_t )buffer[1U] ) << 8U ) | ( ( uint16_t )buffer[2U] );
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadFreeData ( DATA_ADR n )
 {
   EEPROM_STATUS res      = EEPROM_OK;
   uint8_t       data[2U] = { 0U, 0U };
-  res = eEEPROMreadMemory( ( STORAGE_DATA_ADR + 2 * n ), data, 2U );
+  res = eEEPROMreadMemory( ( STORAGE_FREE_DATA_ADR + 2 * n ), data, 2U );
   if ( res == EEPROM_OK )
   {
     *freeDataArray[n] = ( ( ( uint16_t )data[0U] ) << 8U ) | ( ( uint16_t )data[0U] );
@@ -396,13 +419,13 @@ EEPROM_STATUS eSTORAGEreadFreeData ( DATA_ADR n )
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEsaveFreeData ( DATA_ADR n )
 {
-  return eEEPROMwriteMemory( ( STORAGE_DATA_ADR + 2 * n ), ( uint8_t* )freeDataArray[n], 2U );
+  return eEEPROMwriteMemory( ( STORAGE_FREE_DATA_ADR + 2 * n ), ( uint8_t* )freeDataArray[n], 2U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEsetFreeData ( DATA_ADR n, const uint16_t* data )
 {
   *freeDataArray[n] = *data;
-  return eSTORAGEsaveFreeData( ( STORAGE_DATA_ADR + 2 * n ) );
+  return eSTORAGEsaveFreeData( ( STORAGE_FREE_DATA_ADR + 2 * n ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

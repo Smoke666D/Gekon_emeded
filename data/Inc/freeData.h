@@ -11,7 +11,9 @@
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
 #define  FREE_DATA_SIZE  5U
-
+#define  PASSWORD_LEN    4U  /* digits */
+#define  PASSWORD_SIZE   3U  /* bytes */
+/*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
   ENGINE_WORK_TIME_ADR                 = 0x00U,
@@ -20,6 +22,18 @@ typedef enum
   MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR  = 0x03U,
   MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR = 0x04U,
 } DATA_ADR;
+
+typedef enum
+{
+  PASSWORD_RESET,
+  PASSWORD_SET,
+} PASSWORD_STATUS;
+/*---------------------------- Structures ------------------------------------*/
+typedef struct
+{
+  PASSWORD_STATUS status;
+  uint16_t        data;
+} PASSWORD_TYPE;
 /*------------------------ Extern --------------------------------------*/
 extern uint16_t engineWorkTime;               /* 0 */
 extern uint16_t engineStartsNumber;           /* 1 */
@@ -28,5 +42,7 @@ extern uint16_t maintenanceAlarmAirTimeLeft;  /* 3 */
 extern uint16_t maintenanceAlarmFuelTimeLeft; /* 4 */
 
 extern uint16_t* const freeDataArray[FREE_DATA_SIZE];
+
+extern PASSWORD_TYPE systemPassword;
 /*----------------------------------------------------------------------*/
 #endif /* INC_FREEDATA_H_ */

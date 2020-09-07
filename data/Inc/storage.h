@@ -20,9 +20,10 @@
 #define  STORAGE_CONFIG_SIZE      CONFIG_TOTAL_SIZE                  /* byte */
 #define  STORAGE_CHART_SIZE       ( CHART_CHART_SIZE * CHART_NUMBER) /* byte */
 #define  STORAGE_FREE_DATA_SIZE   ( FREE_DATA_SIZE * 2U )            /* byte */
+#define  STORAGE_PASSWORD_SIZE    PASSWORD_SIZE                      /* byte */
 #define  STORAGE_LOG_POINTER_SIZE 2U                                 /* byte */
 #define  STORAGE_LOG_SIZE         ( LOG_SIZE * LOG_RECORD_SIZE )     /* byte */
-#define  STORAGE_REQUIRED_SIZE    ( STORAGE_SR_SIZE + STORAGE_WEB_SIZE + STORAGE_RESERVE_SIZE + STORAGE_CONFIG_SIZE + STORAGE_CHART_SIZE + STORAGE_FREE_DATA_SIZE + STORAGE_LOG_POINTER_SIZE + STORAGE_LOG_SIZE )
+#define  STORAGE_REQUIRED_SIZE    ( STORAGE_SR_SIZE + STORAGE_WEB_SIZE + STORAGE_RESERVE_SIZE + STORAGE_CONFIG_SIZE + STORAGE_CHART_SIZE + STORAGE_FREE_DATA_SIZE + STORAGE_PASSWORD_SIZE + STORAGE_LOG_POINTER_SIZE + STORAGE_LOG_SIZE )
 
 #if ( ( EEPROM_SIZE * 1024U ) < STORAGE_REQUIRED_SIZE )
   #error EEPROM size is too small!
@@ -35,8 +36,9 @@
 #define  STORAGE_RESERVE_ADR     ( STORAGE_EWA_ADR         + STORAGE_WEB_SIZE         )
 #define  STORAGE_CONFIG_ADR      ( STORAGE_RESERVE_ADR     + STORAGE_RESERVE_SIZE     )
 #define  STORAGE_CHART_ADR       ( STORAGE_CONFIG_ADR      + CONFIG_TOTAL_SIZE        )
-#define  STORAGE_DATA_ADR        ( STORAGE_CHART_ADR       + CHART_CHART_SIZE         )
-#define  STORAGE_LOG_POINTER_ADR ( STORAGE_DATA_ADR        + STORAGE_FREE_DATA_SIZE   )
+#define  STORAGE_FREE_DATA_ADR   ( STORAGE_CHART_ADR       + CHART_CHART_SIZE         )
+#define  STORAGE_PASSWORD_ADR    ( STORAGE_FREE_DATA_ADR   + STORAGE_FREE_DATA_SIZE   )
+#define  STORAGE_LOG_POINTER_ADR ( STORAGE_PASSWORD_ADR    + STORAGE_PASSWORD_SIZE    )
 #define  STORAGE_LOG_ADR         ( STORAGE_LOG_POINTER_ADR + STORAGE_LOG_POINTER_SIZE )
 
 #define  STORAGE_SR_EMPTY        0xFFU  /* The register as default is 0xFF */
@@ -62,9 +64,8 @@ EEPROM_STATUS eSTORAGEreadLogPointer ( uint16_t* length );
 EEPROM_STATUS eSTORAGEwriteLogPointer ( uint16_t length );
 EEPROM_STATUS eSTORAGEreadLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
 EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
-//EEPROM_STATUS eSTORAGEwriteLogRecord( LOG_RECORD_TYPE* record );
-//EEPROM_STATUS eSTORAGEwriteLogQuant( uint16_t quant );
-//EEPROM_STATUS eSTORAGEwriteLog( LOG_TYPE* log );
-//EEPROM_STATUS eSTORAGEreadLog( LOG_TYPE* log );
+
+EEPROM_STATUS eSTORAGEsavePassword ( void );
+EEPROM_STATUS eSTORAGEloadPassword ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_STORAGE_H_ */

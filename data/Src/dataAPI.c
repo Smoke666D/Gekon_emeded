@@ -62,19 +62,23 @@ void vDATAAPIdataInit ( void )
           for ( i=0U; i<FREE_DATA_SIZE; i++ )
           {
             res = eSTORAGEsaveFreeData( i );
-            if ( res != EEPROM_OK )
+            if ( res == EEPROM_OK )
             {
               break;
             }
           }
           if ( res == EEPROM_OK )
           {
-            sr  = 0x00U;
-            res = eEEPROMwriteMemory( STORAGE_SR_ADR, &sr, 1U );
+            res = eSTORAGEsavePassword();
             if ( res == EEPROM_OK )
             {
-              vSYSSerial( ">>EEPROM data initialization: done!\n\r" );
-              initDone = 1U;
+              sr  = 0x00U;
+              res = eEEPROMwriteMemory( STORAGE_SR_ADR, &sr, 1U );
+              if ( res == EEPROM_OK )
+              {
+                vSYSSerial( ">>EEPROM data initialization: done!\n\r" );
+                initDone = 1U;
+              }
             }
           }
         }
@@ -94,6 +98,7 @@ void vDATAAPIdataInit ( void )
       {
         vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
       }
+
       if ( eSTORAGEreadCharts() == EEPROM_OK )
       {
         vSYSSerial( ">>EEPROM charts read: done!\n\r" );
@@ -102,6 +107,7 @@ void vDATAAPIdataInit ( void )
       {
         vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
       }
+
       for ( i=0U; i<FREE_DATA_SIZE; i++ )
       {
         res = eSTORAGEreadFreeData( i );
@@ -117,6 +123,16 @@ void vDATAAPIdataInit ( void )
       else
       {
         vSYSSerial( ">>EEPROM free data read: fail!\n\r" );
+      }
+
+      res = eSTORAGEloadPassword();
+      if ( res == EEPROM_OK )
+      {
+        vSYSSerial( ">>EEPROM password read: done!\n\r" );
+      }
+      else
+      {
+        vSYSSerial( ">>EEPROM password read: fail!\n\r" );
       }
       initDone = 1U;
     }
@@ -528,6 +544,85 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
   else
   {
     res = DATA_API_STAT_ADR_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
+{
+  DATA_API_STATUS res = DATA_API_STAT_OK;
+
+  if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
+  {
+    switch( cmd )
+    {
+      case DATA_API_CMD_READ:
+        pas->data   = systemPassword.data;
+        pas->status = systemPassword.status;
+        break;
+      case DATA_API_CMD_WRITE:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          systemPassword.data   = pas->data;
+          systemPassword.status = pas->status;
+          xSemaphoreGive( xSemaphore );
+        }
+        else
+        {
+          res = DATA_API_STAT_BUSY;
+        }
+        break;
+      case DATA_API_CMD_SAVE:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          if ( eSTORAGEsavePassword() != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          xSemaphoreGive( xSemaphore );
+        }
+        else
+        {
+          res = DATA_API_STAT_BUSY;
+        }
+        break;
+      case DATA_API_CMD_LOAD:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          if ( eSTORAGEloadPassword() != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          xSemaphoreGive( xSemaphore );
+        }
+        else
+        {
+          res = DATA_API_STAT_BUSY;
+        }
+        break;
+      case DATA_API_CMD_ERASE:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          systemPassword.status = PASSWORD_RESET;
+          systemPassword.data   = 0U;
+          if ( eSTORAGEsavePassword() != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          xSemaphoreGive( xSemaphore );
+        }
+        else
+        {
+          res = DATA_API_STAT_BUSY;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  else
+  {
+    res = DATA_API_STAT_INIT_ERROR;
   }
   return res;
 }

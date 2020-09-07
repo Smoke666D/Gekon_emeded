@@ -25,10 +25,12 @@ typedef enum
 
 typedef enum
 {
-  USB_DONE,          /* Operation done */
-  USB_CONT,          /* Message is not end. Wait for new package */
-  USB_ERROR_LENGTH,  /* Error in declared and received length of data*/
-  USB_STORAGE_ERROR, /* Error in storage process ( EEPROM or RTC )  */
+  USB_DONE,               /* Operation done */
+  USB_CONT,               /* Message is not end. Wait for new package */
+  USB_ERROR_LENGTH,       /* Error in declared and received length of data*/
+  USB_ERROR_ADR,          /* Wrong address */
+  USB_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
+  USB_UNAUTHORIZED_ERROR, /* Non unauthorized request */
 } USB_Status;
 
 typedef enum
@@ -39,9 +41,10 @@ typedef enum
 
 typedef enum
 {
-  USB_OK_STAT      = 0x01U,     /* 200 analog - all OK                            */
-  USB_BAD_REQ_STAT = 0x02U,     /* 400 analog - request is distorted              */
-  USB_NON_CON_STAT = 0x03U,     /* 404 analog - requesting a nonexistent resource */
+  USB_OK_STAT           = 0x01U,     /* 200 analog - all OK                            */
+  USB_BAD_REQ_STAT      = 0x02U,     /* 400 analog - request is distorted              */
+  USB_NON_CON_STAT      = 0x03U,     /* 404 analog - requesting a nonexistent resource */
+  USB_STAT_UNAUTHORIZED = 0x04U,     /* 401 analog - unauthorized request */
 } USB_ReportStat;
 
 typedef enum
@@ -58,7 +61,10 @@ typedef enum
   USB_GET_FREE_DATA   = 0x0AU,
   USB_PUT_FREE_DATA   = 0x0BU,
   USB_GET_LOG         = 0x0CU,
-  USB_ERASE_LOG       = 0x0DU
+  USB_ERASE_LOG       = 0x0DU,
+  USB_PUT_PASSWORD    = 0x0EU,
+  USB_AUTHORIZATION   = 0x0FU,
+  USB_ERASE_PASSWORD  = 0x10U,
 } USB_ReportCmd;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

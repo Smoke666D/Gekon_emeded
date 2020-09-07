@@ -1060,14 +1060,22 @@ void StartDefaultTask(void *argument)
   vSYSSerial( " bytes )\n\r" );
 
   vSYSSerial("Free data      : ");
-  sprintf( buf, "0x%06X", STORAGE_DATA_ADR );
+  sprintf( buf, "0x%06X", STORAGE_FREE_DATA_ADR );
   vSYSSerial( buf );
   vSYSSerial( "( ");
   sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
   vSYSSerial( buf );
   vSYSSerial( " bytes )\n\r" );
 
-  vSYSSerial("Log length     : ");
+  vSYSSerial("Password       : ");
+  sprintf( buf, "0x%06X", STORAGE_PASSWORD_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_PASSWORD_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Log pointer     : ");
   sprintf( buf, "0x%06X", STORAGE_LOG_POINTER_ADR );
   vSYSSerial( buf );
   vSYSSerial( "( ");

@@ -334,6 +334,71 @@ USB_Status eUSBReportToTime ( USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+USB_Status eUSBReportToPassword ( USB_REPORT* report )
+{
+  USB_Status    res  = USB_DONE;
+  PASSWORD_TYPE pass =
+  {
+    .data   = 0U,
+    .status = PASSWORD_RESET,
+  };
+  if ( report->length >= PASSWORD_LEN )
+  {
+    if ( eDATAAPIpassword( DATA_API_CMD_WRITE, &pass ) == DATA_API_STAT_OK )
+    {
+      if ( eDATAAPIpassword( DATA_API_CMD_SAVE, NULL ) != DATA_API_STAT_OK )
+      {
+        res = USB_STORAGE_ERROR;
+      }
+    }
+    else
+    {
+      res = USB_STORAGE_ERROR;
+    }
+  }
+  else
+  {
+    res = USB_ERROR_LENGTH;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+USB_Status eUSBcheckupPassword ( USB_REPORT* report )
+{
+  USB_Status    res   = USB_DONE;
+  uint16_t      input = 0U;
+  PASSWORD_TYPE pass  =
+  {
+    .data   = 0U,
+    .status = PASSWORD_RESET,
+  };
+
+  if ( report->length >= 2U )
+  {
+    input = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
+    if ( eDATAAPIpassword( DATA_API_CMD_READ, &pass ) == DATA_API_STAT_OK )
+    {
+      if ( ( ( pass.status == PASSWORD_SET ) && ( pass.data == input ) ) || ( pass.status == PASSWORD_RESET ) )
+      {
+        res = USB_DONE;
+      }
+      else
+      {
+        res = USB_UNAUTHORIZED_ERROR;
+      }
+    }
+    else
+    {
+      res = USB_STORAGE_ERROR;
+    }
+  }
+  else
+  {
+    res = USB_ERROR_LENGTH;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 USB_Status eUSBReportToFreeData ( USB_REPORT* report )
 {
   USB_Status res   = USB_DONE;
@@ -343,12 +408,21 @@ USB_Status eUSBReportToFreeData ( USB_REPORT* report )
     if ( report->adr <= FREE_DATA_SIZE )
     {
       value = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
-      eDATAAPIfreeData( DATA_API_CMD_WRITE, report->adr, &value );
-      eDATAAPIfreeData( DATA_API_CMD_SAVE,  report->adr, NULL );
+      if ( eDATAAPIfreeData( DATA_API_CMD_WRITE, report->adr, &value ) == DATA_API_STAT_OK )
+      {
+        if ( eDATAAPIfreeData( DATA_API_CMD_SAVE,  report->adr, NULL ) != DATA_API_STAT_OK )
+        {
+          res = USB_STORAGE_ERROR;
+        }
+      }
+      else
+      {
+        res = USB_STORAGE_ERROR;
+      }
     }
     else
     {
-      res = USB_STORAGE_ERROR;
+      res = USB_ERROR_ADR;
     }
   }
   else
@@ -688,12 +762,6 @@ void vUSBgetConfig ( USB_REPORT* report )
     .buf    = usbBuffer,
     .data   = &usbBuffer[USB_DATA_BYTE],
   };
-/*
-  if ( report->adr == 59U )
-  {
-    i = 0U;
-  }
-  */
   if ( eUSBReportToConfig( report ) != USB_DONE )
   {
     response.stat = USB_BAD_REQ_STAT;
@@ -970,6 +1038,70 @@ void vUSBeraseLOG ( USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vUSBgetPassword ( USB_REPORT* report )
+{
+  uint16_t   i        = 0U;
+  USB_REPORT response =
+  {
+    .cmd    = USB_PUT_PASSWORD,
+    .stat   = USB_OK_STAT,
+    .adr    = 0U,
+    .length = 0U,
+    .buf    = usbBuffer,
+    .data   = &usbBuffer[USB_DATA_BYTE],
+  };
+  if ( eUSBReportToPassword( report ) != USB_DONE )
+  {
+    response.stat = USB_BAD_REQ_STAT;
+  }
+  for ( i=0U; i<USB_REPORT_SIZE; i++ )
+  {
+    usbBuffer[i] = 0U;
+  }
+  vUSBmakeReport( &response );
+  while ( eUSBwrite( response.buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBauthorization ( USB_REPORT* report )
+{
+  uint16_t   i        = 0U;
+  USB_Status res      = USB_DONE;
+  USB_REPORT response =
+  {
+    .cmd    = USB_AUTHORIZATION,
+    .stat   = USB_OK_STAT,
+    .adr    = 0U,
+    .length = 0U,
+    .buf    = usbBuffer,
+    .data   = &usbBuffer[USB_DATA_BYTE],
+  };
+
+  res = eUSBcheckupPassword( report );
+  if ( res != USB_DONE )
+  {
+    response.stat = USB_BAD_REQ_STAT;
+  }
+  for ( i=0U; i<USB_REPORT_SIZE; i++ )
+  {
+    usbBuffer[i] = 0U;
+  }
+  vUSBmakeReport( &response );
+  while ( eUSBwrite( response.buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBerasePassword( USB_REPORT* report )
+{
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -1087,6 +1219,15 @@ void vStartUsbTask ( void *argument )
           break;
         case USB_ERASE_LOG:
           vUSBeraseLOG( &report );
+          break;
+        case USB_PUT_PASSWORD:
+          vUSBgetPassword( &report );
+          break;
+        case USB_AUTHORIZATION:
+          vUSBauthorization( &report );
+          break;
+        case USB_ERASE_PASSWORD:
+          vUSBerasePassword( &report );
           break;
         default:
           break;

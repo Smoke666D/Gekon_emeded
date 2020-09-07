@@ -152,9 +152,9 @@ void vUSBlogToReport ( uint16_t adr, USB_REPORT* report )
   if ( eDATAAPIlog( DATA_API_CMD_LOAD, adr, &record ) == DATA_API_STAT_OK )
   {
     report->stat     = USB_OK_STAT;
-    report->data[0U] = ( uint8_t )( record.time << 24U );
-    report->data[1U] = ( uint8_t )( record.time << 16U );
-    report->data[2U] = ( uint8_t )( record.time << 8U );
+    report->data[0U] = ( uint8_t )( record.time >> 24U );
+    report->data[1U] = ( uint8_t )( record.time >> 16U );
+    report->data[2U] = ( uint8_t )( record.time >> 8U );
     report->data[3U] = ( uint8_t )( record.time );
     report->data[4U] = ( uint8_t )( record.event.type );
     report->data[5U] = ( uint8_t )( record.event.action );

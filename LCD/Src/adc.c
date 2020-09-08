@@ -189,30 +189,21 @@ void vADCInit(void)
 
 }
 
-
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+void vADC3_Ready()
 {
-   static portBASE_TYPE xHigherPriorityTaskWoken;
-   HAL_ADC_Stop(&hadc);
-   xHigherPriorityTaskWoken = pdFALSE;
-   if  (hadc->Instance == ADC3)
-   {
-       xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
-   }
-   if  (hadc->Instance == ADC2)
-   {
-       xEventGroupSetBitsFromISR(xADCEvent,ADC2_READY,&xHigherPriorityTaskWoken);
-   }
-   if  (hadc->Instance == ADC1)
-   {
-       xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
-   }
-   xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
-   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
-   return;
+  static portBASE_TYPE xHigherPriorityTaskWoken;
+    HAL_ADC_Stop(&hadc3);
+    xHigherPriorityTaskWoken = pdFALSE;
+         xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
+
+
+    portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+    return;
 
 }
+
+
+
 
 
 
@@ -249,7 +240,7 @@ void StartADCTask(void *argument)
    HAL_TIM_Base_Start_IT( &htim3 );
    for(;;)
    {
-     osDelay(500);
+     osDelay(200);
      switch (xADCFSM)
      {
        case AC:
@@ -262,14 +253,7 @@ void StartADCTask(void *argument)
          xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,500);
 
 
-            if (__HAL_ADC_GET_FLAG(&hadc3,ADC_FLAG_OVR ) != RESET)
 
-          {
-            __HAL_ADC_CLEAR_FLAG(&hadc3,ADC_FLAG_OVR);
-            tt++;
-          }
-        //    else
-      //      {
               ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
                          ADCDATA[1] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
                          ADCDATA[2] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;

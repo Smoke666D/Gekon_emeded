@@ -807,34 +807,6 @@ void vUSBsendTime ()
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBgetFreeData ( USB_REPORT* report )
-{
-  uint8_t    i        = 0U;
-  USB_REPORT response =
-  {
-    .cmd    = USB_PUT_FREE_DATA,
-    .stat   = USB_OK_STAT,
-    .adr    = report->adr,
-    .length = 0U,
-    .buf    = usbBuffer,
-    .data   = &usbBuffer[USB_DATA_BYTE],
-  };
-  if ( eUSBReportToFreeData( report ) != USB_DONE )
-  {
-    response.stat = USB_BAD_REQ_STAT;
-  }
-  for ( i=0U; i<USB_REPORT_SIZE; i++ )
-  {
-    usbBuffer[i] = 0U;
-  }
-  vUSBmakeReport( &response );
-  while ( eUSBwrite( response.buf ) == USBD_BUSY )
-  {
-    osDelay( 2U );
-  }
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
 void vUSBsendFreeData ( uint16_t adr )
 {
   USB_REPORT report =
@@ -867,32 +839,14 @@ void vUSBsendLog( uint16_t adr )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBeraseLOG ( USB_REPORT* report )
+USB_Status vUSBeraseLOG ( USB_REPORT* report )
 {
-  uint8_t    i        = 0U;
-  USB_REPORT response =
-  {
-    .cmd    = report->cmd,
-    .stat   = USB_OK_STAT,
-    .adr    = report->adr,
-    .length = report->length,
-    .buf    = usbBuffer,
-    .data   = &usbBuffer[USB_DATA_BYTE],
-  };
+  USB_Status res = USB_DONE;
   if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) != DATA_API_STAT_OK )
   {
-    response.stat = USB_BAD_REQ_STAT;
+    res = USB_STORAGE_ERROR;
   }
-  for( i=0U; i<USB_REPORT_SIZE; i++ )
-  {
-    usbBuffer[i] = 0U;
-  }
-  vUSBmakeReport( &response );
-  while ( eUSBwrite( response.buf ) == USBD_BUSY )
-  {
-    osDelay( 2U );
-  }
-  return;
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBauthorization ( USB_REPORT* report )
@@ -934,39 +888,35 @@ void vUSBauthorization ( USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBerasePassword( USB_REPORT* report )
+USB_Status vUSBerasePassword( USB_REPORT* report )
 {
-  uint16_t   i        = 0U;
-  USB_REPORT response =
-  {
-    .cmd    = USB_ERASE_PASSWORD,
-    .stat   = USB_OK_STAT,
-    .adr    = 0U,
-    .length = 0U,
-    .buf    = usbBuffer,
-    .data   = &usbBuffer[USB_DATA_BYTE],
-  };
-
+  USB_Status res = USB_DONE;
   if ( eDATAAPIpassword( DATA_API_CMD_ERASE, NULL ) != DATA_API_STAT_OK )
   {
-    response.stat = USB_BAD_REQ_STAT;
+    res = USB_STORAGE_ERROR;
   }
-  for ( i=0U; i<USB_REPORT_SIZE; i++ )
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBsend ( void* data, void ( *callback )( USB_REPORT*, void* ) )
+{
+  USB_REPORT report =
   {
-    usbBuffer[i] = 0U;
-  }
-  vUSBmakeReport( &response );
-  while ( eUSBwrite( response.buf ) == USBD_BUSY )
+    .buf  = usbBuffer,
+    .data = &usbBuffer[USB_DATA_BYTE],
+  };
+  if ( report.adr < SETTING_REGISTER_NUMBER )
   {
-    osDelay( 2U );
+    callback( &report, data );
+    vUSBmakeReport( &report );
+    while ( eUSBwrite( report.buf ) == USBD_BUSY )
+    {
+      osDelay( 2U );
+    }
   }
   return;
 }
-
-
-
-
-
+/*---------------------------------------------------------------------------------------------------*/
 void vUSBget ( USB_REPORT* report, USB_Status ( *callback )( USB_REPORT* ) )
 {
   uint16_t   i        = 0U;
@@ -1014,9 +964,6 @@ void vUSBget ( USB_REPORT* report, USB_Status ( *callback )( USB_REPORT* ) )
   }
   return;
 }
-
-
-
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -1119,16 +1066,16 @@ void vStartUsbTask ( void *argument )
           vUSBsendLog( report.adr );
           break;
         case USB_ERASE_LOG:
-          vUSBeraseLOG( &report );
+          vUSBget( &report, vUSBeraseLOG );
           break;
         case USB_PUT_PASSWORD:
           vUSBget( &report, eUSBReportToPassword );
           break;
         case USB_AUTHORIZATION:
-          vUSBauthorization( &report );
+          vUSBget( &report, eUSBcheckupPassword );
           break;
         case USB_ERASE_PASSWORD:
-          vUSBerasePassword( &report );
+          vUSBget( &report, vUSBerasePassword );
           break;
         default:
           break;

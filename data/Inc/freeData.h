@@ -31,9 +31,9 @@ typedef enum
 
 typedef enum
 {
-  AUTHORIZATION_VOID,
-  AUTHORIZATION_DONE,
-} AUTHORIZATION_STATUS;
+  AUTH_VOID,
+  AUTH_DONE,
+} AUTH_STATUS;
 /*---------------------------- Structures ------------------------------------*/
 typedef struct
 {

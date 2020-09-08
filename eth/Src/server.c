@@ -12,9 +12,10 @@
 #include "api.h"
 #include "string.h"
 #include "common.h"
+#include "ip_addr.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static struct netconn * nc;            // Connection to the port 80
-static struct netconn * in_nc;         // New user connection
+static struct netconn* nc;             // Connection to the port 80
+static struct netconn* in_nc;          // New user connection
 /*------------------------- Task --------------------------------------------------------------------*/
 static osThreadId_t  netClientHandle;  // Network task handle
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -53,9 +54,10 @@ void cSERVERgetStrIP ( char* ipStr )
  */
 void vSERVERinit ( void )
 {
+  vHTTPinit();
   while ( gnetif.ip_addr.addr == 0U )
   {
-    osDelay(1);		// Wait the ip to reach the structure
+    osDelay( 1U );		// Wait the ip to reach the structure
   }
   return;
 }
@@ -74,7 +76,7 @@ SERVER_ERROR eSERVERstart ( void )
   nc = netconn_new( NETCONN_TCP );                   // Create new network connection TCP TYPE
   if ( nc != NULL )
   {
-    netconRes = netconn_bind (nc, IP_ADDR_ANY, 80 ); // Bind connection to well known port number 80
+    netconRes = netconn_bind ( nc, IP_ADDR_ANY, 80 ); // Bind connection to well known port number 80
     if ( netconRes == ERR_OK )
     {
       netconRes = netconn_listen( nc );	             // Tell connection to go into listening mode
@@ -198,35 +200,36 @@ void startNetClientTask ( void const * argument )
   HTTP_REQUEST     request;
   uint32_t         len        = 0U;
   STREAM_STATUS    status     = STREAM_CONTINUES;
-
+  uint32_t         remoteIP   = 0U;
   for (;;)
   {
     if ( netconn_recv( netcon, &nb ) == ERR_OK )
     {
       /*-------------------- Input message --------------------*/
-      len = netbuf_len( nb );                          // Get length of input message
-      netbuf_copy( nb, endInput, len );                // Copy message from net buffer to local buffer
-      netbuf_delete( nb );                             // Delete net buffer
-      endInput[len] = 0x00U;                           // Mark end of string
-      endMessage = eSERVERanalizMessage( input, len ); // Analysis is the message have been ended
+      len = netbuf_len( nb );                            /* Get length of input message */
+      netbuf_copy( nb, endInput, len );                  /* Copy message from net buffer to local buffer */
+      remoteIP = netcon->pcb.ip->remote_ip.addr;         /* Get remote IP address */
+      netbuf_delete( nb );                               /* Delete net buffer */
+      endInput[len] = 0x00U;                             /* Mark end of string */
+      endMessage = eSERVERanalizMessage( input, len );   /* Analysis is the message have been ended */
       /*------------------- Analysis Message -------------------*/
       if ( endMessage == RECEIVE_MESSAGE_COMPLETE )
       {
-        endInput = input;                                    // Return pointer to the start of the local buffer
-        eHTTPresponse( input, &request, &response, output ); // Parsing request and prepare the response
-  	/*-------------------- Send response ---------------------*/
+        endInput = input;                                              /* Return pointer to the start of the local buffer */
+        eHTTPresponse( input, &request, &response, output, remoteIP ); /* Parsing request and prepare the response */
+  	  /*-------------------- Send response ---------------------*/
         if ( response.status != HTTP_STATUS_ERROR )
         {
-          netconn_write( netcon, output, strlen( output ), NETCONN_COPY );  // Send header of the response
+          netconn_write( netcon, output, strlen( output ), NETCONN_COPY );  /* Send header of the response */
   	  /*-------------------- Send content ----------------------*/
-          if ( response.contentLength > 0U )																							// There is content
+          if ( response.contentLength > 0U )															  /* There is content */
           {
             while ( status == STREAM_CONTINUES )
             {
               status = response.callBack( &response.stream );
               if ( status != STREAM_ERROR )
               {
-                netconn_write( netcon, response.stream.content, response.stream.length, NETCONN_COPY );	// Send content
+                netconn_write( netcon, response.stream.content, response.stream.length, NETCONN_COPY );	/* Send content */
               }
               else
               {
@@ -342,10 +345,10 @@ HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char*
  *         output   - response string
  * output: none
  */
-void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output, uint32_t remoteIP )
 {
   eHTTPparsingRequest( input, request );
-  vHTTPbuildResponse( request, response );
+  vHTTPbuildResponse( request, response, remoteIP );
   eHTTPmakeResponse( output, response );
   return;
 }

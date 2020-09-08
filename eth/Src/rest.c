@@ -22,7 +22,10 @@ const char *restRequeststr[REST_REQUEST_NUMBER] = { REST_REQUEST_CONFIGS,
 						                                        REST_REQUEST_TIME,
 						                                        REST_REQUEST_DATA,
 						                                        REST_REQUEST_LOG,
-                                                    REST_REQUEST_LOG_ERASE};
+                                                    REST_REQUEST_LOG_ERASE,
+                                                    REST_REQUEST_PASSWORD,
+                                                    REST_REQUEST_AUTH,
+                                                    REST_REQUEST_ERASE_PASSWORD};
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 uint8_t    uRESTmakeStartRecord ( const char* header, char* output );
@@ -262,7 +265,43 @@ REST_ERROR eRESTparsingTime( char* input, RTC_TIME* time )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-REST_ERROR eRESTparsingData ( char* input, uint16_t* data )
+REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE password )
+{
+  REST_ERROR res   = REST_OK;
+  char*      pchSt = NULL;
+  pchSt = strchr( input, '{' );
+  if ( pchSt != NULL )
+  {
+    res = eRESTparsingDig16Record( input, PASSWORD_STATUS_STR, password.status );
+    if ( res == REST_OK )
+    {
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, password.data );
+    }
+  }
+  else
+  {
+    res = REST_MESSAGE_FORMAT_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+REST_ERROR eRESTparsingAuth ( char* input, PASSWORD_TYPE password )
+{
+  REST_ERROR res   = REST_OK;
+  char*      pchSt = NULL;
+  pchSt = strchr( input, '{' );
+  if ( pchSt != NULL )
+  {
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, password.data );
+  }
+  else
+  {
+    res = REST_MESSAGE_FORMAT_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+REST_ERROR eRESTparsingFreeData ( char* input, uint16_t* data )
 {
   REST_ERROR res   = REST_OK;
   char*      pchSt = NULL;

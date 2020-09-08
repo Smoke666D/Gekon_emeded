@@ -10,6 +10,9 @@
 /*----------------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #include "http.h"
+#include "freeData.h"
+/*----------------------------- Define ---------------------------------------*/
+
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -31,6 +34,12 @@ typedef enum
   RECEIVE_MESSAGE_CONTINUES,
   RECEIVE_MESSAGE_ERROR,
 } RECEIVE_MESSAGE;
+/*---------------------------- Structures ------------------------------------*/
+typedef struct
+{
+  AUTH_STATUS status;
+  uint32_t    ip;
+} AUTH_IP_TYPE;
 /*------------------------------ Default -------------------------------------*/
 #define  HTTP_INPUT_BUFFER_SIZE     2048U
 #define  HTTP_OUTPUT_BUFFER_SIZE    256U
@@ -40,7 +49,7 @@ void          vSERVERinit ( void );               // Waiting the end of server i
 SERVER_ERROR  eSERVERstart ( void );              // Start server. Open 80 port and start listen it
 SERVER_ERROR  eSERVERstop ( void );               // Stop server connection
 SERVER_ERROR  eSERVERlistenRoutine ( void );      // Routine handler of incoming packages.
-HTTP_STATUS   eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );                 /* Send request, get and parsing response */
-void          eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );   /* Make response for input request */
+HTTP_STATUS   eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output );                                    /* Send request, get and parsing response */
+void          eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output, uint32_t remoteIP );   /* Make response for input request */
 /*----------------------------------------------------------------------------*/
 #endif /* INC_SERVER_H_ */

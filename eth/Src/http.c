@@ -25,7 +25,8 @@ static RTC_TIME time;
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_PUT, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
 /*----------------------- Variables -----------------------------------------------------------------*/
-
+static AUTH_IP_TYPE ethAuthList[CONNECT_STACK_SIZE]; /* List of authorization IPs*/
+static uint8_t      ethAuthListPointer = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 void          vHTTPcleanRequest ( HTTP_REQUEST *httpRequest );                     /* Clean request structure */
 void          vHTTPCleanResponse ( HTTP_RESPONSE *response );                      /* Clean response structure */
@@ -41,6 +42,67 @@ STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* );                               
 STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream );                             /* Stream call back for RTC time */
 STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream );
 STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream );
+AUTH_STATUS   eHTTPisAuth ( uint32_t ip );
+void          vHHTPsetAuth ( uint32_t ip, AUTH_STATUS status );
+/*---------------------------------------------------------------------------------------------------*/
+AUTH_STATUS eHTTPisAuth ( uint32_t ip )
+{
+  PASSWORD_TYPE password = { .data = 0U, .status = PASSWORD_RESET };
+  AUTH_STATUS   res      = AUTH_VOID;
+  uint8_t       i        = 0U;
+  uint8_t       new      = 1U;
+
+  if ( eDATAAPIpassword( DATA_API_CMD_READ, &password ) == DATA_API_STAT_OK )
+  {
+    if ( password.status == PASSWORD_SET )
+    {
+      for ( i=0U; i<CONNECT_STACK_SIZE; i++ )
+      {
+        if ( ip == ethAuthList[i].ip )
+        {
+          res = ethAuthList[i].status;
+          new = 0U;
+          break;
+        }
+      }
+      if ( new > 0U )
+      {
+        ethAuthList[ethAuthListPointer].ip     = ip;
+        ethAuthList[ethAuthListPointer].status = AUTH_VOID;
+        res = AUTH_VOID;
+        if ( ethAuthListPointer < CONNECT_STACK_SIZE )
+        {
+          ethAuthListPointer++;
+        }
+        else
+        {
+          ethAuthListPointer = 0U;
+        }
+      }
+    }
+    else
+    {
+      res = AUTH_DONE;
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vHHTPsetAuth ( uint32_t ip, AUTH_STATUS status )
+{
+  uint8_t i = 0U;
+  if ( eHTTPisAuth( ip ) != status )
+  {
+    for ( i=0U; i<CONNECT_STACK_SIZE; i++ )
+    {
+      if ( ip == ethAuthList[i].ip )
+      {
+        ethAuthList[i].status = status;
+      }
+    }
+  }
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Clean request structure
@@ -122,6 +184,18 @@ uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vHTTPinit ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<CONNECT_STACK_SIZE; i++ )
+  {
+    ethAuthList[i].ip     = 0U;
+    ethAuthList[i].status = AUTH_VOID;
+  }
+  ethAuthListPointer = 0U;
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Parsing data from request text
  * Input:  req     - pointer to a char array with input request in text form
@@ -171,7 +245,7 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
       pchSt  = strstr( req, HTTP_END_HEADER );
       if ( pchSt != NULL )
       {
-          request->content = &pchSt[strlen( HTTP_END_HEADER )];
+        request->content = &pchSt[strlen( HTTP_END_HEADER )];
       }
     }
   }
@@ -229,12 +303,14 @@ HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE*
  *         content  - content of the request
  * Output: none
  */
-void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content )
+void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content, uint32_t remoteIP )
 {
-  uint16_t      adr       = 0xFFFFU;
-  REST_REQUEST  request   = 0U;
-  REST_ADDRESS  adrFlag   = REST_NO_ADR;
-  uint16_t      data      = 0U;
+  uint16_t      adr        = 0xFFFFU;
+  REST_REQUEST  request    = 0U;
+  REST_ADDRESS  adrFlag    = REST_NO_ADR;
+  uint16_t      data       = 0U;
+  PASSWORD_TYPE password   = { .status = PASSWORD_RESET,.data = 0U };
+  PASSWORD_TYPE passwordSt = { .status = PASSWORD_RESET,.data = 0U };
 
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
   response->cache         = HTTP_CACHE_NO_CACHE_STORE;
@@ -247,80 +323,197 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
     switch ( request )
     {
       case REST_CONFIGS:
-        if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+        if ( eHTTPisAuth( remoteIP ) )
         {
-          if ( adr == 3U )
+          if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
           {
-        	  adr = 3U;
+            if ( adr == 3U )
+            {
+        	    adr = 3U;
+            }
+            if ( eRESTparsingConfig( content, adr ) == REST_OK )
+            {
+              response->contetntType  = HTTP_CONTENT_JSON;
+              response->status        = HTTP_STATUS_OK;
+              response->contentLength = 0U;
+            }
           }
-          if ( eRESTparsingConfig( content, adr ) == REST_OK )
-          {
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->contentLength = 0U;
-          }
+        }
+        else
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->contentLength = 0U;
         }
         break;
       case REST_CHARTS:
-        if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+        if ( eHTTPisAuth( remoteIP ) )
         {
-          if ( eRESTparsingChart( content, adr ) == REST_OK )
+          if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
+          {
+            if ( eRESTparsingChart( content, adr ) == REST_OK )
             {
+              response->contetntType  = HTTP_CONTENT_JSON;
+              response->status        = HTTP_STATUS_OK;
+              response->contentLength = 0U;
+            }
+          }
+        }
+        else
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->contentLength = 0U;
+        }
+        break;
+      case REST_SAVE_CONFIGS:
+        if ( eHTTPisAuth( remoteIP ) )
+        {
+          if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
+          {
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
             response->contentLength = 0U;
           }
         }
-        break;
-      case REST_SAVE_CONFIGS:
-        if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
+        else
         {
           response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_OK;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
           response->contentLength = 0U;
         }
         break;
       case REST_SAVE_CHARTS:
-	      if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
+        if ( eHTTPisAuth( remoteIP ) )
+        {
+	        if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
+          {
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->contentLength = 0U;
+          }
+        }
+        else
         {
           response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_OK;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
           response->contentLength = 0U;
         }
         break;
       case REST_TIME:
-	      if ( eRESTparsingTime( content, &time ) == REST_OK )
-	      {
-	        if ( vRTCsetTime( &time ) == RTC_OK )
+        if ( eHTTPisAuth( remoteIP ) )
+        {
+	        if ( eRESTparsingTime( content, &time ) == REST_OK )
 	        {
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->contentLength = 0U;
+	          if ( vRTCsetTime( &time ) == RTC_OK )
+	          {
+              response->contetntType  = HTTP_CONTENT_JSON;
+              response->status        = HTTP_STATUS_OK;
+              response->contentLength = 0U;
+	          }
 	        }
 	      }
+        else
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->contentLength = 0U;
+        }
         break;
       case REST_FREE_DATA:
-	      if ( adr < FREE_DATA_SIZE )
-	      {
-	        if ( eRESTparsingData( content, &data ) == REST_OK )
+        if ( eHTTPisAuth( remoteIP ) )
+        {
+	       if ( adr < FREE_DATA_SIZE )
 	        {
-	          if ( eDATAAPIfreeData( DATA_API_CMD_WRITE, adr, &data ) == DATA_API_STAT_OK )
+	          if ( eRESTparsingFreeData( content, &data ) == REST_OK )
 	          {
-	            if ( eDATAAPIfreeData( DATA_API_CMD_SAVE, adr, &data ) == DATA_API_STAT_OK )
+	            if ( eDATAAPIfreeData( DATA_API_CMD_WRITE, adr, &data ) == DATA_API_STAT_OK )
 	            {
-                response->contetntType  = HTTP_CONTENT_JSON;
-                response->status        = HTTP_STATUS_OK;
-                response->contentLength = 0U;
+	              if ( eDATAAPIfreeData( DATA_API_CMD_SAVE, adr, &data ) == DATA_API_STAT_OK )
+	              {
+                  response->contetntType  = HTTP_CONTENT_JSON;
+                  response->status        = HTTP_STATUS_OK;
+                  response->contentLength = 0U;
+	              }
 	            }
 	          }
 	        }
 	      }
-        break;
-      case REST_LOG_ERASE:
-        if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) == DATA_API_STAT_OK )
+        else
         {
           response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_OK;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->contentLength = 0U;
+        }
+        break;
+      case REST_LOG_ERASE:
+        if ( eHTTPisAuth( remoteIP ) )
+        {
+          if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) == DATA_API_STAT_OK )
+          {
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->contentLength = 0U;
+          }
+        }
+        else
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->contentLength = 0U;
+        }
+        break;
+      case REST_PASSWORD:
+        if ( eHTTPisAuth( remoteIP ) )
+        {
+          if ( eRESTparsingPassword( content, &password ) == REST_OK )
+          {
+            if ( eDATAAPIpassword( DATA_API_CMD_WRITE, &password ) == DATA_API_STAT_OK )
+            {
+              if ( eDATAAPIpassword( DATA_API_CMD_SAVE, NULL ) == DATA_API_STAT_OK )
+              {
+                response->contetntType  = HTTP_CONTENT_JSON;
+                response->status        = HTTP_STATUS_OK;
+                response->contentLength = 0U;
+              }
+            }
+          }
+        }
+        else
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->contentLength = 0U;
+        }
+        break;
+      case REST_AUTH:
+        if ( eDATAAPIpassword( DATA_API_CMD_READ, &passwordSt ) == DATA_API_STAT_OK )
+        {
+          if ( passwordSt.status == PASSWORD_SET )
+          {
+            if ( eRESTparsingAuth( content, &password ) == REST_OK )
+            {
+              if ( password.data == passwordSt.data )
+              {
+                vHHTPsetAuth( remoteIP, AUTH_DONE );
+              }
+            }
+          }
+          else
+          {
+            vHHTPsetAuth( remoteIP, AUTH_DONE );
+          }
+        }
+        break;
+      case REST_ERASE_PASSWORD:
+        if ( eHTTPisAuth( remoteIP ) )
+        {
+
+        }
+        else
+        {
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_UNAUTHORIZED;
           response->contentLength = 0U;
         }
         break;
@@ -339,7 +532,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content 
  *          response - structure of response
  * Output:  none
  */
-void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
+void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remoteIP)
 {
   char*           strStr  = NULL;
   uint16_t        adr     = 0xFFFFU;
@@ -402,120 +595,128 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
   /*--------------------- REST ---------------------*/
   else if ( path[0U] > 0U )
   {
-    if ( path[2U] == 'h')
+    if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
     {
-      i = 0U;
-    }
-    adrFlag = eRESTgetRequest( path, &request, &adr );
-    switch ( request )
-    {
-      case REST_CONFIGS:
-        /*------------------ Broadcast -------------------*/
-        if ( adrFlag == REST_NO_ADR )
-        {
-          stream = &(response->stream);
-          stream->size       = SETTING_REGISTER_NUMBER;
-          stream->index      = 0U;
-          stream->start      = 0U;
-          response->callBack = cHTTPstreamConfigs;
-          for( i=0U; i<stream->size; i++ )
+      if ( path[2U] == 'h')
+      {
+        i = 0U;
+      }
+      adrFlag = eRESTgetRequest( path, &request, &adr );
+      switch ( request )
+      {
+        case REST_CONFIGS:
+          /*------------------ Broadcast -------------------*/
+          if ( adrFlag == REST_NO_ADR )
           {
-            response->contentLength += uRESTmakeConfig( configReg[i], restBuffer );
+            stream = &(response->stream);
+            stream->size       = SETTING_REGISTER_NUMBER;
+            stream->index      = 0U;
+            stream->start      = 0U;
+            response->callBack = cHTTPstreamConfigs;
+            for( i=0U; i<stream->size; i++ )
+            {
+              response->contentLength += uRESTmakeConfig( configReg[i], restBuffer );
+            }
+            response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+            response->contetntType   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->data           = restBuffer;
           }
-          response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
-          response->contetntType   = HTTP_CONTENT_JSON;
-          response->status         = HTTP_STATUS_OK;
-          response->data           = restBuffer;
-        }
-        /*------------- Specific address ------------------*/
-        else
-        {
-          if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
+          /*------------- Specific address ------------------*/
+          else
           {
-            response->contentLength = uRESTmakeConfig( configReg[adr], restBuffer );
+            if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
+            {
+              response->contentLength = uRESTmakeConfig( configReg[adr], restBuffer );
+            }
+            stream = &(response->stream);
+            stream->size            = adr + 1U;
+            stream->start           = adr;
+            stream->index           = 0U;
+            response->callBack      = cHTTPstreamConfigs;
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
           }
-          stream = &(response->stream);
-          stream->size            = adr + 1U;
-          stream->start           = adr;
-          stream->index           = 0U;
-          response->callBack      = cHTTPstreamConfigs;
-          response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_OK;
-        }
-        break;
-      case REST_CHARTS:
-        /*------------------ Broadcast -------------------*/
-        if ( adrFlag == REST_NO_ADR )
-        {
-          stream = &(response->stream);
-          stream->size  = CHART_NUMBER;
-          stream->index = 0U;
-          stream->start = 0U;
-          response->callBack = cHTTPstreamCharts;
-          for( i=0U; i<stream->size; i++ )
+          break;
+        case REST_CHARTS:
+          /*------------------ Broadcast -------------------*/
+          if ( adrFlag == REST_NO_ADR )
           {
-            response->contentLength += uRESTmakeChart( charts[i], restBuffer );
+            stream = &(response->stream);
+            stream->size  = CHART_NUMBER;
+            stream->index = 0U;
+            stream->start = 0U;
+            response->callBack = cHTTPstreamCharts;
+            for ( i=0U; i<stream->size; i++ )
+            {
+              response->contentLength += uRESTmakeChart( charts[i], restBuffer );
+            }
+            response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+            response->contetntType   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->data           = restBuffer;
           }
-          response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
-          response->contetntType   = HTTP_CONTENT_JSON;
-          response->status         = HTTP_STATUS_OK;
-          response->data           = restBuffer;
-        }
-        break;
-      case REST_TIME:
-        if ( eRTCgetTime( &time ) == RTC_OK )
-        {
-          stream = &(response->stream);
-          stream->size            = 1U;
-          stream->start           = 0U;
-          stream->index           = 0U;
-          response->contentLength = uRESTmakeTime( &time, restBuffer );;
-          response->callBack      = cHTTPstreamTime ;
-          response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_OK;
-        }
-        break;
-      case REST_FREE_DATA:
-	      if ( adrFlag != REST_NO_ADR )
-	      {
-	        if ( adr < FREE_DATA_SIZE )
+          break;
+        case REST_TIME:
+          if ( eRTCgetTime( &time ) == RTC_OK )
+          {
+            stream = &(response->stream);
+            stream->size            = 1U;
+            stream->start           = 0U;
+            stream->index           = 0U;
+            response->contentLength = uRESTmakeTime( &time, restBuffer );;
+            response->callBack      = cHTTPstreamTime ;
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+          }
+          break;
+        case REST_FREE_DATA:
+	        if ( adrFlag != REST_NO_ADR )
 	        {
-	          stream = &(response->stream);
-	          stream->size            = 1U;
-	          stream->start           = adr;
-	          stream->index           = 0U;
-	          response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
-	          response->callBack      = cHTTPstreamData;
-	          response->contetntType  = HTTP_CONTENT_JSON;
-	          response->status        = HTTP_STATUS_OK;
+	          if ( adr < FREE_DATA_SIZE )
+	          {
+	            stream = &(response->stream);
+	            stream->size            = 1U;
+	            stream->start           = adr;
+	            stream->index           = 0U;
+	            response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
+	            response->callBack      = cHTTPstreamData;
+	            response->contetntType  = HTTP_CONTENT_JSON;
+	            response->status        = HTTP_STATUS_OK;
+	          }
 	        }
-	      }
-        break;
-      case REST_LOG:
-        if ( adrFlag == REST_NO_ADR )
-        {
-          stream = &(response->stream);
-          stream->size       = LOG_SIZE;
-          stream->index      = 0U;
-          stream->start      = 0U;
-          response->callBack = cHTTPstreamLog;
-          for( i=0U; i<stream->size; i++ )
+          break;
+        case REST_LOG:
+          if ( adrFlag == REST_NO_ADR )
           {
-            status = eDATAAPIlog( DATA_API_CMD_LOAD, i, &record );
-            response->contentLength += uRESTmakeLog( &record, restBuffer );
+            stream = &(response->stream);
+            stream->size       = LOG_SIZE;
+            stream->index      = 0U;
+            stream->start      = 0U;
+            response->callBack = cHTTPstreamLog;
+            for ( i=0U; i<stream->size; i++ )
+            {
+              status = eDATAAPIlog( DATA_API_CMD_LOAD, i, &record );
+              response->contentLength += uRESTmakeLog( &record, restBuffer );
+            }
+            response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+            response->contetntType   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->data           = restBuffer;
           }
-          response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
-          response->contetntType   = HTTP_CONTENT_JSON;
-          response->status         = HTTP_STATUS_OK;
-          response->data           = restBuffer;
-        }
-        break;
-      case REST_REQUEST_ERROR:
-        break;
-      default:
-        response->status        = HTTP_STATUS_BAD_REQUEST;
-        response->contentLength = 0U;
-        break;
+          break;
+        case REST_REQUEST_ERROR:
+          break;
+        default:
+          response->status        = HTTP_STATUS_BAD_REQUEST;
+          response->contentLength = 0U;
+          break;
+      }
+    }
+    else
+    {
+      response->status        = HTTP_STATUS_UNAUTHORIZED;
+      response->contentLength = 0U;
     }
   }
   else
@@ -532,7 +733,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response)
  *         response - structure of response
  * Output: HTTP status
  */
-void vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response)
+void vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response, uint32_t remoteIP )
 {
   vHTTPCleanResponse( response );
   response->status = HTTP_STATUS_BAD_REQUEST;
@@ -549,7 +750,7 @@ void vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response)
       break;
     case HTTP_METHOD_PUT:
       response->method = HTTP_METHOD_PUT;
-      eHTTPbuildPutResponse( request->path, response, request->content );
+      eHTTPbuildPutResponse( request->path, response, request->content, remoteIP );
       break;
     case HTTP_METHOD_HEAD:
       break;

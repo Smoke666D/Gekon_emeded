@@ -22,7 +22,7 @@ static uint8_t              usbBuffer[USB_REPORT_SIZE];
 static uint8_t              inputBuffer[USB_REPORT_SIZE];
 static char                 strBuffer[( MAX_UNITS_LENGTH * 6U ) + 1U];
 static osThreadId_t         usbHandle;
-static AUTHORIZATION_STATUS usbAuthorization = AUTHORIZATION_VOID;
+static AUTH_STATUS usbAuthorization = AUTH_VOID;
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -368,7 +368,7 @@ USB_STATUS eUSBcheckupPassword ( USB_REPORT* report )
       if ( ( ( pass.status == PASSWORD_SET ) && ( pass.data == input ) ) || ( pass.status == PASSWORD_RESET ) )
       {
         res              = USB_DONE;
-        usbAuthorization = AUTHORIZATION_DONE;
+        usbAuthorization = AUTH_DONE;
       }
       else
       {
@@ -705,7 +705,7 @@ void vUSBsendConfig ( USB_REPORT* request )
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( usbAuthorization == AUTHORIZATION_DONE )
+  if ( usbAuthorization == AUTH_DONE )
   {
     if ( report.adr < SETTING_REGISTER_NUMBER )
     {
@@ -749,7 +749,7 @@ void vUSBsendChart ( USB_REPORT* request )
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( usbAuthorization == AUTHORIZATION_DONE )
+  if ( usbAuthorization == AUTH_DONE )
   {
     if ( report.adr < CHART_NUMBER )
     {
@@ -803,7 +803,7 @@ void vUSBsendTime ()
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( usbAuthorization == AUTHORIZATION_DONE )
+  if ( usbAuthorization == AUTH_DONE )
   {
     eRTCgetTime( &time );
     vUSBtimeToReport( &time, &report );
@@ -834,7 +834,7 @@ void vUSBsendFreeData ( USB_REPORT* request )
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( usbAuthorization == AUTHORIZATION_DONE )
+  if ( usbAuthorization == AUTH_DONE )
   {
     vUSBfreeDataToReport( request->adr, &report );
   }
@@ -864,7 +864,7 @@ void vUSBsendLog( USB_REPORT* request )
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( usbAuthorization == AUTHORIZATION_DONE )
+  if ( usbAuthorization == AUTH_DONE )
   {
     vUSBlogToReport( request->adr, &report );
   }
@@ -955,7 +955,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( USB_REPORT* ) )
     .buf    = usbBuffer,
     .data   = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( ( usbAuthorization == AUTHORIZATION_DONE ) || ( report->cmd == USB_AUTHORIZATION ) )
+  if ( ( usbAuthorization == AUTH_DONE ) || ( report->cmd == USB_AUTHORIZATION ) )
   {
     res = callback( report );
   }
@@ -1033,7 +1033,7 @@ void vUSBplugHandler ( void )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBunplugHandler ( void )
 {
-  usbAuthorization = AUTHORIZATION_VOID;
+  usbAuthorization = AUTH_VOID;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

@@ -28,6 +28,12 @@ typedef enum
   PASSWORD_RESET,
   PASSWORD_SET,
 } PASSWORD_STATUS;
+
+typedef enum
+{
+  AUTHORIZATION_VOID,
+  AUTHORIZATION_DONE,
+} AUTHORIZATION_STATUS;
 /*---------------------------- Structures ------------------------------------*/
 typedef struct
 {

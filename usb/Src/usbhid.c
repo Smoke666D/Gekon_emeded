@@ -18,10 +18,11 @@
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static uint8_t      usbBuffer[USB_REPORT_SIZE];
-static uint8_t      inputBuffer[USB_REPORT_SIZE];
-static char         strBuffer[( MAX_UNITS_LENGTH * 6U ) + 1U];
-static osThreadId_t usbHandle;
+static uint8_t              usbBuffer[USB_REPORT_SIZE];
+static uint8_t              inputBuffer[USB_REPORT_SIZE];
+static char                 strBuffer[( MAX_UNITS_LENGTH * 6U ) + 1U];
+static osThreadId_t         usbHandle;
+static AUTHORIZATION_STATUS usbAuthorization = AUTHORIZATION_VOID;
 /*----------------------- Functions -----------------------------------------------------------------*/
 void               vUint32ToBytes ( uint32_t input, uint8_t* output );
 void               vUint16ToBytes ( uint16_t input, uint8_t* output );
@@ -30,16 +31,16 @@ void               vUSBparseReport ( USB_REPORT* report );                      
 void               vUSBresetControl ( USB_ConfigControl* control );                /* Clean control structure */
 void               vUSBConfigToReport ( const eConfigReg* config, USB_REPORT* report );  /* Transfer configuration register to the report structure */
 void               vUSBChartToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report );
-USB_Status         vUSBChartDotsToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report );
-USB_Status         eUSBReportToConfig ( USB_REPORT* report );
+USB_STATUS         vUSBChartDotsToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report );
+USB_STATUS         eUSBReportToConfig ( USB_REPORT* report );
 USBD_StatusTypeDef eUSBwrite ( uint8_t* data );                                    /* Send data via USB */
-void               vUSBsendConfig ( eConfigReg* config );                          /* Send configuration register via USB */
 void               vUSBsendChart ( uint16_t adr, const eChartData* chart );        /* Send chart data via USB */
 void               vUSBParsingChart ( uint16_t adr, const uint8_t* data );
 void               vUSBParsingChartDots ( uint16_t adr, uint8_t firstDot, uint8_t size, const uint8_t* data );
 
 
-void vUSBget ( USB_REPORT* report, USB_Status ( *callback )( USB_REPORT* ) );
+void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( USB_REPORT* ) );
+void vUSBsend ( void* data, void ( *callback )( USB_REPORT*, void* ) );
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -77,9 +78,9 @@ void vUSBinit ( osThreadId_t taskHandle )
  * input:  output
  * output: status
  */
-USB_StatusConnect eUSBgetStatus ( void )
+USB_CONN_STATUS eUSBgetStatus ( void )
 {
-  USB_StatusConnect res = USB_DISCONNECT;
+  USB_CONN_STATUS res = USB_DISCONNECT;
 
   if ( hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED )
   {
@@ -257,9 +258,9 @@ void vUSBChartToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* repo
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status vUSBChartDotsToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report )
+USB_STATUS vUSBChartDotsToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report )
 {
-  USB_Status     res           = USB_DONE;
+  USB_STATUS     res           = USB_DONE;
   uint8_t        i             = 0U;
   uint8_t        count         = 0U;
   uint8_t        length        = 0U;
@@ -308,9 +309,9 @@ USB_Status vUSBChartDotsToReport ( uint16_t adr, const eChartData* chart, USB_RE
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status eUSBReportToTime ( USB_REPORT* report )
+USB_STATUS eUSBReportToTime ( USB_REPORT* report )
 {
-  USB_Status res  = USB_DONE;
+  USB_STATUS res  = USB_DONE;
   RTC_TIME   time;
   /*------------- Length control --------------*/
   if ( report->length >= sizeof( RTC_TIME ) )
@@ -334,16 +335,18 @@ USB_Status eUSBReportToTime ( USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status eUSBReportToPassword ( USB_REPORT* report )
+USB_STATUS eUSBReportToPassword ( USB_REPORT* report )
 {
-  USB_Status    res  = USB_DONE;
+  USB_STATUS    res  = USB_DONE;
   PASSWORD_TYPE pass =
   {
     .data   = 0U,
     .status = PASSWORD_RESET,
   };
-  if ( report->length >= PASSWORD_LEN )
+  if ( report->length >= PASSWORD_SIZE )
   {
+    pass.status = report->data[0U];
+    pass.data   = ( ( ( uint16_t )report->data[1U] ) << 8U ) | ( uint16_t )report->data[2U];
     if ( eDATAAPIpassword( DATA_API_CMD_WRITE, &pass ) == DATA_API_STAT_OK )
     {
       if ( eDATAAPIpassword( DATA_API_CMD_SAVE, NULL ) != DATA_API_STAT_OK )
@@ -363,9 +366,9 @@ USB_Status eUSBReportToPassword ( USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status eUSBcheckupPassword ( USB_REPORT* report )
+USB_STATUS eUSBcheckupPassword ( USB_REPORT* report )
 {
-  USB_Status    res   = USB_DONE;
+  USB_STATUS    res   = USB_DONE;
   uint16_t      input = 0U;
   PASSWORD_TYPE pass  =
   {
@@ -380,7 +383,8 @@ USB_Status eUSBcheckupPassword ( USB_REPORT* report )
     {
       if ( ( ( pass.status == PASSWORD_SET ) && ( pass.data == input ) ) || ( pass.status == PASSWORD_RESET ) )
       {
-        res = USB_DONE;
+        res              = USB_DONE;
+        usbAuthorization = AUTHORIZATION_DONE;
       }
       else
       {
@@ -399,9 +403,9 @@ USB_Status eUSBcheckupPassword ( USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status eUSBReportToFreeData ( USB_REPORT* report )
+USB_STATUS eUSBReportToFreeData ( USB_REPORT* report )
 {
-  USB_Status res   = USB_DONE;
+  USB_STATUS res   = USB_DONE;
   uint16_t   value = 0U;
   if ( report->length >= 2U )
   {
@@ -432,9 +436,9 @@ USB_Status eUSBReportToFreeData ( USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status eUSBReportToConfig ( USB_REPORT* report )
+USB_STATUS eUSBReportToConfig ( USB_REPORT* report )
 {
-  USB_Status    res    = USB_DONE;
+  USB_STATUS    res    = USB_DONE;
   uint8_t       count  = 0U;
   uint8_t       i      = 0U;
   uint8_t       length = 0U;
@@ -512,11 +516,11 @@ void vUSBParsingChartDots ( uint16_t adr, uint8_t firstDot, uint8_t size, const 
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status eUSBReportToChart ( USB_REPORT* report )
+USB_STATUS eUSBReportToChart ( USB_REPORT* report )
 {
   static uint8_t currentChart   = 0xFFU;
   static uint8_t lastDotNumber  = 0U;
-  USB_Status     res            = USB_DONE;
+  USB_STATUS     res            = USB_DONE;
   uint8_t        length         = 0U;
   uint8_t        size           = 0U;
 
@@ -573,9 +577,9 @@ USB_Status eUSBReportToChart ( USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status eUSBReportToEWA ( USB_REPORT* report )
+USB_STATUS eUSBReportToEWA ( USB_REPORT* report )
 {
-  USB_Status      res           = USB_DONE;
+  USB_STATUS      res           = USB_DONE;
   uint8_t         length        = 0U;
   static uint32_t index         = 0U;
   DATA_API_STATUS status        = DATA_API_STAT_OK;
@@ -707,16 +711,35 @@ void vUSBparseReport ( USB_REPORT* report )
  * input:  configuration register
  * output: none
  */
-void vUSBsendConfig ( eConfigReg* config )
+void vUSBsendConfig ( USB_REPORT* request, eConfigReg* config )
 {
+  uint16_t   i      = 0U;
   USB_REPORT report =
   {
+    .cmd  = request->cmd,
+    .adr  = request->adr,
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( report.adr < SETTING_REGISTER_NUMBER )
+  if ( usbAuthorization == AUTHORIZATION_DONE )
   {
-    vUSBConfigToReport( config, &report );
+    if ( report.adr < SETTING_REGISTER_NUMBER )
+    {
+      vUSBConfigToReport( config, &report );
+      vUSBmakeReport( &report );
+      while ( eUSBwrite( report.buf ) == USBD_BUSY )
+      {
+        osDelay( 2U );
+      }
+    }
+  }
+  else
+  {
+    report.stat = USB_STAT_UNAUTHORIZED;
+    for ( i=0U; i<USB_REPORT_SIZE; i++ )
+    {
+      usbBuffer[i] = 0U;
+    }
     vUSBmakeReport( &report );
     while ( eUSBwrite( report.buf ) == USBD_BUSY )
     {
@@ -734,71 +757,79 @@ void vUSBsendConfig ( eConfigReg* config )
 void vUSBsendChart ( uint16_t adr, const eChartData* chart )
 {
   uint8_t    i      = 0U;
-  USB_Status result = USB_DONE;
+  USB_STATUS result = USB_DONE;
   USB_REPORT report =
   {
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  if ( report.adr < CHART_NUMBER )
+  if ( usbAuthorization == AUTHORIZATION_DONE )
   {
-    vUSBChartToReport( adr, chart, &report );
-    vUSBmakeReport( &report );
-    while ( eUSBwrite( report.buf ) == USBD_BUSY )
+    if ( report.adr < CHART_NUMBER )
     {
-      osDelay( 2U );
-    }
-    for ( i=0U; i<USB_REPORT_SIZE; i++ )
-    {
-      usbBuffer[i]=0U;
-    }
-    for ( i=0U; i<( ( CHART_DOTS_SIZE / USB_DATA_SIZE ) + 1U); i++ )
-    {
-      result =  vUSBChartDotsToReport( adr, chart, &report ) == USB_DONE;
+      vUSBChartToReport( adr, chart, &report );
       vUSBmakeReport( &report );
       while ( eUSBwrite( report.buf ) == USBD_BUSY )
       {
         osDelay( 2U );
       }
-      if ( result == USB_DONE )
+      for ( i=0U; i<USB_REPORT_SIZE; i++ )
       {
-        break;
+        usbBuffer[i]=0U;
       }
+      for ( i=0U; i<( ( CHART_DOTS_SIZE / USB_DATA_SIZE ) + 1U); i++ )
+      {
+        result =  vUSBChartDotsToReport( adr, chart, &report ) == USB_DONE;
+        vUSBmakeReport( &report );
+        while ( eUSBwrite( report.buf ) == USBD_BUSY )
+        {
+          osDelay( 2U );
+        }
+        if ( result == USB_DONE )
+        {
+          break;
+        }
+      }
+    }
+  }
+  else
+  {
+    report.stat = USB_STAT_UNAUTHORIZED;
+    for ( i=0U; i<USB_REPORT_SIZE; i++ )
+    {
+      usbBuffer[i] = 0U;
+    }
+    vUSBmakeReport( &report );
+    while ( eUSBwrite( report.buf ) == USBD_BUSY )
+    {
+      osDelay( 2U );
     }
   }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status vUSBsaveConfigs ( USB_REPORT* report )
-{
-  USB_Status res = USB_DONE;
-  if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
-  {
-    res = USB_STORAGE_ERROR;
-  }
-  return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
-USB_Status vUSBsaveCharts ( USB_REPORT* report )
-{
-  USB_Status res = USB_DONE;
-  if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
-  {
-    res = USB_STORAGE_ERROR;
-  }
-  return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
 void vUSBsendTime ()
 {
   RTC_TIME   time;
+  uint16_t   i      = 0U;
   USB_REPORT report =
   {
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  eRTCgetTime( &time );
-  vUSBtimeToReport( &time, &report );
+  if ( usbAuthorization == AUTHORIZATION_DONE )
+  {
+    eRTCgetTime( &time );
+    vUSBtimeToReport( &time, &report );
+  }
+  else
+  {
+    report.stat = USB_STAT_UNAUTHORIZED;
+    for ( i=0U; i<USB_REPORT_SIZE; i++ )
+    {
+      usbBuffer[i] = 0U;
+    }
+  }
   vUSBmakeReport( &report );
   while ( eUSBwrite( report.buf ) == USBD_BUSY )
   {
@@ -809,12 +840,24 @@ void vUSBsendTime ()
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBsendFreeData ( uint16_t adr )
 {
+  uint16_t   i      = 0U;
   USB_REPORT report =
   {
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  vUSBfreeDataToReport( adr, &report );
+  if ( usbAuthorization == AUTHORIZATION_DONE )
+  {
+    vUSBfreeDataToReport( adr, &report );
+  }
+  else
+  {
+    report.stat = USB_STAT_UNAUTHORIZED;
+    for ( i=0U; i<USB_REPORT_SIZE; i++ )
+    {
+      usbBuffer[i] = 0U;
+    }
+  }
   vUSBmakeReport( &report );
   while ( eUSBwrite( report.buf ) == USBD_BUSY )
   {
@@ -825,12 +868,24 @@ void vUSBsendFreeData ( uint16_t adr )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBsendLog( uint16_t adr )
 {
+  uint16_t   i      = 0U;
   USB_REPORT report =
   {
     .buf  = usbBuffer,
     .data = &usbBuffer[USB_DATA_BYTE],
   };
-  vUSBlogToReport( adr, &report );
+  if ( usbAuthorization == AUTHORIZATION_DONE )
+  {
+    vUSBlogToReport( adr, &report );
+  }
+  else
+  {
+    report.stat = USB_STAT_UNAUTHORIZED;
+    for ( i=0U; i<USB_REPORT_SIZE; i++ )
+    {
+      usbBuffer[i] = 0U;
+    }
+  }
   vUSBmakeReport( &report );
   while ( eUSBwrite( report.buf ) == USBD_BUSY )
   {
@@ -839,9 +894,28 @@ void vUSBsendLog( uint16_t adr )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_Status vUSBeraseLOG ( USB_REPORT* report )
+USB_STATUS vUSBsaveConfigs ( USB_REPORT* report )
 {
-  USB_Status res = USB_DONE;
+  USB_STATUS res = USB_DONE;
+  if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
+  {
+    res = USB_STORAGE_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+USB_STATUS vUSBsaveCharts ( USB_REPORT* report )
+{
+  USB_STATUS res = USB_DONE;
+  if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
+  {
+    res = USB_STORAGE_ERROR;
+  }
+  return res;
+}
+USB_STATUS vUSBeraseLOG ( USB_REPORT* report )
+{
+  USB_STATUS res = USB_DONE;
   if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) != DATA_API_STAT_OK )
   {
     res = USB_STORAGE_ERROR;
@@ -849,48 +923,9 @@ USB_Status vUSBeraseLOG ( USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBauthorization ( USB_REPORT* report )
+USB_STATUS vUSBerasePassword( USB_REPORT* report )
 {
-  uint16_t   i        = 0U;
-  USB_Status res      = USB_DONE;
-  USB_REPORT response =
-  {
-    .cmd    = USB_AUTHORIZATION,
-    .stat   = USB_OK_STAT,
-    .adr    = 0U,
-    .length = 0U,
-    .buf    = usbBuffer,
-    .data   = &usbBuffer[USB_DATA_BYTE],
-  };
-
-  res = eUSBcheckupPassword( report );
-  switch ( res )
-  {
-    case USB_DONE:
-      response.stat = USB_OK_STAT;
-      break;
-    case USB_UNAUTHORIZED_ERROR:
-      response.stat = USB_STAT_UNAUTHORIZED;
-      break;
-    default:
-      response.stat = USB_BAD_REQ_STAT;
-      break;
-  }
-  for ( i=0U; i<USB_REPORT_SIZE; i++ )
-  {
-    usbBuffer[i] = 0U;
-  }
-  vUSBmakeReport( &response );
-  while ( eUSBwrite( response.buf ) == USBD_BUSY )
-  {
-    osDelay( 2U );
-  }
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-USB_Status vUSBerasePassword( USB_REPORT* report )
-{
-  USB_Status res = USB_DONE;
+  USB_STATUS res = USB_DONE;
   if ( eDATAAPIpassword( DATA_API_CMD_ERASE, NULL ) != DATA_API_STAT_OK )
   {
     res = USB_STORAGE_ERROR;
@@ -917,9 +952,10 @@ void vUSBsend ( void* data, void ( *callback )( USB_REPORT*, void* ) )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBget ( USB_REPORT* report, USB_Status ( *callback )( USB_REPORT* ) )
+void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( USB_REPORT* ) )
 {
   uint16_t   i        = 0U;
+  USB_STATUS res      = USB_DONE;
   USB_REPORT response =
   {
     .cmd    = report->cmd,
@@ -929,7 +965,15 @@ void vUSBget ( USB_REPORT* report, USB_Status ( *callback )( USB_REPORT* ) )
     .buf    = usbBuffer,
     .data   = &usbBuffer[USB_DATA_BYTE],
   };
-  switch ( callback( report ) )
+  if ( ( usbAuthorization == AUTHORIZATION_DONE ) || ( report->cmd == USB_AUTHORIZATION ) )
+  {
+    res = callback( report );
+  }
+  else
+  {
+    res = USB_STAT_UNAUTHORIZED;
+  }
+  switch ( res )
   {
     case USB_DONE:
       response.stat = USB_OK_STAT;
@@ -972,14 +1016,14 @@ void vUSBget ( USB_REPORT* report, USB_Status ( *callback )( USB_REPORT* ) )
  * input:  none
  * output: none
  */
-void vUSBreceiveHandler( void )
+void vUSBreceiveHandler ( void )
 {
-  USBD_CUSTOM_HID_HandleTypeDef *hhid  = (USBD_CUSTOM_HID_HandleTypeDef*)hUsbDeviceFS.pClassData;
+  USBD_CUSTOM_HID_HandleTypeDef* hhid  = ( USBD_CUSTOM_HID_HandleTypeDef* )hUsbDeviceFS.pClassData;
   uint8_t                        i     = 0U;
   BaseType_t                     yield = pdFALSE;
 
   /* Copy input buffer to local buffer */
-  for ( i=0U; i<USB_REPORT_SIZE; i++)
+  for ( i=0U; i<USB_REPORT_SIZE; i++ )
   {
     inputBuffer[i] = hhid->Report_buf[i];
   }
@@ -989,7 +1033,17 @@ void vUSBreceiveHandler( void )
     vTaskNotifyGiveFromISR( usbHandle, &yield );
     portYIELD_FROM_ISR ( yield );
   }
-
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBplugHandler ( void )
+{
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBunplugHandler ( void )
+{
+  usbAuthorization = AUTHORIZATION_VOID;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -1010,17 +1064,7 @@ void vStartUsbTask ( void *argument )
       switch( report.cmd )
       {
         case USB_GET_CONFIG_CMD:
-          if ( report.adr == BROADCAST_ADR )
-          {
-            for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
-            {
-              vUSBsendConfig( configReg[i] );
-            }
-          }
-          else
-          {
-            vUSBsendConfig( configReg[report.adr] );
-          }
+          vUSBsendConfig( &report, configReg[report.adr] );
           break;
         case USB_PUT_CONFIG_CMD:
           vUSBget( &report, eUSBReportToConfig );

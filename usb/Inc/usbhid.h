@@ -21,7 +21,7 @@ typedef enum
 {
   USB_DISCONNECT,
   USB_CONNECT,
-} USB_StatusConnect;
+} USB_CONN_STATUS;
 
 typedef enum
 {
@@ -31,13 +31,13 @@ typedef enum
   USB_ERROR_ADR,          /* Wrong address */
   USB_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
   USB_UNAUTHORIZED_ERROR, /* Non unauthorized request */
-} USB_Status;
+} USB_STATUS;
 
 typedef enum
 {
   USB_OUTPUT,
   USB_INPUT,
-} USB_ReportDir;
+} USB_REPORT_DIR;
 
 typedef enum
 {
@@ -45,7 +45,7 @@ typedef enum
   USB_BAD_REQ_STAT      = 0x02U,     /* 400 analog - request is distorted              */
   USB_NON_CON_STAT      = 0x03U,     /* 404 analog - requesting a nonexistent resource */
   USB_STAT_UNAUTHORIZED = 0x04U,     /* 401 analog - unauthorized request */
-} USB_ReportStat;
+} USB_REPORT_STATE;
 
 typedef enum
 {
@@ -65,7 +65,7 @@ typedef enum
   USB_PUT_PASSWORD    = 0x0EU,
   USB_AUTHORIZATION   = 0x0FU,
   USB_ERASE_PASSWORD  = 0x10U,
-} USB_ReportCmd;
+} USB_REPORT_CMD;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U
 #define USB_QUEUE_SIZE        10U
@@ -101,23 +101,25 @@ typedef struct
 
 typedef struct
 {
-  USB_ReportDir  dir;     /* Direction of transaction */
-  USB_ReportCmd  cmd;     /* Command */
-  USB_ReportStat stat;    /* Status of transaction */
-  uint16_t       adr;     /* Address of register */
-  uint8_t*       data;    /* Data array */
-  uint32_t       length;  /* Length of data array */
-  uint8_t*       buf;     /* Pointer to the IO buffer */
-  uint8_t        multi;   /* Number of USB messages for one report*/
+  USB_REPORT_DIR   dir;     /* Direction of transaction */
+  USB_REPORT_CMD   cmd;     /* Command */
+  USB_REPORT_STATE stat;    /* Status of transaction */
+  uint16_t         adr;     /* Address of register */
+  uint8_t*         data;    /* Data array */
+  uint32_t         length;  /* Length of data array */
+  uint8_t*         buf;     /* Pointer to the IO buffer */
+  uint8_t          multi;   /* Number of USB messages for one report*/
 } USB_REPORT;
 
-typedef USB_Status ( *dataCallBack )( USB_REPORT* report );  /* callback for data operations */
+typedef USB_STATUS ( *dataCallBack )( USB_REPORT* report );  /* callback for data operations */
 /*------------------------------ Extern --------------------------------------*/
 
 /*----------------------------- Functions ------------------------------------*/
-void              vUSBinit ( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
-void              vStartUsbTask ( void *argument );      /* Processing USB input task */
-USB_StatusConnect eUSBgetStatus ( void );                /* Get connection status of USB device */
-void              vUSBreceiveHandler ( void );           /* Handler of USB input interrupt */
+void            vUSBinit ( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
+void            vStartUsbTask ( void *argument );      /* Processing USB input task */
+USB_CONN_STATUS eUSBgetStatus ( void );                /* Get connection status of USB device */
+void            vUSBreceiveHandler ( void );           /* Handler of USB input interrupt */
+void            vUSBplugHandler ( void );
+void            vUSBunplugHandler ( void );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_USBHID_H_ */

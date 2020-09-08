@@ -110,6 +110,8 @@ typedef struct
   uint8_t*       buf;     /* Pointer to the IO buffer */
   uint8_t        multi;   /* Number of USB messages for one report*/
 } USB_REPORT;
+
+typedef USB_Status ( *dataCallBack )( USB_REPORT* report );  /* callback for data operations */
 /*------------------------------ Extern --------------------------------------*/
 
 /*----------------------------- Functions ------------------------------------*/

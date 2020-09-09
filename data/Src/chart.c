@@ -92,6 +92,7 @@ void vCHARTcalcFunction( eChartData* chart )
  *         y     - output value
  * output: error status
  */
+/*
 eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y )
 {
   eFunctionError res = FUNC_OK;
@@ -110,7 +111,7 @@ eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y )
       }
       if ( i != chart->size)
       {
-        //*y = fix16_add( fix16_mul( chart->func[i].k, x ), chart->func[i].b );
+        *y = fix16_add( fix16_mul( chart->func[i].k, x ), chart->func[i].b );
       }
       else
       {
@@ -120,6 +121,7 @@ eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y )
   } else res = FUNC_OVER_MAX_X_ERROR;
   return res;
 }
+*/
 /*---------------------------------------------------------------------------------------------------*/
 
 

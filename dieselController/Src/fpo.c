@@ -194,7 +194,7 @@ void vFPOsetMainsOffImp ( RELAY_STATUS stat )
 
 
 
-void vFPOinit( FPO_INIT* init )
+void vFPOinit( const FPO_INIT* init )
 {
   uint8_t i = 0U;
   /* Phisical part */

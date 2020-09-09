@@ -89,7 +89,7 @@ typedef struct __packed
   FPO_POLARITY   polarity;
 } FPO;
 /*----------------------- Functions ------------------------------------*/
-void    vFPOinit ( FPO_INIT* init );
+void    vFPOinit ( const FPO_INIT* init );
 uint8_t uFPOisEnable ( FPO_FUNCTION fun );
 void    vFPOsetPump ( RELAY_STATUS stat );
 void    vFPOsetBooster ( RELAY_STATUS stat );

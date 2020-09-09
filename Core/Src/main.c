@@ -44,6 +44,8 @@
 #include "freeData.h"
 #include "adc.h"
 #include "fpi.h"
+#include "fpo.h"
+#include "vrSensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -152,8 +154,8 @@ const osThreadAttr_t ADCTask_attributes = {
  * 4. lcdRedrawTask - 128
  * 5. usbTask       - 768
  * */
-TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
-const FPI_INIT      fpiInitStruct = {
+TaskHandle_t*  notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
+const FPI_INIT fpiInitStruct = {
   .pinA  = FPI_B_Pin,
   .pinB  = FPI_B_Pin,
   .pinC  = FPI_C_Pin,
@@ -162,6 +164,26 @@ const FPI_INIT      fpiInitStruct = {
   .portB = FPI_B_GPIO_Port,
   .portC = FPI_C_GPIO_Port,
   .portD = FPI_D_GPIO_Port,
+};
+const FPO_INIT fpoInitStruct = {
+  .outPinA   = POUT_A_Pin,
+  .outPinB   = POUT_B_Pin,
+  .outPinC   = POUT_C_Pin,
+  .outPinD   = POUT_D_Pin,
+  .outPinE   = POUT_E_Pin,
+  .outPinF   = POUT_F_Pin,
+  .outPortA  = POUT_A_GPIO_Port,
+  .outPortB  = POUT_B_GPIO_Port,
+  .outPortC  = POUT_C_GPIO_Port,
+  .outPortD  = POUT_D_GPIO_Port,
+  .outPortE  = POUT_E_GPIO_Port,
+  .outPortF  = POUT_F_GPIO_Port,
+  .disPinAB  = POUT_AB_CS_Pin,
+  .disPinCD  = POUT_CD_CS_Pin,
+  .disPinEF  = POUT_EF_CS_Pin,
+  .disPortAB = POUT_AB_CS_GPIO_Port,
+  .disPortCD = POUT_CD_CS_GPIO_Port,
+  .disPortEF = POUT_EF_CS_GPIO_Port,
 };
 /* USER CODE END PV */
 
@@ -242,7 +264,9 @@ int main(void)
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
   vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
-  //vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
+  vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
+  vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
+  vVRinit();                                                    /* Speed sensor initialization */
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */

@@ -1,12 +1,13 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-09-04 09:12:28
+ * Make time: 2020-09-09 17:50:08
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
 #define INC_CONFIG_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#include "fix16.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
 #define   MAX_BIT_MAP_LENGTH           12U
@@ -16,6 +17,9 @@
 #define   MAX_VALUE_LENGTH             16U
 #define   CONFIG_MAX_SIZE              77U     // bytes
 #define   CONFIG_TOTAL_SIZE            1834U   // bytes
+#define   MIN_CONFIG_SCALE             ( -2 )
+#define   MAX_CONFIG_SCALE             ( 0 )
+#define   CONFIG_SCALE_NUM             ( 3 )
 
 #define   CONFIG_REG_ADR_STR           "adr"
 #define   CONFIG_REG_SCALE_STR         "scale"
@@ -317,6 +321,7 @@ extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg logSetup;
 extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];
-extern const char* dictionaryArray[SETTING_REGISTER_NUMBER];
+extern const char*       dictionaryArray[SETTING_REGISTER_NUMBER];
+extern const fix16_t     scaleMulArray[CONFIG_SCALE_NUM];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

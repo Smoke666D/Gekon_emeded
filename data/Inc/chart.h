@@ -27,6 +27,7 @@
 #define CHART_DOT_X_STR         "x"
 #define CHART_DOT_Y_STR         "y"
 /*----------------------- Structures -----------------------------------*/
+
 typedef enum
 {
   FUNC_OK,
@@ -66,6 +67,6 @@ extern eChartData        fuelSensorChart;
 extern eChartData* const charts[CHART_NUMBER];
 /*----------------------- Function -------------------------------------*/
 void           vCHARTcalcFunction( eChartData* chart );                 /* Calculate line functions between dots of chart */
-eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y );  /* Get value of chart functions */
+//eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y );  /* Get value of chart functions */
 /*----------------------------------------------------------------------*/
 #endif /* INC_CHART_H_ */

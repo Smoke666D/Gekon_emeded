@@ -45,7 +45,7 @@ typedef enum
   REST_LOG            = 0x06U,
   REST_LOG_ERASE      = 0x07U,
   REST_PASSWORD       = 0x08U,
-  REST_AUTH  = 0x09U,
+  REST_AUTH           = 0x09U,
   REST_ERASE_PASSWORD = 0x0AU,
   REST_REQUEST_ERROR  = 0xFFU,
 } REST_REQUEST;
@@ -102,8 +102,8 @@ REST_ERROR   eRESTparsingConfig ( char* input, uint16_t adr );
 REST_ERROR   eRESTparsingChart ( char* input, uint16_t adr );
 REST_ERROR   eRESTparsingTime ( char* input, RTC_TIME* time );
 REST_ERROR   eRESTparsingFreeData ( char* input, uint16_t* data );
-REST_ERROR   eRESTparsingPassword ( char* input, PASSWORD_TYPE password );
-REST_ERROR   eRESTparsingAuth ( char* input, PASSWORD_TYPE password );
+REST_ERROR   eRESTparsingPassword ( char* input, PASSWORD_TYPE* password );
+REST_ERROR   eRESTparsingAuth ( char* input, PASSWORD_TYPE* password );
 /*---------------------------------------------------------------------------------------------------*/
 
 #endif /* INC_REST_H_ */

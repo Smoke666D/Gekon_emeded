@@ -35,11 +35,7 @@ typedef enum
   RECEIVE_MESSAGE_ERROR,
 } RECEIVE_MESSAGE;
 /*---------------------------- Structures ------------------------------------*/
-typedef struct
-{
-  AUTH_STATUS status;
-  uint32_t    ip;
-} AUTH_IP_TYPE;
+
 /*------------------------------ Default -------------------------------------*/
 #define  HTTP_INPUT_BUFFER_SIZE     2048U
 #define  HTTP_OUTPUT_BUFFER_SIZE    256U

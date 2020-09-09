@@ -265,17 +265,19 @@ REST_ERROR eRESTparsingTime( char* input, RTC_TIME* time )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE password )
+REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE* password )
 {
   REST_ERROR res   = REST_OK;
   char*      pchSt = NULL;
+  uint16_t   buf   = 0U;
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
   {
-    res = eRESTparsingDig16Record( input, PASSWORD_STATUS_STR, password.status );
+    res = eRESTparsingDig16Record( input, PASSWORD_STATUS_STR, &buf );
+    password->status = ( uint8_t )buf;
     if ( res == REST_OK )
     {
-      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, password.data );
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &password->data );
     }
   }
   else
@@ -285,14 +287,14 @@ REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE password )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-REST_ERROR eRESTparsingAuth ( char* input, PASSWORD_TYPE password )
+REST_ERROR eRESTparsingAuth ( char* input, PASSWORD_TYPE* password )
 {
   REST_ERROR res   = REST_OK;
   char*      pchSt = NULL;
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
   {
-      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, password.data );
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &password->data );
   }
   else
   {
@@ -403,7 +405,7 @@ REST_ERROR eRESTparsingConfig ( char* input, uint16_t adr )
             }
             if ( res == REST_OK )
             {
-              if ( eDATAAPIconfig( DATA_API_CMD_WRITE, adr, valueBuf, scale, units, bitMap ) != DATA_API_STAT_OK )
+              if ( eDATAAPIconfig( DATA_API_CMD_WRITE, adr, valueBuf, &scale, units, bitMap ) != DATA_API_STAT_OK )
               {
                 res = REST_RECORD_COPY_ERROR;
               }

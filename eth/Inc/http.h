@@ -9,6 +9,7 @@
 #define INC_HTTP_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#include "freeData.h"
 /*------------------------ Define --------------------------------------*/
 #define   CR_HEX                 0x0DU
 #define   LF_HEX                 0x0AU
@@ -58,10 +59,10 @@ typedef enum
 /*----------------------- Content type ---------------------------------*/
 #define  HTTP_CONTENT_STR_HTML     "text/html"
 #define  HHTP_CONTENT_STR_CSS      "text/css"
-#define HTTP_CONTENT_STR_JS       "text/javascript"
+#define  HTTP_CONTENT_STR_JS       "text/javascript"
 //#define HTTP_CONTENT_STR_JSON     "application/json; charset=windows-1251"
-#define HTTP_CONTENT_STR_JSON     "application/json; charset=UTF-8"
-#define HTTP_CONTENT_STR_XML      "text/xml"
+#define  HTTP_CONTENT_STR_JSON     "application/json; charset=UTF-8"
+#define  HTTP_CONTENT_STR_XML      "text/xml"
 
 typedef enum
 {
@@ -150,6 +151,14 @@ typedef struct
   HTTP_STREAM     stream;
   streamCallBack  callBack;
 } HTTP_RESPONSE;
+
+typedef struct
+{
+  AUTH_STATUS status;
+  uint32_t    ip;
+} AUTH_IP_TYPE;
+
+
 /* HHTP status-codes ---------------------------------------------------*/
 /*
 #define  HTTP_STATUS_CONTINUE                        "100"
@@ -193,12 +202,13 @@ typedef struct
 #define  HTTP_STATUS_HTTP_VERSION_NOT_SUPPORTED      "505"
 */
 /*------------------------ Templates ----------------------------------*/
-#define  HTTP_END_LINE               "\r\n"
+#define   HTTP_END_LINE               "\r\n"
 #define   HTTP_END_HEADER             "\r\n\r\n"
 #define   HTTP_SERVER_NAME            "EMBmss/0.0.1"
 
 #define   HTTP_OK_STATUS_LINE         "HTTP/1.1 200 OK"
 #define   HTTP_NOT_FOUND_STATUS_LINE  "HTTP/1.1 400 Not Found"
+#define   HTTP_UNAUTHORIZED_LINE      "HTTP/1.1 401 Unauthorized"
 
 #define   HTTP_HOST_LINE              "Host: "
 #define   HTTP_DATE_LINE              "Date: "

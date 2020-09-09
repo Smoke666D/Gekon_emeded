@@ -255,6 +255,11 @@ void startNetClientTask ( void const * argument )
       vPortFree( output );
       osThreadExit();
     }
+    netconn_close( netcon );
+    netconn_delete( netcon );
+    vPortFree( input );
+    vPortFree( output );
+    osThreadExit();
   }
 }
 /*---------------------------------------------------------------------------------------------------*/

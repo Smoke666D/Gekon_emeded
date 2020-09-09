@@ -85,13 +85,13 @@ typedef enum
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   uint8_t       enb;
   SYSTEM_EVENT  event;
 } CUTOUT_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   SENSOR_TYPE       type;
   eChartData*       chart;
@@ -100,14 +100,14 @@ typedef struct
   SENSOR_STATUS     status;
 } SENSOR;
 
-typedef struct
+typedef struct __packed
 {
   SENSOR      pressure;
   ALARM_TYPE  alarm;
   ALARM_TYPE  preAlarm;
 } OIL_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   SENSOR             temp;
   ALARM_TYPE         alarm;
@@ -116,7 +116,7 @@ typedef struct
   RELAY_AUTO_DEVICE  heater;
 } COOLANT_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   SENSOR             level;
   ALARM_TYPE         lowAlarm;
@@ -127,7 +127,7 @@ typedef struct
   RELAY_DEVICE       pump;
 } FUEL_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
@@ -135,21 +135,21 @@ typedef struct
   SENSOR_STATUS     status;
 } SPEED_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
 } BATTERY_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   getValueCallBack  get;
   ALARM_TYPE        hightAlarm;
   ALARM_TYPE        hightPreAlarm;
 } CHARGER_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   uint8_t  critGenFreqEnb;
   fix16_t  critGenFreqLevel;
@@ -161,13 +161,14 @@ typedef struct
   fix16_t  critSpeedLevel;
 } START_CRITERIONS_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   ALARM_TYPE  oil;
   ALARM_TYPE  air;
   ALARM_TYPE  fuel;
 } MAINTENCE_TYPE;
-typedef struct
+
+typedef struct __packed
 {
   setRelayCallBack       set;
   fix16_t                startDelay;      /* sec */
@@ -183,7 +184,7 @@ typedef struct
   STARTER_STATUS         status;
 } STARTER_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   fix16_t           coolingDelay;      /* sec */
   fix16_t           coolingIdleDelay;  /* sec */
@@ -191,7 +192,7 @@ typedef struct
   PLAN_STOP_STATUS  status;
 } PLAN_STOP_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   ENGINE_COMMAND  cmd;
   uint8_t         startCheckOil;

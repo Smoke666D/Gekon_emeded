@@ -39,7 +39,7 @@ typedef enum
   CONTROLLER_TURNING_FINISH,
 } CONTROLLER_TURNING;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   CONTROLLER_MODE   mode;
   CONTROLLER_STATE  state;

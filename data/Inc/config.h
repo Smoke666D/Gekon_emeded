@@ -50,13 +50,13 @@ typedef enum
   CONFIG_TYPE_BITMAP    = 'B',
 } CONFIG_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   uint16_t  mask;
   uint8_t   shift;
 } eConfigBitMap;
 
-typedef struct
+typedef struct __packed
 {
   uint16_t         adr;         // R
   uint16_t         min;         // R
@@ -66,7 +66,7 @@ typedef struct
   uint8_t          bitMapSize;  // R
 } eConfigAttributes;
 
-typedef struct
+typedef struct __packed
 {
   const eConfigAttributes* atrib;                   // R
   signed char              scale;                   // RW

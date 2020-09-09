@@ -111,7 +111,7 @@ typedef enum
   STREAM_ERROR,
 } STREAM_STATUS;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   HTTP_METHOD   method;
   char          path[HTTP_PATH_LENGTH];
@@ -122,7 +122,7 @@ typedef struct
   char*         content;
 } HTTP_REQUEST;
 
-typedef struct
+typedef struct __packed
 {
   STREAM_STATUS  status;   /* Status of stream operation */
   uint32_t       size;     /* Size in indexes of data for transfer */
@@ -134,7 +134,7 @@ typedef struct
 
 typedef STREAM_STATUS ( *streamCallBack )( HTTP_STREAM* stream );  /* Stream call back type */
 
-typedef struct
+typedef struct __packed
 {
   HTTP_STATUS     status;
   HTTP_METHOD     method;
@@ -152,7 +152,7 @@ typedef struct
   streamCallBack  callBack;
 } HTTP_RESPONSE;
 
-typedef struct
+typedef struct __packed
 {
   AUTH_STATUS status;
   uint32_t    ip;

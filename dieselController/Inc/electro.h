@@ -58,34 +58,34 @@ typedef enum
   ELECTRO_CURRENT_STATUS_ALARM,
 } ELECTRO_CURRENT_STATUS;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   fix16_t  voltage;
   fix16_t  freq;
   fix16_t  current;
 } ELECTRO_CHANNEL_VALUE;
 
-typedef struct
+typedef struct __packed
 {
   getValueCallBack  getVoltage;
   getValueCallBack  getFreq;
   getValueCallBack  getCurrent;
 } ELECTRO_CHANNEL;
 
-typedef struct
+typedef struct __packed
 {
   fix16_t active;
   fix16_t reactive;
   fix16_t apparent;
 } POWER_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   fix16_t primary;
   fix16_t nominal;
 } RATING_CURRENT;
 
-typedef struct
+typedef struct __packed
 {
   POWER_TYPE     power;
   fix16_t        cosFi;
@@ -93,14 +93,14 @@ typedef struct
   RATING_CURRENT current;
 } GENERATOR_RATING;
 
-typedef struct
+typedef struct __packed
 {
   fix16_t      current;
   fix16_t      delay;
   SYSTEM_EVENT event;
 } CURRENT_SETTING_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   ELECTRO_CURRENT_STATUS state;
   CURRENT_SETTING_TYPE   over;
@@ -108,7 +108,7 @@ typedef struct
   TIM_HandleTypeDef*     tim;
 } CURRENT_ALARM_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   ELECTRO_SCHEME          scheme;
   ELECTRO_PROCESS_STATUS  state;
@@ -117,7 +117,7 @@ typedef struct
   fix16_t                 switchDelay;
 } ELECTRO_SYSTEM_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   uint8_t               enb;
   ELECTRO_STATUS        state;
@@ -141,7 +141,7 @@ typedef struct
   RELAY_IMPULSE_DEVICE  relayOff;
 } GENERATOR_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   uint8_t               enb;
   ELECTRO_STATUS        state;

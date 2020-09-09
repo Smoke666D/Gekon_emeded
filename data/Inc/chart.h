@@ -36,19 +36,19 @@ typedef enum
   FUNC_SIZE_ERROR,
 } eFunctionError;
 
-typedef struct
+typedef struct __packed
 {
   fix16_t x;
   fix16_t y;
 } eChartDot;
 
-typedef struct
+typedef struct __packed
 {
   fix16_t k;
   fix16_t b;
 } eChartFunction; /* y = k*x + b */
 
-typedef struct
+typedef struct __packed
 {
   fix16_t         xmin;                        /* 4 bytes */
   fix16_t         xmax;                        /* 4 bytes */

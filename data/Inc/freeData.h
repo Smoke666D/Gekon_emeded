@@ -35,7 +35,7 @@ typedef enum
   AUTH_DONE,
 } AUTH_STATUS;
 /*---------------------------- Structures ------------------------------------*/
-typedef struct
+typedef struct __packed
 {
   PASSWORD_STATUS status;
   uint16_t        data;

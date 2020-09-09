@@ -25,7 +25,7 @@ typedef enum
   RECORD_PRIORITY_ERROR,
 } RECORD_PRIORITY;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
 	uint32_t					id;
 	RECORD_SOURCE			source;

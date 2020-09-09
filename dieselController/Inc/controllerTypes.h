@@ -132,19 +132,19 @@ typedef enum
 typedef fix16_t ( *getValueCallBack )( void );          /* Callback to get sensor value */
 typedef void    ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   SYSTEM_EVENT_TYPE  type;
   SYSTEM_ACTION      action;
 } SYSTEM_EVENT;
 
-typedef struct
+typedef struct __packed
 {
   uint8_t       enb;
   SYSTEM_EVENT  event;
 } ALARM_RELAX_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   uint8_t           enb;
   uint8_t           active;
@@ -157,14 +157,14 @@ typedef struct
   ALARM_STATUS      status;
 } ALARM_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   uint8_t           enb;
   RELAY_STATUS      status;
   setRelayCallBack  set;
 } RELAY_DEVICE;
 
-typedef struct
+typedef struct __packed
 {
   //uint8_t       active;
   fix16_t       onLevel;
@@ -172,7 +172,7 @@ typedef struct
   RELAY_DEVICE  relay;
 } RELAY_AUTO_DEVICE;
 
-typedef struct
+typedef struct __packed
 {
   uint8_t               active;
   RELAY_DEVICE          relay;
@@ -182,7 +182,7 @@ typedef struct
   RELAY_IMPULSE_STATUS  status;
 } RELAY_IMPULSE_DEVICE;
 
-typedef struct
+typedef struct __packed
 {
   //uint8_t       number;
   uint32_t      time;   /* 4 bytes */

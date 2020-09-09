@@ -92,14 +92,14 @@ typedef enum
 #define USB_GET_DIR_VAL(e)    ( e == USB_INPUT ) ? ( USB_INPUT_REPORT_ID ) : ( USB_OUTPUT_REPORT_ID )
 #define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? ( USB_INPUT ) : ( USB_OUTPUT )
 /*---------------------------- Structures ------------------------------------*/
-typedef struct
+typedef struct __packed
 {
   uint8_t      count;    /* */
   uint8_t      len;      /* */
   CONFIG_FILD  fild;     /* */
 } USB_ConfigControl;
 
-typedef struct
+typedef struct __packed
 {
   USB_REPORT_DIR   dir;     /* Direction of transaction */
   USB_REPORT_CMD   cmd;     /* Command */

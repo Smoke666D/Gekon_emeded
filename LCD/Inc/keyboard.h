@@ -40,17 +40,17 @@
 #define auto_key           0x10U
 #define time_out           0x40U
 /*---------------------------- Structures --------------------------------------*/
-typedef struct
+typedef struct __packed
 {
-  GPIO_TypeDef * KeyPort;
-  uint16_t KeyPin;
+  GPIO_TypeDef* KeyPort;
+  uint16_t      KeyPin;
 } xKeyPortStruct;
-typedef struct
+typedef struct __packed
 {
   unsigned int  KeyCode;
   unsigned char Status;
 } KeyEvent;
-typedef struct
+typedef struct __packed
 {
   unsigned int  sKeyCode;
   unsigned char cStatus;

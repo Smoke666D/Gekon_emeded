@@ -53,7 +53,7 @@ typedef enum
   FPO_POL_NORMAL_CLOSE,
 } FPO_POLARITY;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   GPIO_TypeDef*  outPortA;
   uint16_t       outPinA;
@@ -77,7 +77,7 @@ typedef struct
   uint16_t       disPinEF;
 } FPO_INIT;
 
-typedef struct
+typedef struct __packed
 {
   /* Phisical */
   GPIO_TypeDef*  outPort;   /* GPIO port*/

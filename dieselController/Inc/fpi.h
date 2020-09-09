@@ -75,7 +75,7 @@ typedef enum
 /*----------------------- Callbacks ------------------------------------*/
 typedef uint8_t ( *armingCallBack )( void ); /* Stream call back type */
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   FPI_LEVEL    level;
   FPI_FUNCTION function;
@@ -83,7 +83,7 @@ typedef struct
   uint16_t*    message;
 } FPI_EVENT;
 
-typedef struct
+typedef struct __packed
 {
   /* Phisical */
   GPIO_TypeDef*   port;                             /* GPIO port*/
@@ -103,7 +103,7 @@ typedef struct
   timerID_t       timerID;
 } FPI;
 
-typedef struct
+typedef struct __packed
 {
   GPIO_TypeDef*  portA;
   uint16_t       pinA;

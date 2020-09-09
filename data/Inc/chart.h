@@ -13,7 +13,6 @@
 #define CHART_UNIT_LENGTH       3U
 #define CHART_DOTS_SIZE         128U
 #define CHART_CHART_SIZE        1056U  /* byte */
-#define CHART_STORAGE_SIZE      4U     /* Kb */
 #define CHART_NUMBER            3U
 
 #define CHART_DATA_XMIN_STR     "xmin"
@@ -58,7 +57,7 @@ typedef struct __packed
   uint16_t        yunit[CHART_UNIT_LENGTH];    /* 2 * 3 = 6 bytes */
   uint16_t        size;                        /* 2 bytes            Number of dots */
   eChartDot       dots[CHART_DOTS_SIZE];       /* 128 * 8 = 1024 bytes  */
-  eChartFunction  func[CHART_DOTS_SIZE - 1U];
+  //eChartFunction  func[CHART_DOTS_SIZE - 1U];
 } eChartData;
 /*------------------------ Extern --------------------------------------*/
 extern eChartData        oilSensorChart;

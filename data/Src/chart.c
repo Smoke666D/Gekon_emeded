@@ -79,8 +79,8 @@ void vCHARTcalcFunction( eChartData* chart )
   uint16_t i = 0U;
   for( i=0U; i<(chart->size - 1U); i++ )
   {
-    chart->func[i].k = fix16_div( fix16_sub( chart->dots[i + 1U].y, chart->dots[i].y ), fix16_sub( chart->dots[i + 1U].x, chart->dots[i].x ) );
-    chart->func[i].b = fix16_sub( chart->dots[i].y, fix16_mul( chart->func[i].k, chart->dots[i].x ) );
+    //chart->func[i].k = fix16_div( fix16_sub( chart->dots[i + 1U].y, chart->dots[i].y ), fix16_sub( chart->dots[i + 1U].x, chart->dots[i].x ) );
+    //chart->func[i].b = fix16_sub( chart->dots[i].y, fix16_mul( chart->func[i].k, chart->dots[i].x ) );
   }
   return;
 }
@@ -110,7 +110,7 @@ eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y )
       }
       if ( i != chart->size)
       {
-        *y = fix16_add( fix16_mul( chart->func[i].k, x ), chart->func[i].b );
+        //*y = fix16_add( fix16_mul( chart->func[i].k, x ), chart->func[i].b );
       }
       else
       {

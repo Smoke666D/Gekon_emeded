@@ -96,7 +96,7 @@ void vFPIreadConfigs ( FPI fpi, const eConfigReg* setupReg, const eConfigReg* de
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void vFPIinit ( FPI_INIT* init )
+void vFPIinit ( const FPI_INIT* init )
 {
   uint8_t i = 0U;
   /* Physical part */
@@ -206,7 +206,6 @@ void vFPITask ( void const* argument )
               fpis[i].state = FPI_IDLE;
             }
             break;
-
           case FPI_IDLE:
             if ( vFPIgetTrig( &fpis[i] ) > 0U )
             {
@@ -214,7 +213,6 @@ void vFPITask ( void const* argument )
               vLOGICstartTimer( fpis[i].delay, &fpis[i].timerID );
             }
             break;
-
           case FPI_TRIGGERED:
             if ( vFPIgetTrig( &fpis[i] ) > 0U )
             {
@@ -231,7 +229,6 @@ void vFPITask ( void const* argument )
               xQueueSend( pFPIQueue, &event, portMAX_DELAY );
             }
             break;
-
           default:
             fpis[i].state = FPI_BLOCK;
             break;

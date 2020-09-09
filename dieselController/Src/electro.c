@@ -40,16 +40,6 @@ fix16_t fIDMTcalcTemp ( fix16_t input, fix16_t setting )
   return fix16_div( TEMP_PROTECTION_TIME_MULTIPLIER, fix16_sq( fix16_sub( fix16_div( input, setting ), F16( 1U ) ) ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
-/* Power function for fix16_t: exp(y*log(a))
- * input:  x - base
- *         y - power
- * output: result of power
- */
-fix16_t fix16_pow ( fix16_t x, fix16_t y )
-{
-  return fix16_exp( fix16_mul( y, fix16_log( x ) ) );
-}
-/*---------------------------------------------------------------------------------------------------*/
 /* Calculation of disconnection time in short sircit protection
  * input:  input   - input current from most loaded line
  *         setting - current of disconnection

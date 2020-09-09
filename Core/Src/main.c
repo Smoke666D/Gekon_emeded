@@ -43,6 +43,7 @@
 #include "dataAPI.h"
 #include "freeData.h"
 #include "adc.h"
+#include "fpi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -138,7 +139,6 @@ const osThreadAttr_t keyboardTask_attributes = {
   .stack_size = 232
 };
 
-
 osThreadId_t ADCTaskHandle;
 const osThreadAttr_t ADCTask_attributes = {
   .name = "ADCTask",
@@ -152,7 +152,17 @@ const osThreadAttr_t ADCTask_attributes = {
  * 4. lcdRedrawTask - 128
  * 5. usbTask       - 768
  * */
-static TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
+TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
+const FPI_INIT      fpiInitStruct = {
+  .pinA  = FPI_B_Pin,
+  .pinB  = FPI_B_Pin,
+  .pinC  = FPI_C_Pin,
+  .pinD  = FPI_D_Pin,
+  .portA = FPI_B_GPIO_Port,
+  .portB = FPI_B_GPIO_Port,
+  .portC = FPI_C_GPIO_Port,
+  .portD = FPI_D_GPIO_Port,
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -231,7 +241,8 @@ int main(void)
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit( notifyTrg );                                    /* Data API initialization */
+  vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
+  vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
@@ -1015,6 +1026,7 @@ void StartDefaultTask(void *argument)
       sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
     }
   }
+
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
@@ -1102,6 +1114,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "\n\r" );
 
   vSYSSerial("---------------------------------------\n\r");
+
   /* Infinite loop */
   for(;;)
   {

@@ -247,14 +247,6 @@ void startNetClientTask ( void const * argument )
       }
     }
     /*--------------------- Close connection ---------------------*/
-    else
-    {
-      netconn_close( netcon );
-      netconn_delete( netcon );
-      vPortFree( input );
-      vPortFree( output );
-      osThreadExit();
-    }
     netconn_close( netcon );
     netconn_delete( netcon );
     vPortFree( input );

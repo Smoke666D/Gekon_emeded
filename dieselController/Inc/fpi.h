@@ -116,7 +116,7 @@ typedef struct
 } FPI_INIT;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void          vFPIinit ( FPI_INIT* init );
+void          vFPIinit ( const FPI_INIT* init );
 QueueHandle_t pFPIgetQueue ( void );
 void          vFPIsetBlock ( void );
 FPI_LEVEL     eFPIcheckLevel ( FPI_FUNCTION function );

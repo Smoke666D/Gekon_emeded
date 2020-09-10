@@ -164,6 +164,7 @@ void vADCInit(void)
   switch (xADCFSM)
   {
     case DC:
+      HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       vADC3DCInit();
       fADC3Init(15000);
@@ -208,7 +209,7 @@ void vADC3_Ready()
 
 
 
-static uint16_t  ADCDATA[5]={0,0,0,0,0};
+static uint16_t  ADCDATA[9]={0,0,0,0,0};
 
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -415,14 +416,28 @@ void StartADCTask(void *argument)
          xEventGroupWaitBits(xADCEvent,ADC1_READY | ADC2_READY | ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
          break;
        case DC:
+         //Запускаем преобразвоание АЦП
          StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
+         //Ожидаем флага готовонсти о завершении преобразования
          xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
          ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
          ADCDATA[1] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
          ADCDATA[2] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
          ADCDATA[3] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
          ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
-
+         //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
+         HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
+         osDelay(1);
+         //Запускаем новоей преобразование
+         StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
+         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+         ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
+         ADCDATA[5] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
+         ADCDATA[6] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
+         ADCDATA[7] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
+         ADCDATA[8] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
+         //Переключаем обратно аналоговый коммутатор
+         HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
        break;
      }
    }

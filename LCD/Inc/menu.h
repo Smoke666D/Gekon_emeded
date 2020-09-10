@@ -75,7 +75,7 @@ typedef struct
 
 typedef struct
 {
-  xScreenObjet* pScreenCurObjets;
+  const xScreenObjet*  pScreenCurObjets;
   void*         pUpScreenSet;
   void*         pDownScreenSet;
   SCREEN_STATUS xScreenStatus;

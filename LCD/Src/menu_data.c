@@ -76,7 +76,7 @@ extern void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 
 
 //
-static xScreenObjet EngineMainScreen[]=
+static xScreenObjet const EngineMainScreen[]=
 {
   { 0U, LEFT_OFFSET, LINE1, 0U, 0U, TEXT_STRING, LeftText, "ДВИГАТЕЛЬ - Сводные", NULL, 0U },
   { 0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE,Header, NULL, NULL, 0U },
@@ -91,7 +91,7 @@ static xScreenObjet EngineMainScreen[]=
   { 1U, ( FONT_SIZE * 17U ), LINE4, 0U, 0U, TEXT_STRING, LeftText, "об/м", NULL, 0U }
 };
 
-static xScreenObjet Engine1Screen[]=
+static xScreenObjet const Engine1Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ДВИГАТЕЛЬ",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -106,7 +106,7 @@ static xScreenObjet Engine1Screen[]=
   {1U,FONT_SIZE*20U,LINE4,0U,0U,TEXT_STRING,LeftText,"%",NULL,0U}
 };
 
-static xScreenObjet Engine2Screen[]=
+static xScreenObjet const Engine2Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ДВИГАТЕЛЬ",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -122,7 +122,7 @@ static xScreenObjet Engine2Screen[]=
 
 
 
-static xScreenObjet GeneratorMainScreen[]=
+static xScreenObjet const GeneratorMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -138,7 +138,7 @@ static xScreenObjet GeneratorMainScreen[]=
 };
 
 
-static xScreenObjet Generator1Screen[]=
+static xScreenObjet const Generator1Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - U лин.",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -153,7 +153,7 @@ static xScreenObjet Generator1Screen[]=
   {1U,FONT_SIZE*12U,LINE4,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U}
 };
 
-static xScreenObjet Generator2Screen[]=
+static xScreenObjet const Generator2Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - U фазн.",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -168,7 +168,7 @@ static xScreenObjet Generator2Screen[]=
   {1U,FONT_SIZE*12U,LINE4,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U}
 };
 
-static xScreenObjet Generator3Screen[]=
+static xScreenObjet const Generator3Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - Ток",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -184,7 +184,7 @@ static xScreenObjet Generator3Screen[]=
 
 };
 
-static xScreenObjet Generator4Screen[]=
+static xScreenObjet const Generator4Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - Мощность",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -200,7 +200,7 @@ static xScreenObjet Generator4Screen[]=
 };
 
 
-static xScreenObjet Generator5Screen[]=
+static xScreenObjet const Generator5Screen[]=
 {
    {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - Сводные",NULL,0U},
    {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -215,7 +215,7 @@ static xScreenObjet Generator5Screen[]=
 };
 
 
-static xScreenObjet Generator6Screen[]=
+static xScreenObjet const Generator6Screen[]=
 {
    {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР",NULL,0U},
    {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -225,7 +225,7 @@ static xScreenObjet Generator6Screen[]=
 
 
 
-static xScreenObjet NetMainScreen[]=
+static xScreenObjet const NetMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СЕТЬ - U лин.",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -240,7 +240,7 @@ static xScreenObjet NetMainScreen[]=
   {1U,FONT_SIZE*11U,LINE4,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U}
 };
 
-static xScreenObjet Net1Screen[]=
+static xScreenObjet const Net1Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СЕТЬ - U фазн.",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -255,7 +255,7 @@ static xScreenObjet Net1Screen[]=
   {1U,FONT_SIZE*12U,LINE4,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U}
 };
 
-static xScreenObjet Net2Screen[]=
+static xScreenObjet const Net2Screen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СЕТЬ - Частота.",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -268,7 +268,7 @@ static xScreenObjet Net2Screen[]=
 
 
 
-static xScreenObjet LinkMainScreen[]=
+static xScreenObjet const LinkMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СВЯЗЬ Ethernet",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -281,19 +281,19 @@ static xScreenObjet LinkMainScreen[]=
 
 };
 
-static xScreenObjet AlarmMainScreen[]=
+static xScreenObjet const AlarmMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"АВАРИИ",NULL,0U},
   {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U}
 };
 
-static xScreenObjet EventMainScreen[]=
+static xScreenObjet const EventMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ЖУРНАЛ СОБЫТИЙ №",NULL,0U},
   {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U}
 };
 
-static xScreenObjet InfoMainScreen[]=
+static xScreenObjet const InfoMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ВЕРСИЯ",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
@@ -302,7 +302,7 @@ static xScreenObjet InfoMainScreen[]=
   {1U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"www.energan.ru",NULL,0U}
 };
 
-static xScreenObjet StatusMainScreen[]=
+static xScreenObjet const StatusMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СТАТУС",NULL,0U},
   { 0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
@@ -315,7 +315,7 @@ static xScreenObjet StatusMainScreen[]=
 };
 
 
-static xScreenObjet SettingsScreen[]=
+static xScreenObjet  const SettingsScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
@@ -326,13 +326,13 @@ static xScreenObjet SettingsScreen[]=
 };
 
 
-static xScreenObjet SettingsMainScreen[]=
+static xScreenObjet const SettingsMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКИ",NULL,0U},
   {1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
 };
 
-static xScreenObjet xYesNoScreen[]=
+static xScreenObjet const xYesNoScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ПРИМЕНИТЬ ИЗМЕНЕНИЯ",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), LINE, Header, NULL, NULL, 0U },
@@ -344,7 +344,7 @@ static xScreenObjet xYesNoScreen[]=
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   //  {ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
-    {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+   {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},
@@ -353,9 +353,6 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
   {AlarmMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {EventMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {InfoMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
-
-
-
 };
 
 static xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
@@ -365,7 +362,7 @@ static xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
   {EngineMainScreen,(void*)&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
 };
 
-static xScreenType  xGeneratorScreens[GENERATOR_MENU_COUNT]=
+static xScreenType xGeneratorScreens[GENERATOR_MENU_COUNT]=
 {
   {Generator1Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
   {Generator2Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
@@ -376,7 +373,7 @@ static xScreenType  xGeneratorScreens[GENERATOR_MENU_COUNT]=
   {GeneratorMainScreen,(void*)&xGeneratorMenu,NULL,PASSIVE,0U,0U,NULL},
 };
 
-static xScreenType  xNetScreens[NET_MENU_COUNT]=
+static xScreenType xNetScreens[NET_MENU_COUNT]=
 {
   { Net1Screen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
   { Net2Screen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
@@ -388,7 +385,7 @@ static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
   { SettingsScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
 };
 
-static xScreenType  xYesNoScreens[SETTINGS_MENU_COUNT]=
+static xScreenType   xYesNoScreens[SETTINGS_MENU_COUNT]=
 {
   { xYesNoScreen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
 };

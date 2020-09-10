@@ -168,7 +168,7 @@ void vADCInit(void)
       vADC3DCInit();
       fADC3Init(15000);
 
-      HAL_ADC_Start_DMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
+
       break;
     case AC:
       fADC12Init(15000);
@@ -192,13 +192,11 @@ void vADCInit(void)
 void vADC3_Ready()
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
-    HAL_ADC_Stop(&hadc3);
-    xHigherPriorityTaskWoken = pdFALSE;
-         xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
 
-
-    portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
-    return;
+  xHigherPriorityTaskWoken = pdFALSE;
+  xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
+  portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+  return;
 
 }
 
@@ -231,12 +229,192 @@ void vADCCommonDeInit(void)
 
 }
 
+
+static void ADC_DMAConv(DMA_HandleTypeDef *hdma)
+{
+  /* Retrieve ADC handle corresponding to current DMA handle */
+  ADC_HandleTypeDef* hadc = ( ADC_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
+
+  /* Update state machine on conversion status if not in error state */
+  if (HAL_IS_BIT_CLR(hadc->State, HAL_ADC_STATE_ERROR_INTERNAL | HAL_ADC_STATE_ERROR_DMA))
+  {
+    /* Update ADC state machine */
+    SET_BIT(hadc->State, HAL_ADC_STATE_REG_EOC);
+
+    /* Determine whether any further conversion upcoming on group regular   */
+    /* by external trigger, continuous mode or scan sequence on going.      */
+    /* Note: On STM32F2, there is no independent flag of end of sequence.   */
+    /*       The test of scan sequence on going is done either with scan    */
+    /*       sequence disabled or with end of conversion flag set to        */
+    /*       of end of sequence.                                            */
+    if(ADC_IS_SOFTWARE_START_REGULAR(hadc)                   &&
+       (hadc->Init.ContinuousConvMode == DISABLE)            &&
+       (HAL_IS_BIT_CLR(hadc->Instance->SQR1, ADC_SQR1_L) ||
+        HAL_IS_BIT_CLR(hadc->Instance->CR2, ADC_CR2_EOCS)  )   )
+    {
+      /* Disable ADC end of single conversion interrupt on group regular */
+      /* Note: Overrun interrupt was enabled with EOC interrupt in          */
+      /* HAL_ADC_Start_IT(), but is not disabled here because can be used   */
+      /* by overrun IRQ process below.                                      */
+      __HAL_ADC_DISABLE_IT(hadc, ADC_IT_EOC);
+
+      /* Set ADC state */
+      CLEAR_BIT(hadc->State, HAL_ADC_STATE_REG_BUSY);
+
+      if (HAL_IS_BIT_CLR(hadc->State, HAL_ADC_STATE_INJ_BUSY))
+      {
+        SET_BIT(hadc->State, HAL_ADC_STATE_READY);
+      }
+    }
+
+    /* Conversion complete callback */
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+    hadc->ConvCpltCallback(hadc);
+#else
+    HAL_ADC_ConvCpltCallback(hadc);
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
+  }
+  else /* DMA and-or internal error occurred */
+  {
+    if ((hadc->State & HAL_ADC_STATE_ERROR_INTERNAL) != 0UL)
+    {
+      /* Call HAL ADC Error Callback function */
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+      hadc->ErrorCallback(hadc);
+#else
+      HAL_ADC_ErrorCallback(hadc);
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
+    }
+  else
+  {
+      /* Call DMA error callback */
+      hadc->DMA_Handle->XferErrorCallback(hdma);
+    }
+  }
+}
+
+static void ADC_DMAErro(DMA_HandleTypeDef *hdma)
+{
+  ADC_HandleTypeDef* hadc = ( ADC_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
+  hadc->State= HAL_ADC_STATE_ERROR_DMA;
+  /* Set ADC error code to DMA error */
+  hadc->ErrorCode |= HAL_ADC_ERROR_DMA;
+   /* Error callback */
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+  hadc->ErrorCallback(hadc);
+#else
+  HAL_ADC_ErrorCallback(hadc);
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
+}
+
+void InitADCDMA(ADC_HandleTypeDef* hadc)
+{
+  /* Set the DMA transfer complete callback */
+  hadc->DMA_Handle->XferCpltCallback = ADC_DMAConv;
+  /* Set the DMA half transfer complete callback */
+  hadc->DMA_Handle->XferHalfCpltCallback = NULL;//ADC_DMAHalfConvCplt;
+  /* Set the DMA error callback */
+  hadc->DMA_Handle->XferErrorCallback = ADC_DMAErro;
+}
+
+
+
+void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
+{
+
+  __IO uint32_t counter = 0U;
+
+
+     /* Start the DMA channel */
+     HAL_DMA_Start_IT(hadc->DMA_Handle, (uint32_t)&hadc->Instance->DR, (uint32_t)pData, Length);
+
+
+    /* Process locked */
+    __HAL_LOCK(hadc);
+
+    /* Enable the ADC peripheral */
+    /* Check if ADC peripheral is disabled in order to enable it and wait during
+    Tstab time the ADC's stabilization */
+    if((hadc->Instance->CR2 & ADC_CR2_ADON) != ADC_CR2_ADON)
+    {
+      /* Enable the Peripheral */
+      __HAL_ADC_ENABLE(hadc);
+
+      /* Delay for ADC stabilization time */
+      /* Compute number of CPU cycles to wait for */
+      counter = (ADC_STAB_DELAY_US * (SystemCoreClock / 1000000U));
+      while(counter != 0U)
+      {
+        counter--;
+      }
+    }
+
+    /* Start conversion if ADC is effectively enabled */
+    if(HAL_IS_BIT_SET(hadc->Instance->CR2, ADC_CR2_ADON))
+    {
+      /* Set ADC state                                                          */
+      /* - Clear state bitfield related to regular group conversion results     */
+      /* - Set state bitfield related to regular group operation                */
+      ADC_STATE_CLR_SET(hadc->State,
+                        HAL_ADC_STATE_READY | HAL_ADC_STATE_REG_EOC | HAL_ADC_STATE_REG_OVR,
+                        HAL_ADC_STATE_REG_BUSY);
+
+      /* If conversions on group regular are also triggering group injected,    */
+      /* update ADC state.                                                      */
+      if (READ_BIT(hadc->Instance->CR1, ADC_CR1_JAUTO) != RESET)
+      {
+        ADC_STATE_CLR_SET(hadc->State, HAL_ADC_STATE_INJ_EOC, HAL_ADC_STATE_INJ_BUSY);
+      }
+
+      /* State machine update: Check if an injected conversion is ongoing */
+      if (HAL_IS_BIT_SET(hadc->State, HAL_ADC_STATE_INJ_BUSY))
+      {
+        /* Reset ADC error code fields related to conversions on group regular */
+        CLEAR_BIT(hadc->ErrorCode, (HAL_ADC_ERROR_OVR | HAL_ADC_ERROR_DMA));
+      }
+      else
+      {
+        /* Reset ADC all error code fields */
+        ADC_CLEAR_ERRORCODE(hadc);
+      }
+
+      /* Process unlocked */
+      /* Unlock before starting ADC conversions: in case of potential           */
+      /* interruption, to let the process to ADC IRQ Handler.                   */
+      __HAL_UNLOCK(hadc);
+
+
+      /* Clear regular group conversion flag and overrun flag */
+      /* (To ensure of no unknown state from potential previous ADC operations) */
+      __HAL_ADC_CLEAR_FLAG(hadc, ADC_FLAG_EOC | ADC_FLAG_OVR);
+
+      /* Enable ADC overrun interrupt */
+      __HAL_ADC_ENABLE_IT(hadc, ADC_IT_OVR);
+
+      /* Enable ADC DMA mode */
+      hadc->Instance->CR2 |= ADC_CR2_DMA;
+
+        /* if instance of handle correspond to ADC1 and  no external trigger present enable software conversion of regular channels */
+        if((hadc->Instance == ADC1) && ((hadc->Instance->CR2 & ADC_CR2_EXTEN) == RESET))
+        {
+          /* Enable the selected ADC software conversion for regular group */
+            hadc->Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+        }
+    }
+
+
+    /* Return function status */
+    return HAL_OK;
+
+}
+
 void StartADCTask(void *argument)
 {
    uint32_t tt=0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
+   InitADCDMA(&hadc3);
    HAL_TIM_Base_Start_IT( &htim3 );
    for(;;)
    {
@@ -247,22 +425,13 @@ void StartADCTask(void *argument)
          xEventGroupWaitBits(xADCEvent,ADC1_READY | ADC2_READY | ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
          break;
        case DC:
-
-        HAL_ADC_Start_DMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
-
-         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,500);
-
-
-
-              ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
-                         ADCDATA[1] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
-                         ADCDATA[2] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
-                         ADCDATA[3] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
-                         ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
-
-        //    }
-
-        // HAL_ADC_Stop_DMA(&hadc3);
+         StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
+         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+         ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
+         ADCDATA[1] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
+         ADCDATA[2] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
+         ADCDATA[3] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
+         ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
 
        break;
      }

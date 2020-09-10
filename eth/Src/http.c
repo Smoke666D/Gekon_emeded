@@ -853,7 +853,10 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
   strStr = strstr(path, "index" );
   if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
   {
-    status = eDATAAPIewa( DATA_API_CMD_LOAD, STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
+    //do
+    //{
+      status = eDATAAPIewa( DATA_API_CMD_LOAD, STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
+    //} while ( status != DATA_API_STAT_OK );
     //eEEPROMreadMemory( STORAGE_EWA_ADR, buffer, EEPROM_LENGTH_SIZE );
     ewaLen = ( ( ( uint32_t )( buffer[0U] ) ) << 16U ) |
              ( ( ( uint32_t )( buffer[1U] ) ) <<  8U ) |

@@ -46,6 +46,7 @@
 #include "fpi.h"
 #include "fpo.h"
 #include "vrSensor.h"
+#include "engine.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,7 +60,7 @@ extern USBD_HandleTypeDef  hUsbDeviceFS;
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
   .name = "netTask",
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityLow,
   .stack_size = 1792
 };
 /* Definitions for lcdTask */
@@ -160,9 +161,9 @@ static void MX_TIM6_Init(void);
 void StartDefaultTask(void *argument);
 /* USER CODE BEGIN PFP */
 extern void vKeyboardTask(void const * argument);
-extern void StartNetTask(void *argument);
+extern void vStartNetTask(void *argument);
 extern void StartLcdTask(void *argument);
-extern void StartUsbTask(void *argument);
+extern void vStartUsbTask(void *argument);
 extern void StartADCTask(void *argument);
 /* USER CODE END PFP */
 
@@ -252,6 +253,7 @@ int main(void)
   vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
   vVRinit( &htim6 );                                            /* Speed sensor initialization */
+  vENGINEinit();
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
@@ -282,7 +284,7 @@ int main(void)
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
-  netTaskHandle      = osThreadNew( StartNetTask,  NULL, &netTask_attributes );
+  netTaskHandle      = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
   lcdTaskHandle      = osThreadNew( StartLcdTask,  NULL, &lcdTask_attributes );
   usbTaskHandle      = osThreadNew( vStartUsbTask, NULL, &usbTask_attributes );
   ADCTaskHandle      = osThreadNew( StartADCTask,  NULL, &ADCTask_attributes );
@@ -1161,7 +1163,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     HAL_GPIO_TogglePin( GPIOB, LD2_Pin );
-    osDelay( 1000U );
+    osDelay( 100U );
 /*
     waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
     sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );

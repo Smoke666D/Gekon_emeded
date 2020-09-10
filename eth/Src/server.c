@@ -351,7 +351,7 @@ void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response
 }
 /*---------------------------------------------------------------------------------------------------*/
 
-void StartNetTask(void *argument)
+void vStartNetTask(void *argument)
 {
   char ipaddr[16];
   vSYSSerial( ">>DHCP: ");

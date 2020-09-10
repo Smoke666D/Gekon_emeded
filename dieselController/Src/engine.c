@@ -194,7 +194,7 @@ void vENGINEmileageProcess ( uint8_t* reset )
   static timerID_t timerID = LOGIC_COUNTERS_SIZE + 1U;
   static uint8_t   stat    = 0U;
   uint16_t         data    = 0U;
-  if ( reset > 0U )
+  if ( *reset > 0U )
   {
     eDATAAPIfreeData( DATA_API_CMD_WRITE, maintenanceAlarmOilTimeLeft, &data );
     eDATAAPIfreeData( DATA_API_CMD_WRITE, maintenanceAlarmAirTimeLeft, &data );
@@ -271,10 +271,6 @@ uint8_t uENGINEisStop( fix16_t pressure, fix16_t speed  )
 /*----------------------------------------------------------------------------*/
 void vENGINEinit ( void )
 {
-  vCHARTcalcFunction( &oilSensorChart );
-  vCHARTcalcFunction( &coolantSensorChart );
-  vCHARTcalcFunction( &fuelSensorChart );
-
   oil.pressure.type                = getBitMap( &oilPressureSetup, 0U );
   oil.pressure.chart               = &oilSensorChart;
   oil.pressure.get                 = getOilPressure;
@@ -634,6 +630,7 @@ void vENGINEinit ( void )
   maintence.fuel.relax.enb = 0U;
   maintence.fuel.status    = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
+
   pEngineCommandQueue = xQueueCreateStatic( ENGINE_COMMAND_QUEUE_LENGTH, sizeof( ENGINE_COMMAND ), engineCommandBuffer, &xEngineCommandQueue );
   const osThreadAttr_t engineTask_attributes = {
     .name       = "engineTask",
@@ -641,6 +638,7 @@ void vENGINEinit ( void )
     .stack_size = 1024U
   };
   engineHandle = osThreadNew( vENGINEtask, NULL, &engineTask_attributes );
+
   return;
 }
 

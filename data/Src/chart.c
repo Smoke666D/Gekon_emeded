@@ -74,14 +74,10 @@ eChartData* const charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart,
  * input:  chart for calculation
  * output: none
  */
-void vCHARTcalcFunction( eChartData* chart )
+void vCHARTcalcFunction( const eChartData* chart, uint16_t n, eChartFunction* func )
 {
-  uint16_t i = 0U;
-  for( i=0U; i<(chart->size - 1U); i++ )
-  {
-    //chart->func[i].k = fix16_div( fix16_sub( chart->dots[i + 1U].y, chart->dots[i].y ), fix16_sub( chart->dots[i + 1U].x, chart->dots[i].x ) );
-    //chart->func[i].b = fix16_sub( chart->dots[i].y, fix16_mul( chart->func[i].k, chart->dots[i].x ) );
-  }
+  func->k = fix16_div( fix16_sub( chart->dots[n + 1U].y, chart->dots[n].y ), fix16_sub( chart->dots[n + 1U].x, chart->dots[n].x ) );
+  func->b = fix16_sub( chart->dots[n].y, fix16_mul( func->k, chart->dots[n].x ) );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -92,17 +88,17 @@ void vCHARTcalcFunction( eChartData* chart )
  *         y     - output value
  * output: error status
  */
-/*
-eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y )
+eFunctionError eCHARTfunc( const eChartData* chart, fix16_t x, fix16_t* y )
 {
-  eFunctionError res = FUNC_OK;
-  uint16_t       i   = 0U;
+  eFunctionError res  = FUNC_OK;
+  uint16_t       i    = 0U;
+  eChartFunction func = { .b = 0, .k = 0 };
 
   if ( x <= chart->xmax )
   {
     if ( x >= chart->xmin)
     {
-      for( i=0U; i<chart->size; i++ )
+      for ( i=0U; i<chart->size; i++ )
       {
         if ( x > chart->dots[i].x )
         {
@@ -111,17 +107,14 @@ eFunctionError eCHARTfunc( fix16_t x, eChartData* chart, fix16_t* y )
       }
       if ( i != chart->size)
       {
-        *y = fix16_add( fix16_mul( chart->func[i].k, x ), chart->func[i].b );
+        vCHARTcalcFunction( chart, i, &func );
+        *y = fix16_add( fix16_mul( func.k, x ), func.b );
       }
-      else
-      {
-	res = FUNC_SIZE_ERROR;
-      }
+      else res = FUNC_SIZE_ERROR;
     } else res = FUNC_OVER_MIN_X_ERROR;
   } else res = FUNC_OVER_MAX_X_ERROR;
   return res;
 }
-*/
 /*---------------------------------------------------------------------------------------------------*/
 
 

@@ -17,6 +17,7 @@ static SemaphoreHandle_t xSemaphore;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static TaskHandle_t* notifyTargets[NOTIFY_TARGETS_NUMBER];
 static uint8_t       initDone = 0U;
+static uint8_t       flTakeSource = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -210,6 +211,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 1U;
             *charts[adr] = *chart;
             xSemaphoreGive( xSemaphore );
           }
@@ -221,6 +223,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
         case DATA_API_CMD_SAVE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 2U;
             if ( eSTORAGEwriteCharts() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -239,6 +242,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 3U;
             if ( eSTORAGEreadCharts() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -302,6 +306,7 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
         case DATA_API_CMD_SAVE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 4U;
             if ( eEEPROMwriteMemory( adr, data, length )  != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -316,6 +321,7 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 5U;
             if ( eEEPROMreadMemory( adr, data, length )  != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -334,6 +340,7 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
           }
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 6U;
             for ( i=0; i<( STORAGE_WEB_SIZE / EWA_ERASE_SIZE ); i++ )
             {
               if ( eEEPROMwriteMemory( ( STORAGE_EWA_ADR + i * EWA_ERASE_SIZE ), buf, EWA_ERASE_SIZE )  != EEPROM_OK )
@@ -411,6 +418,7 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 7U;
             for ( i=0; i<configReg[adr]->atrib->len; i++ )
             {
               configReg[adr]->value[i] = value[i];
@@ -435,6 +443,7 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
         case DATA_API_CMD_SAVE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 8U;
             if ( eSTORAGEwriteConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -453,6 +462,7 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 9U;
             if ( eSTORAGEreadConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -553,6 +563,7 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 10U;
             *freeDataArray[adr] = *data;
             xSemaphoreGive( xSemaphore );
           }
@@ -564,6 +575,7 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
         case DATA_API_CMD_SAVE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 11U;
             for ( i=0U; i<FREE_DATA_SIZE; i++ )
             {
               if ( eSTORAGEsaveFreeData( i ) != EEPROM_OK )
@@ -586,6 +598,7 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 12U;
             for ( i=0U; i<FREE_DATA_SIZE; i++ )
             {
               if ( eSTORAGEreadFreeData( i ) != EEPROM_OK )
@@ -648,6 +661,7 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
       case DATA_API_CMD_WRITE:
         if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
         {
+          flTakeSource = 13U;
           if ( pas->status <= PASSWORD_SET )
           {
             systemPassword.data   = pas->data;
@@ -667,6 +681,7 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
       case DATA_API_CMD_SAVE:
         if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
         {
+          flTakeSource = 14U;
           if ( eSTORAGEsavePassword() != EEPROM_OK )
           {
             res = DATA_API_STAT_EEPROM_ERROR;
@@ -681,6 +696,7 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
       case DATA_API_CMD_LOAD:
         if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
         {
+          flTakeSource = 15U;
           if ( eSTORAGEloadPassword() != EEPROM_OK )
           {
             res = DATA_API_STAT_EEPROM_ERROR;
@@ -695,6 +711,7 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
       case DATA_API_CMD_ERASE:
         if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
         {
+          flTakeSource = 16U;
           systemPassword.status = PASSWORD_RESET;
           systemPassword.data   = 0U;
           if ( eSTORAGEsavePassword() != EEPROM_OK )
@@ -753,6 +770,7 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
         case DATA_API_CMD_ADD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 17U;
             if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
             {
               if ( pointer < LOG_SIZE )
@@ -785,6 +803,7 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 18U;
             if ( eSTORAGEreadLogRecord( adr, record ) != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -795,6 +814,7 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
         case DATA_API_CMD_ERASE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 19U;
             for ( i=0U; i<LOG_SIZE; i++ )
             {
               if ( eSTORAGEwriteLogRecord( i, &eraseRec ) != EEPROM_OK )
@@ -816,7 +836,6 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
         default:
           res = DATA_API_STAT_CMD_ERROR;
           break;
-
       }
     }
   }
@@ -863,6 +882,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 20U;
             if ( configReg[adr]->atrib->max != 0U )
             {
               if ( data[0U] > configReg[adr]->atrib->max )
@@ -891,6 +911,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
         case DATA_API_CMD_SAVE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 21U;
             if ( eSTORAGEwriteConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -909,6 +930,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
         case DATA_API_CMD_INC:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 22U;
             if ( ( configReg[adr]->atrib->max != 0U ) && ( configReg[adr]->value[0U] < configReg[adr]->atrib->max ) )
             {
               configReg[adr]->value[0U]++;
@@ -927,6 +949,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 23U;
             if ( eSTORAGEreadConfigs() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
@@ -941,6 +964,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
         case DATA_API_CMD_DEC:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            flTakeSource = 24U;
             if ( ( configReg[adr]->atrib->max != 0U ) && ( configReg[adr]->value[0U] > configReg[adr]->atrib->min ) )
             {
               configReg[adr]->value[0U]--;

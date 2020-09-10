@@ -115,7 +115,7 @@ void vADC3DCInit(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_15;
+  sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
@@ -124,7 +124,7 @@ void vADC3DCInit(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_14;
+  sConfig.Channel = ADC_CHANNEL_15;
   sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
@@ -167,8 +167,7 @@ void vADCInit(void)
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       vADC3DCInit();
       fADC3Init(15000);
-
-
+      HAL_TIM_Base_Start_IT( &htim3 );
       break;
     case AC:
       fADC12Init(15000);
@@ -192,6 +191,8 @@ void vADCInit(void)
 void vADC3_Ready()
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
+  /* Process locked */
+
 
   xHigherPriorityTaskWoken = pdFALSE;
   xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
@@ -322,32 +323,22 @@ void InitADCDMA(ADC_HandleTypeDef* hadc)
 void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 {
 
-  __IO uint32_t counter = 0U;
+   __HAL_LOCK(&hadc3);
+   __HAL_ADC_DISABLE(&hadc3);
+   __HAL_UNLOCK(&hadc3);
+
+   __HAL_TIM_DISABLE(&htim3);
+
+   /* Start the DMA channel */
+   HAL_DMA_Start_IT(hadc->DMA_Handle, (uint32_t)&hadc->Instance->DR, (uint32_t)pData, Length);
+
+   /* Enable the Peripheral */
+   __HAL_ADC_ENABLE(hadc);
+
+   osDelay(3);
 
 
-     /* Start the DMA channel */
-     HAL_DMA_Start_IT(hadc->DMA_Handle, (uint32_t)&hadc->Instance->DR, (uint32_t)pData, Length);
 
-
-    /* Process locked */
-    __HAL_LOCK(hadc);
-
-    /* Enable the ADC peripheral */
-    /* Check if ADC peripheral is disabled in order to enable it and wait during
-    Tstab time the ADC's stabilization */
-    if((hadc->Instance->CR2 & ADC_CR2_ADON) != ADC_CR2_ADON)
-    {
-      /* Enable the Peripheral */
-      __HAL_ADC_ENABLE(hadc);
-
-      /* Delay for ADC stabilization time */
-      /* Compute number of CPU cycles to wait for */
-      counter = (ADC_STAB_DELAY_US * (SystemCoreClock / 1000000U));
-      while(counter != 0U)
-      {
-        counter--;
-      }
-    }
 
     /* Start conversion if ADC is effectively enabled */
     if(HAL_IS_BIT_SET(hadc->Instance->CR2, ADC_CR2_ADON))
@@ -401,8 +392,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
             hadc->Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
         }
     }
-
-
+    __HAL_TIM_ENABLE(&htim3);
     /* Return function status */
     return HAL_OK;
 
@@ -415,7 +405,7 @@ void StartADCTask(void *argument)
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
    InitADCDMA(&hadc3);
-   HAL_TIM_Base_Start_IT( &htim3 );
+
    for(;;)
    {
      osDelay(200);

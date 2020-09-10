@@ -251,7 +251,7 @@ int main(void)
   vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
   vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
-  vVRinit();                                                    /* Speed sensor initialization */
+  vVRinit( &htim6 );                                            /* Speed sensor initialization */
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
@@ -1161,7 +1161,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     HAL_GPIO_TogglePin( GPIOB, LD2_Pin );
-    osDelay( 100U );
+    osDelay( 1000U );
 /*
     waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
     sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );

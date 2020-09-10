@@ -18,7 +18,7 @@
 /*----------------------- Structures -----------------------------------*/
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void    vVRinit ( void );
+void    vVRinit ( TIM_HandleTypeDef* tim );
 void    vVRextiCallback ( void );
 void    vVRtimCallback ( void );
 fix16_t fVRgetSpeed( void );

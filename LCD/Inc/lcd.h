@@ -42,7 +42,7 @@
 #define SETCGR_ADR_CMD 0x40U
 #define SETDDM_ADR_CMD 0x80U
 /*----------------------------- Functions ------------------------------------*/
-
+void StartLcdTask(void *argument);
 void vLCDBrigthInit(void);
 void vLCD_Init( void );
 void vLCDRedraw( void );

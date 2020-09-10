@@ -9,7 +9,6 @@
 #define INC_MENU_H_
 /*----------------------- Includes -------------------------------------*/
 #include "u8g2.h"
-#include "main.h"
 #include "config.h"
 #include "data_type.h"
 #include "dataAPI.h"

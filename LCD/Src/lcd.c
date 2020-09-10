@@ -231,7 +231,14 @@ void vLCD_Init()
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-
+void StartLcdTask(void *argument)
+{
+  vLCD_Init();
+  for(;;)
+  {
+    vMenuTask();
+  }
+}
 
 
 

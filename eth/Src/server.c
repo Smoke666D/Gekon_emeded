@@ -351,7 +351,31 @@ void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response
 }
 /*---------------------------------------------------------------------------------------------------*/
 
-
+void StartNetTask(void *argument)
+{
+  char ipaddr[16];
+  vSYSSerial( ">>DHCP: ");
+  vSERVERinit();
+  vSYSSerial( "done!\n\r");
+  cSERVERgetStrIP( ipaddr );
+  vSYSSerial( ">>IP address: ");
+  vSYSSerial( ipaddr );
+  vSYSSerial("\n\r");
+  vSYSSerial( ">>TCP: " );
+  if ( eSERVERstart() != SERVER_OK )
+  {
+    vSYSSerial( "fail!\n\r" );
+    while( 1U ) osDelay( 1U );
+  }
+  vSYSSerial( "done!\n\r" );
+  vSYSSerial( ">>Server ready and listen port 80!\n\r" );
+  HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
+  for(;;)
+  {
+    eSERVERlistenRoutine();
+    osDelay( 10U );
+  }
+}
 
 
 

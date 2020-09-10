@@ -55,51 +55,6 @@ extern USBD_HandleTypeDef  hUsbDeviceFS;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-/* stack size optim:
- * default   - 496
- * net       - 1792
- * lcd       - 512
- * lcdRedraw - 128
- * key       - 232
- * usb       - 768
- *
- */
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-ADC_HandleTypeDef hadc2;
-ADC_HandleTypeDef hadc3;
-DMA_HandleTypeDef hdma_adc1;
-DMA_HandleTypeDef hdma_adc2;
-DMA_HandleTypeDef hdma_adc3;
-
-CAN_HandleTypeDef hcan1;
-
-I2C_HandleTypeDef hi2c1;
-
-SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi3;
-DMA_HandleTypeDef hdma_spi3_tx;
-
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim7;
-
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
-
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024
-};
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
@@ -147,13 +102,70 @@ const osThreadAttr_t ADCTask_attributes = {
   .priority = (osPriority_t) osPriorityHigh,
   .stack_size = 512
 };
-/* Optimization of stack sizes:
- * 1. defaultTask   - 496
- * 2. netTask       - 1792
- * 3. lcdTask       - 512
- * 4. lcdRedrawTask - 128
- * 5. usbTask       - 768
- * */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
+ADC_HandleTypeDef hadc3;
+DMA_HandleTypeDef hdma_adc1;
+DMA_HandleTypeDef hdma_adc2;
+DMA_HandleTypeDef hdma_adc3;
+
+CAN_HandleTypeDef hcan1;
+
+I2C_HandleTypeDef hi2c1;
+
+SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi3_tx;
+
+TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim7;
+
+UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
+
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 1024
+};
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_TIM7_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_ADC2_Init(void);
+static void MX_ADC3_Init(void);
+static void MX_CAN1_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_SPI3_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_TIM3_Init(void);
+void StartDefaultTask(void *argument);
+/* USER CODE BEGIN PFP */
+extern void vKeyboardTask(void const * argument);
+extern void StartNetTask(void *argument);
+extern void StartLcdTask(void *argument);
+extern void StartUsbTask(void *argument);
+extern void StartADCTask(void *argument);
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 TaskHandle_t*  notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
 const FPI_INIT fpiInitStruct = {
   .pinA  = FPI_B_Pin,
@@ -185,36 +197,6 @@ const FPO_INIT fpoInitStruct = {
   .disPortCD = POUT_CD_CS_GPIO_Port,
   .disPortEF = POUT_EF_CS_GPIO_Port,
 };
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_USART3_UART_Init(void);
-static void MX_TIM7_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_ADC2_Init(void);
-static void MX_ADC3_Init(void);
-static void MX_CAN1_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_SPI3_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_TIM3_Init(void);
-void StartDefaultTask(void *argument);
-void StartNetTask(void *argument);
-void StartLcdTask(void *argument);
-extern void StartUsbTask(void *argument);
-extern void StartADCTask(void *argument);
-
-/* USER CODE BEGIN PFP */
-extern void vKeyboardTask(void const * argument);
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /**
@@ -296,19 +278,12 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* creation of netTask */
-  netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
-
-  /* creation of lcdTask */
-  lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
-
-  /* creation of usbTask */
-  usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
-  ADCTaskHandle =osThreadNew(StartADCTask, NULL, &ADCTask_attributes);
-  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  netTaskHandle      = osThreadNew( StartNetTask,  NULL, &netTask_attributes );
+  lcdTaskHandle      = osThreadNew( StartLcdTask,  NULL, &lcdTask_attributes );
+  usbTaskHandle      = osThreadNew( vStartUsbTask, NULL, &usbTask_attributes );
+  ADCTaskHandle      = osThreadNew( StartADCTask,  NULL, &ADCTask_attributes );
+  keyboardTaskHandle = osThreadNew( vKeyboardTask, NULL, &keyboardTask_attributes );
   vSetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
 
@@ -1153,60 +1128,6 @@ void StartDefaultTask(void *argument)
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_StartNetTask */
-/**
-* @brief Function implementing the neyTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartNetTask */
-void StartNetTask(void *argument)
-{
-  /* USER CODE BEGIN StartNetTask */
-  char ipaddr[16];
-  vSYSSerial( ">>DHCP: ");
-  vSERVERinit();
-  vSYSSerial( "done!\n\r");
-  cSERVERgetStrIP( ipaddr );
-  vSYSSerial( ">>IP address: ");
-  vSYSSerial( ipaddr );
-  vSYSSerial("\n\r");
-  vSYSSerial( ">>TCP: " );
-  if ( eSERVERstart() != SERVER_OK )
-  {
-    vSYSSerial( "fail!\n\r" );
-    while( 1U ) osDelay( 1U );
-  }
-  vSYSSerial( "done!\n\r" );
-  vSYSSerial( ">>Server ready and listen port 80!\n\r" );
-  HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-  /* Infinite loop */
-  for(;;)
-  {
-    eSERVERlistenRoutine();
-    osDelay( 10U );
-  }
-  /* USER CODE END StartNetTask */
-}
-
-/* USER CODE BEGIN Header_StartLcdTask */
-/**
-* @brief Function implementing the lcdTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartLcdTask */
-void StartLcdTask(void *argument)
-{
-  /* USER CODE BEGIN StartLcdTask */
-  vLCD_Init();
-  /* Infinite loop */
-  for(;;)
-  {
-    vMenuTask();
-  }
-  /* USER CODE END StartLcdTask */
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

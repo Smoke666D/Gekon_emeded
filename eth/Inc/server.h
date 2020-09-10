@@ -40,6 +40,7 @@ typedef enum
 #define  HTTP_INPUT_BUFFER_SIZE     2048U
 #define  HTTP_OUTPUT_BUFFER_SIZE    256U
 /*----------------------------- Functions ------------------------------------*/
+void          StartNetTask(void *argument);
 void          cSERVERgetStrIP ( char* ipStr );    // Read local IP address of device in char array format
 void          vSERVERinit ( void );               // Waiting the end of server initialization
 SERVER_ERROR  eSERVERstart ( void );              // Start server. Open 80 port and start listen it

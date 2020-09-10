@@ -28,7 +28,10 @@ static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH];
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-
+fix16_t getCallback( void )
+{
+  return 0;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /* Calculation of disconnection time in temperature protection
  * input:  input   - input current from most loaded line
@@ -47,8 +50,8 @@ fix16_t fIDMTcalcTemp ( fix16_t input, fix16_t setting )
  */
 fix16_t fIDMTcalcCutout ( fix16_t input, fix16_t setting )
 {
-  return fix16_div( fix16_mul( CUTOUT_PROTECTION_TRIPPING_CURVE, F16( 0.14f ) ),
-                    fix16_sub( fix16_pow( fix16_div( input, setting ), CUTOUT_POWER ), F16( 1U ) ) );
+  //return fix16_div( fix16_mul( CUTOUT_PROTECTION_TRIPPING_CURVE, F16( 0.14f ) ), fix16_sub( fix16_pow( fix16_div( input, setting ), CUTOUT_POWER ), F16( 1U ) ) );
+  return 0;
 }
 /*---------------------------------------------------------------------------------------------------*/
 fix16_t fELECTROgetMin ( fix16_t* value, uint8_t length )
@@ -108,14 +111,14 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm, Q
     case ELECTRO_CURRENT_STATUS_IDLE:
       if ( current >= alarm->cutout.current )
       {
-        alarm->cutout.delay       = fIDMTcalcCutout( current, alarm->cutout.current );
+        //alarm->cutout.delay       = fIDMTcalcCutout( current, alarm->cutout.current );
         alarm->state              = ELECTRO_CURRENT_STATUS_CUTOUT_TRIG;
         alarm->tim->Instance->CNT = 0U;
         HAL_TIM_Base_Start( alarm->tim );
       }
       else if ( current >= alarm->over.current )
       {
-        alarm->over.delay         = fIDMTcalcTemp( current, alarm->over.current );
+        //alarm->over.delay         = fIDMTcalcTemp( current, alarm->over.current );
         alarm->state              = ELECTRO_CURRENT_STATUS_OVER_TRIG;
         alarm->tim->Instance->CNT = 0U;
         HAL_TIM_Base_Start( alarm->tim );
@@ -251,8 +254,10 @@ void vGENERATORprocess ( void )
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void vELECTROinit ( TIM_HandleTypeDef* currentTIM )
+void vELECTROinit ( /*TIM_HandleTypeDef* currentTIM*/ void )
 {
+  uint8_t i = 0U;
+
   electro.scheme      = getBitMap( &genSetup, 1U );
   electro.state       = ELECTRO_PROC_STATUS_IDLE;
   electro.cmd         = ELECTRO_CMD_NONE;
@@ -403,7 +408,7 @@ void vELECTROinit ( TIM_HandleTypeDef* currentTIM )
   generator.currentAlarm.cutout.delay        = 0U;
   generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
   generator.currentAlarm.cutout.event.action = ACTION_LOAD_SHUTDOWN;
-  generator.currentAlarm.tim                 = currentTIM;
+  //generator.currentAlarm.tim                 = currentTIM;
   /*----------------------------------------------------------------------------*/
   generator.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_GEN );
   generator.relay.status = RELAY_OFF;
@@ -427,7 +432,12 @@ void vELECTROinit ( TIM_HandleTypeDef* currentTIM )
   generator.relayOff.timerID      = 0U;
   generator.relayOff.status       = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
-
+  for ( i=0U; i<GENERATOR_LINE_NUMBER; i++ )
+  {
+    generator.line[i].getVoltage = getCallback;
+    generator.line[i].getFreq    = getCallback;
+    generator.line[i].getCurrent = getCallback;
+  }
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
@@ -504,6 +514,13 @@ void vELECTROinit ( TIM_HandleTypeDef* currentTIM )
   mains.relayOff.delay        = getValue( &timerMainsBreakerTripPulse );
   mains.relayOff.timerID      = 0U;
   mains.relayOff.status       = RELAY_DELAY_IDLE;
+  /*----------------------------------------------------------------------------*/
+  for ( i=0U; i<MAINS_LINE_NUMBER; i++ )
+  {
+    mains.line[i].getVoltage = getCallback;
+    mains.line[i].getFreq    = getCallback;
+    mains.line[i].getCurrent = getCallback;
+  }
   /*----------------------------------------------------------------------------*/
   pElectroCommandQueue = xQueueCreateStatic( ELECTRO_COMMAND_QUEUE_LENGTH, sizeof( ELECTRO_COMMAND ), electroCommandBuffer, &xElectroCommandQueue );
   const osThreadAttr_t electroTask_attributes = {

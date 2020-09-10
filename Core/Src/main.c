@@ -254,6 +254,7 @@ int main(void)
   vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
   vVRinit( &htim6 );                                            /* Speed sensor initialization */
   vENGINEinit();
+  vELECTROinit();
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */

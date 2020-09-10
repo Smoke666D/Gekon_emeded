@@ -157,7 +157,7 @@ typedef struct __packed
   RELAY_IMPULSE_DEVICE  relayOff;
 } MAINS_TYPE;
 /*----------------------- Functions ------------------------------------*/
-void           vELECTROinit ( TIM_HandleTypeDef* currentTIM );
+void           vELECTROinit ( /*TIM_HandleTypeDef* currentTIM*/ void );
 ELECTRO_STATUS eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS eELECTROgetMainsStatus ( void );
 QueueHandle_t  pELECTROgetCommandQueue ( void );

@@ -344,7 +344,7 @@ static xScreenObjet const xYesNoScreen[]=
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   //  {ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
-   {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+  {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},

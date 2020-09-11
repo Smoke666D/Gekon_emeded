@@ -20,13 +20,13 @@
 #include "RTC.h"
 #include "dataAPI.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static char     restBuffer[REST_BUFFER_SIZE];
+static char     restBuffer[REST_BUFFER_SIZE] = { 0U };
 static RTC_TIME time;
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_PUT, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
 /*----------------------- Variables -----------------------------------------------------------------*/
-static AUTH_IP_TYPE ethAuthList[CONNECT_STACK_SIZE]; /* List of authorization IPs*/
-static uint8_t      ethAuthListPointer = 0U;
+static AUTH_IP_TYPE ethAuthList[CONNECT_STACK_SIZE] = { 0U }; /* List of authorization IPs*/
+static uint8_t      ethAuthListPointer              = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 AUTH_STATUS eHTTPisAuth ( uint32_t ip )
@@ -488,11 +488,11 @@ void vHTTPinit ( void )
  */
 HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
 {
-  HTTP_STATUS  res    = HTTP_STATUS_BAD_REQUEST;
-  uint8_t      i      = 0U;
-  char*        pchSt  = NULL;
-  char*        pchEnd = NULL;
-  char         line[50U];
+  HTTP_STATUS  res       = HTTP_STATUS_BAD_REQUEST;
+  uint8_t      i         = 0U;
+  char*        pchSt     = NULL;
+  char*        pchEnd    = NULL;
+  char         line[50U] = { 0U };
 
   if ( uHTTPgetLine( req, 0U, line ) > 0U )
   {
@@ -1148,9 +1148,9 @@ HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
  */
 HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
 {
-  HTTP_STATUS  res = HTTP_STATUS_ERROR;
-  char         buffer[30U];
-  char*        strRes;
+  HTTP_STATUS  res         = HTTP_STATUS_ERROR;
+  char         buffer[30U] = { 0U };
+  char*        strRes      = NULL;
 
   // STATUS
   switch( response->status )

@@ -6,7 +6,9 @@
  */
 /*----------------------- Includes -------------------------------------*/
 #include "chart.h"
+
 /*---------------------- Structures ------------------------------------*/
+SemaphoreHandle_t xCHARTSemaphore;
 eChartData oilSensorChart = {
   .xmin     = 0x00000000U,
   .xmax     = 0x05DC0000U,
@@ -68,13 +70,19 @@ eChartData fuelSensorChart = {
 };
 
 eChartData* const charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart, &fuelSensorChart};
+
+void vCHARTinitCharts ( void )
+{
+  xCHARTSemaphore = xSemaphoreCreateMutex();
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Calculate line functions between dots of chart
  * input:  chart for calculation
  * output: none
  */
-void vCHARTcalcFunction( const eChartData* chart, uint16_t n, eChartFunction* func )
+void vCHARTcalcFunction ( const eChartData* chart, uint16_t n, eChartFunction* func )
 {
   func->k = fix16_div( fix16_sub( chart->dots[n + 1U].y, chart->dots[n].y ), fix16_sub( chart->dots[n + 1U].x, chart->dots[n].x ) );
   func->b = fix16_sub( chart->dots[n].y, fix16_mul( func->k, chart->dots[n].x ) );

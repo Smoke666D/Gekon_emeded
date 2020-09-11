@@ -92,7 +92,7 @@ void vLOGICtimerHandler ( void )
   {
     for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
     {
-      if ( ( aciveCounters & ( 1 << i ) ) > 0U )
+      if ( ( aciveCounters & ( 1U << i ) ) > 0U )
       {
         counterArray[i]++;
       }
@@ -135,7 +135,7 @@ uint8_t uLOGICisTimer ( timerID_t id )
   if ( targetArray[id] <= counterArray[id] )
   {
     res = 1U;
-    aciveCounters |= ~(1 << id );
+    aciveCounters |= ~( 1U << id );
     activeNumber--;
   }
   return res;
@@ -143,7 +143,7 @@ uint8_t uLOGICisTimer ( timerID_t id )
 
 void vLOGICresetTimer ( timerID_t id )
 {
-  aciveCounters |= ~(1 << id );
+  aciveCounters |= ~( 1U << id );
   activeNumber--;
   return;
 }
@@ -187,6 +187,10 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue )
         else if ( uLOGICisTimer( alarm->timerID ) > 0U )
         {
           alarm->status = ALARM_STATUS_TRIG;
+        }
+        else
+        {
+
         }
         break;
       case ALARM_STATUS_TRIG:

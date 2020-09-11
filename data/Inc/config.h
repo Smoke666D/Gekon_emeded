@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-09-09 17:50:08
+ * Make time: 2020-09-11 11:26:21
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -73,7 +73,7 @@ typedef struct __packed
 typedef struct __packed
 {
   const eConfigAttributes* atrib;                   // R
-  signed char              scale;                   // RW
+  int8_t                   scale;                   // RW
   uint16_t*                value;                   // RW
   uint16_t                 units[MAX_UNITS_LENGTH]; // RW
   eConfigBitMap*           bitMap;                  // RW

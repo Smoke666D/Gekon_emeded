@@ -13,6 +13,8 @@
 #include "task.h"
 #include "semphr.h"
 #include "fpo.h"
+/*---------------------------------- Define ----------------------------------*/
+
 /*-------------------------------- Structures --------------------------------*/
 static GENERATOR_TYPE      generator;
 static MAINS_TYPE          mains;
@@ -122,6 +124,10 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm, Q
         alarm->state              = ELECTRO_CURRENT_STATUS_OVER_TRIG;
         alarm->tim->Instance->CNT = 0U;
         HAL_TIM_Base_Start( alarm->tim );
+      }
+      else
+      {
+
       }
       break;
     /*--------------------------------------------------------------------------------*/
@@ -636,7 +642,7 @@ void vELECTROtask ( void const* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
-              if ( uLOGICisTimer( electro.timerID ) )
+              if ( uLOGICisTimer( electro.timerID ) > 0U )
               {
                 generator.state = ELECTRO_STATUS_IDLE;
                 mains.relay.set( RELAY_ON );
@@ -682,7 +688,7 @@ void vELECTROtask ( void const* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
-              if ( uLOGICisTimer( electro.timerID ) )
+              if ( uLOGICisTimer( electro.timerID ) > 0U )
               {
                 mains.state   = ELECTRO_STATUS_IDLE;
                 generator.relay.set( RELAY_ON );

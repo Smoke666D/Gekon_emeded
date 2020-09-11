@@ -2,7 +2,7 @@
 #include "EEPROM.h"
 #include "cmsis_os2.h"
 /*-------------------------------- Structures --------------------------------*/
-static SPI_HandleTypeDef* EEPROMspi      = NULL;
+static SPI_HandleTypeDef* EEPROMspi     = NULL;
 static GPIO_TypeDef*      EEPROMnssPort = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/

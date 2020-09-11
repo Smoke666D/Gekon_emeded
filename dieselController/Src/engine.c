@@ -209,7 +209,7 @@ void vENGINEmileageProcess ( uint8_t* reset )
       vLOGICstartTimer( 60U, &timerID );
       stat = 1U;
     }
-    else if ( uLOGICisTimer( timerID ) )
+    else if ( uLOGICisTimer( timerID ) > 0U )
     {
       //mileage++;
       if ( ( maintence.oil.enb > 0U ) && ( maintence.oil.active > 0U ) )
@@ -229,11 +229,19 @@ void vENGINEmileageProcess ( uint8_t* reset )
       }
       vLOGICstartTimer( 60U, &timerID );
     }
+    else
+    {
+
+    }
   }
   else if ( stat > 0U )
   {
     stat = 0U;
     vLOGICresetTimer( timerID );
+  }
+  else
+  {
+
   }
   eDATAAPIfreeData( DATA_API_CMD_READ, maintenanceAlarmOilTimeLeft, &data );
   vALARMcheck( &maintence.oil,  fix16_div( F16( data ),  F16( 60U ) ), pLOGICgetEventQueue() );

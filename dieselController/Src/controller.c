@@ -118,7 +118,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       break;
 
     case CONTROLLER_TURNING_DELAY:
-      if ( uLOGICisTimer( controller.timerID ) )
+      if ( uLOGICisTimer( controller.timerID ) > 0U )
       {
         stopState = CONTROLLER_TURNING_ENGINE;
       }
@@ -327,7 +327,7 @@ void vCONTROLLERtask ( void const* argument )
       }
     }
     /*-------------------------------------- DIGITAL INPUTS -------------------------------------*/
-    if ( xQueueReceive( pFPIgetQueue(), &inputFpiEvent, 0U ) )
+    if ( xQueueReceive( pFPIgetQueue(), &inputFpiEvent, 0U ) == pdPASS )
     {
       switch ( inputFpiEvent.function )
       {

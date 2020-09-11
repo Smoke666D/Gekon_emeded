@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------------*/
 uint8_t getBitMap( const eConfigReg* reg, uint8_t bit )
 {
-  return ( uint8_t )( reg->value[0U] & reg->bitMap[bit].mask >> reg->bitMap[bit].shift );
+  return ( uint8_t )( ( reg->value[0U] & reg->bitMap[bit].mask ) >> reg->bitMap[bit].shift );
 }
 
 fix16_t getValue( const eConfigReg* reg )

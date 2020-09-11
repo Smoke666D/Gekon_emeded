@@ -201,7 +201,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
 
   if ( adr < CHART_NUMBER )
   {
-    if ( ( xSemaphore != NULL ) && ( initDone > 0U) )
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) && ( xCHARTSemaphore != NULL) )
     {
       switch ( cmd )
       {
@@ -209,11 +209,11 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
           *chart = *charts[adr];
           break;
         case DATA_API_CMD_WRITE:
-          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          if ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
             flTakeSource = 1U;
             *charts[adr] = *chart;
-            xSemaphoreGive( xSemaphore );
+            xSemaphoreGive( xCHARTSemaphore );
           }
           else
           {
@@ -242,10 +242,14 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            flTakeSource = 3U;
-            if ( eSTORAGEreadCharts() != EEPROM_OK )
+            if ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
             {
-              res = DATA_API_STAT_EEPROM_ERROR;
+              flTakeSource = 3U;
+              if ( eSTORAGEreadCharts() != EEPROM_OK )
+              {
+                res = DATA_API_STAT_EEPROM_ERROR;
+              }
+              xSemaphoreGive( xCHARTSemaphore );
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -388,7 +392,7 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
-DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, signed char* scale, uint16_t* units, eConfigBitMap* bitMap )
+DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units, eConfigBitMap* bitMap )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint8_t         i   = 0U;

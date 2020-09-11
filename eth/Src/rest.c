@@ -324,42 +324,38 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
 {
   REST_ERROR res    = REST_OK;
   char*      pchSt  = NULL;
-  eChartData buffer;
 
+  while ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) != pdTRUE )
+  {
+
+  }
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
   {
     if ( strstr( pchSt, "data" ) == NULL)
     {
-      res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMIN_STR, &buffer.xmin );
+      res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMIN_STR, &charts[adr]->xmin );
       if ( res == REST_OK )
       {
-        res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMAX_STR, &buffer.xmax );
+        res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMAX_STR, &charts[adr]->xmax );
         if ( res == REST_OK )
         {
-          res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMIN_STR, &buffer.ymin );
+          res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMIN_STR, &charts[adr]->ymin );
           if ( res == REST_OK )
           {
-            res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMAX_STR, &buffer.ymax );
+            res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMAX_STR, &charts[adr]->ymax );
             if ( res == REST_OK )
             {
-              res = eRESTparsingStrRecord( input, CHART_DATA_XUNIT_STR, buffer.xunit, CHART_UNIT_LENGTH );
+              res = eRESTparsingStrRecord( input, CHART_DATA_XUNIT_STR, charts[adr]->xunit, CHART_UNIT_LENGTH );
               if ( res == REST_OK )
               {
-                res = eRESTparsingStrRecord( input, CHART_DATA_YUNIT_STR, buffer.yunit, CHART_UNIT_LENGTH );
+                res = eRESTparsingStrRecord( input, CHART_DATA_YUNIT_STR, charts[adr]->yunit, CHART_UNIT_LENGTH );
                 if ( res == REST_OK )
                 {
-                  res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &buffer.size );
-                  if ( ( res == REST_OK ) && ( buffer.size > 0U ) )
+                  res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &charts[adr]->size );
+                  if ( ( res == REST_OK ) && ( charts[adr]->size > 0U ) )
                   {
-                    res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, buffer.dots, buffer.size );
-                    if ( res == REST_OK )
-                    {
-                      if ( eDATAAPIchart( DATA_API_CMD_WRITE, adr, &buffer ) != DATA_API_STAT_OK )
-                      {
-                	      res = REST_RECORD_COPY_ERROR;
-                      }
-                    }
+                    res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, charts[adr]->dots, charts[adr]->size );
                   }
                 }
               }
@@ -373,16 +369,17 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
   {
     res = REST_MESSAGE_FORMAT_ERROR;
   }
+  xSemaphoreGive( xCHARTSemaphore );
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 REST_ERROR eRESTparsingConfig ( char* input, uint16_t adr )
 {
-  REST_ERROR    res   = REST_OK;
-  char*         pchSt = NULL;
-  uint16_t      valueBuf[MAX_VALUE_LENGTH];
-  signed char   scale  = 0U;
-  uint16_t      units[MAX_UNITS_LENGTH];
+  REST_ERROR    res                        = REST_OK;
+  char*         pchSt                      = NULL;
+  uint16_t      valueBuf[MAX_VALUE_LENGTH] = { 0U };
+  signed char   scale                      = 0U;
+  uint16_t      units[MAX_UNITS_LENGTH]    = { 0U };
   eConfigBitMap bitMap[MAX_BIT_MAP_LENGTH];
 
   pchSt = strchr( input, '{' );
@@ -606,9 +603,9 @@ REST_ERROR eRESTparsingStrRecord( const char* input, const char* header, uint16_
   REST_ERROR  res         = REST_OK;
   uint8_t     i           = 0U;
   uint8_t     j           = 0U;
-  char        buffer[24U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
-  char        cBuf[2U]    = { 0U, 0U };
-  uint8_t     hexBuf[8U]  = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[24U] = { 0U };
+  char        cBuf[2U]    = { 0U };
+  uint8_t     hexBuf[8U]  = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -655,8 +652,8 @@ REST_ERROR eRESTparsingValueRecord( const char* input, const char* header, uint1
   char*       pchEnd     = NULL;
   char*       pchDot     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
-  char        strBuf[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
+  char        strBuf[7U] = { 0U };
 
   if ( len == 1U )
   {
@@ -731,7 +728,7 @@ REST_ERROR eRESTparsingDig16Record( const char* input, const char* header, uint1
   REST_ERROR  res        = REST_OK;
   char*       pchStr     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -755,7 +752,7 @@ REST_ERROR uRESTparsing16FixDigRecord( const char* input, const char* header, fi
   REST_ERROR  res        = REST_OK;
   char*       pchStr     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -779,7 +776,7 @@ REST_ERROR eRESTparsingDig8Record( const char* input, const char* header, uint8_
   REST_ERROR  res        = REST_OK;
   char*       pchStr     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -801,7 +798,7 @@ REST_ERROR eRESTparsingDig8Record( const char* input, const char* header, uint8_
 REST_ERROR eRESTparsingSignedRecord( const char* input, const char* header, signed char* data )
 {
   REST_ERROR  res        = REST_OK;
-  char        buffer[6U] = { 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[6U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )

@@ -26,6 +26,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
+#include "vrSensor.h"
+#include "adc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

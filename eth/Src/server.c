@@ -141,7 +141,7 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
   RECEIVE_MESSAGE res                 = RECEIVE_MESSAGE_ERROR;
   char*           pchSt               = NULL;
   char*           pchEn               = NULL;
-  char            buffer[5U]          = { 0U, 0U, 0U, 0U, 0U };
+  char            buffer[5U]          = { 0U };
   uint32_t        contentLengthHeader = 0U;
 
   pchSt = strstr( message, "PUT" );
@@ -186,6 +186,16 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
   }
 
   return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vSERVERclientClose ( struct netconn* netcon, char* input, char* output )
+{
+  netconn_close( netcon );
+  netconn_delete( netcon );
+  vPortFree( input );
+  vPortFree( output );
+  osThreadExit();
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void startNetClientTask ( void const * argument )
@@ -239,20 +249,23 @@ void startNetClientTask ( void const * argument )
             status = STREAM_CONTINUES;
           }
         }
+        vSERVERclientClose( netcon, input, output );
       }
       /*-------------------- Continue message --------------------*/
       else if ( endMessage == RECEIVE_MESSAGE_CONTINUES )
       {
         endInput = &endInput[len];
       }
-    }
+      else
+      {
+        vSERVERclientClose( netcon, input, output );
+      }
+    } else {
     /*--------------------- Close connection ---------------------*/
-    netconn_close( netcon );
-    netconn_delete( netcon );
-    vPortFree( input );
-    vPortFree( output );
-    osThreadExit();
+      vSERVERclientClose( netcon, input, output );
+    }
   }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
@@ -321,8 +334,8 @@ SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
  */
 HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
 {
-  HTTP_STATUS res = HTTP_STATUS_BAD_REQUEST;
-  char        buffer[HTTP_BUFER_SIZE];
+  HTTP_STATUS res                     = HTTP_STATUS_BAD_REQUEST;
+  char        buffer[HTTP_BUFER_SIZE] = { 0U };
 
   if ( eHTTPmakeRequest( request, buffer ) == HTTP_STATUS_OK )
   {
@@ -353,7 +366,7 @@ void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response
 
 void vStartNetTask(void *argument)
 {
-  char ipaddr[16];
+  char ipaddr[16] = { 0U };
   vSYSSerial( ">>DHCP: ");
   vSERVERinit();
   vSYSSerial( "done!\n\r");

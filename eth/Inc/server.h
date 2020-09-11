@@ -37,7 +37,7 @@ typedef enum
 /*---------------------------- Structures ------------------------------------*/
 
 /*------------------------------ Default -------------------------------------*/
-#define  HTTP_INPUT_BUFFER_SIZE     2048U
+#define  HTTP_INPUT_BUFFER_SIZE     1024U
 #define  HTTP_OUTPUT_BUFFER_SIZE    256U
 /*----------------------------- Functions ------------------------------------*/
 void          vStartNetTask(void *argument);

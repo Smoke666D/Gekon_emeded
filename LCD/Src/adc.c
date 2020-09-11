@@ -17,6 +17,7 @@ static xADCFSMType xADCFSM = DC;
 
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim8;
+extern TIM_HandleTypeDef htim2;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
@@ -53,11 +54,50 @@ float  fADC3Init(uint16_t freq)
   return (float)(1/Period);
 }
 
-float  fADC12Init(uint16_t freq)
+
+float  fADCInit(TIM_HandleTypeDef * htim,uint16_t freq)
 {
 
   uint16_t Period = 15000000U/ freq;
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  htim->Instance = TIM3;
+  htim->Init.Prescaler = 0;
+  htim->Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim->Init.Period = Period;
+  htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
+  htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(htim) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(htim, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  HAL_TIM_Base_Start_IT(htim );
+  return (float)(1/Period);
+}
+
+
+
+
+
+
+
+float  fADC12Init(uint16_t freq)
+{
+
+    uint16_t Period = 15000000U/ freq;
+    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
     /* USER CODE BEGIN TIM8_Init 1 */
@@ -88,6 +128,45 @@ float  fADC12Init(uint16_t freq)
   HAL_TIM_Base_Start_IT( &htim8 );
   return (float)(1/Period);
 }
+
+
+
+float  fADC1Init(uint16_t freq)
+{
+
+  uint16_t Period = 15000000U/ freq;
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+    /* USER CODE BEGIN TIM8_Init 1 */
+
+    /* USER CODE END TIM8_Init 1 */
+    htim2.Instance = TIM2;
+    htim2.Init.Prescaler = 0;
+    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim2.Init.Period = Period;
+    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
+    htim2.Init.RepetitionCounter = 0;
+    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+    {
+      Error_Handler();
+    }
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+    {
+      Error_Handler();
+    }
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+    {
+      Error_Handler();
+    }
+  HAL_TIM_Base_Start_IT( &htim2 );
+  return (float)(1/Period);
+}
+
 
 
 void vADC3DCInit(void)
@@ -167,8 +246,11 @@ void vADCInit(void)
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       vADC3DCInit();
+      //fADCInit(&htim2,15000);
+   //   fADCInit(&htim8,15000);
       fADC3Init(15000);
-      HAL_TIM_Base_Start_IT( &htim3 );
+      fADC12Init(15000);
+      fADC1Init(15000);
       break;
     case AC:
       fADC12Init(15000);
@@ -189,14 +271,25 @@ void vADCInit(void)
 
 }
 
-void vADC3_Ready()
+void vADC_Ready(uint8_t adc_number)
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   /* Process locked */
 
 
   xHigherPriorityTaskWoken = pdFALSE;
-  xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
+  switch (adc_number)
+  {
+    case ADC3_READY:
+      xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
+      break;
+    case ADC2_READY:
+      xEventGroupSetBitsFromISR(xADCEvent,ADC2_READY,&xHigherPriorityTaskWoken);
+      break;
+    case ADC1_READY:
+      xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
+      break;
+  }
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
   return;
 
@@ -209,7 +302,7 @@ void vADC3_Ready()
 
 
 
-static uint16_t  ADCDATA[9]={0,0,0,0,0};
+static uint16_t  ADCDATA[8]={0,0,0,0,0};
 
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -324,12 +417,21 @@ void InitADCDMA(ADC_HandleTypeDef* hadc)
 void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 {
 
-   __HAL_LOCK(&hadc3);
-   __HAL_ADC_DISABLE(&hadc3);
-   __HAL_UNLOCK(&hadc3);
-
-   __HAL_TIM_DISABLE(&htim3);
-
+   __HAL_LOCK(hadc);
+   __HAL_ADC_DISABLE(hadc);
+   __HAL_UNLOCK(hadc);
+    if (hadc->Instance == ADC3)
+    {
+        __HAL_TIM_DISABLE(&htim3);
+    }
+    if (hadc->Instance == ADC2)
+    {
+        __HAL_TIM_DISABLE(&htim8);
+    }
+    if (hadc->Instance == ADC1)
+      {
+          __HAL_TIM_DISABLE(&htim2);
+      }
    /* Start the DMA channel */
    HAL_DMA_Start_IT(hadc->DMA_Handle, (uint32_t)&hadc->Instance->DR, (uint32_t)pData, Length);
 
@@ -393,7 +495,18 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
             hadc->Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
         }
     }
-    __HAL_TIM_ENABLE(&htim3);
+    if (hadc->Instance == ADC3)
+    {
+      __HAL_TIM_ENABLE(&htim3);
+    }
+    if (hadc->Instance == ADC2)
+    {
+     __HAL_TIM_ENABLE(&htim8);
+    }
+    if (hadc->Instance == ADC1)
+    {
+        __HAL_TIM_ENABLE(&htim2);
+    }
     /* Return function status */
     return HAL_OK;
 
@@ -406,7 +519,7 @@ void StartADCTask(void *argument)
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
    InitADCDMA(&hadc3);
-
+   InitADCDMA(&hadc2);
    for(;;)
    {
      osDelay(200);
@@ -435,9 +548,12 @@ void StartADCTask(void *argument)
          ADCDATA[5] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
          ADCDATA[6] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
          ADCDATA[7] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
-         ADCDATA[8] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
+         ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
          //Переключаем обратно аналоговый коммутатор
          HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
+         StartADCDMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_FRAME_SIZE*ADC2_CHANNELS);
+         StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
+         xEventGroupWaitBits(xADCEvent,ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
        break;
      }
    }

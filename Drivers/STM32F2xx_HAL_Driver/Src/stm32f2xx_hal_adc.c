@@ -1374,7 +1374,7 @@ HAL_StatusTypeDef HAL_ADC_Start_DMA(ADC_HandleTypeDef* hadc, uint32_t* pData, ui
     hadc->DMA_Handle->XferCpltCallback = ADC_DMAConvCplt;
 
     /* Set the DMA half transfer complete callback */
-    hadc->DMA_Handle->XferHalfCpltCallback = NULL;//ADC_DMAHalfConvCplt;
+    hadc->DMA_Handle->XferHalfCpltCallback = ADC_DMAHalfConvCplt;
     
     /* Set the DMA error callback */
     hadc->DMA_Handle->XferErrorCallback = ADC_DMAError;

@@ -18,8 +18,8 @@
 #include "stm32f2xx_hal.h"
 
 #define ADC1_READY  0x01
-#define ADC2_READY  0x01
-#define ADC3_READY  0x01
+#define ADC2_READY  0x02
+#define ADC3_READY  0x04
 
 #define ADC1_CHANNELS 3
 #define ADC2_CHANNELS 4
@@ -37,9 +37,8 @@ typedef enum
   IDLE,
 } xADCFSMType;
 
-void vADC1_Ready(void);
-void vADC2_Ready(void);
-void vADC3_Ready(void);
+
+void vADC_Ready(uint8_t adc_number);
 
 void vADC3R(DMA_HandleTypeDef *_hdma);
 void vADCInit(void);

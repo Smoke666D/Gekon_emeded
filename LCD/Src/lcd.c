@@ -149,9 +149,9 @@ void vLCDDelay( void )
     if ( hspi3.State != HAL_SPI_STATE_BUSY_TX )
     {
         lcd_delay = 0;
-	xHigherPriorityTaskWoken = pdFALSE;
-	xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
-	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
+        xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
+        portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
     }
   return;
 }

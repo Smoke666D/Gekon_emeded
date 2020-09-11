@@ -246,9 +246,10 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
 void TIM7_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM7_IRQn 0 */
-  vLCDDelay();
+   __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);
+   vLCDDelay();
   /* USER CODE END TIM7_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim7);
+  //HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */
 
   /* USER CODE END TIM7_IRQn 1 */

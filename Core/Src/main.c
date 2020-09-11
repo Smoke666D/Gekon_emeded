@@ -47,6 +47,8 @@
 #include "fpo.h"
 #include "vrSensor.h"
 #include "engine.h"
+#include "electro.h"
+#include "controller.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -255,6 +257,7 @@ int main(void)
   vVRinit( &htim6 );                                            /* Speed sensor initialization */
   vENGINEinit();
   vELECTROinit();
+  vCONTROLLERinit();
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */

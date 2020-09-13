@@ -167,71 +167,77 @@ float  fADC1Init(uint16_t freq)
   return (float)(1/Period);
 }
 
-
-
-void vADC3DCInit(void)
+/*
+ *
+ *
+ */
+void vADC3DCInit(xADCFSMType xADCType)
 {
+
+
+
   ADC_ChannelConfTypeDef sConfig = {0};
 
-    hadc3.Instance = ADC3;
-    hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
-    hadc3.Init.Resolution = ADC_RESOLUTION_12B;
-    hadc3.Init.ScanConvMode = ENABLE;
-    hadc3.Init.ContinuousConvMode = ENABLE;
-    hadc3.Init.DiscontinuousConvMode = DISABLE;
-    hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
-    hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
-    hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-    hadc3.Init.NbrOfConversion = 5;
-    hadc3.Init.DMAContinuousRequests = ENABLE;
-    hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  HAL_ADC_DeInit(&hadc3);
 
+  hadc3.Instance = ADC3;
+  hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc3.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc3.Init.ScanConvMode = ENABLE;
+  hadc3.Init.ContinuousConvMode = ENABLE;
+  hadc3.Init.DiscontinuousConvMode = DISABLE;
+  hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
+  hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc3.Init.NbrOfConversion = 5;
+  hadc3.Init.DMAContinuousRequests = ENABLE;
+  hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (xADCType == DC)
+      hadc3.Init.NbrOfConversion = 5;
+  else
+     hadc3.Init.NbrOfConversion = 4;
 
+  HAL_ADC_Init(&hadc3);
 
-  if (HAL_ADC_Init(&hadc3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_14;
+  if (xADCType == DC)
+    sConfig.Channel = ADC_CHANNEL_14;
+  else
+    sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  HAL_ADC_ConfigChannel(&hadc3, &sConfig);
+
+
+  if (xADCType == DC)
+      sConfig.Channel = ADC_CHANNEL_15;
+    else
+      sConfig.Channel = ADC_CHANNEL_5;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+    HAL_ADC_ConfigChannel(&hadc3, &sConfig);
+
+
+  if (xADCType == DC)
+    sConfig.Channel = ADC_CHANNEL_13;
+  else
+    sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  HAL_ADC_ConfigChannel(&hadc3, &sConfig);
+
+  if (xADCType == DC)
+    sConfig.Channel = ADC_CHANNEL_12;
+  else
+    sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  HAL_ADC_ConfigChannel(&hadc3, &sConfig);
+
+  if (xADCType == DC)
   {
-    Error_Handler();
-  }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_15;
-  sConfig.Rank = 2;
-  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_13;
-  sConfig.Rank = 3;
-  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_12;
-  sConfig.Rank = 4;
-  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
-  sConfig.Channel = ADC_CHANNEL_10;
-  sConfig.Rank = 5;
-  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
+    sConfig.Channel = ADC_CHANNEL_10;
+    sConfig.Rank = 5;
+    HAL_ADC_ConfigChannel(&hadc3, &sConfig);
   }
 }
 
@@ -245,7 +251,7 @@ void vADCInit(void)
     case DC:
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
-      vADC3DCInit();
+      vADC3DCInit(DC);
       //fADCInit(&htim2,15000);
    //   fADCInit(&htim8,15000);
       fADC3Init(15000);
@@ -275,8 +281,6 @@ void vADC_Ready(uint8_t adc_number)
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   /* Process locked */
-
-
   xHigherPriorityTaskWoken = pdFALSE;
   switch (adc_number)
   {
@@ -499,14 +503,16 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
     {
       __HAL_TIM_ENABLE(&htim3);
     }
-    if (hadc->Instance == ADC2)
-    {
-     __HAL_TIM_ENABLE(&htim8);
-    }
-    if (hadc->Instance == ADC1)
-    {
-        __HAL_TIM_ENABLE(&htim2);
-    }
+    else
+      if (hadc->Instance == ADC2)
+      {
+        __HAL_TIM_ENABLE(&htim8);
+      }
+      else
+        if (hadc->Instance == ADC1)
+        {
+          __HAL_TIM_ENABLE(&htim2);
+        }
     /* Return function status */
     return HAL_OK;
 
@@ -520,6 +526,7 @@ void StartADCTask(void *argument)
    vADCInit();
    InitADCDMA(&hadc3);
    InitADCDMA(&hadc2);
+   InitADCDMA(&hadc1);
    for(;;)
    {
      osDelay(200);
@@ -529,6 +536,7 @@ void StartADCTask(void *argument)
          xEventGroupWaitBits(xADCEvent,ADC1_READY | ADC2_READY | ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
          break;
        case DC:
+         vADC3DCInit(DC);
          //Запускаем преобразвоание АЦП
          StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
          //Ожидаем флага готовонсти о завершении преобразования
@@ -551,9 +559,12 @@ void StartADCTask(void *argument)
          ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
          //Переключаем обратно аналоговый коммутатор
          HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
+         vADC3DCInit(AC);
+         osDelay(1);
          StartADCDMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_FRAME_SIZE*ADC2_CHANNELS);
          StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
-         xEventGroupWaitBits(xADCEvent,ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+         StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
+         xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
        break;
      }
    }

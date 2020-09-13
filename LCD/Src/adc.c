@@ -5,7 +5,6 @@
  *      Author: igor.dymov
  */
 
-
 #include "adc.h"
 
 static EventGroupHandle_t xADCEvent;
@@ -86,9 +85,6 @@ float  fADCInit(TIM_HandleTypeDef * htim,uint16_t freq)
   HAL_TIM_Base_Start_IT(htim );
   return (float)(1/Period);
 }
-
-
-
 
 
 
@@ -174,8 +170,6 @@ float  fADC1Init(uint16_t freq)
 void vADC3DCInit(xADCFSMType xADCType)
 {
 
-
-
   ADC_ChannelConfTypeDef sConfig = {0};
 
   HAL_ADC_DeInit(&hadc3);
@@ -189,63 +183,21 @@ void vADC3DCInit(xADCFSMType xADCType)
   hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
   hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc3.Init.NbrOfConversion = 5;
+ // hadc3.Init.NbrOfConversion = 5;
   hadc3.Init.DMAContinuousRequests = ENABLE;
   hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (xADCType == DC)
-      hadc3.Init.NbrOfConversion = 5;
+      hadc3.Init.NbrOfConversion = 9;
   else
      hadc3.Init.NbrOfConversion = 4;
 
   HAL_ADC_Init(&hadc3);
 
-  if (xADCType == DC)
-    sConfig.Channel = ADC_CHANNEL_14;
-  else
-    sConfig.Channel = ADC_CHANNEL_4;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  HAL_ADC_ConfigChannel(&hadc3, &sConfig);
-
-
-  if (xADCType == DC)
-      sConfig.Channel = ADC_CHANNEL_15;
-    else
-      sConfig.Channel = ADC_CHANNEL_5;
-    sConfig.Rank = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-    HAL_ADC_ConfigChannel(&hadc3, &sConfig);
-
-
-  if (xADCType == DC)
-    sConfig.Channel = ADC_CHANNEL_13;
-  else
-    sConfig.Channel = ADC_CHANNEL_6;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  HAL_ADC_ConfigChannel(&hadc3, &sConfig);
-
-  if (xADCType == DC)
-    sConfig.Channel = ADC_CHANNEL_12;
-  else
-    sConfig.Channel = ADC_CHANNEL_7;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  HAL_ADC_ConfigChannel(&hadc3, &sConfig);
-
-  if (xADCType == DC)
-  {
-    sConfig.Channel = ADC_CHANNEL_10;
-    sConfig.Rank = 5;
-    HAL_ADC_ConfigChannel(&hadc3, &sConfig);
-  }
 }
 
 
 void vADCInit(void)
 {
-
-
   switch (xADCFSM)
   {
     case DC:
@@ -273,8 +225,6 @@ void vADCInit(void)
 
 
   }
-
-
 }
 
 void vADC_Ready(uint8_t adc_number)
@@ -301,11 +251,6 @@ void vADC_Ready(uint8_t adc_number)
 
 
 
-
-
-
-
-
 static uint16_t  ADCDATA[8]={0,0,0,0,0};
 
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
@@ -317,16 +262,6 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
    return;
 }
 
-void vADCCommonInit(void)
-{
-
-}
-
-void vADCCommonDeInit(void)
-{
-
-
-}
 
 
 static void ADC_DMAConv(DMA_HandleTypeDef *hdma)
@@ -529,44 +464,64 @@ void StartADCTask(void *argument)
    InitADCDMA(&hadc1);
    for(;;)
    {
-     osDelay(200);
-     switch (xADCFSM)
-     {
-       case AC:
-         xEventGroupWaitBits(xADCEvent,ADC1_READY | ADC2_READY | ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-         break;
-       case DC:
-         vADC3DCInit(DC);
-         //Запускаем преобразвоание АЦП
-         StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
-         //Ожидаем флага готовонсти о завершении преобразования
-         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-         ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
-         ADCDATA[1] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
-         ADCDATA[2] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
-         ADCDATA[3] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
-         ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
-         //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
-         HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
-         osDelay(1);
-         //Запускаем новоей преобразование
-         StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
-         xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-         ADCDATA[0] = (ADC3_IN_Buffer[0]+ADC3_IN_Buffer[5]+ADC3_IN_Buffer[10]+ADC3_IN_Buffer[15])>>2;
-         ADCDATA[5] = (ADC3_IN_Buffer[1]+ADC3_IN_Buffer[6]+ADC3_IN_Buffer[11]+ADC3_IN_Buffer[16])>>2;
-         ADCDATA[6] = (ADC3_IN_Buffer[2]+ADC3_IN_Buffer[7]+ADC3_IN_Buffer[12]+ADC3_IN_Buffer[17])>>2;
-         ADCDATA[7] = (ADC3_IN_Buffer[3]+ADC3_IN_Buffer[8]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[18])>>2;
-         ADCDATA[4] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[9]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[19])>>2;
-         //Переключаем обратно аналоговый коммутатор
-         HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
-         vADC3DCInit(AC);
-         osDelay(1);
-         StartADCDMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_FRAME_SIZE*ADC2_CHANNELS);
-         StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
-         StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
-         xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-       break;
-     }
+    osDelay(200);
+    vADC3DCInit(DC);
+    //Запускаем преобразвоание АЦП
+    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,4*9);
+    //Ожидаем флага готовонсти о завершении преобразования
+    xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+    ADCDATA[0] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[22]+ADC3_IN_Buffer[31])>>2;
+    ADCDATA[1] = (ADC3_IN_Buffer[5]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[23]+ADC3_IN_Buffer[32])>>2;
+    ADCDATA[2] = (ADC3_IN_Buffer[6]+ADC3_IN_Buffer[15]+ADC3_IN_Buffer[24]+ADC3_IN_Buffer[33])>>2;
+    ADCDATA[3] = (ADC3_IN_Buffer[7]+ADC3_IN_Buffer[16]+ADC3_IN_Buffer[25]+ADC3_IN_Buffer[34])>>2;
+    ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
+    //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
+    HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
+    osDelay(1);
+    //Запускаем новоей преобразование
+    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,4*9);
+     xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+    ADCDATA[0] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[22]+ADC3_IN_Buffer[31])>>2;
+    ADCDATA[5] = (ADC3_IN_Buffer[5]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[23]+ADC3_IN_Buffer[32])>>2;
+    ADCDATA[6] = (ADC3_IN_Buffer[6]+ADC3_IN_Buffer[15]+ADC3_IN_Buffer[24]+ADC3_IN_Buffer[33])>>2;
+    ADCDATA[7] = (ADC3_IN_Buffer[7]+ADC3_IN_Buffer[16]+ADC3_IN_Buffer[25]+ADC3_IN_Buffer[34])>>2;
+    ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
+    //Переключаем обратно аналоговый коммутатор
+    HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
+    vADC3DCInit(AC);
+    osDelay(1);
+    StartADCDMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_FRAME_SIZE*ADC2_CHANNELS);
+    StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
+    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
+    xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+    vDecNetural(ADC2_CHANNEL);
+    vDecNetural(ADC3_CHANNEL);
    }
+
+}
+
+void vDecNetural(uint8_t chanel)
+{
+  uint16_t *data;
+  switch (chanel)
+  {
+    case ADC2_CHANNEL:
+      data = ADC2_IN_Buffer;
+      break;
+    case ADC3_CHANNEL:
+      data = ADC3_IN_Buffer;
+      break;
+    default:
+     return;
+  }
+
+ for (int16_t index = 0;index<ADC_FRAME_SIZE;index++)
+ {
+   data[index+ 4*index] = data[index+ 4*index] - data[index+ 4*index+4];
+   data[index+ 4*index+1] = data[index+ 4*index+1] - data[index+ 4*index+4];
+   data[index+ 4*index+2] = data[index+ 4*index+2] - data[index+ 4*index+4];
+ }
+
+  return;
 
 }

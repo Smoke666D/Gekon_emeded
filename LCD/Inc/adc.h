@@ -21,6 +21,10 @@
 #define ADC2_READY  0x02
 #define ADC3_READY  0x04
 
+#define ADC1_CHANNEL  0x01
+#define ADC2_CHANNEL  0x02
+#define ADC3_CHANNEL  0x04
+
 #define ADC1_CHANNELS 3
 #define ADC2_CHANNELS 4
 #define ADC3_CHANNELS 4
@@ -39,7 +43,7 @@ typedef enum
 
 
 void vADC_Ready(uint8_t adc_number);
-
+void vDecNetural(uint8_t chanel);
 void vADC3R(DMA_HandleTypeDef *_hdma);
 void vADCInit(void);
 void StartADCTask(void *argument);

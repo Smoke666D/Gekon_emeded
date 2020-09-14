@@ -288,7 +288,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   ADCTaskHandle =osThreadNew(StartADCTask, NULL, &ADCTask_attributes);
 
- // DIOTaskHandle = osThreadNew(vStartDIOTask, NULL, &DIOTask_attributes);
+  DIOTaskHandle = osThreadNew(vStartDIOTask, NULL, &DIOTask_attributes);
 
   keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   vSetupKeyboard();
@@ -1061,10 +1061,16 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LCD_RST_Pin|LCD_LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : BOOT1_Pin FPI_B_Pin FPI_C_Pin FPI_D_Pin */
-  GPIO_InitStruct.Pin = BOOT1_Pin|FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
+  /*Configure GPIO pin : BOOT1_Pin */
+  GPIO_InitStruct.Pin = BOOT1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : FPI_B_Pin FPI__Pin FD_IP_Pin */
+  GPIO_InitStruct.Pin = FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USER_Btn_Pin */
@@ -1123,11 +1129,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : VR_COUNT_Pin */
-  GPIO_InitStruct.Pin = VR_COUNT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(VR_COUNT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RTC_INT_Pin RTC_RST_Pin */
   GPIO_InitStruct.Pin = RTC_INT_Pin|RTC_RST_Pin;
@@ -1158,6 +1159,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LCD_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 

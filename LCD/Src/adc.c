@@ -494,32 +494,20 @@ void StartADCTask(void *argument)
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-    vDecNetural(ADC2_CHANNEL);
-    vDecNetural(ADC3_CHANNEL);
+    vDecNetural(&ADC2_IN_Buffer);
+    vDecNetural(&ADC3_IN_Buffer);
    }
 
 }
 
-void vDecNetural(uint8_t chanel)
+void vDecNetural(uint16_t * data)
 {
-  uint16_t *data;
-  switch (chanel)
-  {
-    case ADC2_CHANNEL:
-      data = ADC2_IN_Buffer;
-      break;
-    case ADC3_CHANNEL:
-      data = ADC3_IN_Buffer;
-      break;
-    default:
-     return;
-  }
 
  for (int16_t index = 0;index<ADC_FRAME_SIZE;index++)
  {
-   data[index+ 4*index] = data[index+ 4*index] - data[index+ 4*index+4];
-   data[index+ 4*index+1] = data[index+ 4*index+1] - data[index+ 4*index+4];
-   data[index+ 4*index+2] = data[index+ 4*index+2] - data[index+ 4*index+4];
+   data[4*index]   = data[4*index]   - data[4*index+4];
+   data[4*index+1] = data[4*index+1] - data[4*index+4];
+   data[4*index+2] = data[4*index+2] - data[4*index+4];
  }
 
   return;

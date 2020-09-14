@@ -43,7 +43,7 @@ typedef enum
 
 
 void vADC_Ready(uint8_t adc_number);
-void vDecNetural(uint8_t chanel);
+void vDecNetural(uint16_t * data);
 void vADC3R(DMA_HandleTypeDef *_hdma);
 void vADCInit(void);
 void StartADCTask(void *argument);

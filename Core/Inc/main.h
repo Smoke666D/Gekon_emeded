@@ -62,10 +62,13 @@ void Error_Handler(void);
 #define BOOT1_GPIO_Port GPIOE
 #define FPI_B_Pin GPIO_PIN_4
 #define FPI_B_GPIO_Port GPIOE
+#define FPI_B_EXTI_IRQn EXTI4_IRQn
 #define FPI_C_Pin GPIO_PIN_5
 #define FPI_C_GPIO_Port GPIOE
+#define FPI_C_EXTI_IRQn EXTI9_5_IRQn
 #define FPI_D_Pin GPIO_PIN_6
 #define FPI_D_GPIO_Port GPIOE
+#define FPI_D_EXTI_IRQn EXTI9_5_IRQn
 #define USER_Btn_Pin GPIO_PIN_13
 #define USER_Btn_GPIO_Port GPIOC
 #define ON_INPOW_Pin GPIO_PIN_3
@@ -164,9 +167,6 @@ void Error_Handler(void);
 #define LED1_GPIO_Port GPIOG
 #define LED3_Pin GPIO_PIN_4
 #define LED3_GPIO_Port GPIOG
-#define VR_COUNT_Pin GPIO_PIN_6
-#define VR_COUNT_GPIO_Port GPIOG
-#define VR_COUNT_EXTI_IRQn EXTI9_5_IRQn
 #define RTC_INT_Pin GPIO_PIN_8
 #define RTC_INT_GPIO_Port GPIOC
 #define RTC_RST_Pin GPIO_PIN_9

@@ -48,9 +48,6 @@ typedef enum {
 #define DOUTReady 0x02
 
 void vStartDIOTask(void *argument);
-uint8_t uDIOGetDOUT(uint8_t DOUT);
-void vDIOSetDOUT(uint8_t DOUT, uint8_t Data);
-void vDIOSetDOUTCurrLim(uint8_t DOUT, uint8_t Data);
 void vDIOStateChange(void);
 void vGetDIODC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 

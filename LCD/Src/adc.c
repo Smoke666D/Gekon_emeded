@@ -9,9 +9,9 @@
 
 static EventGroupHandle_t xADCEvent;
 static StaticEventGroup_t xADCCreatedEventGroup;
-volatile uint16_t ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS];   //ADC1 input data buffer
-volatile uint16_t ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS];   //ADC2 input data buffer
-volatile uint16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input data buffer
+volatile int16_t ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS];   //ADC1 input data buffer
+volatile int16_t ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS];   //ADC2 input data buffer
+volatile int16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input data buffer
 static xADCFSMType xADCFSM = DC;
 
 extern TIM_HandleTypeDef htim3;
@@ -496,11 +496,15 @@ void StartADCTask(void *argument)
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
     vDecNetural(&ADC2_IN_Buffer);
     vDecNetural(&ADC3_IN_Buffer);
+    vADCFindFreq(&ADC2_IN_Buffer);
+    vADCFindFreq(&ADC3_IN_Buffer);
+    SetSQR(&ADC2_IN_Buffer);
+    SetSQR(&ADC3_IN_Buffer);
    }
 
 }
 
-void vDecNetural(uint16_t * data)
+void vDecNetural(int16_t * data)
 {
 
  for (int16_t index = 0;index<ADC_FRAME_SIZE;index++)
@@ -513,3 +517,65 @@ void vDecNetural(uint16_t * data)
   return;
 
 }
+
+#define AMP_DELTA 4
+
+void SetSQR(int16_t * data)
+{
+  long buf_data[3]={0,0,0};
+  for (uint8_t k=0;k<3;k++)
+  {
+    for (uint16_t i=0;i<ADC_FRAME_SIZE;i++)
+    {
+    buf_data[k] = buf_data[k]+ data[4*i+k]*data[4*i+k];
+    }
+
+    buf_data[k] = sqrt(buf_data[k])/sqrt(ADC_FRAME_SIZE);
+  }
+}
+
+
+void vADCFindFreq(int16_t * data)
+{
+  uint8_t F1=0,F2=0,tt=0;
+  uint8_t CNT=0,index = 0;
+  uint16_t PER[20];
+  for (uint16_t i=1;i<ADC_FRAME_SIZE-1;i++)
+  {
+    //Если значение попадет в корридор окло нуля
+    if ((data[4*i] > -AMP_DELTA) && (data[4*i] < AMP_DELTA))
+    {
+        //то прверяем текущую фазу
+        if ((data[4*i] > data[4*i-1 ]) || (data[4*i] < data[4*i+1]))
+            F2  = 1;
+        else
+            F2 = 0;
+        if (CNT > 0)
+        {
+          if (((F2==1) && (F1 == 1)) || ((F2==0) &&(F1==0)))
+          {
+            index = 5;
+            break;
+          }
+        }
+        F1 = F2;
+        PER[index++] =i;
+        i = i+ 100;
+        CNT++;
+    }
+  }
+  if ((index > 2) && (index <5))
+  {
+    tt =0;
+  }
+  /* for (uint16_t i =1;i<index-1;i++)
+   {
+     tt =tt+ + PER[i]-PER[i-1]
+   }
+  */
+
+
+}
+
+
+

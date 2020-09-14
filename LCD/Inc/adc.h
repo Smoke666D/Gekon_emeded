@@ -43,10 +43,12 @@ typedef enum
 
 
 void vADC_Ready(uint8_t adc_number);
-void vDecNetural(uint16_t * data);
+void vDecNetural(int16_t * data);
 void vADC3R(DMA_HandleTypeDef *_hdma);
 void vADCInit(void);
 void StartADCTask(void *argument);
 float  fADC3Init(uint16_t freq);
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vADCFindFreq(int16_t * data);
+void SetSQR(int16_t * data);
 #endif /* INC_ADC_H_ */

@@ -5,13 +5,18 @@
  *      Author: igor.dymov
  */
 
+//#define ARM_MATH_CM3
+
 #include "adc.h"
+#include "arm_math.h"
 
 static EventGroupHandle_t xADCEvent;
 static StaticEventGroup_t xADCCreatedEventGroup;
 volatile int16_t ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS];   //ADC1 input data buffer
 volatile int16_t ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS];   //ADC2 input data buffer
 volatile int16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input data buffer
+static q15_t TEMP_BUFFER[ADC_FRAME_SIZE];
+static q15_t TEMP_BUFFER1[ADC_FRAME_SIZE];
 static xADCFSMType xADCFSM = DC;
 
 extern TIM_HandleTypeDef htim3;
@@ -20,6 +25,8 @@ extern TIM_HandleTypeDef htim2;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
+
+void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size);
 
 float  fADC3Init(uint16_t freq)
 {
@@ -494,6 +501,9 @@ void StartADCTask(void *argument)
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+    vGetChannel(&TEMP_BUFFER, &ADC2_IN_Buffer, 0, ADC_FRAME_SIZE);
+    vGetChannel(&TEMP_BUFFER1, &ADC2_IN_Buffer,4, ADC_FRAME_SIZE);
+    arm_sub_q15(&TEMP_BUFFER,&TEMP_BUFFER,&TEMP_BUFFER1,ADC_FRAME_SIZE);
     vDecNetural(&ADC2_IN_Buffer);
     vDecNetural(&ADC3_IN_Buffer);
     vADCFindFreq(&ADC2_IN_Buffer);
@@ -502,6 +512,16 @@ void StartADCTask(void *argument)
     SetSQR(&ADC3_IN_Buffer);
    }
 
+}
+
+
+void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size)
+{
+  for (uint16_t i=0;i<size;i++)
+  {
+    dest[i] = source[4*i+off];
+  }
+  return;
 }
 
 void vDecNetural(int16_t * data)

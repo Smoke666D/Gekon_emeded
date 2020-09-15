@@ -34,8 +34,6 @@ EventGroupHandle_t vDIOGetStateEvent(void)
 }
 
 
-
-
 void vGetDIODC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
    Data[0]='0';

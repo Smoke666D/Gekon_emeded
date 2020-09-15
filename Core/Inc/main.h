@@ -123,8 +123,8 @@ void Error_Handler(void);
 #define CHARG_ALTER_ON_GPIO_Port GPIOB
 #define ANALOG_SWITCH_Pin GPIO_PIN_11
 #define ANALOG_SWITCH_GPIO_Port GPIOF
-#define MIXING_Pin GPIO_PIN_12
-#define MIXING_GPIO_Port GPIOF
+#define DIN_OFFSET_Pin GPIO_PIN_12
+#define DIN_OFFSET_GPIO_Port GPIOF
 #define POUT_E_Pin GPIO_PIN_9
 #define POUT_E_GPIO_Port GPIOE
 #define POUT_CD_CS_Pin GPIO_PIN_10

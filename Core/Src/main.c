@@ -141,12 +141,6 @@ const osThreadAttr_t keyboardTask_attributes = {
   .stack_size = 232
 };
 
-osThreadId_t DIOTaskHandle;
-const osThreadAttr_t DIOTask_attributes = {
-  .name = "DioTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512
-};
 
 
 osThreadId_t ADCTaskHandle;
@@ -187,7 +181,6 @@ void StartNetTask(void *argument);
 void StartLcdTask(void *argument);
 extern void StartUsbTask(void *argument);
 extern void StartADCTask(void *argument);
-extern void vStartDIOTask(void *argument);
 /* USER CODE BEGIN PFP */
 extern void vKeyboardTask(void const * argument);
 /* USER CODE END PFP */
@@ -288,12 +281,11 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   ADCTaskHandle =osThreadNew(StartADCTask, NULL, &ADCTask_attributes);
 
-  DIOTaskHandle = osThreadNew(vStartDIOTask, NULL, &DIOTask_attributes);
 
   keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   vSetupKeyboard();
   vLCDInit( xLCDDelaySemphHandle );
-
+  vDIOInit();
   vUSBinit( usbTaskHandle );
   /* USER CODE END RTOS_THREADS */
 
@@ -586,7 +578,7 @@ static void MX_ADC3_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_12 ;
+  sConfig.Channel = ADC_CHANNEL_12;
   sConfig.Rank = 8;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
@@ -594,7 +586,7 @@ static void MX_ADC3_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_10   ;
+  sConfig.Channel = ADC_CHANNEL_10;
   sConfig.Rank = 9;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
@@ -1039,7 +1031,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
@@ -1067,10 +1059,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FPI_B_Pin FPI__Pin FD_IP_Pin */
+  /*Configure GPIO pins : FPI_B_Pin FPI_C_Pin FPI_D_Pin */
   GPIO_InitStruct.Pin = FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USER_Btn_Pin */
@@ -1079,8 +1071,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ON_INPOW_Pin ANALOG_SWITCH_Pin */
-  GPIO_InitStruct.Pin = ON_INPOW_Pin|ANALOG_SWITCH_Pin;
+  /*Configure GPIO pins : ON_INPOW_Pin ANALOG_SWITCH_Pin DIN_OFFSET_Pin */
+  GPIO_InitStruct.Pin = ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1094,12 +1086,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MIXING_Pin */
-  GPIO_InitStruct.Pin = MIXING_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MIXING_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : POUT_E_Pin POUT_CD_CS_Pin POUT_C_Pin POUT_EF_CS_Pin
                            POUT_D_Pin POUT_F_Pin POUT_AB_CS_Pin */
@@ -1128,7 +1114,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-
 
   /*Configure GPIO pins : RTC_INT_Pin RTC_RST_Pin */
   GPIO_InitStruct.Pin = RTC_INT_Pin|RTC_RST_Pin;

@@ -19,36 +19,27 @@
 #include "stm32f2xx_hal.h"
 
 
-typedef enum
-{
-  OK,
-  ERROR_BUSY,
-  ERROR_ARG,
-} DIN_ERROR_CODE;
 
-
-typedef enum {
-  ON,
-  OFF,
-} DIN_STATE;
 
 #define FPI_B  0x01
 #define FPI_C  0x02
-#define FPI_D  0x03
+#define FPI_D  0x04
 
-#define OFF    0x00
-#define ON     0x01
-#define FPO_A  0x01
-#define FPO_B  0x02
-#define FPO_C  0x03
-#define FPO_D  0x04
-#define FPO_E  0x05
-#define FPO_F  0x06
-#define DOUTFlag  0x01
-#define DOUTReady 0x02
+#define DIN_A_SET   0x01
+#define DIN_A_RESET 0x02
+#define DIN_B_SET   0x04
+#define DIN_B_RESET 0x08
+#define DIN_C_SET   0x10
+#define DIN_C_RESET 0x20
+#define DIN_D_SET   0x40
+#define DIN_D_RESET 0x80
 
+
+
+void vDIO_B_StateChange(void);
+void vDIO_C_D_StateChange(void);
 void vStartDIOTask(void *argument);
-void vDIOStateChange(void);
+void vDIOInit( void);
 void vGetDIODC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 
 #endif /* INC_DIO_H_ */

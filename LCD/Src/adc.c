@@ -9,6 +9,7 @@
 
 #include "adc.h"
 #include "arm_math.h"
+#include "fix16.h"
 
 static EventGroupHandle_t xADCEvent;
 static StaticEventGroup_t xADCCreatedEventGroup;
@@ -18,6 +19,41 @@ volatile int16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input da
 static q15_t TEMP_BUFFER[ADC_FRAME_SIZE];
 static q15_t TEMP_BUFFER1[ADC_FRAME_SIZE];
 static xADCFSMType xADCFSM = DC;
+static uint16_t  ADCDATA[8]={0,0,0,0,0};
+
+//Напяжение питания
+
+
+/*
+ *
+ */
+fix16_t  vADCGetVoltage(uint8_t ADC_CHANNEL)
+{
+  static fix16_t Voltage = 0, TEMP;
+  switch (ADC_CHANNEL)
+  {
+    case VDD_CH:
+        TEMP  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
+        Voltage =  fix16_mul( TEMP, fix16_from_float(R118_R122/R122));
+        Voltage = fix16_sub(Voltage,VT4);
+        break;
+    case COFDIN:
+      TEMP = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
+      Voltage =  fix16_mul( TEMP, fix16_from_float(R12_R11/R12));
+      break;
+    case COFAIN:
+      Voltage  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
+      break;
+    case CANC:
+      Voltage  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
+    default:
+      Voltage  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
+        break;
+  }
+   return Voltage;
+}
+
+
 
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim8;
@@ -258,13 +294,15 @@ void vADC_Ready(uint8_t adc_number)
 
 
 
-static uint16_t  ADCDATA[8]={0,0,0,0,0};
+
 
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
    if (cmd == mREAD)
    {
-     vUToStr(Data,ADCDATA[ID-1],0);
+       fix16_to_str(vADCGetVoltage(ID-1),Data, 2);
+     //else
+    // vUToStr(Data,ADCDATA[ID-1],0);
    }
    return;
 }
@@ -463,6 +501,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 void StartADCTask(void *argument)
 {
    uint32_t tt=0;
+   fix16_t TEMP = 0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
@@ -477,7 +516,6 @@ void StartADCTask(void *argument)
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,4*9);
     //Ожидаем флага готовонсти о завершении преобразования
     xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-    ADCDATA[0] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[22]+ADC3_IN_Buffer[31])>>2;
     ADCDATA[1] = (ADC3_IN_Buffer[5]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[23]+ADC3_IN_Buffer[32])>>2;
     ADCDATA[2] = (ADC3_IN_Buffer[6]+ADC3_IN_Buffer[15]+ADC3_IN_Buffer[24]+ADC3_IN_Buffer[33])>>2;
     ADCDATA[3] = (ADC3_IN_Buffer[7]+ADC3_IN_Buffer[16]+ADC3_IN_Buffer[25]+ADC3_IN_Buffer[34])>>2;
@@ -487,12 +525,15 @@ void StartADCTask(void *argument)
     osDelay(1);
     //Запускаем новоей преобразование
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,4*9);
-     xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+    xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
     ADCDATA[0] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[22]+ADC3_IN_Buffer[31])>>2;
     ADCDATA[5] = (ADC3_IN_Buffer[5]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[23]+ADC3_IN_Buffer[32])>>2;
     ADCDATA[6] = (ADC3_IN_Buffer[6]+ADC3_IN_Buffer[15]+ADC3_IN_Buffer[24]+ADC3_IN_Buffer[33])>>2;
     ADCDATA[7] = (ADC3_IN_Buffer[7]+ADC3_IN_Buffer[16]+ADC3_IN_Buffer[25]+ADC3_IN_Buffer[34])>>2;
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
+
+
+
     //Переключаем обратно аналоговый коммутатор
     HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
     vADC3DCInit(AC);

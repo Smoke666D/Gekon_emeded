@@ -32,7 +32,22 @@
 #define ADC_FRAME_SIZE  512
 #define ADC_ADD_FRAME_SIZE ADC3_ADD_CHANNEL*4
 
+/*
+ * Номиналы резисторов
+ */
+#define R118_R122 104.7
+#define R122 4.7
+#define R12      22.2
+#define R12_R11  122.2
+#define VT4  0
 
+#define VDD_CH  0U
+#define COFDIN  1U
+#define COFAIN  5U
+#define CANC    6U
+#define CFUEL   2U
+#define CPRES   3U
+#define CTEMP   7U
 
 typedef enum
 {

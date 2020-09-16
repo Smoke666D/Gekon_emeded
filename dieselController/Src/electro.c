@@ -16,12 +16,12 @@
 /*---------------------------------- Define ----------------------------------*/
 
 /*-------------------------------- Structures --------------------------------*/
-static GENERATOR_TYPE      generator;
-static MAINS_TYPE          mains;
-static ELECTRO_SYSTEM_TYPE electro;
-static osThreadId_t        electroHandle;
-static StaticQueue_t       xElectroCommandQueue;
-static QueueHandle_t       pElectroCommandQueue;
+static GENERATOR_TYPE      generator            = { 0U };
+static MAINS_TYPE          mains                = { 0U } ;
+static ELECTRO_SYSTEM_TYPE electro              = { 0U };
+static osThreadId_t        electroHandle        = NULL;
+static StaticQueue_t       xElectroCommandQueue = { 0U };
+static QueueHandle_t       pElectroCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
 static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH];
@@ -197,9 +197,9 @@ fix16_t fELECTROcalcPhaseImbalance ( fix16_t* value )
 /*---------------------------------------------------------------------------------------------------*/
 void vMAINSprocess ( void )
 {
-  fix16_t voltage[MAINS_LINE_NUMBER];
-  fix16_t freq[MAINS_LINE_NUMBER];
-  uint8_t i = 0U;
+  fix16_t voltage[MAINS_LINE_NUMBER] = { 0U };
+  fix16_t freq[MAINS_LINE_NUMBER]    = { 0U };
+  uint8_t i                          = 0U;
 
   for ( i=0U; i<MAINS_LINE_NUMBER; i++ )
   {
@@ -221,12 +221,12 @@ void vMAINSprocess ( void )
 /*---------------------------------------------------------------------------------------------------*/
 void vGENERATORprocess ( void )
 {
-  fix16_t voltage[MAINS_LINE_NUMBER];
-  fix16_t freq[MAINS_LINE_NUMBER];
-  fix16_t current[MAINS_LINE_NUMBER];
-  fix16_t power[MAINS_LINE_NUMBER];
-  fix16_t maxCurrent = 0U;
-  uint8_t i          = 0U;
+  fix16_t voltage[MAINS_LINE_NUMBER] = { 0U };
+  fix16_t freq[MAINS_LINE_NUMBER]    = { 0U };
+  fix16_t current[MAINS_LINE_NUMBER] = { 0U };
+  fix16_t power[MAINS_LINE_NUMBER]   = { 0U };
+  fix16_t maxCurrent                 = 0U;
+  uint8_t i                          = 0U;
 
   for ( i=0U; i<GENERATOR_LINE_NUMBER; i++ )
   {

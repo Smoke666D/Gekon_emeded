@@ -15,9 +15,9 @@
 #include "dataProces.h"
 #include "engine.h"
 /*-------------------------------- Structures --------------------------------*/
-static QueueHandle_t pFPIQueue;
-static StaticQueue_t xFPIQueue;
-static osThreadId_t  fpiHandle;
+static QueueHandle_t pFPIQueue = NULL;
+static StaticQueue_t xFPIQueue = { 0U };
+static osThreadId_t  fpiHandle = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
 {
@@ -34,8 +34,8 @@ const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
   FPI_FUN_BAN_AUTO_SHUTDOWN
 };
 /*-------------------------------- Variables ---------------------------------*/
-static uint8_t eventBuffer[ 16U * sizeof( FPI_EVENT ) ];
-static FPI     fpis[FPI_NUMBER];
+static uint8_t eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
+static FPI     fpis[FPI_NUMBER]                         = { 0U };
 /*-------------------------------- Functions ---------------------------------*/
 void    vFPITask ( void const* argument );
 /*----------------------------------------------------------------------------*/
@@ -196,7 +196,7 @@ void vFPITask ( void const* argument )
   {
     for ( i=0U; i<FPI_NUMBER; i++ )
     {
-      if ( fpis[i].function != FPI_FUN_NONE)
+      if ( fpis[i].function != FPI_FUN_NONE )
       {
         switch ( fpis[i].state )
         {

@@ -17,29 +17,28 @@
 #include "semphr.h"
 #include "dataAPI.h"
 /*-------------------------------- Structures --------------------------------*/
-static ENGINE_TYPE           engine;
-static OIL_TYPE              oil;
-static COOLANT_TYPE          coolant;
-static FUEL_TYPE             fuel;
-static SPEED_TYPE            speed;
-static BATTERY_TYPE          battery;
-static CHARGER_TYPE          charger;
-static STARTER_TYPE          starter;
-static PLAN_STOP_TYPE        planStop;
-static MAINTENCE_TYPE        maintence;
-static RELAY_DEVICE          stopSolenoid;
-static RELAY_DEVICE          idleRelay;
-static RELAY_IMPULSE_DEVICE  preHeater;
-
-static osThreadId_t  engineHandle;
-static StaticQueue_t xEngineCommandQueue;
-static QueueHandle_t pEngineCommandQueue;
+static ENGINE_TYPE           engine              = { 0U };
+static OIL_TYPE              oil                 = { 0U };
+static COOLANT_TYPE          coolant             = { 0U };
+static FUEL_TYPE             fuel                = { 0U };
+static SPEED_TYPE            speed               = { 0U };
+static BATTERY_TYPE          battery             = { 0U };
+static CHARGER_TYPE          charger             = { 0U };
+static STARTER_TYPE          starter             = { 0U };
+static PLAN_STOP_TYPE        planStop            = { 0U };
+static MAINTENCE_TYPE        maintence           = { 0U };
+static RELAY_DEVICE          stopSolenoid        = { 0U };
+static RELAY_DEVICE          idleRelay           = { 0U };
+static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
+static osThreadId_t          engineHandle        = NULL;
+static StaticQueue_t         xEngineCommandQueue = { 0U };
+static QueueHandle_t         pEngineCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
-static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH];
-static uint8_t        starterFinish    = 0U;
-static uint8_t        blockTimerFinish = 0U;
-static uint8_t        maintenanceReset = 0U;
+static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
+static uint8_t        starterFinish                                    = 0U;
+static uint8_t        blockTimerFinish                                 = 0U;
+static uint8_t        maintenanceReset                                 = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 void vENGINEtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
@@ -697,7 +696,7 @@ void vENGINEtask ( void const* argument )
   fix16_t        chargerVal = 0U;
   timerID_t      timerID    = 0U;
   ENGINE_COMMAND inputCmd   = ENGINE_CMD_NONE;
-  SYSTEM_EVENT   event;
+  SYSTEM_EVENT   event      = { 0U };
 
   for (;;)
   {

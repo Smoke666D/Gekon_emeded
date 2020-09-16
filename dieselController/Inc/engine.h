@@ -208,5 +208,4 @@ uint8_t       uENGINEisBlockTimerFinish ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
 void          vENGINEmaintenanceReset ( void );
 /*----------------------------------------------------------------------*/
-
 #endif /* INC_OIL_H_ */

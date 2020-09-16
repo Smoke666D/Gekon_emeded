@@ -41,14 +41,12 @@ typedef struct __packed
   uint16_t        data;
 } PASSWORD_TYPE;
 /*------------------------ Extern --------------------------------------*/
-extern uint16_t engineWorkTime;               /* 0 */
-extern uint16_t engineStartsNumber;           /* 1 */
-extern uint16_t maintenanceAlarmOilTimeLeft;  /* 2 */
-extern uint16_t maintenanceAlarmAirTimeLeft;  /* 3 */
-extern uint16_t maintenanceAlarmFuelTimeLeft; /* 4 */
-
+extern uint16_t        engineWorkTime;                /* 0 */
+extern uint16_t        engineStartsNumber;            /* 1 */
+extern uint16_t        maintenanceAlarmOilTimeLeft;   /* 2 */
+extern uint16_t        maintenanceAlarmAirTimeLeft;   /* 3 */
+extern uint16_t        maintenanceAlarmFuelTimeLeft;  /* 4 */
 extern uint16_t* const freeDataArray[FREE_DATA_SIZE];
-
-extern PASSWORD_TYPE systemPassword;
+extern PASSWORD_TYPE   systemPassword;
 /*----------------------------------------------------------------------*/
 #endif /* INC_FREEDATA_H_ */

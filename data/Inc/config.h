@@ -20,7 +20,6 @@
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )
-
 #define   CONFIG_REG_ADR_STR           "adr"
 #define   CONFIG_REG_SCALE_STR         "scale"
 #define   CONFIG_REG_VALUE_STR         "value"
@@ -32,12 +31,11 @@
 #define   CONFIG_REG_LEN_STR           "len"
 #define   CONFIG_REG_BIT_MAP_SIZE_STR  "bitMapSize"
 #define   CONFIG_REG_BIT_MAP_STR       "bit"
-
 #define   BIT_MAP_MASK_STR             "mask"
 #define   BIT_MAP_SHIFT_STR            "shift"
 #define   BIT_MAP_MIN_STR              "min"
 #define   BIT_MAP_MAX_STR              "max"
-/*----------------------- Structures -----------------------------------*/
+/*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
   CONFIG_NO    = 0x00U,
@@ -53,7 +51,7 @@ typedef enum
   CONFIG_TYPE_CHAR      = 'C',
   CONFIG_TYPE_BITMAP    = 'B',
 } CONFIG_TYPE;
-
+/*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
   uint16_t  mask;

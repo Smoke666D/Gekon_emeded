@@ -4,7 +4,6 @@
  *  Created on: Jun 11, 2020
  *      Author: photo_Mickey
  */
-
 #ifndef INC_STORAGE_H_
 #define INC_STORAGE_H_
 /*----------------------- Includes -------------------------------------*/
@@ -52,19 +51,15 @@
 EEPROM_STATUS eSTORAGEwriteConfigs ( void );
 EEPROM_STATUS eSTORAGEreadConfigs ( void );
 EEPROM_STATUS eSTORAGEdeleteConfigs ( void );
-
 EEPROM_STATUS eSTORAGEwriteCharts ( void );
 EEPROM_STATUS eSTORAGEreadCharts ( void );
-
 EEPROM_STATUS eSTORAGEreadFreeData ( DATA_ADR n );
 EEPROM_STATUS eSTORAGEsaveFreeData ( DATA_ADR n );
 EEPROM_STATUS eSTORAGEsetFreeData ( DATA_ADR n, const uint16_t* data );
-
 EEPROM_STATUS eSTORAGEreadLogPointer ( uint16_t* length );
 EEPROM_STATUS eSTORAGEwriteLogPointer ( uint16_t length );
 EEPROM_STATUS eSTORAGEreadLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
 EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
-
 EEPROM_STATUS eSTORAGEsavePassword ( void );
 EEPROM_STATUS eSTORAGEloadPassword ( void );
 /*----------------------------------------------------------------------*/

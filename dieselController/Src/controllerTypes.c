@@ -12,7 +12,7 @@
 static StaticQueue_t xEventQueue;
 static QueueHandle_t pEventQueue;
 /*--------------------------------- Constant ---------------------------------*/
-const char* logActionsDictionary[] = {
+const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",
     "Предупреждение",
     "Аварийная остановка",
@@ -21,7 +21,7 @@ const char* logActionsDictionary[] = {
     "Плановая остановка",
     "Отключение нагрузки"
 };
-const char* logTypesDictionary[] = {
+const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Нет",
     "Внешная аварийная остановка",
     "Ошибка пуска двигателя",
@@ -58,12 +58,12 @@ const char* logTypesDictionary[] = {
     "???"
 };
 /*-------------------------------- Variables ---------------------------------*/
-static uint8_t   eventBuffer[ EVENT_QUEUE_LENGTH * sizeof( SYSTEM_EVENT ) ];
-static uint16_t  targetArray[LOGIC_COUNTERS_SIZE];
-static uint16_t  counterArray[LOGIC_COUNTERS_SIZE];
-static timerID_t aciveCounters  = 0U;
-static timerID_t activeNumber   = 0U;
-static fix16_t   hysteresis     = 0U;
+static uint8_t   eventBuffer[ EVENT_QUEUE_LENGTH * sizeof( SYSTEM_EVENT ) ] = { 0U };
+static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                           = { 0U };
+static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                          = { 0U };
+static timerID_t aciveCounters                                              = 0U;
+static timerID_t activeNumber                                               = 0U;
+static fix16_t   hysteresis                                                 = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -256,7 +256,7 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
 {
   if ( device->active > 0U )
   {
-    if ( ( device->relay.enb > 0U ) && ( device->relay.status != RELAY_DELAY_DONE ) )
+    if ( ( device->relay.enb > 0U ) && ( device->status != RELAY_DELAY_DONE ) )
     {
       if ( ( device->level > val ) && ( device->relay.status != RELAY_ON ) )
       {
@@ -268,7 +268,7 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
         device->relay.set( RELAY_OFF );
         device->relay.status = RELAY_OFF;
       }
-      if ( ( device->relay.status == RELAY_ON ) && ( device->relay.status != RELAY_DELAY_START ) )
+      if ( ( device->relay.status == RELAY_ON ) && ( device->status != RELAY_DELAY_START ) )
       {
         device->status = RELAY_DELAY_START;
         vLOGICstartTimer( device->delay, &device->timerID );

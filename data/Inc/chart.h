@@ -18,7 +18,6 @@
 #define CHART_DOTS_SIZE         128U
 #define CHART_CHART_SIZE        1056U  /* byte */
 #define CHART_NUMBER            3U
-
 #define CHART_DATA_XMIN_STR     "xmin"
 #define CHART_DATA_XMAX_STR     "xmax"
 #define CHART_DATA_YMIN_STR     "ymin"
@@ -27,11 +26,9 @@
 #define CHART_DATA_YUNIT_STR    "yunit"
 #define CHART_DATA_SIZE_STR     "size"
 #define CHART_DATA_DOTS_STR     "dots"
-
 #define CHART_DOT_X_STR         "x"
 #define CHART_DOT_Y_STR         "y"
-/*----------------------- Structures -----------------------------------*/
-
+/*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
   FUNC_OK,
@@ -39,7 +36,7 @@ typedef enum
   FUNC_OVER_MIN_X_ERROR,
   FUNC_SIZE_ERROR,
 } eFunctionError;
-
+/*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
   fix16_t x;

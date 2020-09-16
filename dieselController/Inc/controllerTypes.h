@@ -22,12 +22,14 @@
 #define  LOGIC_TIMER_STEP     100U  /* ms */
 #define  LOGIC_COUNTERS_SIZE  10U
 #define  EVENT_QUEUE_LENGTH   16U
+#define  LOG_TYPES_SIZE       34U
+#define  LOG_ACTION_SIZE      7U
 
 typedef  uint8_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/
-extern const char* logTypesDictionary[];
-extern const char* logActionsDictionary[];
+extern const char* logTypesDictionary[LOG_TYPES_SIZE];
+extern const char* logActionsDictionary[LOG_ACTION_SIZE];
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -202,6 +204,4 @@ uint8_t       uLOGICisTimer ( timerID_t id );
 void          vLOGICresetTimer ( timerID_t id );
 void          vLOGICtoogle ( uint8_t* input );
 /*----------------------------------------------------------------------*/
-
-
 #endif /* INC_LOGICTYPES_H_ */

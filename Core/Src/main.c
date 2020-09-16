@@ -258,6 +258,7 @@ int main(void)
   vVRinit( &htim6 );                                            /* Speed sensor initialization */
   vENGINEinit();
   vELECTROinit();
+  vLOGICinit();
   vCONTROLLERinit();
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");

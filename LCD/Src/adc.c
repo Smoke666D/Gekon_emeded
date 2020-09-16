@@ -21,36 +21,146 @@ static q15_t TEMP_BUFFER1[ADC_FRAME_SIZE];
 static xADCFSMType xADCFSM = DC;
 static uint16_t  ADCDATA[8]={0,0,0,0,0};
 
-//Напяжение питания
-
-
-/*
- *
- */
-fix16_t  vADCGetVoltage(uint8_t ADC_CHANNEL)
+fix16_t GetVDD(uint8_t channel,uint8_t size)
 {
-  static fix16_t Voltage = 0, TEMP;
-  switch (ADC_CHANNEL)
+
+   uint32_t Buffer=0;
+   for (uint8_t i=0;i<size;i++)
+   {
+     Buffer =Buffer+ ADC3_IN_Buffer[i*9+channel];
+   }
+   Buffer =Buffer/size;
+   return  fix16_mul( fix16_from_int((uint16_t)Buffer), fix16_from_float(0.0008058));
+}
+
+static fix16_t xVDD =0; //Напяжение АЦП канала PowInMCU (измерение напряжения питания)
+static fix16_t xCSD =0; //Напряжение АЦП канала ControlSmDin (измерение верхнего опороного напряжения)
+static fix16_t xCAS =0; //Напряжение АЦП канала Common Analog Sens (общий провод датчиков)
+static fix16_t xSOP =0; //Напряжение АЦП канала SensOilPressure (напряжение канала давления масла)
+static fix16_t xSCT =0; //Напряжение АЦП канала SensCoolantTemper (напряжение канала температуры охлаждающей жидкости)
+static fix16_t xSFL =0; //Напряжение АЦП канала SensFuelLevel (напряжение канала уровня топлива)
+static fix16_t xCSA;
+/*
+ * Сервисная функция для перевода значений АЦП в напряжения
+ */
+void vADCConvertToVDD(uint8_t AnalogSwitch)
+{
+  fix16_t delta;
+  xEventGroupClearBits(xADCEvent,ADC_READY);
+  switch (AnalogSwitch)
   {
-    case VDD_CH:
-        TEMP  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
-        Voltage =  fix16_mul( TEMP, fix16_from_float(R118_R122/R122));
-        Voltage = fix16_sub(Voltage,VT4);
-        break;
-    case COFDIN:
-      TEMP = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
-      Voltage =  fix16_mul( TEMP, fix16_from_float(R12_R11/R12));
+    case 1:
+      //значения АЦП
+      xVDD= GetVDD(4,DC_SIZE);
+      //Пересчитвываем в напряжение до диода
+      xVDD =fix16_mul( xVDD, fix16_from_float(R118_R122/R122));
+      //Вычитаем падение на диоде
+      xVDD =fix16_sub(xVDD,VT4);
+      //Усредняем сырые значения АЦП
+      xCSA = GetVDD(5,DC_SIZE);
+      //Усредняем сырые значения АЦП
+      xCAS = GetVDD(6,DC_SIZE);
+      //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
+      delta =  fix16_sub(xCSA,xCAS);
+      //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
+      if (delta<=fix16_from_float(DELTA))
+      {
+        xSOP =fix16_from_int(MAX_RESISTANCE);
+        xSCT = xSOP;
+        xSFL = xSOP;
+      }
+      else
+      {
+          //Усредняем сырые значения АЦП
+          xSCT =GetVDD(7,DC_SIZE);
+          delta =  fix16_sub(xCSD,xSCT);
+          if (delta<=fix16_from_float(DELTA))
+          {
+            xSCT =0;
+          }
+          else
+          {
+            delta = fix16_sub(xCSD,xSCT);
+            xSCT = fix16_sub(xSCT,xCAS);
+            xSCT = fix16_mul(fix16_from_int(R3),xSCT);
+            xSCT = fix16_div(xSCT,delta);
+          }
+          delta =  fix16_sub(xCSD,xSFL);
+          if (delta<=fix16_from_float(DELTA))
+          {
+           xSFL =0;
+          }
+         else
+          {
+            delta = fix16_sub(xCSD,xSFL);
+            xSFL = fix16_sub(xSFL,xCAS);
+            xSFL = fix16_mul(fix16_from_int(R3),xSFL);
+            xSFL = fix16_div(xSFL,delta);
+          }
+          delta =  fix16_sub(xCSD,xSOP);
+          if (delta<=fix16_from_float(DELTA))
+          {
+            xSOP =0;
+          }
+          else
+          {
+            delta = fix16_sub(xCSD,xSOP);
+            xSOP = fix16_sub(xSOP,xCAS);
+            xSOP = fix16_mul(fix16_from_int(R3),xSOP);
+            xSOP = fix16_div(xSOP,delta);
+          }
+
+      }
       break;
-    case COFAIN:
-      Voltage  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
+    case 0:
+      //Переводим в наряжние на канале АЦП
+      xCSD =GetVDD(5,DC_SIZE);
+      //Усредняем сырые значения АЦП
+      xSFL= GetVDD(6,DC_SIZE);
+      //Усредняем сырые значения АЦП
+      xSOP =GetVDD(7,DC_SIZE);
       break;
-    case CANC:
-      Voltage  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
     default:
-      Voltage  = fix16_mul( fix16_from_int(ADCDATA[ADC_CHANNEL]), fix16_from_float(0.0008058));
-        break;
+      break;
   }
-   return Voltage;
+  xEventGroupSetBits(xADCEvent,ADC_READY);
+  return;
+}
+
+
+
+
+void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+   if (cmd == mREAD)
+   {
+     xEventGroupWaitBits(xADCEvent,ADC_READY,pdFALSE,pdTRUE,portMAX_DELAY);
+     switch (ID-1)
+     {
+       case VDD_CH:
+             fix16_to_str(xVDD,Data,2);
+             break;
+           case COFDIN:
+             fix16_to_str(xCSD,Data,2);
+             break;
+           case CANC:
+             fix16_to_str(xCAS,Data,2);
+             break;
+           case CFUEL:
+             fix16_to_str( xSFL,Data,0);
+             break;
+           case CPRES:
+             fix16_to_str( xSOP,Data,0);
+             break;
+           case CTEMP:
+             fix16_to_str(xSCT,Data, 0);
+             break;
+            default:
+
+             break;
+     }
+   }
+   return;
 }
 
 
@@ -296,16 +406,6 @@ void vADC_Ready(uint8_t adc_number)
 
 
 
-void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-   if (cmd == mREAD)
-   {
-       fix16_to_str(vADCGetVoltage(ID-1),Data, 2);
-     //else
-    // vUToStr(Data,ADCDATA[ID-1],0);
-   }
-   return;
-}
 
 
 
@@ -513,25 +613,21 @@ void StartADCTask(void *argument)
     osDelay(200);
     vADC3DCInit(DC);
     //Запускаем преобразвоание АЦП
-    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,4*9);
+    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,DC_SIZE*9);
     //Ожидаем флага готовонсти о завершении преобразования
     xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-    ADCDATA[1] = (ADC3_IN_Buffer[5]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[23]+ADC3_IN_Buffer[32])>>2;
-    ADCDATA[2] = (ADC3_IN_Buffer[6]+ADC3_IN_Buffer[15]+ADC3_IN_Buffer[24]+ADC3_IN_Buffer[33])>>2;
-    ADCDATA[3] = (ADC3_IN_Buffer[7]+ADC3_IN_Buffer[16]+ADC3_IN_Buffer[25]+ADC3_IN_Buffer[34])>>2;
+
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
+    vADCConvertToVDD(0);
     //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
     HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
-    osDelay(1);
+    osDelay(10);
     //Запускаем новоей преобразование
-    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,4*9);
+    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,DC_SIZE*9);
     xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-    ADCDATA[0] = (ADC3_IN_Buffer[4]+ADC3_IN_Buffer[13]+ADC3_IN_Buffer[22]+ADC3_IN_Buffer[31])>>2;
-    ADCDATA[5] = (ADC3_IN_Buffer[5]+ADC3_IN_Buffer[14]+ADC3_IN_Buffer[23]+ADC3_IN_Buffer[32])>>2;
-    ADCDATA[6] = (ADC3_IN_Buffer[6]+ADC3_IN_Buffer[15]+ADC3_IN_Buffer[24]+ADC3_IN_Buffer[33])>>2;
-    ADCDATA[7] = (ADC3_IN_Buffer[7]+ADC3_IN_Buffer[16]+ADC3_IN_Buffer[25]+ADC3_IN_Buffer[34])>>2;
-    ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
 
+    ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
+    vADCConvertToVDD(1);
 
 
     //Переключаем обратно аналоговый коммутатор

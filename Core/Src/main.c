@@ -253,12 +253,12 @@ int main(void)
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
   vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
-  //vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
-  //vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
-  //vVRinit( &htim6 );                                            /* Speed sensor initialization */
-  //vENGINEinit();
-  //vELECTROinit();
-  //vCONTROLLERinit();
+  vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
+  vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
+  vVRinit( &htim6 );                                            /* Speed sensor initialization */
+  vENGINEinit();
+  vELECTROinit();
+  vCONTROLLERinit();
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */

@@ -43,7 +43,12 @@
 #include "dataAPI.h"
 #include "freeData.h"
 #include "adc.h"
-#include "dio.h"
+#include "fpi.h"
+#include "fpo.h"
+#include "vrSensor.h"
+#include "engine.h"
+#include "electro.h"
+#include "controller.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -104,7 +109,7 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
   .name = "netTask",
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityLow,
   .stack_size = 1792
 };
 /* Definitions for lcdTask */
@@ -141,22 +146,49 @@ const osThreadAttr_t keyboardTask_attributes = {
   .stack_size = 232
 };
 
-
-
 osThreadId_t ADCTaskHandle;
 const osThreadAttr_t ADCTask_attributes = {
   .name = "ADCTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 512
 };
-/* Optimization of stack sizes:
- * 1. defaultTask   - 496
- * 2. netTask       - 1792
- * 3. lcdTask       - 512
- * 4. lcdRedrawTask - 128
- * 5. usbTask       - 768
- * */
-static TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
+ADC_HandleTypeDef hadc3;
+DMA_HandleTypeDef hdma_adc1;
+DMA_HandleTypeDef hdma_adc2;
+DMA_HandleTypeDef hdma_adc3;
+
+CAN_HandleTypeDef hcan1;
+
+I2C_HandleTypeDef hi2c1;
+
+SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi3_tx;
+
+TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim7;
+TIM_HandleTypeDef htim6;
+
+UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
+
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 1024
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -174,6 +206,7 @@ static void MX_I2C1_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM6_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_TIM2_Init(void);
 void StartDefaultTask(void *argument);
@@ -183,11 +216,45 @@ extern void StartUsbTask(void *argument);
 extern void StartADCTask(void *argument);
 /* USER CODE BEGIN PFP */
 extern void vKeyboardTask(void const * argument);
+extern void vStartNetTask(void *argument);
+extern void StartLcdTask(void *argument);
+extern void vStartUsbTask(void *argument);
+extern void StartADCTask(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+TaskHandle_t*  notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
+const FPI_INIT fpiInitStruct = {
+  .pinA  = FPI_B_Pin,
+  .pinB  = FPI_B_Pin,
+  .pinC  = FPI_C_Pin,
+  .pinD  = FPI_D_Pin,
+  .portA = FPI_B_GPIO_Port,
+  .portB = FPI_B_GPIO_Port,
+  .portC = FPI_C_GPIO_Port,
+  .portD = FPI_D_GPIO_Port,
+};
+const FPO_INIT fpoInitStruct = {
+  .outPinA   = POUT_A_Pin,
+  .outPinB   = POUT_B_Pin,
+  .outPinC   = POUT_C_Pin,
+  .outPinD   = POUT_D_Pin,
+  .outPinE   = POUT_E_Pin,
+  .outPinF   = POUT_F_Pin,
+  .outPortA  = POUT_A_GPIO_Port,
+  .outPortB  = POUT_B_GPIO_Port,
+  .outPortC  = POUT_C_GPIO_Port,
+  .outPortD  = POUT_D_GPIO_Port,
+  .outPortE  = POUT_E_GPIO_Port,
+  .outPortF  = POUT_F_GPIO_Port,
+  .disPinAB  = POUT_AB_CS_Pin,
+  .disPinCD  = POUT_CD_CS_Pin,
+  .disPinEF  = POUT_EF_CS_Pin,
+  .disPortAB = POUT_AB_CS_GPIO_Port,
+  .disPortCD = POUT_CD_CS_GPIO_Port,
+  .disPortEF = POUT_EF_CS_GPIO_Port,
+};
 /* USER CODE END 0 */
 
 /**
@@ -231,14 +298,23 @@ int main(void)
   MX_SPI3_Init();
   MX_USART2_UART_Init();
   MX_TIM3_Init();
+  MX_TIM6_Init();
   MX_TIM8_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
+  vCHARTinitCharts();
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit( notifyTrg );                                    /* Data API initialization */
+  vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
+  vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
+  vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
+  vVRinit( &htim6 );                                            /* Speed sensor initialization */
+  vENGINEinit();
+  vELECTROinit();
+  vLOGICinit();
+  vCONTROLLERinit();
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
@@ -268,21 +344,12 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* creation of netTask */
-  netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
-
-  /* creation of lcdTask */
-  lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
-
-  /* creation of usbTask */
-  usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
-  ADCTaskHandle =osThreadNew(StartADCTask, NULL, &ADCTask_attributes);
-
-
-  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  netTaskHandle      = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
+  lcdTaskHandle      = osThreadNew( StartLcdTask,  NULL, &lcdTask_attributes );
+  usbTaskHandle      = osThreadNew( vStartUsbTask, NULL, &usbTask_attributes );
+  ADCTaskHandle      = osThreadNew( StartADCTask,  NULL, &ADCTask_attributes );
+  keyboardTaskHandle = osThreadNew( vKeyboardTask, NULL, &keyboardTask_attributes );
   vSetupKeyboard();
   vMenuMessageInit( ADCTaskHandle);
   vLCDInit( xLCDDelaySemphHandle );
@@ -875,6 +942,44 @@ static void MX_TIM7_Init(void)
 }
 
 /**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 30001;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 1001;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
+
+}
+
+/**
   * @brief TIM8 Initialization Function
   * @param None
   * @retval None
@@ -1185,6 +1290,9 @@ void StartDefaultTask(void *argument)
       sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
     }
   }
+
+  HAL_TIM_Base_Start_IT( &htim6 );
+
   buf[35] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
@@ -1230,10 +1338,26 @@ void StartDefaultTask(void *argument)
   vSYSSerial( " bytes )\n\r" );
 
   vSYSSerial("Free data      : ");
-  sprintf( buf, "0x%06X", STORAGE_DATA_ADR );
+  sprintf( buf, "0x%06X", STORAGE_FREE_DATA_ADR );
   vSYSSerial( buf );
   vSYSSerial( "( ");
   sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Password       : ");
+  sprintf( buf, "0x%06X", STORAGE_PASSWORD_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_PASSWORD_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+
+  vSYSSerial("Log pointer     : ");
+  sprintf( buf, "0x%06X", STORAGE_LOG_POINTER_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_LOG_POINTER_SIZE );
   vSYSSerial( buf );
   vSYSSerial( " bytes )\n\r" );
 
@@ -1256,6 +1380,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( "\n\r" );
 
   vSYSSerial("---------------------------------------\n\r");
+
   /* Infinite loop */
   for(;;)
   {
@@ -1270,60 +1395,6 @@ void StartDefaultTask(void *argument)
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_StartNetTask */
-/**
-* @brief Function implementing the neyTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartNetTask */
-void StartNetTask(void *argument)
-{
-  /* USER CODE BEGIN StartNetTask */
-  char ipaddr[16];
-  vSYSSerial( ">>DHCP: ");
-  vSERVERinit();
-  vSYSSerial( "done!\n\r");
-  cSERVERgetStrIP( ipaddr );
-  vSYSSerial( ">>IP address: ");
-  vSYSSerial( ipaddr );
-  vSYSSerial("\n\r");
-  vSYSSerial( ">>TCP: " );
-  if ( eSERVERstart() != SERVER_OK )
-  {
-    vSYSSerial( "fail!\n\r" );
-    while( 1U ) osDelay( 1U );
-  }
-  vSYSSerial( "done!\n\r" );
-  vSYSSerial( ">>Server ready and listen port 80!\n\r" );
-  HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-  /* Infinite loop */
-  for(;;)
-  {
-    eSERVERlistenRoutine();
-    osDelay( 10U );
-  }
-  /* USER CODE END StartNetTask */
-}
-
-/* USER CODE BEGIN Header_StartLcdTask */
-/**
-* @brief Function implementing the lcdTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartLcdTask */
-void StartLcdTask(void *argument)
-{
-  /* USER CODE BEGIN StartLcdTask */
-  vLCD_Init();
-  /* Infinite loop */
-  for(;;)
-  {
-    vMenuTask();
-  }
-  /* USER CODE END StartLcdTask */
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

@@ -31,16 +31,16 @@ typedef enum
 /* Дискриптор данных для вывода */
 typedef struct
 {
-    uint16_t DataID;
+  uint16_t  DataID;
 	DATA_TYPE Type;
-	void * pDataPointer;
+	void*     pDataPointer;
 } DataDescriptor;
 /* Структура для хранения данных */
-typedef struct
+typedef struct __packed
 {
    uint16_t Number;
    uint16_t Factor;
-   uint8_t Sign;
+   uint8_t  Sign;
 } DataRecord;
 /*----------------------------- Functions ------------------------------------*/
 void vdmGetData(uint8_t command, uint16_t DataID,uint8_t * pchTextString);

@@ -56,9 +56,9 @@ uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output )
 {
   uint8_t shift = 0U;
   uint8_t i     = 0U;
-  for( i=0U; i<length; i++ )
+  for ( i=0U; i<length; i++ )
   {
-    if ( input[i] > 0x00FF )
+    if ( input[i] > 0x00FFU )
     {
       sprintf( &output[shift], " %02X %02X", ( uint8_t )( ( input[i] & 0xFF00 ) >> 8U ), ( uint8_t )( input[i] & 0x00FF ) );
       output[shift]      = '%';

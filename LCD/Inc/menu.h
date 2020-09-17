@@ -9,7 +9,6 @@
 #define INC_MENU_H_
 /*----------------------- Includes -------------------------------------*/
 #include "u8g2.h"
-#include "main.h"
 #include "config.h"
 #include "data_type.h"
 #include "dataAPI.h"
@@ -69,7 +68,7 @@ typedef enum
   INPUT_HW_DATA,
 } OBJECT_TYPE;
 /*---------------------------- Structures --------------------------------------*/
-typedef struct
+typedef struct __packed
 {
   uint8_t     last;
   uint8_t     x;
@@ -83,7 +82,7 @@ typedef struct
   uint16_t    DataID;
 } xScreenObjet;
 
-typedef struct
+typedef struct __packed
 {
   const xScreenObjet*  pScreenCurObjets;
   void*         pUpScreenSet;
@@ -94,7 +93,7 @@ typedef struct
   void          (*pFunc)(void *,char);
 } xScreenType;
 
-typedef struct
+typedef struct __packed
 {
   xScreenType*  pHomeMenu;               /* Указатель на массив экранов верхнего уровня. */
   uint8_t       pMaxIndex;	             /* Индекс домашнего экрана в маасиве экранов верхнего уровня */

@@ -20,11 +20,16 @@ const char *restRequeststr[REST_REQUEST_NUMBER] = { REST_REQUEST_CONFIGS,
 						                                        REST_REQUEST_SAVE_CONFIGS,
 						                                        REST_REQUEST_SAVE_CHARTS,
 						                                        REST_REQUEST_TIME,
-						                                        REST_REQUEST_DATA };
+						                                        REST_REQUEST_DATA,
+						                                        REST_REQUEST_LOG,
+                                                    REST_REQUEST_LOG_ERASE,
+                                                    REST_REQUEST_PASSWORD,
+                                                    REST_REQUEST_AUTH,
+                                                    REST_REQUEST_ERASE_PASSWORD};
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 uint8_t    uRESTmakeStartRecord ( const char* header, char* output );
-uint8_t    uRESTmakeDigRecord ( const char* header, uint16_t data, RESTrecordPos last, char* output );
+uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output );
 uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
 uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
 uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );
@@ -177,6 +182,19 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
   return position;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t uRESTmakeLog ( const LOG_RECORD_TYPE* record, char* output )
+{
+  uint32_t position = 1U;
+
+  output[0U] = '{';
+  position += uRESTmakeDigRecord( LOG_TIME_STR,   record->time,         REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeDigRecord( LOG_TYPE_STR,   record->event.type,   REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeDigRecord( LOG_ACTION_STR, record->event.action, REST_LAST_RECORD, &output[position] );
+  output[position] = '}';
+  position++;
+  return position;
+}
+/*---------------------------------------------------------------------------------------------------*/
 uint32_t uRESTmakeTime ( const RTC_TIME* time, char* output )
 {
   uint32_t position = 1U;
@@ -247,7 +265,45 @@ REST_ERROR eRESTparsingTime( char* input, RTC_TIME* time )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-REST_ERROR eRESTparsingData ( char* input, uint16_t* data )
+REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE* password )
+{
+  REST_ERROR res   = REST_OK;
+  char*      pchSt = NULL;
+  uint16_t   buf   = 0U;
+  pchSt = strchr( input, '{' );
+  if ( pchSt != NULL )
+  {
+    res = eRESTparsingDig16Record( input, PASSWORD_STATUS_STR, &buf );
+    password->status = ( uint8_t )buf;
+    if ( res == REST_OK )
+    {
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &password->data );
+    }
+  }
+  else
+  {
+    res = REST_MESSAGE_FORMAT_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+REST_ERROR eRESTparsingAuth ( char* input, PASSWORD_TYPE* password )
+{
+  REST_ERROR res   = REST_OK;
+  char*      pchSt = NULL;
+  pchSt = strchr( input, '{' );
+  if ( pchSt != NULL )
+  {
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &password->data );
+  }
+  else
+  {
+    res = REST_MESSAGE_FORMAT_ERROR;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+REST_ERROR eRESTparsingFreeData ( char* input, uint16_t* data )
 {
   REST_ERROR res   = REST_OK;
   char*      pchSt = NULL;
@@ -268,42 +324,38 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
 {
   REST_ERROR res    = REST_OK;
   char*      pchSt  = NULL;
-  eChartData buffer;
 
+  while ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) != pdTRUE )
+  {
+
+  }
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
   {
     if ( strstr( pchSt, "data" ) == NULL)
     {
-      res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMIN_STR, &buffer.xmin );
+      res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMIN_STR, &charts[adr]->xmin );
       if ( res == REST_OK )
       {
-        res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMAX_STR, &buffer.xmax );
+        res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMAX_STR, &charts[adr]->xmax );
         if ( res == REST_OK )
         {
-          res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMIN_STR, &buffer.ymin );
+          res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMIN_STR, &charts[adr]->ymin );
           if ( res == REST_OK )
           {
-            res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMAX_STR, &buffer.ymax );
+            res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMAX_STR, &charts[adr]->ymax );
             if ( res == REST_OK )
             {
-              res = eRESTparsingStrRecord( input, CHART_DATA_XUNIT_STR, buffer.xunit, CHART_UNIT_LENGTH );
+              res = eRESTparsingStrRecord( input, CHART_DATA_XUNIT_STR, charts[adr]->xunit, CHART_UNIT_LENGTH );
               if ( res == REST_OK )
               {
-                res = eRESTparsingStrRecord( input, CHART_DATA_YUNIT_STR, buffer.yunit, CHART_UNIT_LENGTH );
+                res = eRESTparsingStrRecord( input, CHART_DATA_YUNIT_STR, charts[adr]->yunit, CHART_UNIT_LENGTH );
                 if ( res == REST_OK )
                 {
-                  res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &buffer.size );
-                  if ( ( res == REST_OK ) && ( buffer.size > 0U ) )
+                  res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &charts[adr]->size );
+                  if ( ( res == REST_OK ) && ( charts[adr]->size > 0U ) )
                   {
-                    res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, buffer.dots, buffer.size );
-                    if ( res == REST_OK )
-                    {
-                      if ( eDATAAPIchart( DATA_API_CMD_WRITE, adr, &buffer ) != DATA_API_STAT_OK )
-                      {
-                	      res = REST_RECORD_COPY_ERROR;
-                      }
-                    }
+                    res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, charts[adr]->dots, charts[adr]->size );
                   }
                 }
               }
@@ -317,16 +369,17 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
   {
     res = REST_MESSAGE_FORMAT_ERROR;
   }
+  xSemaphoreGive( xCHARTSemaphore );
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 REST_ERROR eRESTparsingConfig ( char* input, uint16_t adr )
 {
-  REST_ERROR    res   = REST_OK;
-  char*         pchSt = NULL;
-  uint16_t      valueBuf[MAX_VALUE_LENGTH];
-  signed char   scale  = 0U;
-  uint16_t      units[MAX_UNITS_LENGTH];
+  REST_ERROR    res                        = REST_OK;
+  char*         pchSt                      = NULL;
+  uint16_t      valueBuf[MAX_VALUE_LENGTH] = { 0U };
+  signed char   scale                      = 0U;
+  uint16_t      units[MAX_UNITS_LENGTH]    = { 0U };
   eConfigBitMap bitMap[MAX_BIT_MAP_LENGTH];
 
   pchSt = strchr( input, '{' );
@@ -349,7 +402,7 @@ REST_ERROR eRESTparsingConfig ( char* input, uint16_t adr )
             }
             if ( res == REST_OK )
             {
-              if ( eDATAAPIconfig( DATA_API_CMD_WRITE, adr, valueBuf, scale, units, bitMap ) != DATA_API_STAT_OK )
+              if ( eDATAAPIconfig( DATA_API_CMD_WRITE, adr, valueBuf, &scale, units, bitMap ) != DATA_API_STAT_OK )
               {
                 res = REST_RECORD_COPY_ERROR;
               }
@@ -550,9 +603,9 @@ REST_ERROR eRESTparsingStrRecord( const char* input, const char* header, uint16_
   REST_ERROR  res         = REST_OK;
   uint8_t     i           = 0U;
   uint8_t     j           = 0U;
-  char        buffer[24U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
-  char        cBuf[2U]    = { 0U, 0U };
-  uint8_t     hexBuf[8U]  = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[24U] = { 0U };
+  char        cBuf[2U]    = { 0U };
+  uint8_t     hexBuf[8U]  = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -599,8 +652,8 @@ REST_ERROR eRESTparsingValueRecord( const char* input, const char* header, uint1
   char*       pchEnd     = NULL;
   char*       pchDot     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
-  char        strBuf[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
+  char        strBuf[7U] = { 0U };
 
   if ( len == 1U )
   {
@@ -675,7 +728,7 @@ REST_ERROR eRESTparsingDig16Record( const char* input, const char* header, uint1
   REST_ERROR  res        = REST_OK;
   char*       pchStr     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -699,7 +752,7 @@ REST_ERROR uRESTparsing16FixDigRecord( const char* input, const char* header, fi
   REST_ERROR  res        = REST_OK;
   char*       pchStr     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -723,7 +776,7 @@ REST_ERROR eRESTparsingDig8Record( const char* input, const char* header, uint8_
   REST_ERROR  res        = REST_OK;
   char*       pchStr     = NULL;
   uint8_t     round      = 0U;
-  char        buffer[7U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[7U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -745,7 +798,7 @@ REST_ERROR eRESTparsingDig8Record( const char* input, const char* header, uint8_
 REST_ERROR eRESTparsingSignedRecord( const char* input, const char* header, signed char* data )
 {
   REST_ERROR  res        = REST_OK;
-  char        buffer[6U] = { 0U, 0U, 0U, 0U, 0U, 0U };
+  char        buffer[6U] = { 0U };
 
   res = eRESTpareingRecord( input, header, buffer );
   if ( res == REST_OK )
@@ -865,7 +918,7 @@ uint8_t uRESTmakeValueRecord( const char* header, uint16_t* data, uint16_t len, 
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uRESTmakeDigRecord( const char* header, uint16_t data, RESTrecordPos last, char* output )
+uint8_t uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
   char*   pStr  = NULL;
@@ -880,7 +933,7 @@ uint8_t uRESTmakeDigRecord( const char* header, uint16_t data, RESTrecordPos las
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uRESTmake16FixDigRecord( const char* header, fix16_t data, RESTrecordPos last, char* output )
+uint8_t uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
   char*   pStr  = NULL;

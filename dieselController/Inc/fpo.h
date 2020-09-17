@@ -9,10 +9,11 @@
 #define INC_FPO_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
-#include "logicCommon.h"
+#include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 #define  FPO_NUMBER           6U
+#define  FPO_DIS_NUMBER       3U
 #define  FPO_FUNCTION_NUMBER  22U
 #define  FPO_A                0U
 #define  FPO_B                1U
@@ -20,6 +21,9 @@
 #define  FPO_D                3U
 #define  FPO_E                4U
 #define  FPO_F                5U
+#define  FPO_DIS_AB           0U
+#define  FPO_DIS_CD           1U
+#define  FPO_DIS_EF           2U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -53,7 +57,7 @@ typedef enum
   FPO_POL_NORMAL_CLOSE,
 } FPO_POLARITY;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   GPIO_TypeDef*  outPortA;
   uint16_t       outPinA;
@@ -77,19 +81,23 @@ typedef struct
   uint16_t       disPinEF;
 } FPO_INIT;
 
-typedef struct
+typedef struct __packed
 {
   /* Phisical */
-  GPIO_TypeDef*  outPort;   /* GPIO port*/
-  uint16_t       outPin;    /* Pin number */
-  GPIO_TypeDef*  disPort;   /* GPIO port*/
-  uint16_t       disPin;    /* Pin number */
+  GPIO_TypeDef*  port;   /* GPIO port*/
+  uint16_t       pin;    /* Pin number */
   /* Logic */
   FPO_FUNCTION   function;
   FPO_POLARITY   polarity;
 } FPO;
+
+typedef struct __packed
+{
+  GPIO_TypeDef*  port;   /* GPIO port*/
+  uint16_t       pin;    /* Pin number */
+} FPO_DIS;
 /*----------------------- Functions ------------------------------------*/
-void    vFPOinit ( FPO_INIT* init );
+void    vFPOinit ( const FPO_INIT* init );
 uint8_t uFPOisEnable ( FPO_FUNCTION fun );
 void    vFPOsetPump ( RELAY_STATUS stat );
 void    vFPOsetBooster ( RELAY_STATUS stat );

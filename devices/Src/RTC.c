@@ -90,9 +90,9 @@ RTC_STATUS eRTCget ( uint8_t* data, uint8_t size )
  */
 RTC_STATUS eRTCwrite ( uint8_t adr, uint8_t* data, uint8_t size )
 {
-  RTC_STATUS res = RTC_OK;
-  uint8_t    i   = 0U;
-  uint8_t    buffer[RTC_TIME_SIZE + 1U];
+  RTC_STATUS res                        = RTC_OK;
+  uint8_t    i                          = 0U;
+  uint8_t    buffer[RTC_TIME_SIZE + 1U] = { 0U };
 
   if ( RTCi2c != NULL)
   {
@@ -245,8 +245,8 @@ RTC_STATUS eRTCgetStatus ( uint8_t* status )
  */
 RTC_STATUS eRTCgetTime ( RTC_TIME* time )
 {
-  uint8_t    buffer[RTC_TIME_SIZE];
-  RTC_STATUS res = RTC_OK;
+  uint8_t    buffer[RTC_TIME_SIZE] = { 0U };
+  RTC_STATUS res                   = RTC_OK;
 
   if ( xRTCSemaphore != NULL )
   {
@@ -283,8 +283,8 @@ RTC_STATUS eRTCgetTime ( RTC_TIME* time )
  */
 RTC_STATUS vRTCsetTime ( RTC_TIME* time )
 {
-  RTC_STATUS res = eVarifyTime( time );
-  uint8_t    buffer[RTC_TIME_SIZE];
+  RTC_STATUS res                   = eVarifyTime( time );
+  uint8_t    buffer[RTC_TIME_SIZE] = { 0U };
   if ( xRTCSemaphore != NULL )
   {
     if ( xSemaphoreTake( xRTCSemaphore, RTC_SEMAPHORE_DELAY ) == pdTRUE )

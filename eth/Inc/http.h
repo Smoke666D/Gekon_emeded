@@ -9,6 +9,7 @@
 #define INC_HTTP_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#include "freeData.h"
 /*------------------------ Define --------------------------------------*/
 #define   CR_HEX                 0x0DU
 #define   LF_HEX                 0x0AU
@@ -18,6 +19,7 @@
 #define   HTTP_PATH_LENGTH       30U
 #define   HTTP_BUFER_SIZE        600U
 #define   HTTP_EWA_TRANSFER_SIZE 8U
+#define   CONNECT_STACK_SIZE     3U
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
@@ -57,10 +59,10 @@ typedef enum
 /*----------------------- Content type ---------------------------------*/
 #define  HTTP_CONTENT_STR_HTML     "text/html"
 #define  HHTP_CONTENT_STR_CSS      "text/css"
-#define HTTP_CONTENT_STR_JS       "text/javascript"
+#define  HTTP_CONTENT_STR_JS       "text/javascript"
 //#define HTTP_CONTENT_STR_JSON     "application/json; charset=windows-1251"
-#define HTTP_CONTENT_STR_JSON     "application/json; charset=UTF-8"
-#define HTTP_CONTENT_STR_XML      "text/xml"
+#define  HTTP_CONTENT_STR_JSON     "application/json; charset=UTF-8"
+#define  HTTP_CONTENT_STR_XML      "text/xml"
 
 typedef enum
 {
@@ -109,7 +111,7 @@ typedef enum
   STREAM_ERROR,
 } STREAM_STATUS;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   HTTP_METHOD   method;
   char          path[HTTP_PATH_LENGTH];
@@ -120,7 +122,7 @@ typedef struct
   char*         content;
 } HTTP_REQUEST;
 
-typedef struct
+typedef struct __packed
 {
   STREAM_STATUS  status;   /* Status of stream operation */
   uint32_t       size;     /* Size in indexes of data for transfer */
@@ -132,7 +134,7 @@ typedef struct
 
 typedef STREAM_STATUS ( *streamCallBack )( HTTP_STREAM* stream );  /* Stream call back type */
 
-typedef struct
+typedef struct __packed
 {
   HTTP_STATUS     status;
   HTTP_METHOD     method;
@@ -149,6 +151,14 @@ typedef struct
   HTTP_STREAM     stream;
   streamCallBack  callBack;
 } HTTP_RESPONSE;
+
+typedef struct __packed
+{
+  AUTH_STATUS status;
+  uint32_t    ip;
+} AUTH_IP_TYPE;
+
+
 /* HHTP status-codes ---------------------------------------------------*/
 /*
 #define  HTTP_STATUS_CONTINUE                        "100"
@@ -192,12 +202,13 @@ typedef struct
 #define  HTTP_STATUS_HTTP_VERSION_NOT_SUPPORTED      "505"
 */
 /*------------------------ Templates ----------------------------------*/
-#define  HTTP_END_LINE               "\r\n"
+#define   HTTP_END_LINE               "\r\n"
 #define   HTTP_END_HEADER             "\r\n\r\n"
 #define   HTTP_SERVER_NAME            "EMBmss/0.0.1"
 
 #define   HTTP_OK_STATUS_LINE         "HTTP/1.1 200 OK"
 #define   HTTP_NOT_FOUND_STATUS_LINE  "HTTP/1.1 400 Not Found"
+#define   HTTP_UNAUTHORIZED_LINE      "HTTP/1.1 401 Unauthorized"
 
 #define   HTTP_HOST_LINE              "Host: "
 #define   HTTP_DATE_LINE              "Date: "
@@ -211,12 +222,13 @@ typedef struct
 #define   HTTP_CACHE_CONTROL          "Cache-Control: "
 #define   HTTP_ENCODING_LINE          "Content-Encoding: "
 /*----------------------- Functions ------------------------------------*/
-HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request );                  /* Parsing data from request text */
-void        vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response );           /* Build response in response structure */
-HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response );                    /* Make string response from response structure */
-HTTP_STATUS eHTTPbuildRequest ( HTTP_REQUEST* request );                                     /* Build request structure */
-HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr );                 /* Make string request from request structure */
-HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE* response ); /* Parsing data from response text */
+void        vHTTPinit ( void );
+HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request );                           /* Parsing data from request text */
+void        vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response, uint32_t remoteIP ); /* Build response in response structure */
+HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response );                             /* Make string response from response structure */
+HTTP_STATUS eHTTPbuildRequest ( HTTP_REQUEST* request );                                              /* Build request structure */
+HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr );                          /* Make string request from request structure */
+HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE* response );          /* Parsing data from response text */
 /*----------------------------------------------------------------------*/
 #endif /* INC_HTTP_H_ */
 

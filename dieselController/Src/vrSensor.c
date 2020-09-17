@@ -8,6 +8,7 @@
 #include "vrSensor.h"
 #include "config.h"
 /*-------------------------------- Structures --------------------------------*/
+static TIM_HandleTypeDef* vrTIM = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
 static uint16_t vrCounter     = 1U;
@@ -22,8 +23,9 @@ static fix16_t  vrSpeed       = 0U;
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void vVRinit ( void )
+void vVRinit ( TIM_HandleTypeDef* tim )
 {
+  vrTIM         = tim;
   vrTeethNumber = speedToothNumber.value[0U];
   vrCounter     = 0U;
   return;

@@ -9,7 +9,7 @@
 #define INC_CONTROLLER_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
-#include "logicCommon.h"
+#include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 /*------------------------- Enum ---------------------------------------*/
@@ -39,7 +39,7 @@ typedef enum
   CONTROLLER_TURNING_FINISH,
 } CONTROLLER_TURNING;
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   CONTROLLER_MODE   mode;
   CONTROLLER_STATE  state;

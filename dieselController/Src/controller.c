@@ -53,7 +53,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
     case ACTION_WARNING:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGwriteRecord( event );
+        vLOGaddRecord( event );
       }
       // >>Send warning to LCD
       break;
@@ -61,13 +61,13 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
     case ACTION_EMERGENCY_STOP:
       controller.state = CONTROLLER_STATUS_ALARM;
       xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
-      vLOGwriteRecord( event );
+      vLOGaddRecord( event );
       break;
 
     case ACTION_LOAD_GENERATOR:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGwriteRecord( event );
+        vLOGaddRecord( event );
       }
       // >>Send warning to LCD
       controller.state = CONTROLLER_STATUS_START;
@@ -81,7 +81,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_LOAD_SHUTDOWN:
-      vLOGwriteRecord( event );
+      vLOGaddRecord( event );
       controller.state = CONTROLLER_STATUS_SHUTDOWN;
       break;
 
@@ -118,7 +118,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       break;
 
     case CONTROLLER_TURNING_DELAY:
-      if ( uLOGICisTimer( controller.timerID ) )
+      if ( uLOGICisTimer( controller.timerID ) > 0U )
       {
         stopState = CONTROLLER_TURNING_ENGINE;
       }
@@ -253,9 +253,9 @@ void vCONTROLLERtask ( void const* argument )
   ENGINE_COMMAND  engineCmd            = ENGINE_CMD_NONE;
   HMI_COMMAND     inputKeyboardCommand = HMI_CMD_NONE;
   ELECTRO_COMMAND electroCmd           = ELECTRO_CMD_NONE;
-  SYSTEM_EVENT    interiorEvent;
-  SYSTEM_EVENT    inputEvent;
-  FPI_EVENT       inputFpiEvent;
+  SYSTEM_EVENT    interiorEvent        = { .type = EVENT_NONE, .action = ACTION_NONE };
+  SYSTEM_EVENT    inputEvent           = { .type = EVENT_NONE, .action = ACTION_NONE };
+  FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
 
   for (;;)
   {
@@ -327,13 +327,15 @@ void vCONTROLLERtask ( void const* argument )
       }
     }
     /*-------------------------------------- DIGITAL INPUTS -------------------------------------*/
-    if ( xQueueReceive( pFPIgetQueue(), &inputFpiEvent, 0U ) )
+    if ( xQueueReceive( pFPIgetQueue(), &inputFpiEvent, 0U ) == pdPASS )
     {
       switch ( inputFpiEvent.function )
       {
-        case FPI_FUN_USER:                         /* Пользовательская */
+        /*----------------------------- Пользовательская -----------------------------*/
+        case FPI_FUN_USER:
           break;
-        case FPI_FUN_ALARM_RESET:                  /* Сброс аварийного сигнала */
+        /*------------------------- Сброс аварийного сигнала -------------------------*/
+        case FPI_FUN_ALARM_RESET:
           if ( ( controller.state    == CONTROLLER_STATUS_ALARM ) &&
                ( inputFpiEvent.level == FPI_LEVEL_HIGH ) )
           {
@@ -342,7 +344,8 @@ void vCONTROLLERtask ( void const* argument )
             xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
           }
           break;
-        case FPI_FUN_BAN_AUTO_SHUTDOWN:            /* Запрет автоматического останова при восстановлении параметров сети */
+        /*---- Запрет автоматического останова при восстановлении параметров сети ----*/
+        case FPI_FUN_BAN_AUTO_SHUTDOWN:
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banAutoShutdown = 1U;
@@ -352,7 +355,8 @@ void vCONTROLLERtask ( void const* argument )
             controller.banAutoShutdown = 0U;
           }
           break;
-        case FPI_FUN_BAN_AUTO_START:               /* Запрет автоматического запуска */
+        /*---------------------- Запрет автоматического запуска ----------------------*/
+        case FPI_FUN_BAN_AUTO_START:
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banAutoStart = 1U;
@@ -362,7 +366,8 @@ void vCONTROLLERtask ( void const* argument )
             controller.banAutoStart = 0U;
           }
           break;
-        case FPI_FUN_BAN_GEN_LOAD:                 /* Запрет нагрузки генератора */
+        /*------------------------ Запрет нагрузки генератора ------------------------*/
+        case FPI_FUN_BAN_GEN_LOAD:
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banGenLoad = 1U;
@@ -372,7 +377,8 @@ void vCONTROLLERtask ( void const* argument )
             controller.banGenLoad = 0U;
           }
           break;
-        case FPI_FUN_REMOTE_START:                 /* Дистанционный запуск, останов */
+        /*----------------------- Дистанционный запуск, останов ----------------------*/
+        case FPI_FUN_REMOTE_START:
           if ( ( controller.mode  == CONTROLLER_MODE_AUTO ) &&
                ( controller.state != CONTROLLER_STATUS_ALARM ) )
           {
@@ -388,7 +394,8 @@ void vCONTROLLERtask ( void const* argument )
             }
           }
           break;
-        case FPI_FUN_HIGHT_ENGINE_TEMP:            /* Высокая температура двигателя */
+        /*---------------------- Высокая температура двигателя -----------------------*/
+        case FPI_FUN_HIGHT_ENGINE_TEMP:
           if ( inputFpiEvent.level     == FPI_LEVEL_HIGH )
           {
             interiorEvent.type   = EVENT_ENGINE_HIGHT_TEMP;
@@ -396,7 +403,8 @@ void vCONTROLLERtask ( void const* argument )
             xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
           }
           break;
-        case FPI_FUN_LOW_FUEL:                     /* Сигнал низкого уровня топлива */
+        /*----------------------- Сигнал низкого уровня топлива ----------------------*/
+        case FPI_FUN_LOW_FUEL:
           if ( inputFpiEvent.level     == FPI_LEVEL_HIGH )
           {
             interiorEvent.type   = EVENT_FUEL_LOW_LEVEL;
@@ -404,7 +412,8 @@ void vCONTROLLERtask ( void const* argument )
             xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
           }
           break;
-        case FPI_FUN_OIL_LOW_PRESSURE:             /* Датчик давления масла */
+        /*-------------------------- Датчик давления масла ---------------------------*/
+        case FPI_FUN_OIL_LOW_PRESSURE:
           if ( inputFpiEvent.level     == FPI_LEVEL_HIGH )
           {
             interiorEvent.type   = EVENT_OIL_LOW_PRESSURE;
@@ -412,7 +421,8 @@ void vCONTROLLERtask ( void const* argument )
             xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
           }
           break;
-        case FPI_FUN_IDLING:                       /* Работа на холостом ходу */
+        /*-------------------------- Работа на холостом ходу -------------------------*/
+        case FPI_FUN_IDLING:
           if ( ( engineState         == ENGINE_STATUS_WORK ) &&
                ( inputFpiEvent.level == FPI_LEVEL_HIGH ) )
           {

@@ -116,13 +116,10 @@ void vADCConvertToVDD(uint8_t AnalogSwitch)
       break;
     case 0:
       //Переводим в наряжние на канале АЦП
-
       uCSD = GetAverVDD(5,DC_SIZE);
       //Усредняем сырые значения АЦП
-
       uSFL = GetAverVDD(6,DC_SIZE);
       //Усредняем сырые значения АЦП
-
       uSOP = GetAverVDD(7,DC_SIZE);
       break;
     default:
@@ -602,6 +599,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 void StartADCTask(void *argument)
 {
    uint32_t tt=0;
+   uint32_t ulNotifiedValue=0;
    fix16_t TEMP = 0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
@@ -611,6 +609,7 @@ void StartADCTask(void *argument)
    InitADCDMA(&hadc1);
    for(;;)
    {
+
     osDelay(200);
     vADC3DCInit(DC);
     //Запускаем преобразвоание АЦП

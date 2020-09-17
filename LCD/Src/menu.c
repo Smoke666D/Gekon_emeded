@@ -11,6 +11,7 @@
 #include "menu_data.c"
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2           = NULL;
+static osThreadId_t xProccesToNotify    = NULL;
 static KeyEvent          TempEvent;
 static KeyEvent          BufferEvent    = { 0U, 0U };
 static uint8_t           temp_counter   = 0U;
@@ -332,6 +333,15 @@ void xInfoScreenCallBack( xScreenSetObject* menu, char key )
     case KEY_EXIT:
       DownScreen = 0U;
     break;
+    case KEY_STOP:
+      xTaskNotify(xProccesToNotify,HMI_CMD_STOP,eSetBits);
+      break;
+    case KEY_AUTO:
+      xTaskNotify(xProccesToNotify,HMI_CMD_AUTO,eSetBits);
+      break;
+    case KEY_START:
+      xTaskNotify(xProccesToNotify,HMI_CMD_START,eSetBits);
+      break;
     default:
       break;
   }
@@ -348,6 +358,14 @@ void vMenuInit( u8g2_t* temp )
   pCurrMenu = &xMainMenu;
   pKeyboard = pGetKeyboardQueue();
   return;
+}
+
+
+
+void vMenuMessageInit(osThreadId_t xmainprocess)
+{
+
+  xProccesToNotify  = xmainprocess;
 }
 
 static uint8_t EXIT_KEY_F =0;

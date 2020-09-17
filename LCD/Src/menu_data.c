@@ -38,7 +38,7 @@ static char EventLog[][44U]=
   "Напряж. ген. высок",
   "Напряжение ген.",
 };
-#define MENU_LEVEL1_COUNT      9U
+#define MENU_LEVEL1_COUNT      8U
 #define ENGINE_MENU_COUNT      3U
 #define NET_MENU_COUNT         3U
 #define GENERATOR_MENU_COUNT   7U
@@ -309,10 +309,8 @@ static xScreenObjet const StatusMainScreen[]=
   {0U,FONT_SIZE*6U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,VDD_CH+1},
   {0U,LEFT_OFFSET,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC, CPRES+1},
   {0U,FONT_SIZE*7U,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,CTEMP+1},
-  {0U,FONT_SIZE*14U,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,CFUEL+1},
-  {0U,FONT_SIZE*20U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetDIODC,FPI_B },
-  {0U,FONT_SIZE*20U,LINE2+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetDIODC,FPI_C },
-  {1U,FONT_SIZE*20U,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetDIODC,FPI_D },
+  {1U,FONT_SIZE*14U,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetADCDC,CFUEL+1},
+
 
 };
 
@@ -347,7 +345,7 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   //  {ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
   {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
-  {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
+ // {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},
   {NetMainScreen,&xMainMenu,&xNetMenu,PASSIVE,0U,0U,NULL},

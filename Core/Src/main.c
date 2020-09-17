@@ -284,6 +284,7 @@ int main(void)
 
   keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
   vSetupKeyboard();
+  vMenuMessageInit( ADCTaskHandle);
   vLCDInit( xLCDDelaySemphHandle );
   vDIOInit();
   vUSBinit( usbTaskHandle );

@@ -130,6 +130,22 @@ void vADCConvertToVDD(uint8_t AnalogSwitch)
 }
 
 
+fix16_t xADCGetSOP()
+{
+  return xSOP;
+}
+
+fix16_t xADCGetSCT()
+{
+  return xSCT;
+
+}
+
+fix16_t xADCGetSFL()
+{
+  return xSFL;
+}
+
 
 
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
@@ -145,13 +161,13 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 
            case CFUEL:
-             fix16_to_str( xSFL,Data,0);
+             fix16_to_str(xADCGetSFL(),Data,0);
              break;
            case CPRES:
-             fix16_to_str( xSOP,Data,0);
+             fix16_to_str(xADCGetSOP(),Data,0);
              break;
            case CTEMP:
-             fix16_to_str(xSCT,Data, 0);
+             fix16_to_str(xADCGetSCT(),Data, 0);
              break;
             default:
 

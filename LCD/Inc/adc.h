@@ -88,4 +88,11 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vADCFindFreq(int16_t * data);
 void SetSQR(int16_t * data);
 void vADCConvertToVDD(uint8_t AnalogSwitch);
+fix16_t xADCGetSOP();
+fix16_t xADCGetSCT();
+fix16_t xADCGetSFL();
+
+
+
+
 #endif /* INC_ADC_H_ */

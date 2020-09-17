@@ -158,8 +158,6 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        case VDD_CH:
              fix16_to_str(xVDD,Data,2);
              break;
-
-
            case CFUEL:
              fix16_to_str(xADCGetSFL(),Data,0);
              break;
@@ -191,7 +189,7 @@ void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size);
 float  fADC3Init(uint16_t freq)
 {
 
-  uint16_t Period = 15000000U/ freq;
+  uint16_t Period = 60000000U/ (freq*4);
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -224,7 +222,7 @@ float  fADC3Init(uint16_t freq)
 float  fADCInit(TIM_HandleTypeDef * htim,uint16_t freq)
 {
 
-  uint16_t Period = 15000000U/ freq;
+  uint16_t Period = 15000000U/ (freq*4);
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -259,7 +257,7 @@ float  fADCInit(TIM_HandleTypeDef * htim,uint16_t freq)
 float  fADC12Init(uint16_t freq)
 {
 
-    uint16_t Period = 15000000U/ freq;
+    uint16_t Period = 60000000U/ (freq*4);
     TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -297,7 +295,7 @@ float  fADC12Init(uint16_t freq)
 float  fADC1Init(uint16_t freq)
 {
 
-  uint16_t Period = 15000000U/ freq;
+  uint16_t Period = 60000000U/ (freq*4);
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -623,8 +621,11 @@ void StartADCTask(void *argument)
    InitADCDMA(&hadc3);
    InitADCDMA(&hadc2);
    InitADCDMA(&hadc1);
+
+
    for(;;)
    {
+
 
     osDelay(200);
     vADC3DCInit(DC);

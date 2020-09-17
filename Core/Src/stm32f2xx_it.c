@@ -229,8 +229,12 @@ void TIM2_IRQHandler(void)
 /**
   * @brief This function handles TIM3 global interrupt.
   */
+static uint16_t count=0;
+static uint16_t count1=0;
+
 void TIM3_IRQHandler(void)
 {
+
 
   __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
 
@@ -255,6 +259,7 @@ void TIM4_IRQHandler(void)
   */
 void TIM8_UP_TIM13_IRQHandler(void)
 {
+
 
   __HAL_TIM_CLEAR_IT(&htim8, TIM_IT_UPDATE);
 

@@ -13,6 +13,7 @@
  */
 
 #include "lcd.h"
+#include "stm32f2xx_hal_spi.h"
 
 /*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t  xSemaphore = NULL;
@@ -148,12 +149,176 @@ void vLCDDelay( void )
     if ( hspi3.State != HAL_SPI_STATE_BUSY_TX )
     {
         lcd_delay = 0;
-	xHigherPriorityTaskWoken = pdFALSE;
-	xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
-	portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
+        xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR( xSemaphore, &xHigherPriorityTaskWoken );
+        portEND_SWITCHING_ISR( xHigherPriorityTaskWoken )
     }
   return;
 }
+
+#define SPI_DEFAULT_TIMEOUT 100U
+
+
+static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout1(SPI_HandleTypeDef *hspi, uint32_t Flag, FlagStatus State,
+                                                       uint32_t Timeout, uint32_t Tickstart)
+{
+  while ((__HAL_SPI_GET_FLAG(hspi, Flag) ? SET : RESET) != State)
+  {
+    if (Timeout != HAL_MAX_DELAY)
+    {
+      if (((HAL_GetTick() - Tickstart) >= Timeout) || (Timeout == 0U))
+      {
+        /* Disable the SPI and reset the CRC: the CRC value should be cleared
+        on both master and slave sides in order to resynchronize the master
+        and slave for their respective CRC calculation */
+
+        /* Disable TXE, RXNE and ERR interrupts for the interrupt process */
+        __HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_RXNE | SPI_IT_ERR));
+
+        if ((hspi->Init.Mode == SPI_MODE_MASTER) && ((hspi->Init.Direction == SPI_DIRECTION_1LINE)
+                                                     || (hspi->Init.Direction == SPI_DIRECTION_2LINES_RXONLY)))
+        {
+          /* Disable SPI peripheral */
+          __HAL_SPI_DISABLE(hspi);
+        }
+
+        /* Reset CRC Calculation */
+        if (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
+        {
+          SPI_RESET_CRC(hspi);
+        }
+
+        hspi->State = HAL_SPI_STATE_READY;
+
+        /* Process Unlocked */
+        __HAL_UNLOCK(hspi);
+
+        return HAL_TIMEOUT;
+      }
+    }
+  }
+
+}
+
+static void SPI_DMATransmit(DMA_HandleTypeDef *hdma)
+{
+  SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)(((DMA_HandleTypeDef *)hdma)->Parent); /* Derogation MISRAC2012-Rule-11.5 */
+  uint32_t tickstart;
+
+  /* Init tickstart for timeout management*/
+  tickstart = HAL_GetTick();
+
+  /* Disable ERR interrupt */
+  __HAL_SPI_DISABLE_IT(hspi, SPI_IT_ERR);
+
+  /* Disable Tx DMA Request */
+  CLEAR_BIT(hspi->Instance->CR2, SPI_CR2_TXDMAEN);
+
+  /* Check the end of the transaction */
+
+  if (SPI_WaitFlagStateUntilTimeout1(hspi, SPI_FLAG_BSY, RESET, SPI_DEFAULT_TIMEOUT, tickstart) != HAL_OK)
+   {
+     SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_FLAG);
+   }
+
+  hspi->TxXferCount = 0U;
+  hspi->State = HAL_SPI_STATE_READY;
+
+}
+
+void vLCD_HAL_SPI_DMA_Init()
+{
+  /* Set the SPI TxDMA Half transfer complete callback */
+  hspi3.hdmatx->XferHalfCpltCallback = NULL;
+
+   /* Set the SPI TxDMA transfer complete callback */
+   hspi3.hdmatx->XferCpltCallback = SPI_DMATransmit;
+
+   /* Set the DMA error callback */
+   hspi3.hdmatx->XferErrorCallback = NULL;
+
+   /* Set the DMA AbortCpltCallback */
+   hspi3.hdmatx->XferAbortCallback = NULL;
+
+}
+
+
+HAL_StatusTypeDef SPI_Transmit_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size)
+{
+  HAL_StatusTypeDef errorcode = HAL_OK;
+
+
+  /* Process Locked */
+  __HAL_LOCK(hspi);
+
+  if (hspi->State != HAL_SPI_STATE_READY)
+  {
+    errorcode = HAL_BUSY;
+    goto error;
+  }
+
+  /* Set the transaction information */
+  hspi->State       = HAL_SPI_STATE_BUSY_TX;
+  hspi->ErrorCode   = HAL_SPI_ERROR_NONE;
+  hspi->pTxBuffPtr  = (uint8_t *)pData;
+  hspi->TxXferSize  = Size;
+  hspi->TxXferCount = Size;
+
+  /* Init field not used in handle to zero */
+  hspi->pRxBuffPtr  = (uint8_t *)NULL;
+  hspi->TxISR       = NULL;
+  hspi->RxISR       = NULL;
+  hspi->RxXferSize  = 0U;
+  hspi->RxXferCount = 0U;
+
+  /* Configure communication direction : 1Line */
+  if (hspi->Init.Direction == SPI_DIRECTION_1LINE)
+  {
+    SPI_1LINE_TX(hspi);
+  }
+
+#if (USE_SPI_CRC != 0U)
+  /* Reset CRC Calculation */
+  if (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
+  {
+    SPI_RESET_CRC(hspi);
+  }
+#endif /* USE_SPI_CRC */
+
+
+
+  /* Enable the Tx DMA Stream/Channel */
+  if (HAL_OK != HAL_DMA_Start_IT(hspi->hdmatx, (uint32_t)hspi->pTxBuffPtr, (uint32_t)&hspi->Instance->DR,
+                                 hspi->TxXferCount))
+  {
+    /* Update SPI error code */
+    SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_DMA);
+    errorcode = HAL_ERROR;
+
+    hspi->State = HAL_SPI_STATE_READY;
+    goto error;
+  }
+  /* Check if the SPI is already enabled */
+  if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE)
+  {
+    /* Enable SPI peripheral */
+    __HAL_SPI_ENABLE(hspi);
+  }
+
+  /* Enable the SPI Error Interrupt Bit */
+  __HAL_SPI_ENABLE_IT(hspi, (SPI_IT_ERR));
+
+  /* Enable Tx DMA Request */
+  SET_BIT(hspi->Instance->CR2, SPI_CR2_TXDMAEN);
+
+error :
+  /* Process Unlocked */
+  __HAL_UNLOCK(hspi);
+  return errorcode;
+}
+
+
+
 /*---------------------------------------------------------------------------------------------------*/
 static uint8_t Data[33U] ={0xFA,};
 inline void vLCDSend16Data( uint8_t *arg_prt )
@@ -167,7 +332,7 @@ inline void vLCDSend16Data( uint8_t *arg_prt )
     Data[( i << 1 ) + 1U]= data[i] & 0x0f0U;
     Data[( i << 1 ) + 2U]= data[i] << 4U;
   }
-  HAL_SPI_Transmit_DMA( &hspi3, Data, 33U );
+  SPI_Transmit_DMA( &hspi3, Data, 33U );
   lcd_delay = 1;
   xSemaphoreTake( xSemaphore, portMAX_DELAY );
   return;
@@ -182,7 +347,7 @@ inline void vLCDWriteCommand( uint8_t com )
 {
   DataC[1U] = 0xF0U & com;
   DataC[2U] = 0xF0U & ( com << 4U );
-  HAL_SPI_Transmit_DMA( &hspi3, DataC, 3U );
+  SPI_Transmit_DMA( &hspi3, DataC, 3U );
   lcd_delay =1;
   xSemaphoreTake( xSemaphore, portMAX_DELAY );
   return;
@@ -193,8 +358,9 @@ void vST7920init(void)
 
   HAL_TIM_Base_Start_IT( &htim7 );
   vLCDBrigthInit();
-  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+  vLCD_HAL_SPI_DMA_Init();
 
+  HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
   osDelay(40);
   vLCDWriteCommand( 0x38U );
   osDelay(1);

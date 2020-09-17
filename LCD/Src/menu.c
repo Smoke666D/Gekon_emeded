@@ -11,6 +11,7 @@
 #include "menu_data.c"
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2           = NULL;
+static osThreadId_t xProccesToNotify    = NULL;
 static KeyEvent          TempEvent;
 static KeyEvent          BufferEvent    = { 0U, 0U };
 static uint8_t           temp_counter   = 0U;
@@ -92,10 +93,13 @@ void vExitCurObject(void)
   return;
 }
 
-
+static uint8_t uSettingScreen =0;
 
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
+
+  if (uSettingScreen == 0)
+  {
   switch ( key )
   {
     case KEY_STOP:
@@ -165,6 +169,13 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
     default:
       break;
   }
+}
+  else
+  {
+    if (key == KEY_STOP_BREAK)
+      uSettingScreen = 0;
+  }
+
   return;
 }
 
@@ -280,6 +291,8 @@ void xLineScreenKeyCallBack( xScreenSetObject* menu, char key )
 /* Callback функция пролистывания информационных экранов.
  *
  */
+
+
 void xInfoScreenCallBack( xScreenSetObject* menu, char key )
 {
   uint8_t           index = menu->pCurrIndex;
@@ -288,6 +301,7 @@ void xInfoScreenCallBack( xScreenSetObject* menu, char key )
   switch ( key )
   {
     case KEY_UP:
+      uSettingScreen = 0;
       if ( DownScreen > 0U )
       {
         DownScreen = 0U;
@@ -306,32 +320,57 @@ void xInfoScreenCallBack( xScreenSetObject* menu, char key )
         pMenu->pCurrIndex++;
       }
       break;
-    case KEY_DOWN:  //Если нажата клавиша вниз, проверяем флаг, сигнализурующий что мы листаем
-      //карусель вложенных экранов
-      if ( DownScreen == 0U )
+    case KEY_DOWN:
+
+      if (uSettingScreen == 1)
       {
-        if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
-        {
-          pCurrMenu  = menu->pHomeMenu[index].pDownScreenSet;
-          DownScreen = 1U;
-          pCurrMenu->pCurrIndex = 0U;
-        }
+        pCurrMenu = &xSettingsMenu;
       }
       else
       {
-        if ( menu->pCurrIndex == menu->pMaxIndex )
+        //Если нажата клавиша вниз, проверяем флаг, сигнализурующий что мы листаем
+        //карусель вложенных экранов
+        if ( DownScreen == 0U )
         {
-          menu->pCurrIndex = 0U;
+          if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
+          {
+            pCurrMenu  = menu->pHomeMenu[index].pDownScreenSet;
+            DownScreen = 1U;
+            pCurrMenu->pCurrIndex = 0U;
+          }
         }
         else
         {
-          menu->pCurrIndex++;
+          if ( menu->pCurrIndex == menu->pMaxIndex )
+          {
+            menu->pCurrIndex = 0U;
+          }
+          else
+          {
+            menu->pCurrIndex++;
+          }
         }
       }
       break;
     case KEY_EXIT:
+      uSettingScreen =0;
       DownScreen = 0U;
     break;
+    case KEY_STOP:
+      xTaskNotify(xProccesToNotify,HMI_CMD_STOP,eSetBits);
+      uSettingScreen =1;
+      break;
+    case KEY_STOP_BREAK:
+      uSettingScreen =0;
+      break;
+    case KEY_AUTO:
+      xTaskNotify(xProccesToNotify,HMI_CMD_AUTO,eSetBits);
+      uSettingScreen =0;
+      break;
+    case KEY_START:
+      xTaskNotify(xProccesToNotify,HMI_CMD_START,eSetBits);
+      uSettingScreen =0;
+      break;
     default:
       break;
   }
@@ -348,6 +387,14 @@ void vMenuInit( u8g2_t* temp )
   pCurrMenu = &xMainMenu;
   pKeyboard = pGetKeyboardQueue();
   return;
+}
+
+
+
+void vMenuMessageInit(osThreadId_t xmainprocess)
+{
+
+  xProccesToNotify  = xmainprocess;
 }
 
 static uint8_t EXIT_KEY_F =0;
@@ -419,6 +466,9 @@ void vMenuTask( void )
                else
                   EXIT_KEY_F =0;
                break;
+            case stop_key:
+              key = KEY_STOP_BREAK;
+              break;
             default:
                break;
             }

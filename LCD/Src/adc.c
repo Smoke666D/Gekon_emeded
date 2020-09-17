@@ -21,7 +21,8 @@ static q15_t TEMP_BUFFER1[ADC_FRAME_SIZE];
 static xADCFSMType xADCFSM = DC;
 static uint16_t  ADCDATA[8]={0,0,0,0,0};
 
-fix16_t GetVDD(uint8_t channel,uint8_t size)
+
+uint16_t GetAverVDD(uint8_t channel,uint8_t size)
 {
 
    uint32_t Buffer=0;
@@ -30,40 +31,50 @@ fix16_t GetVDD(uint8_t channel,uint8_t size)
      Buffer =Buffer+ ADC3_IN_Buffer[i*9+channel];
    }
    Buffer =Buffer/size;
-   return  fix16_mul( fix16_from_int((uint16_t)Buffer), fix16_from_float(0.0008058));
+   return  (uint16_t)Buffer;
 }
 
+
 static fix16_t xVDD =0; //Напяжение АЦП канала PowInMCU (измерение напряжения питания)
-static fix16_t xCSD =0; //Напряжение АЦП канала ControlSmDin (измерение верхнего опороного напряжения)
-static fix16_t xCAS =0; //Напряжение АЦП канала Common Analog Sens (общий провод датчиков)
+ //Напряжение АЦП канала ControlSmDin (измерение верхнего опороного напряжения)
+static uint16_t uCSD =0;
+ //Напряжение АЦП канала Common Analog Sens (общий провод датчиков)
+static uint16_t uCAS =0;
 static fix16_t xSOP =0; //Напряжение АЦП канала SensOilPressure (напряжение канала давления масла)
+static uint16_t uSOP =0;
 static fix16_t xSCT =0; //Напряжение АЦП канала SensCoolantTemper (напряжение канала температуры охлаждающей жидкости)
+static uint16_t uSCT =0;
 static fix16_t xSFL =0; //Напряжение АЦП канала SensFuelLevel (напряжение канала уровня топлива)
-static fix16_t xCSA;
+static uint16_t uSFL =0;
+static uint16_t uCSA =0;
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
  */
 void vADCConvertToVDD(uint8_t AnalogSwitch)
 {
   fix16_t delta;
+  uint16_t temp_int;
   xEventGroupClearBits(xADCEvent,ADC_READY);
   switch (AnalogSwitch)
   {
     case 1:
-      //значения АЦП
-      xVDD= GetVDD(4,DC_SIZE);
-      //Пересчитвываем в напряжение до диода
-      xVDD =fix16_mul( xVDD, fix16_from_float(R118_R122/R122));
+      //Получем среднение заничение АЦП канала питания
+      temp_int =GetAverVDD(4,DC_SIZE);
+      //Пересчитываем его в реальное напяжение.
+      xVDD=fix16_mul( fix16_from_int(temp_int), fix16_from_float(VDD_CF));
       //Вычитаем падение на диоде
       xVDD =fix16_sub(xVDD,VT4);
+
+
       //Усредняем сырые значения АЦП
-      xCSA = GetVDD(5,DC_SIZE);
+      uCSA = GetAverVDD(5,DC_SIZE);
+
       //Усредняем сырые значения АЦП
-      xCAS = GetVDD(6,DC_SIZE);
+
+      uCAS = GetAverVDD(6,DC_SIZE);
+
       //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
-      delta =  fix16_sub(xCSA,xCAS);
-      //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
-      if (delta<=fix16_from_float(DELTA))
+      if ((uCSA-uCAS) <=DELTA)
       {
         xSOP =fix16_from_int(MAX_RESISTANCE);
         xSCT = xSOP;
@@ -72,53 +83,47 @@ void vADCConvertToVDD(uint8_t AnalogSwitch)
       else
       {
           //Усредняем сырые значения АЦП
-          xSCT =GetVDD(7,DC_SIZE);
-          delta =  fix16_sub(xCSD,xSCT);
-          if (delta<=fix16_from_float(DELTA))
+          uSCT = GetAverVDD(7,DC_SIZE);
+          if (uCSD-uSCT<=DELTA)
           {
             xSCT =0;
           }
           else
           {
-            delta = fix16_sub(xCSD,xSCT);
-            xSCT = fix16_sub(xSCT,xCAS);
-            xSCT = fix16_mul(fix16_from_int(R3),xSCT);
-            xSCT = fix16_div(xSCT,delta);
+            temp_int = ((uSCT-uCAS)*R3)/(uCSD- uSCT);
+            xSCT =fix16_from_int(temp_int);
           }
-          delta =  fix16_sub(xCSD,xSFL);
-          if (delta<=fix16_from_float(DELTA))
+          if (uCSD-uSFL<=DELTA)
           {
            xSFL =0;
           }
          else
           {
-            delta = fix16_sub(xCSD,xSFL);
-            xSFL = fix16_sub(xSFL,xCAS);
-            xSFL = fix16_mul(fix16_from_int(R3),xSFL);
-            xSFL = fix16_div(xSFL,delta);
+            temp_int = ((uSFL-uCAS)*R3)/(uCSD- uSFL);
+            xSFL =fix16_from_int(temp_int);
           }
-          delta =  fix16_sub(xCSD,xSOP);
-          if (delta<=fix16_from_float(DELTA))
+          if (uCSD-uSOP<=DELTA)
           {
             xSOP =0;
           }
           else
           {
-            delta = fix16_sub(xCSD,xSOP);
-            xSOP = fix16_sub(xSOP,xCAS);
-            xSOP = fix16_mul(fix16_from_int(R3),xSOP);
-            xSOP = fix16_div(xSOP,delta);
+            temp_int = ((uSOP-uCAS)*R3)/(uCSD- uSOP);
+            xSOP =fix16_from_int(temp_int);
           }
 
       }
       break;
     case 0:
       //Переводим в наряжние на канале АЦП
-      xCSD =GetVDD(5,DC_SIZE);
+
+      uCSD = GetAverVDD(5,DC_SIZE);
       //Усредняем сырые значения АЦП
-      xSFL= GetVDD(6,DC_SIZE);
+
+      uSFL = GetAverVDD(6,DC_SIZE);
       //Усредняем сырые значения АЦП
-      xSOP =GetVDD(7,DC_SIZE);
+
+      uSOP = GetAverVDD(7,DC_SIZE);
       break;
     default:
       break;
@@ -140,12 +145,8 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        case VDD_CH:
              fix16_to_str(xVDD,Data,2);
              break;
-           case COFDIN:
-             fix16_to_str(xCSD,Data,2);
-             break;
-           case CANC:
-             fix16_to_str(xCAS,Data,2);
-             break;
+
+
            case CFUEL:
              fix16_to_str( xSFL,Data,0);
              break;

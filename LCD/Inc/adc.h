@@ -36,14 +36,17 @@
 /*
  * Номиналы резисторов
  */
+
+
 #define R118_R122 104.7
 #define R122 4.7
+#define VDD_CF ((R118_R122/R122)*3.3/4095)
 #define R3   1416
 #define R12      22.2
 #define R12_R11  122.2
 #define VT4  0
 #define MAX_RESISTANCE 1000
-#define DELTA 0.04
+#define DELTA  0.04*4095/3.3
 #define VDD_CH  0U
 #define COFDIN  1U
 #define COFAIN  5U
@@ -53,6 +56,8 @@
 #define CTEMP   7U
 
 #define DC_SIZE  50
+
+
 
 #define NO_COMMON 0x01
 #define NO_SOP    0x02

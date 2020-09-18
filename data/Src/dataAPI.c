@@ -49,7 +49,7 @@ void vDATAAPIdataInit ( void )
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
     res = eEEPROMreadMemory( STORAGE_SR_ADR, &sr, 1U );
-    if ( sr == STORAGE_SR_EMPTY )
+    if ( sr != STORAGE_SR_EMPTY )
     {
       vSYSSerial( ">>EEPROM empty. All data is default.\n\r" );
       vSYSgetUniqueID16( serialBuffer );                                                   /* Get serial number */

@@ -50,82 +50,76 @@ static uint16_t uCSA =0;
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
  */
-void vADCConvertToVDD(uint8_t AnalogSwitch)
+void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
-  fix16_t delta;
-  uint16_t temp_int;
-  xEventGroupClearBits(xADCEvent,ADC_READY);
-  switch (AnalogSwitch)
+  fix16_t  delta    = 0U;
+  uint16_t temp_int = 0U;
+  xEventGroupClearBits( xADCEvent, ADC_READY );
+  switch ( AnalogSwitch )
   {
-    case 1:
+    case 1U:
       //Получем среднение заничение АЦП канала питания
-      temp_int =GetAverVDD(4,DC_SIZE);
+      temp_int = GetAverVDD( 4U, DC_SIZE );
       //Пересчитываем его в реальное напяжение.
-      xVDD=fix16_mul( fix16_from_int(temp_int), fix16_from_float(VDD_CF));
+      xVDD = fix16_mul( fix16_from_int( temp_int ), fix16_from_float( VDD_CF ) );
       //Вычитаем падение на диоде
-      xVDD =fix16_sub(xVDD,VT4);
-
-
+      xVDD = fix16_sub( xVDD, VT4 );
       //Усредняем сырые значения АЦП
-      uCSA = GetAverVDD(5,DC_SIZE);
-
+      uCSA = GetAverVDD( 5U, DC_SIZE );
       //Усредняем сырые значения АЦП
-
-      uCAS = GetAverVDD(6,DC_SIZE);
-
+      uCAS = GetAverVDD( 6U, DC_SIZE );
       //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
-      if ((uCSA-uCAS) <=DELTA)
+      if ( ( uCSA - uCAS ) <= DELTA )
       {
-        xSOP =fix16_from_int(MAX_RESISTANCE);
+        xSOP = fix16_from_int( MAX_RESISTANCE );
         xSCT = xSOP;
         xSFL = xSOP;
       }
       else
       {
-          //Усредняем сырые значения АЦП
-          uSCT = GetAverVDD(7,DC_SIZE);
-          if (uCSD-uSCT<=DELTA)
-          {
-            xSCT =0;
-          }
-          else
-          {
-            temp_int = ((uSCT-uCAS)*R3)/(uCSD- uSCT);
-            xSCT =fix16_from_int(temp_int);
-          }
-          if (uCSD-uSFL<=DELTA)
-          {
-           xSFL =0;
-          }
-         else
-          {
-            temp_int = ((uSFL-uCAS)*R3)/(uCSD- uSFL);
-            xSFL =fix16_from_int(temp_int);
-          }
-          if (uCSD-uSOP<=DELTA)
-          {
-            xSOP =0;
-          }
-          else
-          {
-            temp_int = ((uSOP-uCAS)*R3)/(uCSD- uSOP);
-            xSOP =fix16_from_int(temp_int);
-          }
-
+        //Усредняем сырые значения АЦП
+        uSCT = GetAverVDD( 7U, DC_SIZE );
+        if ( ( uCSD - uSCT ) <= DELTA )
+        {
+          xSCT = 0U;
+        }
+        else
+        {
+          temp_int = ( ( uSCT - uCAS ) * R3 ) / ( uCSD - uSCT );
+          xSCT = fix16_from_int( temp_int );
+        }
+        if ( ( uCSD - uSFL ) <= DELTA )
+        {
+          xSFL = 0U;
+        }
+        else
+        {
+          temp_int = ( ( uSFL - uCAS ) * R3 ) / ( uCSD - uSFL );
+          xSFL = fix16_from_int( temp_int );
+        }
+        if ( ( uCSD - uSOP ) <= DELTA )
+        {
+          xSOP = 0U;
+        }
+        else
+        {
+          temp_int = ( ( uSOP - uCAS ) * R3 ) / ( uCSD - uSOP );
+          xSOP = fix16_from_int( temp_int );
+        }
       }
       break;
-    case 0:
+    case 0U:
       //Переводим в наряжние на канале АЦП
-      uCSD = GetAverVDD(5,DC_SIZE);
+      uCSD = GetAverVDD( 5U, DC_SIZE );
       //Усредняем сырые значения АЦП
-      uSFL = GetAverVDD(6,DC_SIZE);
+      uSFL = GetAverVDD( 6U, DC_SIZE );
       //Усредняем сырые значения АЦП
-      uSOP = GetAverVDD(7,DC_SIZE);
+      uSOP = GetAverVDD( 7U, DC_SIZE );
       break;
     default:
       break;
   }
-  xEventGroupSetBits(xADCEvent,ADC_READY);
+  xEventGroupSetBits( xADCEvent, ADC_READY );
   return;
 }
 
@@ -146,36 +140,31 @@ fix16_t xADCGetSFL()
   return xSFL;
 }
 
-
-
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
-   if (cmd == mREAD)
-   {
-     xEventGroupWaitBits(xADCEvent,ADC_READY,pdFALSE,pdTRUE,portMAX_DELAY);
-     switch (ID-1)
-     {
-       case VDD_CH:
-             fix16_to_str(xVDD,Data,2);
-             break;
-           case CFUEL:
-             fix16_to_str(xADCGetSFL(),Data,0);
-             break;
-           case CPRES:
-             fix16_to_str(xADCGetSOP(),Data,0);
-             break;
-           case CTEMP:
-             fix16_to_str(xADCGetSCT(),Data, 0);
-             break;
-            default:
-
-             break;
-     }
-   }
-   return;
+  if (cmd == mREAD)
+  {
+    xEventGroupWaitBits( xADCEvent, ADC_READY, pdFALSE, pdTRUE, portMAX_DELAY );
+    switch ( ID - 1U )
+    {
+      case VDD_CH:
+        fix16_to_str( xVDD, Data, 2U );
+        break;
+      case CFUEL:
+        fix16_to_str( xADCGetSFL(), Data, 0U );
+        break;
+      case CPRES:
+        fix16_to_str( xADCGetSOP(), Data, 0U );
+        break;
+      case CTEMP:
+        fix16_to_str( xADCGetSCT(), Data, 0U );
+        break;
+      default:
+        break;
+    }
+  }
+  return;
 }
-
-
 
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim8;
@@ -189,7 +178,7 @@ void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size);
 float  fADC3Init(uint16_t freq)
 {
 
-  uint16_t Period = 60000000U/ (freq*4);
+  uint16_t Period = 60000000U / ( freq * 4U );
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -392,34 +381,28 @@ void vADCInit(void)
   }
 }
 
-void vADC_Ready(uint8_t adc_number)
+void vADC_Ready ( uint8_t adc_number )
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   /* Process locked */
   xHigherPriorityTaskWoken = pdFALSE;
-  switch (adc_number)
+  switch ( adc_number )
   {
     case ADC3_READY:
-      xEventGroupSetBitsFromISR(xADCEvent,ADC3_READY,&xHigherPriorityTaskWoken);
+      xEventGroupSetBitsFromISR( xADCEvent, ADC3_READY, &xHigherPriorityTaskWoken );
       break;
     case ADC2_READY:
-      xEventGroupSetBitsFromISR(xADCEvent,ADC2_READY,&xHigherPriorityTaskWoken);
+      xEventGroupSetBitsFromISR( xADCEvent, ADC2_READY, &xHigherPriorityTaskWoken );
       break;
     case ADC1_READY:
-      xEventGroupSetBitsFromISR(xADCEvent,ADC1_READY,&xHigherPriorityTaskWoken);
+      xEventGroupSetBitsFromISR( xADCEvent, ADC1_READY, &xHigherPriorityTaskWoken );
+      break;
+    default:
       break;
   }
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
   return;
-
 }
-
-
-
-
-
-
-
 
 static void ADC_DMAConv(DMA_HandleTypeDef *hdma)
 {
@@ -625,15 +608,10 @@ void StartADCTask(void *argument)
 
    for(;;)
    {
-
-
-    osDelay(200);
-    vADC3DCInit(DC);
-    //Запускаем преобразвоание АЦП
-    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,DC_SIZE*9);
-    //Ожидаем флага готовонсти о завершении преобразования
-    xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-
+    osDelay( 200U );
+    vADC3DCInit( DC );
+    StartADCDMA( &hadc3, ( uint32_t* )&ADC3_IN_Buffer, ( DC_SIZE * 9U ) );         /* Запускаем преобразвоание АЦП */
+    xEventGroupWaitBits( xADCEvent, ADC3_READY, pdTRUE, pdTRUE, portMAX_DELAY );   /* Ожидаем флага готовонсти о завершении преобразования */
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
     vADCConvertToVDD(0);
     //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются

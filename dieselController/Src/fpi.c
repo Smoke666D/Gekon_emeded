@@ -72,10 +72,18 @@ uint8_t vFPIgetTrig ( FPI* fpi )
     {
       fpi->level = FPI_LEVEL_HIGH;
     }
-    if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res == 0U ) )
+    else if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res > 0U ) )
+    {
+      res = 0U;
+    }
+    else if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res == 0U ) )
     {
       fpi->level = FPI_LEVEL_LOW;
       res        = 1U;
+    }
+    else
+    {
+
     }
   }
   return res;
@@ -236,12 +244,9 @@ void vFPITask ( void const* argument )
               event.function = fpis[i].function;
               event.action   = fpis[i].action;
               event.message  = fpis[i].message;
-              fpis[i].state  = FPI_FINISH;
+              fpis[i].state  = FPI_IDLE;
               xQueueSend( pFPIQueue, &event, portMAX_DELAY );
             }
-            break;
-          case FPI_FINISH:
-            vFPIcheckReset ( &fpis[i] );
             break;
           default:
             fpis[i].state = FPI_BLOCK;

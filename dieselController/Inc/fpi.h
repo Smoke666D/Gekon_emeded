@@ -101,7 +101,7 @@ typedef struct __packed
   armingCallBack  getArming;                        /* Function check condition of triggering */
   /* System */
   FPI_STATE       state;                            /* Condition of the FPI */
-  timerID_t       timerID;
+  timerID_t       timerID;                          /* ID of timer*/
 } FPI;
 
 typedef struct __packed

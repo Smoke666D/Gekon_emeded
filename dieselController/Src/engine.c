@@ -16,6 +16,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "dataAPI.h"
+#include "adc.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE           engine              = { 0U };
 static OIL_TYPE              oil                 = { 0U };
@@ -44,24 +45,6 @@ void vENGINEtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-fix16_t getOilPressure ( void )
-{
-  fix16_t res = 0U;
-  return res;
-}
-
-fix16_t getCoolantTemp ( void )
-{
-  fix16_t res = 0U;
-  return res;
-}
-
-fix16_t getFuelLevel ( void )
-{
-  fix16_t res = 0U;
-  return res;
-}
-
 fix16_t getBatteryVoltage ( void )
 {
   fix16_t res = 0U;
@@ -280,7 +263,7 @@ void vENGINEinit ( void )
 {
   oil.pressure.type                = getBitMap( &oilPressureSetup, 0U );
   oil.pressure.chart               = &oilSensorChart;
-  oil.pressure.get                 = getOilPressure;
+  oil.pressure.get                 = xADCGetSOP;
   oil.pressure.cutout.enb          = getBitMap( &oilPressureSetup, 1U );
   oil.pressure.cutout.event.action = ACTION_EMERGENCY_STOP;
   oil.pressure.cutout.event.type   = EVENT_OIL_SENSOR_ERROR;
@@ -326,7 +309,7 @@ void vENGINEinit ( void )
   /*--------------------------------------------------------------*/
   coolant.temp.type                = getBitMap( &coolantTempSetup, 0U );
   coolant.temp.chart               = &coolantSensorChart;
-  coolant.temp.get                 = getCoolantTemp;
+  coolant.temp.get                 = xADCGetSCT;
   coolant.temp.cutout.enb          = getBitMap( &coolantTempSetup, 1U );
   coolant.temp.cutout.event.action = ACTION_NONE;
   coolant.temp.cutout.event.type   = EVENT_ENGINE_TEMP_SENSOR_ERROR;
@@ -398,7 +381,7 @@ void vENGINEinit ( void )
     fuel.level.type = SENSOR_TYPE_CURRENT;
   }
   fuel.level.chart               = &fuelSensorChart;
-  fuel.level.get                 = getFuelLevel;
+  fuel.level.get                 = xADCGetSFL;
   fuel.level.cutout.enb          = getBitMap( &fuelLevelSetup, 1U );
   fuel.level.cutout.event.action = ACTION_EMERGENCY_STOP;
   fuel.level.cutout.event.type   = EVENT_FUEL_LEVEL_SENSOR_ERROR;

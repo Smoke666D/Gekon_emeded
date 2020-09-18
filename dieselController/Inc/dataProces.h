@@ -12,8 +12,9 @@
 #include "fix16.h"
 #include "config.h"
 /*----------------------- Functions ------------------------------------*/
-uint8_t getBitMap( const eConfigReg* reg, uint8_t bit );
-fix16_t getValue( const eConfigReg* reg );
-fix16_t fix16_pow ( fix16_t x, fix16_t y );
+uint8_t  getBitMap( const eConfigReg* reg, uint8_t bit );
+uint16_t getUintValue ( const eConfigReg* reg );
+fix16_t  getValue( const eConfigReg* reg );
+fix16_t  fix16_pow ( fix16_t x, fix16_t y );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAPROCES_H_ */

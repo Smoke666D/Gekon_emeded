@@ -24,6 +24,7 @@
 #include "dataProces.h"
 #include "log.h"
 #include "fpi.h"
+#include "menu.h"
 /*-------------------------------- Structures --------------------------------*/
 CONTROLLER_TYPE controller =
 {
@@ -34,6 +35,7 @@ CONTROLLER_TYPE controller =
   .stopDelay       = 0U,
   .timerID         = 0U,
 };
+static osThreadId_t  controllerHandle = NULL;
 /*---------------------------------- MACROS ----------------------------------*/
 #define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, 0U ) )
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
@@ -42,7 +44,7 @@ CONTROLLER_TYPE controller =
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
 static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
 /*-------------------------------- Functions ---------------------------------*/
-
+void vCONTROLLERtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -242,6 +244,13 @@ void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS genera
 void vCONTROLLERinit ( void )
 {
   controller.stopDelay = getValue( &timerReturnDelay );
+  const osThreadAttr_t controllerTask_attributes = {
+    .name       = "fpiTask",
+    .priority   = ( osPriority_t ) osPriorityLow,
+    .stack_size = 1024U
+  };
+  controllerHandle = osThreadNew( vCONTROLLERtask, NULL, &controllerTask_attributes );
+  vMenuMessageInit( controllerHandle );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -251,11 +260,11 @@ void vCONTROLLERtask ( void const* argument )
   ELECTRO_STATUS  generatorState       = eELECTROgetGeneratorStatus();
   ELECTRO_STATUS  mainsState           = eELECTROgetMainsStatus();
   ENGINE_COMMAND  engineCmd            = ENGINE_CMD_NONE;
-  HMI_COMMAND     inputKeyboardCommand = HMI_CMD_NONE;
   ELECTRO_COMMAND electroCmd           = ELECTRO_CMD_NONE;
   SYSTEM_EVENT    interiorEvent        = { .type = EVENT_NONE, .action = ACTION_NONE };
   SYSTEM_EVENT    inputEvent           = { .type = EVENT_NONE, .action = ACTION_NONE };
   FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
+  uint32_t        inputKeyboardCommand = HMI_CMD_NONE;
 
   for (;;)
   {
@@ -264,19 +273,20 @@ void vCONTROLLERtask ( void const* argument )
       /*---------------------------------- AUTOMATIC PROCESSING ----------------------------------*/
       if ( controller.mode  == CONTROLLER_MODE_AUTO )
       {
-        vCONTROLLERautoProcess( engineState, generatorState, mainsState );
+        //vCONTROLLERautoProcess( engineState, generatorState, mainsState );
       }
       /*------------------------------------ MANUAL PROCESSING -----------------------------------*/
       if ( controller.mode  == CONTROLLER_MODE_MANUAL )
       {
-        vCONTROLLERmanualProcess( engineState, generatorState, mainsState );
+        //vCONTROLLERmanualProcess( engineState, generatorState, mainsState );
       }
     }
     /*-------------------------------------- KEYBOARD INPUT --------------------------------------*/
-    if ( xQueueReceive( pKEYBOARDgetCommandQueue(), &inputKeyboardCommand, 0U ) == pdPASS )
+    if ( xTaskNotifyWait( pdFALSE, pdTRUE, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
     {
       switch ( inputKeyboardCommand )
       {
+
         case HMI_CMD_START:
           vFPIsetBlock();
           if ( ( controller.mode  == CONTROLLER_MODE_MANUAL ) &&

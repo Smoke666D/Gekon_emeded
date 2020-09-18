@@ -235,6 +235,10 @@ void vFPOinit( const FPO_INIT* init )
   fpos[FPO_E].function = eFPOfuctionList[ getBitMap( &doefType, 0U ) ];
   fpos[FPO_F].function = eFPOfuctionList[ getBitMap( &doefType, 1U ) ];
 
+  for ( i=0U; i<FPO_DIS_NUMBER; i++ )
+  {
+    HAL_GPIO_WritePin( fpos_dis[i].port, fpos_dis[i].pin, GPIO_PIN_SET );
+  }
   for ( i=0U; i<FPO_NUMBER; i++ )
   {
     if ( fpos[i].polarity == FPO_POL_NORMAL_OPEN )
@@ -245,10 +249,6 @@ void vFPOinit( const FPO_INIT* init )
     {
       HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_SET );
     }
-  }
-  for ( i=0U; i<FPO_DIS_NUMBER; i++ )
-  {
-    HAL_GPIO_WritePin( fpos_dis[i].port, fpos[i].pin, GPIO_PIN_SET );
   }
   /* System part */
   vFPOanaliz( starterFPO,      FPO_FUN_STARTER_RELAY          );
@@ -265,13 +265,6 @@ void vFPOinit( const FPO_INIT* init )
   vFPOanaliz( mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
-
-  vFPOsetRelay( &fpos[0], RELAY_ON );
-  vFPOsetRelay( &fpos[1], RELAY_ON );
-  vFPOsetRelay( &fpos[2], RELAY_ON );
-  vFPOsetRelay( &fpos[3], RELAY_ON );
-  vFPOsetRelay( &fpos[4], RELAY_ON );
-  vFPOsetRelay( &fpos[5], RELAY_ON );
   return;
 }
 /*----------------------------------------------------------------------------*/

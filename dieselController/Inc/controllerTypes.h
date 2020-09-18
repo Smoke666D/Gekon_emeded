@@ -84,12 +84,12 @@ typedef enum
 
 typedef enum
 {
-  HMI_CMD_NONE,
-  HMI_CMD_START,
-  HMI_CMD_LOAD,
-  HMI_CMD_STOP,
-  HMI_CMD_AUTO,
-  HMI_CMD_MANUAL,
+  HMI_CMD_NONE   = 0x00U,
+  HMI_CMD_START  = 0x01U,
+  HMI_CMD_STOP   = 0x02U,
+  HMI_CMD_AUTO   = 0x04U,
+  HMI_CMD_LOAD   = 0x08U,
+  HMI_CMD_MANUAL = 0x10U,
 } HMI_COMMAND;
 
 typedef enum

@@ -28,6 +28,7 @@ void vVRinit ( TIM_HandleTypeDef* tim )
   vrTIM         = tim;
   vrTeethNumber = speedToothNumber.value[0U];
   vrCounter     = 0U;
+  HAL_TIM_Base_Start_IT( tim );
   return;
 }
 

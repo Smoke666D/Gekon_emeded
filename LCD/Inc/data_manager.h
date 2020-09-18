@@ -29,7 +29,7 @@ typedef enum
   NO_DATA,
 } DATA_TYPE;
 /* Дискриптор данных для вывода */
-typedef struct
+typedef struct __packed
 {
   uint16_t  DataID;
 	DATA_TYPE Type;

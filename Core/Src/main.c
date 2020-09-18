@@ -53,7 +53,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-extern USBD_HandleTypeDef  hUsbDeviceFS;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -184,14 +184,16 @@ extern void vStartUsbTask(void *argument);
 /* USER CODE BEGIN 0 */
 TaskHandle_t*  notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
 const FPI_INIT fpiInitStruct = {
-  .pinA  = FPI_B_Pin,
-  .pinB  = FPI_B_Pin,
-  .pinC  = FPI_C_Pin,
-  .pinD  = FPI_D_Pin,
-  .portA = FPI_B_GPIO_Port,
-  .portB = FPI_B_GPIO_Port,
-  .portC = FPI_C_GPIO_Port,
-  .portD = FPI_D_GPIO_Port,
+  .pinA   = 0U,
+  .pinB   = FPI_B_Pin,
+  .pinC   = FPI_C_Pin,
+  .pinD   = FPI_D_Pin,
+  .pinCS  = DIN_OFFSET_Pin,
+  .portA  = NULL,
+  .portB  = FPI_B_GPIO_Port,
+  .portC  = FPI_C_GPIO_Port,
+  .portD  = FPI_D_GPIO_Port,
+  .portCS = DIN_OFFSET_GPIO_Port
 };
 const FPO_INIT fpoInitStruct = {
   .outPinA   = POUT_A_Pin,
@@ -266,13 +268,6 @@ int main(void)
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
   vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
-  vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
-  //vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
-  vVRinit( &htim6 );                                            /* Speed sensor initialization */
-  vENGINEinit();                                                /**/
-  vELECTROinit();                                               /**/
-  vLOGICinit();                                                 /**/
-  vCONTROLLERinit();                                            /**/
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
@@ -1227,114 +1222,19 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  char      buf[36];
-  uint8_t   i         = 0U;
-  uint8_t   j         = 0U;
-  uint8_t   temp      = 0U;
   //uint32_t  waterMark = 0U;
 
-  vDATAAPIdataInit();
   vSYSSerial( ">>Start Default Task!\n\r" );
-  vSYSSerial( ">>Serial number: " );
-  for ( i=0U; i<6U; i++ )
-  {
-    for ( j=0U; j<2U; j++ )
-    {
-      temp = ( uint8_t )( serialNumber.value[i] << j*8U );
-      sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
-    }
-  }
-
-  HAL_TIM_Base_Start_IT( &htim6 );
-
-  buf[35] = 0U;
-  vSYSSerial( buf );
-  vSYSSerial( "\n\r" );
-  vSYSSerial("------------- EEPROM map: -------------\n\r");
-  vSYSSerial("System register: ");
-  sprintf( buf, "0x%06X", STORAGE_SR_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_SR_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("EWA            : ");
-  sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_WEB_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Reserve        : ");
-  sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Configurations : ");
-  sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", CONFIG_TOTAL_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Charts         : ");
-  sprintf( buf, "0x%06X", STORAGE_CHART_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_CHART_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Free data      : ");
-  sprintf( buf, "0x%06X", STORAGE_FREE_DATA_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Password       : ");
-  sprintf( buf, "0x%06X", STORAGE_PASSWORD_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_PASSWORD_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Log pointer     : ");
-  sprintf( buf, "0x%06X", STORAGE_LOG_POINTER_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_LOG_POINTER_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Log            : ");
-  sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_LOG_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Free           : ");
-  sprintf( buf, "%d", ( ( EEPROM_SIZE * 1024U ) - STORAGE_REQUIRED_SIZE ) );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes \n\r" );
-
-  vSYSSerial("End            : ");
-  sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
-  vSYSSerial( buf );
-  vSYSSerial( "\n\r" );
-
-  vSYSSerial("---------------------------------------\n\r");
-
+  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
+  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
+  vVRinit( &htim6 );                          /* Speed sensor initialization */
+  vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
+  vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
+  vENGINEinit();                              /**/
+  vELECTROinit();                             /**/
+  vLOGICinit();                               /**/
+  vCONTROLLERinit();                          /**/
   /* Infinite loop */
   for(;;)
   {

@@ -12,6 +12,7 @@
 #include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
+#define  KEY_NOTIFY_WAIT_DELAY   10U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -51,6 +52,5 @@ typedef struct __packed
 } CONTROLLER_TYPE;
 /*----------------------- Functions ------------------------------------*/
 void vCONTROLLERinit ( void );
-void vCONTROLLERtask ( void const* argument );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

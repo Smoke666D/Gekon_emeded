@@ -11,6 +11,7 @@
 #include "freeData.h"
 #include "common.h"
 #include "version.h"
+
 /*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t xSemaphore;
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -49,7 +50,7 @@ void vDATAAPIdataInit ( void )
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
     res = eEEPROMreadMemory( STORAGE_SR_ADR, &sr, 1U );
-    if ( sr != STORAGE_SR_EMPTY )
+    if ( ( sr == STORAGE_SR_EMPTY ) || ( REWRITE_ALL_EEPROM > 0U ) )
     {
       vSYSSerial( ">>EEPROM empty. All data is default.\n\r" );
       vSYSgetUniqueID16( serialBuffer );                                                   /* Get serial number */
@@ -144,6 +145,107 @@ void vDATAAPIdataInit ( void )
     }
     xSemaphoreGive( xSemaphore );
   }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vDATAprintSerialNumber ( void )
+{
+  char      buf[36U] = { 0U };
+  uint8_t   i        = 0U;
+  uint8_t   j        = 0U;
+  uint8_t   temp     = 0U;
+  vSYSSerial( ">>Serial number: " );
+  for ( i=0U; i<6U; i++ )
+  {
+    for ( j=0U; j<2U; j++ )
+    {
+      temp = ( uint8_t )( serialNumber.value[i] << ( j * 8U ) );
+      sprintf( &buf[6U * i + 3U * j], "%02X:", temp );
+    }
+  }
+  buf[35] = 0U;
+  vSYSSerial( buf );
+  vSYSSerial( "\n\r" );
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vDATAAPIprintMemoryMap ( void )
+{
+  char buf[36] = { 0U };
+  vSYSSerial( "\n\r" );
+  vSYSSerial("------------- EEPROM map: -------------\n\r");
+  vSYSSerial("System register: ");
+  sprintf( buf, "0x%06X", STORAGE_SR_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_SR_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("EWA            : ");
+  sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_WEB_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Reserve        : ");
+  sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Configurations : ");
+  sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", CONFIG_TOTAL_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Charts         : ");
+  sprintf( buf, "0x%06X", STORAGE_CHART_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_CHART_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Free data      : ");
+  sprintf( buf, "0x%06X", STORAGE_FREE_DATA_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Password       : ");
+  sprintf( buf, "0x%06X", STORAGE_PASSWORD_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_PASSWORD_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Log pointer    : ");
+  sprintf( buf, "0x%06X", STORAGE_LOG_POINTER_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_LOG_POINTER_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Log            : ");
+  sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
+  vSYSSerial( buf );
+  vSYSSerial( "( ");
+  sprintf( buf, "%d", STORAGE_LOG_SIZE );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes )\n\r" );
+  vSYSSerial("Free           : ");
+  sprintf( buf, "%d", ( ( EEPROM_SIZE * 1024U ) - STORAGE_REQUIRED_SIZE ) );
+  vSYSSerial( buf );
+  vSYSSerial( " bytes \n\r" );
+  vSYSSerial("End            : ");
+  sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
+  vSYSSerial( buf );
+  vSYSSerial( "\n\r" );
+  vSYSSerial("---------------------------------------\n\r");
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

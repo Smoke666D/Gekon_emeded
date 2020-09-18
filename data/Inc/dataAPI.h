@@ -21,6 +21,7 @@
 #define  SEMAPHORE_TAKE_DELAY   ( ( TickType_t ) 10U )
 #define  NOTIFY_TARGETS_NUMBER  1U
 #define  EWA_ERASE_SIZE         8U
+#define  REWRITE_ALL_EEPROM     0U                     /* Rewrite all data in EEPROM to define at each start. Set it to 0 for normal work */
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/
@@ -67,5 +68,7 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
 DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* password );
 DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length );
 DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record );
+void            vDATAAPIprintMemoryMap ( void );
+void            vDATAprintSerialNumber ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAAPI_H_ */

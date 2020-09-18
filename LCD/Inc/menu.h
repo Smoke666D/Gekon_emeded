@@ -19,14 +19,6 @@
 #define RIGTH_ALIGN         2U
 #define LEFT_ALIGN          3U
 #define NO_ALIGN            0U
-
-#define HMI_CMD_START       0x01
-#define HMI_CMD_STOP        0x02
-#define HMI_CMD_AUTO        0x04
-#define HMI_CMD_LOAD        0x08
-#define HMI_CMD_MANUAL      0x10
-
-
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
 #define KEY_UP              1U
 #define KEY_DOWN            2U
@@ -77,7 +69,7 @@ typedef struct __packed
   OBJECT_TYPE xType;
   uint8_t*    ObjectParamert;
   char*       pStringParametr;
-  void        (*GetDtaFunction)();
+  void        ( *GetDtaFunction )();
   uint16_t    DataID;
 } xScreenObjet;
 
@@ -89,7 +81,7 @@ typedef struct __packed
   SCREEN_STATUS xScreenStatus;
   uint8_t       pCurrIndex;
   uint8_t       pMaxIndex;
-  void          (*pFunc)(void *,char);
+  void          ( *pFunc )( void*, char );
 } xScreenType;
 
 typedef struct __packed
@@ -109,6 +101,6 @@ void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vUToStr(uint8_t * str, uint16_t data, signed char scale);
-void vMenuMessageInit(osThreadId_t xmainprocess);
+void vMenuMessageInit( osThreadId_t xmainprocess );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

@@ -19,6 +19,7 @@
 #define  FPI_B                    1U
 #define  FPI_C                    2U
 #define  FPI_D                    3U
+#define  FPI_TASK_DELAY           500U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -113,6 +114,8 @@ typedef struct __packed
   uint16_t       pinC;
   GPIO_TypeDef*  portD;
   uint16_t       pinD;
+  GPIO_TypeDef*  portCS;
+  uint16_t       pinCS;
 } FPI_INIT;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/

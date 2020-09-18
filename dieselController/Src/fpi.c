@@ -58,21 +58,25 @@ uint8_t uFPIarmingNever ( void )
  */
 uint8_t vFPIgetTrig ( FPI* fpi )
 {
-  GPIO_PinState pinState = HAL_GPIO_ReadPin ( fpi->port, fpi->pin );
+  GPIO_PinState pinState = GPIO_PIN_RESET;
   uint8_t       res      = 0U;
-  if ( ( ( fpi->polarity == FPI_POL_NORMAL_OPEN  ) && ( pinState == GPIO_PIN_SET   ) ) ||
-       ( ( fpi->polarity == FPI_POL_NORMAL_CLOSE ) && ( pinState == GPIO_PIN_RESET ) ) )
+  if ( fpi->port != NULL )
   {
-    res = 1U;
-  }
-  if ( ( fpi->level == FPI_LEVEL_LOW ) && ( res > 0U ) )
-  {
-    fpi->level = FPI_LEVEL_HIGH;
-  }
-  if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res == 0U ) )
-  {
-    fpi->level = FPI_LEVEL_LOW;
-    res        = 1U;
+    pinState = HAL_GPIO_ReadPin ( fpi->port, fpi->pin );
+    if ( ( ( fpi->polarity == FPI_POL_NORMAL_OPEN  ) && ( pinState == GPIO_PIN_RESET ) ) ||
+         ( ( fpi->polarity == FPI_POL_NORMAL_CLOSE ) && ( pinState == GPIO_PIN_SET   ) ) )
+    {
+      res = 1U;
+    }
+    if ( ( fpi->level == FPI_LEVEL_LOW ) && ( res > 0U ) )
+    {
+      fpi->level = FPI_LEVEL_HIGH;
+    }
+    if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res == 0U ) )
+    {
+      fpi->level = FPI_LEVEL_LOW;
+      res        = 1U;
+    }
   }
   return res;
 }
@@ -84,13 +88,23 @@ uint8_t vFPIgetTrig ( FPI* fpi )
  *         delayReg - configuration register of fpi delay
  * output: none
  */
-void vFPIreadConfigs ( FPI fpi, const eConfigReg* setupReg, const eConfigReg* delayReg )
+void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* delayReg )
 {
-  fpi.delay    = getValue( delayReg );
-  fpi.function = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
-  fpi.polarity = getBitMap( setupReg, 1U );
-  fpi.action   = getBitMap( setupReg, 2U );
-  fpi.arming   = getBitMap( setupReg, 3U );
+  fpi->delay    = getUintValue( delayReg );
+  fpi->function = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
+  fpi->polarity = getBitMap( setupReg, 1U );
+  fpi->action   = getBitMap( setupReg, 2U );
+  fpi->arming   = getBitMap( setupReg, 3U );
+  return;
+}
+
+void vFPIcheckReset ( FPI* fpi )
+{
+  if ( vFPIgetTrig( fpi ) == 0U )
+  {
+    vLOGICresetTimer( fpi->timerID );
+    fpi->state = FPI_IDLE;
+  }
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -108,11 +122,12 @@ void vFPIinit ( const FPI_INIT* init )
   fpis[FPI_C].pin  = init->pinC;
   fpis[FPI_D].port = init->portD;
   fpis[FPI_D].pin  = init->pinD;
+  HAL_GPIO_WritePin( init->portCS, init->pinCS, GPIO_PIN_SET );
   /* Read parameters form memory */
-  vFPIreadConfigs( fpis[FPI_A], &diaSetup, &diaDelay );
-  vFPIreadConfigs( fpis[FPI_B], &dibSetup, &dibDelay );
-  vFPIreadConfigs( fpis[FPI_C], &dicSetup, &dicDelay );
-  vFPIreadConfigs( fpis[FPI_D], &didSetup, &didDelay );
+  vFPIreadConfigs( &fpis[FPI_A], &diaSetup, &diaDelay );
+  vFPIreadConfigs( &fpis[FPI_B], &dibSetup, &dibDelay );
+  vFPIreadConfigs( &fpis[FPI_C], &dicSetup, &dicDelay );
+  vFPIreadConfigs( &fpis[FPI_D], &didSetup, &didDelay );
   /* Logic part */
   for ( i=0U; i<FPI_NUMBER; i++ )
   {
@@ -214,20 +229,19 @@ void vFPITask ( void const* argument )
             }
             break;
           case FPI_TRIGGERED:
-            if ( vFPIgetTrig( &fpis[i] ) > 0U )
-            {
-              vLOGICresetTimer( fpis[i].timerID );
-              fpis[i].state = FPI_IDLE;
-            }
+            vFPIcheckReset ( &fpis[i] );
             if ( uLOGICisTimer( fpis[i].timerID ) > 0U )
             {
               event.level    = fpis[i].level;
               event.function = fpis[i].function;
               event.action   = fpis[i].action;
               event.message  = fpis[i].message;
-              fpis[i].state  = FPI_IDLE;
+              fpis[i].state  = FPI_FINISH;
               xQueueSend( pFPIQueue, &event, portMAX_DELAY );
             }
+            break;
+          case FPI_FINISH:
+            vFPIcheckReset ( &fpis[i] );
             break;
           default:
             fpis[i].state = FPI_BLOCK;
@@ -235,6 +249,7 @@ void vFPITask ( void const* argument )
         }
       }
     }
+    osDelay( FPI_TASK_DELAY );
   }
   return;
 }

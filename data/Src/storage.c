@@ -82,11 +82,13 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
   {
     count += uUint16ToBlob( reg->units[i], &blob[count] );
   }
+  /*
   for ( i=0U; i<reg->atrib->bitMapSize; i++ )
   {
     count += uUint16ToBlob( reg->bitMap[i].mask, &blob[count] );
     blob[count++] = ( uint8_t )  reg->bitMap[i].shift;
   }
+  */
   return count;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -110,11 +112,13 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
   {
     count += uBlobToUint16( &reg->units[i], &blob[count] );
   }
+  /*
   for ( i=0U; i<reg->atrib->bitMapSize; i++ )
   {
     count += uBlobToUint16( &reg->bitMap[i].mask, &blob[count] );
     reg->bitMap[i].shift = ( uint8_t ) blob[count++];
   }
+  */
   return count;
 }
 /*---------------------------------------------------------------------------------------------------*/

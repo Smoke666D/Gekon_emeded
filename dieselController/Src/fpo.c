@@ -61,7 +61,7 @@ static FPO* mainsImpOffFPO  = NULL;
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void vFPOanaliz ( FPO* fpo, FPO_FUNCTION fun )
+void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun )
 {
   uint8_t i = 0U;
 
@@ -69,7 +69,7 @@ void vFPOanaliz ( FPO* fpo, FPO_FUNCTION fun )
   {
     if ( fpos[i].function == fun )
     {
-      fpo = &fpos[i];
+      *fpo = &fpos[i];
       break;
     }
   }
@@ -216,10 +216,6 @@ void vFPOinit( const FPO_INIT* init )
   fpos[FPO_F].pin           = init->outPinF;
   fpos_dis[FPO_DIS_EF].port = init->disPortEF;
   fpos_dis[FPO_DIS_EF].pin  = init->disPinEF;
-
-  HAL_GPIO_WritePin( init->disPortAB, init->disPinAB, GPIO_PIN_RESET );
-  HAL_GPIO_WritePin( init->disPortCD, init->disPinCD, GPIO_PIN_RESET );
-  HAL_GPIO_WritePin( init->disPortEF, init->disPinEF, GPIO_PIN_RESET );
   /* Read parameters form memory */
   fpos[FPO_A].polarity = getBitMap( &doSetup,  0U );
   fpos[FPO_B].polarity = getBitMap( &doSetup,  1U );
@@ -234,7 +230,7 @@ void vFPOinit( const FPO_INIT* init )
   fpos[FPO_D].function = eFPOfuctionList[ getBitMap( &docdType, 1U ) ];
   fpos[FPO_E].function = eFPOfuctionList[ getBitMap( &doefType, 0U ) ];
   fpos[FPO_F].function = eFPOfuctionList[ getBitMap( &doefType, 1U ) ];
-
+  /* GPIO start conditions */
   for ( i=0U; i<FPO_DIS_NUMBER; i++ )
   {
     HAL_GPIO_WritePin( fpos_dis[i].port, fpos_dis[i].pin, GPIO_PIN_SET );
@@ -251,20 +247,20 @@ void vFPOinit( const FPO_INIT* init )
     }
   }
   /* System part */
-  vFPOanaliz( starterFPO,      FPO_FUN_STARTER_RELAY          );
-  vFPOanaliz( heaterFPO,       FPO_FUN_COOLANT_HEATER         );
-  vFPOanaliz( coolerFPO,       FPO_FUN_COOLANT_COOLER         );
-  vFPOanaliz( preheaterFPO,    FPO_FUN_PREHEAT                );
-  vFPOanaliz( boosterFPO,      FPO_FUN_FUEL_BOOST             );
-  vFPOanaliz( pumpFPO,         FPO_FUN_FUEL_RELAY             );
-  vFPOanaliz( stopSolenoidFPO, FPO_FUN_STOP_SOLENOID          );
-  vFPOanaliz( idleFPO,         FPO_FUN_IDLING                 );
-  vFPOanaliz( genSwFPO,        FPO_FUN_TURN_ON_GEN            );
-  vFPOanaliz( genImpOnFPO,     FPO_FUN_TURN_ON_GEN_IMPULSE    );
-  vFPOanaliz( genImpOffFPO,    FPO_FUN_TURN_OFF_GEN_IMPULSE   );
-  vFPOanaliz( mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
-  vFPOanaliz( mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
-  vFPOanaliz( mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
+  vFPOanaliz( &starterFPO,      FPO_FUN_STARTER_RELAY          );
+  vFPOanaliz( &heaterFPO,       FPO_FUN_COOLANT_HEATER         );
+  vFPOanaliz( &coolerFPO,       FPO_FUN_COOLANT_COOLER         );
+  vFPOanaliz( &preheaterFPO,    FPO_FUN_PREHEAT                );
+  vFPOanaliz( &boosterFPO,      FPO_FUN_FUEL_BOOST             );
+  vFPOanaliz( &pumpFPO,         FPO_FUN_FUEL_RELAY             );
+  vFPOanaliz( &stopSolenoidFPO, FPO_FUN_STOP_SOLENOID          );
+  vFPOanaliz( &idleFPO,         FPO_FUN_IDLING                 );
+  vFPOanaliz( &genSwFPO,        FPO_FUN_TURN_ON_GEN            );
+  vFPOanaliz( &genImpOnFPO,     FPO_FUN_TURN_ON_GEN_IMPULSE    );
+  vFPOanaliz( &genImpOffFPO,    FPO_FUN_TURN_OFF_GEN_IMPULSE   );
+  vFPOanaliz( &mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
+  vFPOanaliz( &mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
+  vFPOanaliz( &mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
   return;
 }
 /*----------------------------------------------------------------------------*/

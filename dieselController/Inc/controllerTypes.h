@@ -192,7 +192,7 @@ typedef struct __packed
 } LOG_RECORD_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void          vLOGICinit ( void );
+void          vLOGICinit ( TIM_HandleTypeDef* tim );
 QueueHandle_t pLOGICgetEventQueue ( void );
 void          vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue );
 void          vRELAYproces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
@@ -202,6 +202,7 @@ void          vLOGICtimerHandler ( void );
 TIMER_ERROR   vLOGICstartTimer ( fix16_t delay, timerID_t* id );
 uint8_t       uLOGICisTimer ( timerID_t id );
 void          vLOGICresetTimer ( timerID_t id );
+void          vLOGICtimerCallback ( void );
 void          vLOGICtoogle ( uint8_t* input );
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOGICTYPES_H_ */

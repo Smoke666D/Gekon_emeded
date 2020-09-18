@@ -360,7 +360,8 @@ void vENGINEinit ( void )
   coolant.cooler.relay.set    = vFPOsetCooler;
   coolant.cooler.relay.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
-  preHeater.relay.enb    = 0U;
+  preHeater.relay.enb    = getBitMap( &engineSetup, 1U );
+  preHeater.active       = 0U;
   preHeater.level        = getValue( &enginePreHeatLevel );
   preHeater.relay.set    = vFPOsetPreheater;
   preHeater.relay.status = RELAY_OFF;
@@ -561,6 +562,7 @@ void vENGINEinit ( void )
   stopSolenoid.enb    = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
   stopSolenoid.set    = vFPOsetStopSolenoid;
   stopSolenoid.status = RELAY_OFF;
+  stopSolenoid.set( RELAY_ON );
   /*--------------------------------------------------------------*/
   idleRelay.enb    = uFPOisEnable( FPO_FUN_IDLING );
   idleRelay.set    = vFPOsetIdle;
@@ -745,19 +747,11 @@ void vENGINEtask ( void const* argument )
               }
               break;
             case STARTER_READY:
-              if ( starter.startIteration < starter.startAttempts )
-              {
-                starter.startIteration++;
-                starter.status = STARTER_CRANKING;
-                starter.set( RELAY_ON );
-                stopSolenoid.set( RELAY_OFF );
-                vLOGICstartTimer( starter.crankingDelay, &timerID );
-              }
-              else
-              {
-                fuel.pump.set( RELAY_OFF );
-                starter.status = STARTER_FAIL;
-              }
+              starter.startIteration++;
+              starter.status = STARTER_CRANKING;
+              stopSolenoid.set( RELAY_OFF );
+              starter.set( RELAY_ON );
+              vLOGICstartTimer( starter.crankingDelay, &timerID );
               break;
             case STARTER_CRANKING:
               if ( uENGINEisWork( 0U, oilVal, chargerVal, speedVal ) > 0U )
@@ -770,9 +764,19 @@ void vENGINEtask ( void const* argument )
               }
               if ( uLOGICisTimer( timerID ) > 0U )
               {
-                starter.status = STARTER_CRANK_DELAY;
                 starter.set( RELAY_OFF );
-                vLOGICstartTimer( starter.crankDelay,&timerID );
+                if ( starter.startIteration < starter.startAttempts )
+                {
+                  starter.status = STARTER_CRANK_DELAY;
+                  vLOGICstartTimer( starter.crankDelay,&timerID );
+                }
+                else
+                {
+                  fuel.pump.set( RELAY_OFF );
+                  stopSolenoid.set( RELAY_ON );
+                  preHeater.active = 0U;
+                  starter.status   = STARTER_FAIL;
+                }
               }
               break;
             case STARTER_CRANK_DELAY:
@@ -828,7 +832,7 @@ void vENGINEtask ( void const* argument )
               engine.cmd             = ENGINE_CMD_NONE;
               starter.status         = STARTER_IDLE;
               engine.cmd             = ENGINE_CMD_NONE;
-              event.action           = EVENT_START_FAIL;
+              event.action           = ACTION_EMERGENCY_STOP;
               event.type             = EVENT_START_FAIL;
               starter.startIteration = 0U;
               xQueueSend( pLOGICgetEventQueue(), &event, portMAX_DELAY );

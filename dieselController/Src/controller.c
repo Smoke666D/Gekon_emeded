@@ -239,6 +239,11 @@ void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS genera
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vCONTROLLERfpiProcess ()
+{
+
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERinit ( void )
@@ -266,27 +271,25 @@ void vCONTROLLERtask ( void const* argument )
   FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
   uint32_t        inputKeyboardCommand = HMI_CMD_NONE;
 
+  uint8_t  imulator = 0U;
+
   for (;;)
   {
-    if ( controller.state != CONTROLLER_STATUS_ALARM )
+    if ( imulator == 0U )
     {
-      /*---------------------------------- AUTOMATIC PROCESSING ----------------------------------*/
-      if ( controller.mode  == CONTROLLER_MODE_AUTO )
-      {
-        //vCONTROLLERautoProcess( engineState, generatorState, mainsState );
-      }
-      /*------------------------------------ MANUAL PROCESSING -----------------------------------*/
-      if ( controller.mode  == CONTROLLER_MODE_MANUAL )
-      {
-        //vCONTROLLERmanualProcess( engineState, generatorState, mainsState );
-      }
+      inputKeyboardCommand = HMI_CMD_START;
+      imulator = 1U;
     }
+    /*------------------------------------ GET BLOCKS STATUS -------------------------------------*/
+    engineState    = eENGINEgetEngineStatus();
+    generatorState = eELECTROgetGeneratorStatus();
+    mainsState     = eELECTROgetMainsStatus();
     /*-------------------------------------- KEYBOARD INPUT --------------------------------------*/
-    if ( xTaskNotifyWait( pdFALSE, pdTRUE, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
+    //if ( xTaskNotifyWait( pdFALSE, pdTRUE, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
+    if ( 1 > 0 )
     {
       switch ( inputKeyboardCommand )
       {
-
         case HMI_CMD_START:
           vFPIsetBlock();
           if ( ( controller.mode  == CONTROLLER_MODE_MANUAL ) &&
@@ -335,6 +338,7 @@ void vCONTROLLERtask ( void const* argument )
         default:
           break;
       }
+      inputKeyboardCommand = HMI_CMD_NONE;
     }
     /*-------------------------------------- DIGITAL INPUTS -------------------------------------*/
     if ( xQueueReceive( pFPIgetQueue(), &inputFpiEvent, 0U ) == pdPASS )
@@ -448,6 +452,20 @@ void vCONTROLLERtask ( void const* argument )
           break;
         default:
           break;
+      }
+    }
+    /*---------------------------------- CONTROLLER PROCESSING ----------------------------------*/
+    if ( controller.state != CONTROLLER_STATUS_ALARM )
+    {
+      /*---------------------------------- AUTOMATIC PROCESSING ----------------------------------*/
+      if ( controller.mode  == CONTROLLER_MODE_AUTO )
+      {
+        vCONTROLLERautoProcess( engineState, generatorState, mainsState );
+      }
+      /*------------------------------------ MANUAL PROCESSING -----------------------------------*/
+      if ( controller.mode  == CONTROLLER_MODE_MANUAL )
+      {
+        vCONTROLLERmanualProcess( engineState, generatorState, mainsState );
       }
     }
     /*--------------------------------------- EVENT OUTPUT --------------------------------------*/

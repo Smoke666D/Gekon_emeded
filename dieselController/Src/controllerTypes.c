@@ -73,17 +73,19 @@ static fix16_t   hysteresis                                                 = 0U
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void vLOGICinit ( void )
+void vLOGICinit ( TIM_HandleTypeDef* tim )
 {
   hysteresis  = fix16_div( getValue( &hysteresisLevel ), F16( 100U ) );
   pEventQueue = xQueueCreateStatic( EVENT_QUEUE_LENGTH, sizeof( SYSTEM_EVENT ), eventBuffer, &xEventQueue );
+  HAL_TIM_Base_Start_IT( tim );
+  return;
 }
-
+/*-----------------------------------------------------------------------------------------*/
 QueueHandle_t pLOGICgetEventQueue ( void )
 {
   return pEventQueue;
 }
-
+/*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerHandler ( void )
 {
   uint8_t i = 0U;
@@ -100,7 +102,7 @@ void vLOGICtimerHandler ( void )
   }
   return;
 }
-
+/*-----------------------------------------------------------------------------------------*/
 TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
 {
   TIMER_ERROR stat = TIMER_OK;
@@ -117,7 +119,7 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
       }
     }
     *id = i;
-    aciveCounters &= 1U << *id;
+    aciveCounters |= 1U << *id;
     activeNumber++;
     targetArray[*id]  = inc;
     counterArray[*id] = 0U;
@@ -128,26 +130,40 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
   }
   return stat;
 }
-
+/*-----------------------------------------------------------------------------------------*/
 uint8_t uLOGICisTimer ( timerID_t id )
 {
   uint8_t res = 0U;
   if ( targetArray[id] <= counterArray[id] )
   {
-    res = 1U;
-    aciveCounters |= ~( 1U << id );
+    res              = 1U;
+    targetArray[id]  = 0U;
+    aciveCounters   &= ~( 1U << id );
     activeNumber--;
   }
   return res;
 }
-
+/*-----------------------------------------------------------------------------------------*/
 void vLOGICresetTimer ( timerID_t id )
 {
   aciveCounters |= ~( 1U << id );
   activeNumber--;
   return;
 }
-
+/*-----------------------------------------------------------------------------------------*/
+void vLOGICtimerCallback ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+  {
+    if ( ( aciveCounters & ( 1U << i ) ) > 0U )
+    {
+      counterArray[i]++;
+    }
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 void vLOGICtoogle ( uint8_t* input )
 {
   if ( *input > 0U )
@@ -251,14 +267,22 @@ void vRELAYproces ( RELAY_AUTO_DEVICE* device, fix16_t val )
   }
   return;
 }
-
+/*----------------------------------------------------------------------------*/
+void vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device )
+{
+  device->relay.set( RELAY_OFF );
+  device->status       = RELAY_DELAY_IDLE;
+  device->relay.status = RELAY_OFF;
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
 {
   if ( device->active > 0U )
   {
     if ( ( device->relay.enb > 0U ) && ( device->status != RELAY_DELAY_DONE ) )
     {
-      if ( ( device->level > val ) && ( device->relay.status != RELAY_ON ) )
+      if ( ( device->level >= val ) && ( device->relay.status != RELAY_ON ) )
       {
         device->relay.set( RELAY_ON );
         device->relay.status = RELAY_ON;
@@ -279,12 +303,14 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
       }
     }
   }
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device )
-{
-  device->status = RELAY_DELAY_IDLE;
+  else if ( device->relay.status != RELAY_OFF )
+  {
+    vRELAYimpulseReset( device );
+  }
+  else
+  {
+
+  }
   return;
 }
 /*----------------------------------------------------------------------------*/

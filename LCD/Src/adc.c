@@ -11,15 +11,15 @@
 #include "arm_math.h"
 #include "fix16.h"
 
-static EventGroupHandle_t xADCEvent;
-static StaticEventGroup_t xADCCreatedEventGroup;
-volatile int16_t ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS];   //ADC1 input data buffer
-volatile int16_t ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS];   //ADC2 input data buffer
-volatile int16_t ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS];   //ADC3 input data buffer
-static q15_t TEMP_BUFFER[ADC_FRAME_SIZE];
-static q15_t TEMP_BUFFER1[ADC_FRAME_SIZE];
-static xADCFSMType xADCFSM = DC;
-static uint16_t  ADCDATA[8]={0,0,0,0,0};
+static   EventGroupHandle_t xADCEvent;
+static   StaticEventGroup_t xADCCreatedEventGroup;
+volatile int16_t            ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS] = { 0U };   //ADC1 input data buffer
+volatile int16_t            ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS] = { 0U };   //ADC2 input data buffer
+volatile int16_t            ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS] = { 0U };   //ADC3 input data buffer
+static   q15_t              TEMP_BUFFER[ADC_FRAME_SIZE]                  = { 0U };
+static   q15_t              TEMP_BUFFER1[ADC_FRAME_SIZE]                 = { 0U };
+static   xADCFSMType        xADCFSM                                      = DC;
+static   uint16_t           ADCDATA[8U]                                  = { 0U };
 
 
 uint16_t GetAverVDD(uint8_t channel,uint8_t size)

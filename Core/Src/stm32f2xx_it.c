@@ -173,21 +173,6 @@ void DebugMon_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f2xx.s).                    */
 /******************************************************************************/
-
-/**
-  * @brief This function handles EXTI line4 interrupt.
-  */
-void EXTI4_IRQHandler(void)
-{
-  /* USER CODE BEGIN EXTI4_IRQn 0 */
-  vDIO_B_StateChange();
-  /* USER CODE END EXTI4_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
-  /* USER CODE BEGIN EXTI4_IRQn 1 */
-
-  /* USER CODE END EXTI4_IRQn 1 */
-}
-
 /**
   * @brief This function handles DMA1 stream5 global interrupt.
   */
@@ -209,9 +194,7 @@ void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
-  vDIO_C_D_StateChange();
   /* USER CODE END EXTI9_5_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
   vVRextiCallback();
@@ -231,9 +214,6 @@ void TIM2_IRQHandler(void)
 /**
   * @brief This function handles TIM3 global interrupt.
   */
-static uint16_t count=0;
-static uint16_t count1=0;
-
 void TIM3_IRQHandler(void)
 {
 

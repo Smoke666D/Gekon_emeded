@@ -60,18 +60,6 @@ extern USBD_HandleTypeDef  hUsbDeviceFS;
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-/* stack size optim:
- * default   - 496
- * net       - 1792
- * lcd       - 512
- * lcdRedraw - 128
- * key       - 232
- * usb       - 768
- *
- */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -92,19 +80,13 @@ DMA_HandleTypeDef hdma_spi3_tx;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024
-};
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
@@ -159,29 +141,6 @@ const osThreadAttr_t ADCTask_attributes = {
 
 /* USER CODE END PM */
 
-/* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc1;
-ADC_HandleTypeDef hadc2;
-ADC_HandleTypeDef hadc3;
-DMA_HandleTypeDef hdma_adc1;
-DMA_HandleTypeDef hdma_adc2;
-DMA_HandleTypeDef hdma_adc3;
-
-CAN_HandleTypeDef hcan1;
-
-I2C_HandleTypeDef hi2c1;
-
-SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi3;
-DMA_HandleTypeDef hdma_spi3_tx;
-
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim6;
-
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
-
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
@@ -209,17 +168,16 @@ static void MX_TIM3_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_TIM2_Init(void);
+
+
+
 void StartDefaultTask(void *argument);
-void StartNetTask(void *argument);
-void StartLcdTask(void *argument);
-extern void StartUsbTask(void *argument);
-extern void StartADCTask(void *argument);
 /* USER CODE BEGIN PFP */
+void StartLcdTask(void *argument);
+extern void StartADCTask(void *argument);
 extern void vKeyboardTask(void const * argument);
 extern void vStartNetTask(void *argument);
-extern void StartLcdTask(void *argument);
 extern void vStartUsbTask(void *argument);
-extern void StartADCTask(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -304,17 +262,17 @@ int main(void)
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
-  vCHARTinitCharts();
+  vCHARTinitCharts();                                           /* Charts data initialization */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
   vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
   vFPIinit( &fpiInitStruct );                                   /* Free Program Input initialization */
-  vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
+  //vFPOinit( &fpoInitStruct );                                   /* Free Program Output initialization */
   vVRinit( &htim6 );                                            /* Speed sensor initialization */
-  vENGINEinit();
-  vELECTROinit();
-  vLOGICinit();
-  vCONTROLLERinit();
+  vENGINEinit();                                                /**/
+  vELECTROinit();                                               /**/
+  vLOGICinit();                                                 /**/
+  vCONTROLLERinit();                                            /**/
   /*--------------------------------------------------------------------------*/
   vSYSSerial("\n\r***********************\n\r");
   /* USER CODE END 2 */
@@ -353,7 +311,6 @@ int main(void)
   vSetupKeyboard();
   vMenuMessageInit( ADCTaskHandle);
   vLCDInit( xLCDDelaySemphHandle );
-  vDIOInit();
   vUSBinit( usbTaskHandle );
   /* USER CODE END RTOS_THREADS */
 
@@ -1167,7 +1124,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : FPI_B_Pin FPI_C_Pin FPI_D_Pin */
   GPIO_InitStruct.Pin = FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
@@ -1250,9 +1207,6 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LCD_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
@@ -1393,6 +1347,15 @@ void StartDefaultTask(void *argument)
 */
   }
   /* USER CODE END 5 */
+}
+
+void StartLcdTask(void *argument)
+{
+  vLCD_Init();
+  for(;;)
+  {
+    vMenuTask();
+  }
 }
 
 

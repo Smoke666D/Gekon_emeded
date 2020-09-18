@@ -13,7 +13,6 @@
 #include "data_type.h"
 #include "dataAPI.h"
 #include "adc.h"
-#include "dio.h"
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
 #define CENTER_ALIGN        1U

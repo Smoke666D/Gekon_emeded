@@ -355,27 +355,25 @@ inline void vLCDWriteCommand( uint8_t com )
 
 void vST7920init(void)
 {
-
   HAL_TIM_Base_Start_IT( &htim7 );
   vLCDBrigthInit();
   vLCD_HAL_SPI_DMA_Init();
-
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
-  osDelay(40);
+  osDelay( 40U );
   vLCDWriteCommand( 0x38U );
-  osDelay(1);
+  osDelay( 1U );
   vLCDWriteCommand( 0x38U );
-  osDelay(1);
+  osDelay( 1U );
   vLCDWriteCommand( 0x08U );
-  osDelay(1);
+  osDelay( 1U );
   vLCDWriteCommand( 0x01U );
-  osDelay(11);
+  osDelay( 11U );
   vLCDWriteCommand( 0x06U );
-  osDelay(1);
+  osDelay( 1U );
   vLCDWriteCommand( 0x02U );
-  osDelay(1);
-
+  osDelay( 1U );
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+  return;
 }
 
 
@@ -386,7 +384,7 @@ void vLCD_Init()
   //инициализация библиотеки u8g2
   //вся работа непосредственно с индикатором ведется напрямую, менуя драйвер нижнего уровня u8g2
   //поэтому последние 2 парамтера инициализируются 0
-  u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, 0,0);
+  u8g2_Setup_st7920_s_128x64_f( &u8g2, U8G2_R0, 0U, 0U );
   vST7920init();
   vMenuInit( &u8g2 );
   u8g2_ClearBuffer( &u8g2 );

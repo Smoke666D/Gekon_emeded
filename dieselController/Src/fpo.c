@@ -265,6 +265,13 @@ void vFPOinit( const FPO_INIT* init )
   vFPOanaliz( mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
+
+  vFPOsetRelay( &fpos[0], RELAY_ON );
+  vFPOsetRelay( &fpos[1], RELAY_ON );
+  vFPOsetRelay( &fpos[2], RELAY_ON );
+  vFPOsetRelay( &fpos[3], RELAY_ON );
+  vFPOsetRelay( &fpos[4], RELAY_ON );
+  vFPOsetRelay( &fpos[5], RELAY_ON );
   return;
 }
 /*----------------------------------------------------------------------------*/

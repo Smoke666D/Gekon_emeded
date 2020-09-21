@@ -14,7 +14,7 @@
 /*--------------------------------- Includes ---------------------------------*/
 #include "electro.h"
 #include "controller.h"
-#include "cmsis_os2.h"
+#include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -25,6 +25,7 @@
 #include "log.h"
 #include "fpi.h"
 #include "menu.h"
+#include "journal.h"
 /*-------------------------------- Structures --------------------------------*/
 CONTROLLER_TYPE controller =
 {

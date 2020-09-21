@@ -622,7 +622,8 @@ void vENGINEinit ( void )
   maintence.fuel.relax.enb = 0U;
   maintence.fuel.status    = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
-
+  vFPOsetReadyToStart( RELAY_ON );
+  /*--------------------------------------------------------------*/
   pEngineCommandQueue = xQueueCreateStatic( ENGINE_COMMAND_QUEUE_LENGTH, sizeof( ENGINE_COMMAND ), engineCommandBuffer, &xEngineCommandQueue );
   const osThreadAttr_t engineTask_attributes = {
     .name       = "engineTask",
@@ -641,12 +642,11 @@ QueueHandle_t pENGINEgetCommandQueue ( void )
 
 void vENGINEemergencyStop ( void )
 {
-  vTaskSuspend ( &engineHandle );
-  engine.cmd = ENGINE_CMD_EMEGENCY_STOP;
-  starter.set( RELAY_OFF );
-  fuel.pump.set( RELAY_OFF );
-  stopSolenoid.set( RELAY_ON );
-  vTaskResume ( &engineHandle );
+  xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
+  //engine.cmd = ENGINE_CMD_EMEGENCY_STOP;
+  //starter.set( RELAY_OFF );
+  //fuel.pump.set( RELAY_OFF );
+  //stopSolenoid.set( RELAY_ON );
   return;
 }
 
@@ -685,17 +685,60 @@ void vENGINEtask ( void const* argument )
 
   for (;;)
   {
-    /* Read input command */
-    if ( ( engine.status == ENGINE_STATUS_IDLE )           ||
-         ( engine.status == ENGINE_STATUS_WORK )           ||
-         ( engine.status == ENGINE_STATUS_WORK_ON_IDLE ) )
+    /*----------------------- Read input command -----------------------*/
+    if ( xQueueReceive( pEngineCommandQueue, &inputCmd, 0U ) == pdPASS )
     {
-      if ( xQueueReceive( pEngineCommandQueue, &inputCmd, 0U ) == pdPASS )
+
+      if ( engine.cmd != inputCmd )
       {
-        engine.cmd = inputCmd;
+        switch ( engine.status )
+        {
+          case ENGINE_STATUS_IDLE:
+            engine.cmd = inputCmd;
+            break;
+          case ENGINE_STATUS_BUSY_STARTING:
+            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+            {
+              engine.cmd = inputCmd;
+            }
+            break;
+          case ENGINE_STATUS_BUSY_STOPPING:
+            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+            {
+              engine.cmd = inputCmd;
+            }
+            break;
+          case ENGINE_STATUS_WORK:
+            engine.cmd = inputCmd;
+            break;
+          case ENGINE_STATUS_WORK_ON_IDLE:
+            engine.cmd = inputCmd;
+            break;
+          case ENGINE_STATUS_WORK_GOTO_NOMINAL:
+            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+            {
+              engine.cmd = inputCmd;
+            }
+            break;
+          case ENGINE_STATUS_FAIL_STARTING:
+            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+            {
+              engine.cmd = inputCmd;
+            }
+            break;
+          case ENGINE_STATUS_FAIL_STOPPING:
+            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+            {
+              engine.cmd = inputCmd;
+            }
+            break;
+          default:
+            engine.cmd = inputCmd;
+            break;
+        }
       }
     }
-    /* Process inputs */
+    /*------------------------- Process inputs -------------------------*/
     oilVal     = fOILprocess();
     coolantVal = fCOOLANTprocess();
     fuelVal    = fFUELprocess();
@@ -703,7 +746,7 @@ void vENGINEtask ( void const* argument )
     batteryVal = fBATTERYprocess();
     chargerVal = fCHARGERprocess();
     vENGINEmileageProcess( &maintenanceReset );
-    /* Input commands */
+    /*------------------------- Input commands -------------------------*/
     switch ( engine.cmd )
     {
       case ENGINE_CMD_NONE:
@@ -825,6 +868,7 @@ void vENGINEtask ( void const* argument )
                 starter.status   = STARTER_OK;
                 preHeater.active = 0U;
                 preHeater.relay.set( RELAY_OFF );
+                vFPOsetGenReady( RELAY_ON );
               }
               break;
             case STARTER_FAIL:
@@ -858,6 +902,7 @@ void vENGINEtask ( void const* argument )
               idleRelay.set( RELAY_OFF );
               stopSolenoid.set( RELAY_OFF );
               fuel.pump.set( RELAY_OFF );
+              vFPOsetGenReady( RELAY_OFF );
               break;
           }
         }
@@ -874,6 +919,7 @@ void vENGINEtask ( void const* argument )
           {
             case STOP_IDLE:
               planStop.status = STOP_COOLDOWN;
+              vFPOsetGenReady( RELAY_OFF );
               vLOGICstartTimer( planStop.coolingDelay, &timerID );
               break;
             case STOP_COOLDOWN:
@@ -942,6 +988,7 @@ void vENGINEtask ( void const* argument )
           speed.lowAlarm.active = 0U;
           vELECTROalarmIdleDisable();
           idleRelay.set( RELAY_ON );
+          vFPOsetGenReady( RELAY_OFF );
           engine.status = ENGINE_STATUS_WORK_ON_IDLE;
         }
         break;
@@ -954,13 +1001,14 @@ void vENGINEtask ( void const* argument )
           case ENGINE_STATUS_WORK_ON_IDLE:
             idleRelay.set( RELAY_OFF );
             engine.status = ENGINE_STATUS_WORK_GOTO_NOMINAL;
-            vLOGICstartTimer( starter.nominalDelay, timerID );
+            vLOGICstartTimer( starter.nominalDelay, &timerID );
             break;
           case ENGINE_STATUS_WORK_GOTO_NOMINAL:
             if ( uLOGICisTimer( timerID ) > 0U )
             {
               engine.status = ENGINE_STATUS_WORK;
               speed.lowAlarm.active = 1U;
+              vFPOsetGenReady( RELAY_ON );
               vELECTROalarmIdleEnable();
             }
             break;
@@ -976,15 +1024,18 @@ void vENGINEtask ( void const* argument )
         starter.set( RELAY_OFF );
         fuel.pump.set( RELAY_OFF );
         stopSolenoid.set( RELAY_ON );
+        vFPOsetGenReady( RELAY_OFF );
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_RESET_TO_IDLE:
-        stopSolenoid.set( RELAY_OFF );
+        stopSolenoid.set( RELAY_ON );
         starter.status  = STARTER_IDLE;
         planStop.status = STOP_IDLE;
         engine.status   = ENGINE_STATUS_IDLE;
+        vFPOsetReadyToStart( RELAY_ON );
+        vFPOsetGenReady( RELAY_OFF );
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

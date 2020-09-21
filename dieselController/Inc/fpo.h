@@ -113,5 +113,12 @@ void    vFPOsetGenOffImp ( RELAY_STATUS stat );
 void    vFPOsetMainsSw ( RELAY_STATUS stat );
 void    vFPOsetMainsOnImp ( RELAY_STATUS stat );
 void    vFPOsetMainsOffImp ( RELAY_STATUS stat );
+void    vFPOsetWarning ( RELAY_STATUS stat );
+void    vFPOsetDesFail ( RELAY_STATUS stat );  /* Не понятно когда применять */
+void    vFPOsetAlarm ( RELAY_STATUS stat );
+void    vFPOsetGenReady ( RELAY_STATUS stat );
+void    vFPOsetReadyToStart ( RELAY_STATUS stat );
+void    vFPOsetNetFault ( RELAY_STATUS stat );
+void    vFPOsetAutoMode ( RELAY_STATUS stat );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FPO_H_ */

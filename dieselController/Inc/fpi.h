@@ -19,7 +19,7 @@
 #define  FPI_B                    1U
 #define  FPI_C                    2U
 #define  FPI_D                    3U
-#define  FPI_TASK_DELAY           500U
+#define  FPI_TASK_DELAY           200U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {

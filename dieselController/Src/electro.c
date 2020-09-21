@@ -216,6 +216,10 @@ void vMAINSprocess ( void )
   {
     vELECTROalarmCheck( &mains.hightFreqAlarm, freq, MAINS_LINE_NUMBER, pLOGICgetEventQueue() );
   }
+  if ( mains.state == ELECTRO_STATUS_ALARM )
+  {
+    vFPOsetNetFault( RELAY_ON );
+  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -246,12 +250,10 @@ void vGENERATORprocess ( void )
   {
     vELECTROalarmCheck( &generator.hightFreqAlarm, freq, MAINS_LINE_NUMBER, pLOGICgetEventQueue() );
   }
-
   if ( electro.scheme != ELECTRO_SCHEME_SINGLE_PHASE )
   {
     vALARMcheck( &generator.phaseImbalanceAlarm, fELECTROcalcPhaseImbalance( current ), pLOGICgetEventQueue() );
   }
-
   vELECTROalarmCheck( &generator.overloadAlarm, power, MAINS_LINE_NUMBER, pLOGICgetEventQueue() );
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm, pLOGICgetEventQueue() );
 
@@ -609,7 +611,6 @@ void vELECTROtask ( void const* argument )
   {
     vGENERATORprocess();
     vMAINSprocess();
-
     if ( electro.state == ELECTRO_PROC_STATUS_IDLE )
     {
       if ( xQueueReceive( pElectroCommandQueue, &inputCmd, 0U ) == pdPASS )
@@ -617,7 +618,6 @@ void vELECTROtask ( void const* argument )
         electro.cmd = inputCmd;
       }
     }
-
     switch( electro.cmd )
     {
       case ELECTRO_CMD_NONE:

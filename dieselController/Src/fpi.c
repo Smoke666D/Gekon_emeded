@@ -6,6 +6,7 @@
  */
 /*--------------------------------- Includes ---------------------------------*/
 #include "fpi.h"
+#include "common.h"
 #include "stm32f2xx_hal_gpio.h"
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
@@ -32,6 +33,27 @@ const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
   FPI_FUN_BAN_AUTO_START,
   FPI_FUN_BAN_GEN_LOAD,
   FPI_FUN_BAN_AUTO_SHUTDOWN
+};
+const char* cFPIfunctionNames[FPI_FUNCTION_NUM] =
+{
+  "NONE",
+  "USER",
+  "ALARM_RESET",
+  "OIL_LOW_PRESSURE",
+  "HIGHT_ENGINE_TEMP",
+  "LOW_FUEL",
+  "REMOTE_START",
+  "IDLING",
+  "BAN_AUTO_START",
+  "BAN_GEN_LOAD",
+  "BAN_AUTO_SHUTDOWN"
+};
+const char* cFPInames[FPI_NUMBER] =
+{
+  "A",
+  "B",
+  "C",
+  "D"
 };
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
@@ -105,7 +127,7 @@ void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* d
   fpi->arming   = getBitMap( setupReg, 3U );
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 void vFPIcheckReset ( FPI* fpi )
 {
   if ( vFPIgetTrig( fpi ) == 0U )
@@ -113,6 +135,21 @@ void vFPIcheckReset ( FPI* fpi )
     vLOGICresetTimer( fpi->timerID );
     fpi->state = FPI_IDLE;
   }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPIprintSetup ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<FPI_NUMBER; i++ )
+  {
+    vSYSSerial( ">>FPI " );
+    vSYSSerial( cFPInames[i] );
+    vSYSSerial( "        : " );
+    vSYSSerial( cFPIfunctionNames[ ( uint8_t )( fpis[i].function ) ] );
+    vSYSSerial( "\n\r" );
+  }
+  vSYSSerial( "\n\r" );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -175,14 +212,16 @@ void vFPIinit ( const FPI_INIT* init )
     .stack_size = 1024U
   };
   fpiHandle = osThreadNew( vFPITask, NULL, &fpiTask_attributes );
+
+  vFPIprintSetup();
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 QueueHandle_t pFPIgetQueue ( void )
 {
   return pFPIQueue;
 }
-
+/*----------------------------------------------------------------------------*/
 FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
 {
   FPI_LEVEL level = FPI_LEVEL_LOW;
@@ -198,7 +237,7 @@ FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
   }
   return level;
 }
-
+/*----------------------------------------------------------------------------*/
 void vFPIsetBlock ( void )
 {
   uint8_t i = 0U;
@@ -210,7 +249,7 @@ void vFPIsetBlock ( void )
   vTaskResume ( &fpiHandle );
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 void vFPITask ( void const* argument )
 {
   FPI_EVENT event = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };

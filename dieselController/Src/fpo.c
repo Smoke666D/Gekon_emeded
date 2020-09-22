@@ -41,6 +41,40 @@ const uint8_t eFPOfuctionList[FPO_FUNCTION_NUMBER] =
   FPO_FUN_PREHEAT,
   FPO_FUN_IDLING
 };
+const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
+{
+  "NONE",
+  "AUTO_MODE",
+  "COMMON_NET_FAIL",
+  "READY_TO_START",
+  "GEN_READY",
+  "ALARM",
+  "DES_FAIL",
+  "WARNING",
+  "TURN_ON_GEN",
+  "TURN_ON_GEN_IMPULSE",
+  "TURN_OFF_GEN_IMPULSE",
+  "TURN_ON_MAINS",
+  "TURN_ON_MAINS_IMPULSE",
+  "TURN_OFF_MAINS_IMPULSE",
+  "COOLANT_COOLER",
+  "COOLANT_HEATER",
+  "STOP_SOLENOID",
+  "FUEL_BOOST",
+  "FUEL_RELAY",
+  "STARTER_RELAY",
+  "PREHEAT",
+  "IDLING"
+};
+const char* cFPOnames[FPO_NUMBER] =
+{
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F"
+};
 /*-------------------------------- Variables ---------------------------------*/
 static FPO* autoModeFPO     = NULL;  /* 1 */
 static FPO* netFaultFPO     = NULL;  /* 2 */
@@ -95,6 +129,21 @@ void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat )
     }
     HAL_GPIO_WritePin( fpo->port, fpo->pin, cmd );
   }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOprintSetup ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<FPO_NUMBER; i++ )
+  {
+    vSYSSerial( ">>FPO " );
+    vSYSSerial( cFPOnames[i] );
+    vSYSSerial( "        : " );
+    vSYSSerial( cFPOfunctionNames[ ( uint8_t )( fpos[i].function ) ] );
+    vSYSSerial( "\n\r" );
+  }
+  vSYSSerial( "\n\r" );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -314,6 +363,8 @@ void vFPOinit( const FPO_INIT* init )
   vFPOanaliz( &mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( &mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( &mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
+
+  vFPOprintSetup();
   return;
 }
 /*----------------------------------------------------------------------------*/

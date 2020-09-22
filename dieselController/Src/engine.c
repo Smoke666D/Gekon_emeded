@@ -7,6 +7,7 @@
 /*--------------------------------- Includes ---------------------------------*/
 #include "engine.h"
 #include "config.h"
+#include "common.h"
 #include "chart.h"
 #include "dataProces.h"
 #include "vrSensor.h"
@@ -140,11 +141,15 @@ fix16_t fFUELprocess ( void )
 
 fix16_t fSPEEDprocess ( void )
 {
-  fix16_t value = speed.get();
-  vALARMcheck( &speed.hightAlarm, value, pLOGICgetEventQueue() );
-  if ( speed.hightAlarm.status == ALARM_STATUS_IDLE )
+  fix16_t value = 0U;
+  if ( speed.enb > 0U )
   {
-    vALARMcheck( &speed.lowAlarm, value, pLOGICgetEventQueue() );
+    value = speed.get();
+    vALARMcheck( &speed.hightAlarm, value, pLOGICgetEventQueue() );
+    if ( speed.hightAlarm.status == ALARM_STATUS_IDLE )
+    {
+      vALARMcheck( &speed.lowAlarm, value, pLOGICgetEventQueue() );
+    }
   }
   return value;
 }
@@ -255,6 +260,81 @@ uint8_t uENGINEisStop( fix16_t pressure, fix16_t speed  )
     res = 1U;
   }
   return res;
+}
+
+void vENGINEenbToStr ( uint8_t enb, char* str )
+{
+  if ( enb > 0U )
+  {
+    str[0U] = 'E';
+    str[1U] = 'n';
+    str[2U] = 'a';
+    str[3U] = 'b';
+    str[4U] = 'l';
+    str[5U] = 'e';
+    str[6U] = 0;
+  }
+  else
+  {
+    str[0U] = 'D';
+    str[1U] = 'i';
+    str[2U] = 's';
+    str[3U] = 'a';
+    str[4U] = 'b';
+    str[5U] = 'l';
+    str[6U] = 'e';
+    str[7U] = 0;
+  }
+  return;
+}
+
+void vENGINEprintSetup ( void )
+{
+  char buf[8U];
+  vSYSSerial( ">>Oil pressure sensor \r\n" );
+  vSYSSerial( "    Alarm          : ");
+  vENGINEenbToStr( oil.alarm.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+  vSYSSerial( "    Prealarm       : ");
+  vENGINEenbToStr( oil.alarm.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+
+  vSYSSerial( ">>Fuel level sensor \r\n" );
+  vSYSSerial( "    Low alarm      : ");
+  vENGINEenbToStr( fuel.lowAlarm.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+  vSYSSerial( "    Low prealarm   : ");
+  vENGINEenbToStr( fuel.lowPreAlarm.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+  vSYSSerial( "    Hight alarm    : ");
+  vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+  vSYSSerial( "    Hight prealarm : ");
+  vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+
+  vSYSSerial( ">>Speed sensor     : " );
+  vENGINEenbToStr( speed.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+  vSYSSerial( "    Teeth number   : " );
+  sprintf( buf, "%d", speedToothNumber.value[0U] );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+  vSYSSerial( "    Low alarm      : ");
+  vENGINEenbToStr( speed.lowAlarm.enb, buf );
+  vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+
+
+  vSYSSerial( "\r\n" );
+  return;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
@@ -534,10 +614,11 @@ void vENGINEinit ( void )
   engine.startCheckOil = getBitMap( &starterStopSetup, 0U );
   engine.status        = ENGINE_STATUS_IDLE;
   /*--------------------------------------------------------------*/
+  speed.enb    = getBitMap( &speedSetup, 0U );
   speed.status = SENSOR_STATUS_NORMAL;
   speed.get    = fVRgetSpeed;
 
-  speed.lowAlarm.enb          = getBitMap( &speedSetup, 0U );
+  speed.lowAlarm.enb          = getBitMap( &speedSetup, 1U );
   speed.lowAlarm.active       = 0U;
   speed.lowAlarm.type         = ALARM_LEVEL_LOW;
   speed.lowAlarm.level        = getValue( &speedLowAlarmLevel );
@@ -631,6 +712,8 @@ void vENGINEinit ( void )
     .stack_size = 1024U
   };
   engineHandle = osThreadNew( vENGINEtask, NULL, &engineTask_attributes );
+
+  vENGINEprintSetup();
 
   return;
 }

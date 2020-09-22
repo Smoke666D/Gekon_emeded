@@ -7,13 +7,16 @@
 /*--------------------------------- Includes ---------------------------------*/
 #include "vrSensor.h"
 #include "config.h"
+#include "common.h"
 /*-------------------------------- Structures --------------------------------*/
 static TIM_HandleTypeDef* vrTIM = NULL;
 /*--------------------------------- Constant ---------------------------------*/
+const  fix16_t  vrCoef        = F16( VR_MIN_SEC );
 /*-------------------------------- Variables ---------------------------------*/
 static uint16_t vrCounter     = 1U;
 static uint16_t vrTeethNumber = 0U;
 static fix16_t  vrSpeed       = 0U;
+static float    vrOut         = 0.0;
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -40,7 +43,8 @@ void vVRextiCallback ( void )
 
 void vVRtimCallback ( void )
 {
-  vrSpeed   = fix16_div( ( fix16_div( fix16_div( F16( vrCounter ), F16( vrTeethNumber ) ), F16( VR_TIM_PERIOD ) ) ), F16( 1000U ) );  /* RPS */
+  vrSpeed   = fix16_mul( fix16_div( fix16_from_int( vrCounter ), fix16_from_int( vrTeethNumber ) ), vrCoef ); /* RPM */
+  vrOut     = fix16_to_float( vrSpeed );
   vrCounter = 0U;
   return;
 }

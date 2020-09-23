@@ -109,13 +109,7 @@ const osThreadAttr_t usbTask_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 768
 };
-/* Definitions for adcTask */
-osThreadId_t adcTaskHandle;
-const osThreadAttr_t adcTask_attributes = {
-  .name = "adcTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1524
-};
+
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
 const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
@@ -133,7 +127,7 @@ osThreadId_t ADCTaskHandle;
 const osThreadAttr_t ADCTask_attributes = {
   .name = "ADCTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512
+  .stack_size = 1512
 };
 /* USER CODE END PD */
 

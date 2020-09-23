@@ -337,7 +337,7 @@ void vADC3DCInit(xADCFSMType xADCType)
   hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
   hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
- // hadc3.Init.NbrOfConversion = 5;
+
   hadc3.Init.DMAContinuousRequests = ENABLE;
   hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (xADCType == DC)
@@ -385,6 +385,7 @@ void vADC_Ready ( uint8_t adc_number )
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
   /* Process locked */
+  EventBits_t t;
   xHigherPriorityTaskWoken = pdFALSE;
   switch ( adc_number )
   {
@@ -400,6 +401,7 @@ void vADC_Ready ( uint8_t adc_number )
     default:
       break;
   }
+  t= xEventGroupGetBitsFromISR(xADCEvent);
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
   return;
 }
@@ -596,6 +598,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 void StartADCTask(void *argument)
 {
    uint32_t tt=0;
+
    uint32_t ulNotifiedValue=0;
    fix16_t TEMP = 0;
   //Создаем флаг готовности АПЦ
@@ -611,7 +614,7 @@ void StartADCTask(void *argument)
     osDelay( 200U );
     vADC3DCInit( DC );
     StartADCDMA( &hadc3, ( uint32_t* )&ADC3_IN_Buffer, ( DC_SIZE * 9U ) );         /* Запускаем преобразвоание АЦП */
-    xEventGroupWaitBits( xADCEvent, ADC3_READY, pdTRUE, pdTRUE, portMAX_DELAY );   /* Ожидаем флага готовонсти о завершении преобразования */
+    xEventGroupWaitBits( xADCEvent, ADC3_READY, pdTRUE, pdTRUE, portMAX_DELAY);   /* Ожидаем флага готовонсти о завершении преобразования */
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
     vADCConvertToVDD(0);
     //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются

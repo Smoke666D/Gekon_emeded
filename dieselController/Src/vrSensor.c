@@ -17,6 +17,8 @@ static uint16_t vrCounter     = 1U;
 static uint16_t vrTeethNumber = 0U;
 static fix16_t  vrSpeed       = 0U;
 static float    vrOut         = 0.0;
+
+uint16_t strob = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -43,6 +45,9 @@ void vVRextiCallback ( void )
 
 void vVRtimCallback ( void )
 {
+  strob  = vrCounter;
+
+
   vrSpeed   = fix16_mul( fix16_div( fix16_from_int( vrCounter ), fix16_from_int( vrTeethNumber ) ), vrCoef ); /* RPM */
   vrOut     = fix16_to_float( vrSpeed );
   vrCounter = 0U;

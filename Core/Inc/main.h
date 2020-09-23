@@ -167,6 +167,8 @@ void Error_Handler(void);
 #define LED1_GPIO_Port GPIOG
 #define LED3_Pin GPIO_PIN_4
 #define LED3_GPIO_Port GPIOG
+#define VR_COUNT_Pin GPIO_PIN_6
+#define VR_COUNT_GPIO_Port GPIOG
 #define RTC_INT_Pin GPIO_PIN_8
 #define RTC_INT_GPIO_Port GPIOC
 #define RTC_RST_Pin GPIO_PIN_9

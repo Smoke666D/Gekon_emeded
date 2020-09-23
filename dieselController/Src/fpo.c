@@ -41,21 +41,62 @@ const uint8_t eFPOfuctionList[FPO_FUNCTION_NUMBER] =
   FPO_FUN_PREHEAT,
   FPO_FUN_IDLING
 };
+const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
+{
+  "NONE",
+  "AUTO_MODE",
+  "COMMON_NET_FAIL",
+  "READY_TO_START",
+  "GEN_READY",
+  "ALARM",
+  "DES_FAIL",
+  "WARNING",
+  "TURN_ON_GEN",
+  "TURN_ON_GEN_IMPULSE",
+  "TURN_OFF_GEN_IMPULSE",
+  "TURN_ON_MAINS",
+  "TURN_ON_MAINS_IMPULSE",
+  "TURN_OFF_MAINS_IMPULSE",
+  "COOLANT_COOLER",
+  "COOLANT_HEATER",
+  "STOP_SOLENOID",
+  "FUEL_BOOST",
+  "FUEL_RELAY",
+  "STARTER_RELAY",
+  "PREHEAT",
+  "IDLING"
+};
+const char* cFPOnames[FPO_NUMBER] =
+{
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F"
+};
 /*-------------------------------- Variables ---------------------------------*/
-static FPO* starterFPO      = NULL;
-static FPO* heaterFPO       = NULL;
-static FPO* coolerFPO       = NULL;
-static FPO* preheaterFPO    = NULL;
-static FPO* boosterFPO      = NULL;
-static FPO* pumpFPO         = NULL;
-static FPO* stopSolenoidFPO = NULL;
-static FPO* idleFPO         = NULL;
-static FPO* genSwFPO        = NULL;
-static FPO* genImpOnFPO     = NULL;
-static FPO* genImpOffFPO    = NULL;
-static FPO* mainsSwFPO      = NULL;
-static FPO* mainsImpOnFPO   = NULL;
-static FPO* mainsImpOffFPO  = NULL;
+static FPO* autoModeFPO     = NULL;  /* 1 */
+static FPO* netFaultFPO     = NULL;  /* 2 */
+static FPO* readyToStartFPO = NULL;  /* 3 */
+static FPO* genReadyFPO     = NULL;  /* 4 */
+static FPO* alarmFPO        = NULL;  /* 5 */
+static FPO* desFailFPO      = NULL;  /* 6 */
+static FPO* warningFPO      = NULL;  /* 7 */
+static FPO* genSwFPO        = NULL;  /* 8 */
+static FPO* genImpOnFPO     = NULL;  /* 9 */
+static FPO* genImpOffFPO    = NULL;  /* 10 */
+static FPO* mainsSwFPO      = NULL;  /* 11 */
+static FPO* mainsImpOnFPO   = NULL;  /* 12 */
+static FPO* mainsImpOffFPO  = NULL;  /* 13 */
+static FPO* coolerFPO       = NULL;  /* 14 */
+static FPO* heaterFPO       = NULL;  /* 15 */
+static FPO* stopSolenoidFPO = NULL;  /* 16 */
+static FPO* boosterFPO      = NULL;  /* 17 */
+static FPO* pumpFPO         = NULL;  /* 18 */
+static FPO* starterFPO      = NULL;  /* 19 */
+static FPO* preheaterFPO    = NULL;  /* 20 */
+static FPO* idleFPO         = NULL;  /* 21 */
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -91,6 +132,21 @@ void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vFPOprintSetup ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<FPO_NUMBER; i++ )
+  {
+    vSYSSerial( ">>FPO " );
+    vSYSSerial( cFPOnames[i] );
+    vSYSSerial( "        : " );
+    vSYSSerial( cFPOfunctionNames[ ( uint8_t )( fpos[i].function ) ] );
+    vSYSSerial( "\n\r" );
+  }
+  vSYSSerial( "\n\r" );
+  return;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 uint8_t uFPOisEnable ( FPO_FUNCTION fun )
@@ -106,6 +162,48 @@ uint8_t uFPOisEnable ( FPO_FUNCTION fun )
     }
   }
   return res;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetAutoMode ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( autoModeFPO, stat );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetNetFault ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( netFaultFPO, stat );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetReadyToStart ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( readyToStartFPO, stat );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetGenReady ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( genReadyFPO, stat );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetAlarm ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( alarmFPO, stat );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetDesFail ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( desFailFPO, stat );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetWarning ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( warningFPO, stat );
+  return;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetStarter ( RELAY_STATUS stat )
@@ -202,14 +300,12 @@ void vFPOinit( const FPO_INIT* init )
   fpos[FPO_B].pin           = init->outPinB;
   fpos_dis[FPO_DIS_AB].port = init->disPortAB;
   fpos_dis[FPO_DIS_AB].pin  = init->disPinAB;
-
   fpos[FPO_C].port          = init->outPortC;
   fpos[FPO_C].pin           = init->outPinC;
   fpos[FPO_D].port          = init->outPortD;
   fpos[FPO_D].pin           = init->outPinD;
   fpos_dis[FPO_DIS_CD].port = init->disPortCD;
   fpos_dis[FPO_DIS_CD].pin  = init->disPinCD;
-
   fpos[FPO_E].port          = init->outPortE;
   fpos[FPO_E].pin           = init->outPinE;
   fpos[FPO_F].port          = init->outPortF;
@@ -223,7 +319,6 @@ void vFPOinit( const FPO_INIT* init )
   fpos[FPO_D].polarity = getBitMap( &doSetup,  3U );
   fpos[FPO_E].polarity = getBitMap( &doSetup,  4U );
   fpos[FPO_F].polarity = getBitMap( &doSetup,  5U );
-
   fpos[FPO_A].function = eFPOfuctionList[ getBitMap( &doabType, 0U ) ];
   fpos[FPO_B].function = eFPOfuctionList[ getBitMap( &doabType, 1U ) ];
   fpos[FPO_C].function = eFPOfuctionList[ getBitMap( &docdType, 0U ) ];
@@ -247,6 +342,13 @@ void vFPOinit( const FPO_INIT* init )
     }
   }
   /* System part */
+  vFPOanaliz( &autoModeFPO,     FPO_FUN_AUTO_MODE              );
+  vFPOanaliz( &netFaultFPO,     FPO_FUN_COMMON_NET_FAIL        );
+  vFPOanaliz( &readyToStartFPO, FPO_FUN_READY_TO_START         );
+  vFPOanaliz( &genReadyFPO,     FPO_FUN_GEN_READY              );
+  vFPOanaliz( &alarmFPO,        FPO_FUN_ALARM                  );
+  vFPOanaliz( &desFailFPO,      FPO_FUN_DES_FAIL               );
+  vFPOanaliz( &warningFPO,      FPO_FUN_WARNING                );
   vFPOanaliz( &starterFPO,      FPO_FUN_STARTER_RELAY          );
   vFPOanaliz( &heaterFPO,       FPO_FUN_COOLANT_HEATER         );
   vFPOanaliz( &coolerFPO,       FPO_FUN_COOLANT_COOLER         );
@@ -261,6 +363,8 @@ void vFPOinit( const FPO_INIT* init )
   vFPOanaliz( &mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( &mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( &mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
+
+  vFPOprintSetup();
   return;
 }
 /*----------------------------------------------------------------------------*/

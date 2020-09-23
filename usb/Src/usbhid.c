@@ -162,7 +162,7 @@ void vUSBConfigToReport ( USB_REPORT* report, uint16_t adr )
     for ( i=0U; i<configReg[adr]->atrib->len; i++ )
     {
       report->data[count + ( 2U * i )]      = ( uint8_t )( ( configReg[adr]->value[i] >> 8U ) & 0x00FFU );
-      report->data[count + ( 2U * i ) + 1U] = ( uint8_t )(   configReg[adr]->value[i]         & 0x00FFU );
+      report->data[count + ( 2U * i ) + 1U] = ( uint8_t )( ( configReg[adr]->value[i]       ) & 0x00FFU );
     }
     count += 2U * configReg[adr]->atrib->len;
     /*----------- Configuration scale -----------*/
@@ -937,7 +937,6 @@ void vStartUsbTask ( void *argument )
       switch( report.cmd )
       {
         case USB_GET_CONFIG_CMD:
-          //vUSBsendConfig( &report );
           vUSBsend( &report, vUSBConfigToReport );
           break;
         case USB_PUT_CONFIG_CMD:

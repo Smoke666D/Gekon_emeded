@@ -129,6 +129,7 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  uint8_t           enb;
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;

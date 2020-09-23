@@ -14,7 +14,7 @@
 /*--------------------------------- Includes ---------------------------------*/
 #include "electro.h"
 #include "controller.h"
-#include "cmsis_os2.h"
+#include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -25,6 +25,7 @@
 #include "log.h"
 #include "fpi.h"
 #include "menu.h"
+#include "journal.h"
 /*-------------------------------- Structures --------------------------------*/
 CONTROLLER_TYPE controller =
 {
@@ -53,6 +54,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
   switch ( event.action )
   {
     case ACTION_WARNING:
+      vFPOsetWarning( RELAY_ON );
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
         vLOGaddRecord( event );
@@ -62,7 +64,11 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
 
     case ACTION_EMERGENCY_STOP:
       controller.state = CONTROLLER_STATUS_ALARM;
-      xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
+      //xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
+      vENGINEemergencyStop();
+      vFPOsetGenReady( RELAY_OFF );
+      vFPOsetAlarm( RELAY_ON );
+      vFPOsetReadyToStart( RELAY_OFF );
       vLOGaddRecord( event );
       break;
 
@@ -73,6 +79,9 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       }
       // >>Send warning to LCD
       controller.state = CONTROLLER_STATUS_START;
+      vFPOsetGenReady( RELAY_OFF );
+      vFPOsetAlarm( RELAY_ON );
+      vFPOsetReadyToStart( RELAY_OFF );
       break;
 
     case ACTION_LOAD_MAINS:
@@ -80,11 +89,17 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       {
         controller.state = CONTROLLER_STATUS_PLAN_STOP;
       }
+      vFPOsetGenReady( RELAY_OFF );
+      vFPOsetAlarm( RELAY_ON );
+      vFPOsetReadyToStart( RELAY_OFF );
       break;
 
     case ACTION_LOAD_SHUTDOWN:
       vLOGaddRecord( event );
       controller.state = CONTROLLER_STATUS_SHUTDOWN;
+      vFPOsetGenReady( RELAY_OFF );
+      vFPOsetAlarm( RELAY_ON );
+      vFPOsetReadyToStart( RELAY_OFF );
       break;
 
     default:
@@ -271,7 +286,7 @@ void vCONTROLLERtask ( void const* argument )
   FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
   uint32_t        inputKeyboardCommand = HMI_CMD_NONE;
 
-  uint8_t  imulator = 0U;
+  uint8_t  imulator = 1U;
 
   for (;;)
   {
@@ -285,8 +300,7 @@ void vCONTROLLERtask ( void const* argument )
     generatorState = eELECTROgetGeneratorStatus();
     mainsState     = eELECTROgetMainsStatus();
     /*-------------------------------------- KEYBOARD INPUT --------------------------------------*/
-    //if ( xTaskNotifyWait( pdFALSE, pdTRUE, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
-    if ( 1 > 0 )
+    if ( xTaskNotifyWait( pdFALSE, pdTRUE, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
     {
       switch ( inputKeyboardCommand )
       {
@@ -320,6 +334,7 @@ void vCONTROLLERtask ( void const* argument )
         case HMI_CMD_AUTO:
           if ( controller.mode == CONTROLLER_MODE_MANUAL )
           {
+            vFPOsetAutoMode( RELAY_ON );
             controller.mode = CONTROLLER_MODE_AUTO;
             if ( ( ( controller.state == CONTROLLER_STATUS_START ) ||
                    ( controller.state == CONTROLLER_STATUS_WORK  ) ) &&
@@ -332,6 +347,7 @@ void vCONTROLLERtask ( void const* argument )
         case HMI_CMD_MANUAL:
           if ( controller.mode == CONTROLLER_MODE_AUTO )
           {
+            vFPOsetAutoMode( RELAY_OFF );
             controller.mode = CONTROLLER_MODE_MANUAL;
           }
           break;
@@ -354,7 +370,9 @@ void vCONTROLLERtask ( void const* argument )
                ( inputFpiEvent.level == FPI_LEVEL_HIGH ) )
           {
             controller.state = CONTROLLER_STATUS_IDLE;
-            engineCmd = ENGINE_CMD_RESET_TO_IDLE;
+            engineCmd        = ENGINE_CMD_RESET_TO_IDLE;
+            vFPOsetAlarm( RELAY_OFF );
+            vFPOsetNetFault( RELAY_OFF );
             xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
           }
           break;

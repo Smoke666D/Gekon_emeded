@@ -230,13 +230,13 @@ static xScreenObjet const NetMainScreen[]=
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СЕТЬ - U лин.",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1-N - ",NULL,0U},
-  {0U,FONT_SIZE*7U,LINE1+6U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,7U},
+  {0U,FONT_SIZE*7U,LINE1+6U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,NET_F1_VDD+1},
   {0U,FONT_SIZE*11U,LINE2,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2-N - ",NULL,0U},
-  {0U,FONT_SIZE*7U,LINE2+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,7U},
+  {0U,FONT_SIZE*7U,LINE2+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,NET_F1_VDD+2},
   {0U,FONT_SIZE*11U,LINE3,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3-N - ",NULL,0U},
-  {0U,FONT_SIZE*7U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,7U},
+  {0U,FONT_SIZE*7U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,NET_F1_VDD+3},
   {1U,FONT_SIZE*11U,LINE4,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U}
 };
 
@@ -343,12 +343,12 @@ static xScreenObjet const xYesNoScreen[]=
 
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
-  //  {ScreenLev1_1,NULL,NULL,NOT_ACTIVE,0,0,&xInputScreenKeyCallBack},
+  {NetMainScreen,&xMainMenu,&xNetMenu,PASSIVE,0U,0U,NULL},
   {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
  // {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},
-  {NetMainScreen,&xMainMenu,&xNetMenu,PASSIVE,0U,0U,NULL},
+
   {LinkMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {AlarmMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
   {EventMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},

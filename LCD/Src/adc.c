@@ -47,6 +47,22 @@ static uint16_t uSCT =0;
 static fix16_t xSFL =0; //Напряжение АЦП канала SensFuelLevel (напряжение канала уровня топлива)
 static uint16_t uSFL =0;
 static uint16_t uCSA =0;
+
+static fix16_t xNET_F1_VDD =0;
+static fix16_t xNET_F2_VDD =0;
+static fix16_t xNET_F3_VDD =0;
+static fix16_t xNET_FREQ =0;
+static fix16_t xGEN_F1_VDD =0;
+static fix16_t xGEN_F2_VDD =0;
+static fix16_t xGEN_F3_VDD =0;
+static fix16_t xGEB_FREQ =0;
+static fix16_t xNET_F1_CUR =0;
+static fix16_t xNET_F2_CUR =0;
+static fix16_t xNET_F3_CUR =0;
+
+
+
+
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
  */
@@ -123,18 +139,15 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
   return;
 }
 
-
 fix16_t xADCGetSOP()
 {
   return xSOP;
 }
-
 fix16_t xADCGetSCT()
 {
   return xSCT;
 
 }
-
 fix16_t xADCGetSFL()
 {
   return xSFL;
@@ -158,6 +171,15 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         break;
       case CTEMP:
         fix16_to_str( xADCGetSCT(), Data, 0U );
+        break;
+      case NET_F1_VDD:
+        fix16_to_str( xNET_F1_VDD, Data, 0U );
+        break;
+      case NET_F2_VDD:
+        fix16_to_str( xNET_F2_VDD, Data, 0U );
+       break;
+      case NET_F3_VDD:
+        fix16_to_str( xNET_F3_VDD, Data, 0U );
         break;
       default:
         break;
@@ -208,37 +230,7 @@ float  fADC3Init(uint16_t freq)
 }
 
 
-float  fADCInit(TIM_HandleTypeDef * htim,uint16_t freq)
-{
 
-  uint16_t Period = 15000000U/ (freq*4);
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  htim->Instance = TIM3;
-  htim->Init.Prescaler = 0;
-  htim->Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim->Init.Period = Period;
-  htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
-  htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(htim) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(htim, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  HAL_TIM_Base_Start_IT(htim );
-  return (float)(1/Period);
-}
 
 
 
@@ -598,7 +590,8 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 void StartADCTask(void *argument)
 {
    uint32_t tt=0;
-
+   q15_t  RES =0;
+   uint32_t Index =0;
    uint32_t ulNotifiedValue=0;
    fix16_t TEMP = 0;
   //Создаем флаг готовности АПЦ
@@ -630,26 +623,37 @@ void StartADCTask(void *argument)
 
     //Переключаем обратно аналоговый коммутатор
     HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
+
+    //Переключем АЦП в режим имзерения AC каналов
     vADC3DCInit(AC);
     osDelay(1);
+    //Запускаем преобразвоания по всем каналам АЦП
     StartADCDMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_FRAME_SIZE*ADC2_CHANNELS);
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-    vGetChannel(&TEMP_BUFFER, &ADC2_IN_Buffer, 0, ADC_FRAME_SIZE);
-    vGetChannel(&TEMP_BUFFER1, &ADC2_IN_Buffer,4, ADC_FRAME_SIZE);
-    arm_sub_q15(&TEMP_BUFFER,&TEMP_BUFFER,&TEMP_BUFFER1,ADC_FRAME_SIZE);
+    //Вычитаем из фаз, значение на линии нейтрали
     vDecNetural(&ADC2_IN_Buffer);
     vDecNetural(&ADC3_IN_Buffer);
-    vADCFindFreq(&ADC2_IN_Buffer);
-    vADCFindFreq(&ADC3_IN_Buffer);
-    SetSQR(&ADC2_IN_Buffer);
-    SetSQR(&ADC3_IN_Buffer);
+    //Получаем данные 3-й фазы сети
+    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,0,ADC_FRAME_SIZE);
+    arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);
+    //Получаем максимальное значение амплитуды 3-й фазы
+    arm_rms_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES);
+
+    xNET_F3_VDD = fix16_from_int(RES);
+    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES);
+    xNET_F2_VDD = fix16_from_int(RES);
+    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES);
+    xNET_F1_VDD = fix16_from_int(RES);
    }
 
 }
-
-
+/*
+ *  Функция получения из буффера DMA непрерывных данных указанного канала данных
+ */
 void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size)
 {
   for (uint16_t i=0;i<size;i++)
@@ -668,43 +672,27 @@ void vDecNetural(int16_t * data)
    data[4*index+1] = data[4*index+1] - data[4*index+4];
    data[4*index+2] = data[4*index+2] - data[4*index+4];
  }
-
   return;
-
 }
 
 #define AMP_DELTA 4
-
-void SetSQR(int16_t * data)
-{
-  long buf_data[3]={0,0,0};
-  for (uint8_t k=0;k<3;k++)
-  {
-    for (uint16_t i=0;i<ADC_FRAME_SIZE;i++)
-    {
-    buf_data[k] = buf_data[k]+ data[4*i+k]*data[4*i+k];
-    }
-
-    buf_data[k] = sqrt(buf_data[k])/sqrt(ADC_FRAME_SIZE);
-  }
-}
-
+#define MAX_ZERO_POINT 20
 
 void vADCFindFreq(int16_t * data)
 {
   uint8_t F1=0,F2=0,tt=0;
   uint8_t CNT=0,index = 0;
-  uint16_t PER[20];
+  uint16_t PER[MAX_ZERO_POINT];
   for (uint16_t i=1;i<ADC_FRAME_SIZE-1;i++)
   {
     //Если значение попадет в корридор окло нуля
-    if ((data[4*i] > -AMP_DELTA) && (data[4*i] < AMP_DELTA))
+    if ((data[i] > -AMP_DELTA) && (data[i] < AMP_DELTA))
     {
         //то прверяем текущую фазу
-        if ((data[4*i] > data[4*i-1 ]) || (data[4*i] < data[4*i+1]))
-            F2  = 1;
+        if ((data[i] > data[i-1U]) || (data[i] < data[i+1U]))
+            F2  = 1U;
         else
-            F2 = 0;
+            F2 = 0U;
         if (CNT > 0)
         {
           if (((F2==1) && (F1 == 1)) || ((F2==0) &&(F1==0)))
@@ -715,10 +703,13 @@ void vADCFindFreq(int16_t * data)
         }
         F1 = F2;
         PER[index++] =i;
-        i = i+ 100;
+        i = i+ 20;
         CNT++;
+        if (index> MAX_ZERO_POINT) break;
     }
   }
+
+
   if ((index > 2) && (index <5))
   {
     tt =0;

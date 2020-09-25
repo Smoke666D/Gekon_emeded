@@ -51,7 +51,10 @@
 #define CANC    6U
 #define CFUEL   2U
 #define CPRES   3U
-#define CTEMP   7U
+#define CTEMP      7U
+#define NET_F1_VDD 8U
+#define NET_F2_VDD 9U
+#define NET_F3_VDD 10U
 
 #define DC_SIZE  50
 

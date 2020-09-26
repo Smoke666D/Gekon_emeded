@@ -61,7 +61,7 @@ static fix16_t xGEB_FREQ =0;
 static fix16_t xGEN_F1_CUR =0;
 static fix16_t xGEN_F2_CUR =0;
 static fix16_t xGEN_F3_CUR =0;
-static uint16_t ADC3Freq =20000;
+static uint32_t ADC3Freq =40200;
 
 
 
@@ -647,22 +647,21 @@ void StartADCTask(void *argument)
 
     if (tt!=0)
     {
-       xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq),fix16_from_int(tt));
+       xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(tt));
+       xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
        arm_rms_q15(&TEMP_BUFFER, tt ,&RES);
        xNET_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+
+       vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,tt);
+       arm_rms_q15(&TEMP_BUFFER,tt,&RES);
+       xNET_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
     }
-    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,tt);
-    arm_rms_q15(&TEMP_BUFFER,tt,&RES);
-    xNET_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
 
 
 
 
     //Получаем данные 3-й фазы сети
     vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,0,ADC_FRAME_SIZE);
-
-
-
 
    // arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);
     //Получаем максимальное значение амплитуды 3-й фазы
@@ -719,7 +718,7 @@ void vDecNetural(int16_t * data)
   return;
 }
 
-#define AMP_DELTA 15
+#define AMP_DELTA 10
 #define MAX_ZERO_POINT 20
 
 void vADCFindFreq(int16_t * data, uint16_t * count)

@@ -28,7 +28,7 @@
 #define ADC2_CHANNELS      4U
 #define ADC3_CHANNELS      4U
 #define ADC3_ADD_CHANNEL   5U
-#define ADC_FRAME_SIZE     700U//512U
+#define ADC_FRAME_SIZE     1024//700U//512U
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
 
 /*

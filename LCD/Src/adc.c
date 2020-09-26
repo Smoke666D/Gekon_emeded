@@ -52,14 +52,16 @@ static fix16_t xNET_F1_VDD =0;
 static fix16_t xNET_F2_VDD =0;
 static fix16_t xNET_F3_VDD =0;
 static fix16_t xNET_FREQ =0;
+static uint16_t uNetPerodCount = 0;
+
 static fix16_t xGEN_F1_VDD =0;
 static fix16_t xGEN_F2_VDD =0;
 static fix16_t xGEN_F3_VDD =0;
 static fix16_t xGEB_FREQ =0;
-static fix16_t xNET_F1_CUR =0;
-static fix16_t xNET_F2_CUR =0;
-static fix16_t xNET_F3_CUR =0;
-
+static fix16_t xGEN_F1_CUR =0;
+static fix16_t xGEN_F2_CUR =0;
+static fix16_t xGEN_F3_CUR =0;
+static uint16_t ADC3Freq =20000;
 
 
 
@@ -181,6 +183,9 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case NET_F3_VDD:
         fix16_to_str( xNET_F3_VDD, Data, 0U );
         break;
+      case NET_FREQ:
+        fix16_to_str( xNET_FREQ, Data, 1U );
+        break;
       default:
         break;
     }
@@ -197,10 +202,10 @@ extern ADC_HandleTypeDef hadc3;
 
 void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size);
 
-float  fADC3Init(uint16_t freq)
+uint16_t  fADC3Init(uint16_t freq)
 {
 
-  uint16_t Period = 60000000U / ( freq * 4U );
+  uint16_t Period = 60000000U / ( freq  );
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -226,7 +231,7 @@ float  fADC3Init(uint16_t freq)
     Error_Handler();
   }
   HAL_TIM_Base_Start_IT( &htim3 );
-  return (float)(1/Period);
+  return Period;
 }
 
 
@@ -324,7 +329,7 @@ void vADC3DCInit(xADCFSMType xADCType)
   hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc3.Init.Resolution = ADC_RESOLUTION_12B;
   hadc3.Init.ScanConvMode = ENABLE;
-  hadc3.Init.ContinuousConvMode = ENABLE;
+  hadc3.Init.ContinuousConvMode = DISABLE;
   hadc3.Init.DiscontinuousConvMode = DISABLE;
   hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
@@ -350,15 +355,14 @@ void vADCInit(void)
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       vADC3DCInit(DC);
-      //fADCInit(&htim2,15000);
-   //   fADCInit(&htim8,15000);
-      fADC3Init(15000);
-      fADC12Init(15000);
-      fADC1Init(15000);
+
+      fADC3Init(ADC3Freq);
+      fADC12Init(20000);
+      fADC1Init(20000);
       break;
     case AC:
-      fADC12Init(15000);
-      fADC3Init(15000);
+      fADC12Init(20000);
+      fADC3Init(20000);
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
       HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_ADD_FRAME_SIZE);
       HAL_ADC_Start_DMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_ADD_FRAME_SIZE);
@@ -589,7 +593,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 void StartADCTask(void *argument)
 {
-   uint32_t tt=0;
+   uint16_t tt=0;
    q15_t  RES =0;
    uint32_t Index =0;
    uint32_t ulNotifiedValue=0;
@@ -635,19 +639,59 @@ void StartADCTask(void *argument)
     //Вычитаем из фаз, значение на линии нейтрали
     vDecNetural(&ADC2_IN_Buffer);
     vDecNetural(&ADC3_IN_Buffer);
+
+
+
+    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,ADC_FRAME_SIZE);
+    vADCFindFreq(&TEMP_BUFFER, &tt);
+
+    if (tt!=0)
+    {
+       xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq),fix16_from_int(tt));
+       arm_rms_q15(&TEMP_BUFFER, tt ,&RES);
+       xNET_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+    }
+    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,tt);
+    arm_rms_q15(&TEMP_BUFFER,tt,&RES);
+    xNET_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+
+
+
+
     //Получаем данные 3-й фазы сети
     vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,0,ADC_FRAME_SIZE);
-    arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);
-    //Получаем максимальное значение амплитуды 3-й фазы
-    arm_rms_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES);
 
-    xNET_F3_VDD = fix16_from_int(RES);
-    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES);
-    xNET_F2_VDD = fix16_from_int(RES);
-    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES);
-    xNET_F1_VDD = fix16_from_int(RES);
+
+
+
+   // arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);
+    //Получаем максимальное значение амплитуды 3-й фазы
+    arm_rms_q15(&TEMP_BUFFER,400,&RES);
+    xNET_F3_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+
+
+
+    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,0,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,400,&RES);
+    xGEN_F3_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,1,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,400,&RES);
+    xGEN_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,2,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,400,&RES);
+    xGEN_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+
+
+    vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,0,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,400,&RES);
+    xGEN_F3_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+    vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,1,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,400,&RES);
+    xGEN_F2_CUR= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+    vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,2,ADC_FRAME_SIZE);
+    arm_rms_q15(&TEMP_BUFFER,400,&RES);
+    xGEN_F1_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+
    }
 
 }
@@ -675,12 +719,13 @@ void vDecNetural(int16_t * data)
   return;
 }
 
-#define AMP_DELTA 4
+#define AMP_DELTA 15
 #define MAX_ZERO_POINT 20
 
-void vADCFindFreq(int16_t * data)
+void vADCFindFreq(int16_t * data, uint16_t * count)
 {
-  uint8_t F1=0,F2=0,tt=0;
+  uint8_t F1=0,F2=0;
+  uint16_t tt=0;
   uint8_t CNT=0,index = 0;
   uint16_t PER[MAX_ZERO_POINT];
   for (uint16_t i=1;i<ADC_FRAME_SIZE-1;i++)
@@ -709,18 +754,16 @@ void vADCFindFreq(int16_t * data)
     }
   }
 
-
   if ((index > 2) && (index <5))
   {
-    tt =0;
-  }
-  /* for (uint16_t i =1;i<index-1;i++)
+   tt =0;
+   for (uint8_t i =1;i<index;i++)
    {
-     tt =tt+ + PER[i]-PER[i-1]
+     tt =tt+ + PER[i]-PER[i-1];
    }
-  */
-
-
+   tt = (tt/(index-1))*2;
+  }
+  *count = tt;
 }
 
 

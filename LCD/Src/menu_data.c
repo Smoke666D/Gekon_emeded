@@ -231,12 +231,16 @@ static xScreenObjet const NetMainScreen[]=
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1-N - ",NULL,0U},
   {0U,FONT_SIZE*7U,LINE1+6U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,NET_F1_VDD+1},
+  {0U,FONT_SIZE*15U,LINE1+6U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,NET_FREQ+1},
   {0U,FONT_SIZE*11U,LINE2,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2-N - ",NULL,0U},
   {0U,FONT_SIZE*7U,LINE2+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,NET_F1_VDD+2},
   {0U,FONT_SIZE*11U,LINE3,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3-N - ",NULL,0U},
   {0U,FONT_SIZE*7U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,NET_F1_VDD+3},
+
+
+
   {1U,FONT_SIZE*11U,LINE4,0U,0U,TEXT_STRING,LeftText,"В",NULL,0U}
 };
 
@@ -343,50 +347,50 @@ static xScreenObjet const xYesNoScreen[]=
 
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
-  {NetMainScreen,&xMainMenu,&xNetMenu,PASSIVE,0U,0U,NULL},
-  {StatusMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+  {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
+  {StatusMainScreen,NULL,NULL,0U,0U},
  // {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
-  {EngineMainScreen,&xMainMenu,&xEngineMenu,PASSIVE,0U,0U,NULL},
-  {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,PASSIVE,0U,0U,NULL},
+  {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
+  {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
 
-  {LinkMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
-  {AlarmMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
-  {EventMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
-  {InfoMainScreen,NULL,NULL,PASSIVE,0U,0U,NULL},
+  {LinkMainScreen,NULL,NULL,0U,0U},
+  {AlarmMainScreen,NULL,NULL,0U,0U},
+  {EventMainScreen,NULL,NULL,0U,0U},
+  {InfoMainScreen,NULL,NULL,0U,0U},
 };
 
 static xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
 {
-  {Engine1Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {Engine2Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {EngineMainScreen,(void*)&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
+  {Engine1Screen,&xMainMenu,NULL,0U,0U},
+  {Engine2Screen,&xMainMenu,NULL,0U,0U},
+  {EngineMainScreen,(void*)&xMainMenu,NULL,0U,0U},
 };
 
 static xScreenType xGeneratorScreens[GENERATOR_MENU_COUNT]=
 {
-  {Generator1Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {Generator2Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {Generator3Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {Generator4Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {Generator5Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {Generator6Screen,&xMainMenu,NULL,PASSIVE,0U,0U,NULL},
-  {GeneratorMainScreen,(void*)&xGeneratorMenu,NULL,PASSIVE,0U,0U,NULL},
+  {Generator1Screen,&xMainMenu,NULL,0U,0U},
+  {Generator2Screen,&xMainMenu,NULL,0U,0U},
+  {Generator3Screen,&xMainMenu,NULL,0U,0U},
+  {Generator4Screen,&xMainMenu,NULL,0U,0U},
+  {Generator5Screen,&xMainMenu,NULL,0U,0U},
+  {Generator6Screen,&xMainMenu,NULL,0U,0U},
+  {GeneratorMainScreen,(void*)&xGeneratorMenu,NULL,0U,0U},
 };
 
 static xScreenType xNetScreens[NET_MENU_COUNT]=
 {
-  { Net1Screen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
-  { Net2Screen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
-  { NetMainScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
+  { Net1Screen, &xMainMenu, NULL,  0U, 0U},
+  { Net2Screen, &xMainMenu, NULL,  0U, 0U },
+  { NetMainScreen, (void*)&xMainMenu, NULL,  0U, 0U},
 };
 
 static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
 {
-  { SettingsScreen, (void*)&xMainMenu, NULL, PASSIVE, 0U, 0U, NULL },
+  { SettingsScreen, (void*)&xMainMenu, NULL,  0U, 0U},
 };
 
 static xScreenType   xYesNoScreens[SETTINGS_MENU_COUNT]=
 {
-  { xYesNoScreen, &xMainMenu, NULL, PASSIVE, 0U, 0U, NULL},
+  { xYesNoScreen, &xMainMenu, NULL,  0U, 0U},
 };
 

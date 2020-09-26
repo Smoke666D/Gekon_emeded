@@ -39,12 +39,7 @@
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
 #define MAX_KEY_PRESS
 /*------------------------------ Enum ----------------------------------------*/
-typedef enum
-{
-  ACTIVE,
-  NOT_ACTIVE,
-  PASSIVE,
-} SCREEN_STATUS;
+
 
 typedef enum
 {
@@ -76,12 +71,11 @@ typedef struct __packed
 typedef struct __packed
 {
   const xScreenObjet*  pScreenCurObjets;
-  void*         pUpScreenSet;
-  void*         pDownScreenSet;
-  SCREEN_STATUS xScreenStatus;
+   void*         pUpScreenSet;
+   void*         pDownScreenSet;
   uint8_t       pCurrIndex;
   uint8_t       pMaxIndex;
-  void          ( *pFunc )( void*, char );
+ // void          ( *pFunc )( void*, char );
 } xScreenType;
 
 typedef struct __packed

@@ -215,9 +215,9 @@ void TIM2_IRQHandler(void)
 /**
   * @brief This function handles TIM3 global interrupt.
   */
+
 void TIM3_IRQHandler(void)
 {
-
 
   __HAL_TIM_CLEAR_IT(&htim3, TIM_IT_UPDATE);
 

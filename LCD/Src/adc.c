@@ -593,7 +593,9 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 void StartADCTask(void *argument)
 {
-   uint16_t tt=0;
+   uint16_t result=0;
+   uint8_t uADC3FreqState =0;
+   uint16_t uCurPeriod = 0;
    q15_t  RES =0;
    uint32_t Index =0;
    uint32_t ulNotifiedValue=0;
@@ -638,35 +640,20 @@ void StartADCTask(void *argument)
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
     //Вычитаем из фаз, значение на линии нейтрали
     vDecNetural(&ADC2_IN_Buffer);
-    vDecNetural(&ADC3_IN_Buffer);
 
 
-
-    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,ADC_FRAME_SIZE);
-    vADCFindFreq(&TEMP_BUFFER, &tt);
-
-    if (tt!=0)
-    {
-       xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(tt));
-       xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
-       arm_rms_q15(&TEMP_BUFFER, tt ,&RES);
-       xNET_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-
-       vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,tt);
-       arm_rms_q15(&TEMP_BUFFER,tt,&RES);
-       xNET_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-    }
+    //Обработка значений АЦП3.
+     switch (vADCGetADC3Data())
+     {
+       case LOW_FREQ:
+         break;
+       case HIGH_FREQ:
+         break;
+       default:
+         break;
+     }
 
 
-
-
-    //Получаем данные 3-й фазы сети
-    vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,0,ADC_FRAME_SIZE);
-
-   // arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);
-    //Получаем максимальное значение амплитуды 3-й фазы
-    arm_rms_q15(&TEMP_BUFFER,400,&RES);
-    xNET_F3_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
 
 
 
@@ -721,11 +708,11 @@ void vDecNetural(int16_t * data)
 #define AMP_DELTA 10
 #define MAX_ZERO_POINT 20
 
-void vADCFindFreq(int16_t * data, uint16_t * count)
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count)
 {
   uint8_t F1=0,F2=0;
   uint16_t tt=0;
-  uint8_t CNT=0,index = 0;
+  uint8_t CNT=0,index = 0,res =ADC_ERROR;
   uint16_t PER[MAX_ZERO_POINT];
   for (uint16_t i=1;i<ADC_FRAME_SIZE-1;i++)
   {
@@ -761,9 +748,104 @@ void vADCFindFreq(int16_t * data, uint16_t * count)
      tt =tt+ + PER[i]-PER[i-1];
    }
    tt = (tt/(index-1))*2;
+   *count = tt;
+    res = ADC_OK;
   }
-  *count = tt;
+  else
+  {
+    *count = ADC_FRAME_SIZE;
+    if (index < 3) res = HIGH_FREQ;
+    if (index > 4) res = LOW_FREQ;
+  }
+  return res;
 }
+
+
+
+uint8_t vADCGetADC3Data()
+{
+  uint16_t result=ADC_ERROR;
+  uint16_t uCurPeriod = 0;
+  q15_t  RES =0;
+  uint32_t Index =0;
+
+  vDecNetural(&ADC3_IN_Buffer);
+  vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,ADC_FRAME_SIZE); //Разврачиваем данные нужного канала АЦП в неперерывный массив данных
+  arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);          //Проверям есть ли на канале напряжение.
+  if( RES >= MIN_AMP_VALUE )
+  {
+        result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+        if (result==ADC_OK)
+        {
+          xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
+          xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+          arm_rms_q15(&TEMP_BUFFER, uCurPeriod ,&RES);
+          xNET_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+        }
+        else
+        {
+          return result;
+        }
+ }
+ else
+ {
+   xNET_F1_VDD =0;
+ }
+ //Разврачиваем данные нужного канала АЦП в неперерывный массив данных
+ vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,uCurPeriod);
+ //Проверям есть ли на канале напряжение.
+ arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);
+ if( RES >= MIN_AMP_VALUE )
+ {
+      if (result!=ADC_OK)
+      {
+         result = vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+         if (result==ADC_OK)
+         {
+            xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
+            xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+         }
+         else
+         {
+           return result;
+         }
+      }
+      arm_rms_q15(&TEMP_BUFFER,uCurPeriod,&RES);
+      xNET_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+ }
+ else
+ {
+   xNET_F2_VDD = 0;
+  }
+  //Получаем данные 3-й фазы сети
+  vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,0,uCurPeriod);
+  //Проверям есть ли на канале напряжение.
+  arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);
+  if( RES >= MIN_AMP_VALUE )
+  {
+         if (result!=ADC_OK)
+         {
+            result = vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+            if (result==ADC_OK)
+            {
+               xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
+               xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+            }
+            else
+            {
+              return result;
+            }
+         }
+        arm_rms_q15(&TEMP_BUFFER,uCurPeriod,&RES);
+        xNET_F3_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+  }
+  else
+  {
+    xNET_F3_VDD = 0;
+  }
+  return result;
+}
+
 
 
 

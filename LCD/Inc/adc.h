@@ -60,7 +60,7 @@
 
 #define DC_SIZE  50
 
-
+#define MIN_AMP_VALUE 100
 
 #define NO_COMMON 0x01
 #define NO_SOP    0x02
@@ -70,7 +70,10 @@
 #define NO_SFL    0x20
 #define SC_SFL    0x04
 
-
+#define ADC_OK    0x00
+#define LOW_FREQ  0x01
+#define HIGH_FREQ 0x02
+#define ADC_ERROR 0x03
 
 
 typedef enum
@@ -88,13 +91,13 @@ void    vADCInit(void);
 void    StartADCTask(void *argument);
 uint16_t  fADC3Init(uint16_t freq);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-void vADCFindFreq(int16_t * data, uint16_t * count);
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count);
 void    SetSQR(int16_t * data);
 void    vADCConvertToVDD(uint8_t AnalogSwitch);
 fix16_t xADCGetSOP();
 fix16_t xADCGetSCT();
 fix16_t xADCGetSFL();
-
+uint8_t vADCGetADC3Data();
 
 
 

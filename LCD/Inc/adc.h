@@ -57,6 +57,7 @@
 #define NET_F2_VDD 9U
 #define NET_F3_VDD 10U
 #define NET_FREQ   11U
+#define ADC_FREQ   12U
 
 #define DC_SIZE  50
 

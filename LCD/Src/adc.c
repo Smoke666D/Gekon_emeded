@@ -186,6 +186,9 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case NET_FREQ:
         fix16_to_str( xNET_FREQ, Data, 1U );
         break;
+      case ADC_FREQ:
+        fix16_to_str(fix16_from_int( ADC3Freq/10), Data, 0U );
+        break;
       default:
         break;
     }
@@ -593,7 +596,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 void StartADCTask(void *argument)
 {
-
+   static uint8_t OF =0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
@@ -638,14 +641,24 @@ void StartADCTask(void *argument)
      {
 
        case HIGH_FREQ:
-         ADC3Freq = ADC3Freq - ADC3Freq/10;
-         if (ADC3Freq <2000)  ADC3Freq = 2000;
-         fADC3Init(ADC3Freq);
+         if (OF>0)
+         {
+           ADC3Freq = ADC3Freq - ADC3Freq/10;
+           if (ADC3Freq <2000)  ADC3Freq = 2000;
+           fADC3Init(ADC3Freq);
+           OF=0;
+         }
+         OF++;
          break;
        case LOW_FREQ:
-         ADC3Freq = ADC3Freq + ADC3Freq/4;
-         if (ADC3Freq >50000)  ADC3Freq = 40000;
-         fADC3Init(ADC3Freq);
+         if (OF>0)
+         {
+           ADC3Freq = ADC3Freq + ADC3Freq/4;
+           if (ADC3Freq >70000)  ADC3Freq = 40000;
+           fADC3Init(ADC3Freq);
+           OF=0;
+         }
+         OF++;
          break;
        default:
          break;
@@ -694,6 +707,7 @@ void vDecNetural(int16_t * data)
 
 #define AMP_DELTA 15
 #define MAX_ZERO_POINT 20
+#define FD  3
 
 uint8_t vADCFindFreq(int16_t * data, uint16_t * count)
 {
@@ -701,13 +715,13 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count)
   uint16_t tt=0;
   uint8_t CNT=0,index = 0,res =ADC_ERROR;
   uint16_t PER[MAX_ZERO_POINT];
-  for (uint16_t i=1;i<ADC_FRAME_SIZE-1;i++)
+  for (uint16_t i=FD;i<ADC_FRAME_SIZE-FD;i++)
   {
     //Если значение попадет в корридор окло нуля
     if ((data[i] > -AMP_DELTA) && (data[i] < AMP_DELTA))
     {
         //то прверяем текущую фазу
-        if ((data[i] > data[i-1U]) || (data[i] < data[i+1U]))
+        if ((data[i] > data[i-FD]) || (data[i] < data[i+FD]))
             F2  = 1U;
         else
             F2 = 0U;

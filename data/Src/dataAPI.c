@@ -493,7 +493,7 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
-DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units, eConfigBitMap* bitMap )
+DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint8_t         i   = 0U;
@@ -514,11 +514,6 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
           {
             units[i] = configReg[adr]->units[i];
           }
-          for ( i=0U; i<configReg[adr]->atrib->bitMapSize; i++ )
-          {
-            bitMap[i].mask  = configReg[adr]->bitMap[i].mask;
-            bitMap[i].shift = configReg[adr]->bitMap[i].shift;
-          }
           break;
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
@@ -532,11 +527,6 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
             {
               configReg[adr]->units[i] = units[i];
-            }
-            for ( i=0U; i<configReg[adr]->atrib->bitMapSize; i++ )
-            {
-              configReg[adr]->bitMap[i].mask  = bitMap[i].mask;
-              configReg[adr]->bitMap[i].shift = bitMap[i].shift;
             }
             xSemaphoreGive( xSemaphore );
           }

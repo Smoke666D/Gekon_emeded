@@ -408,7 +408,6 @@ USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
   uint16_t      valueBuf[MAX_VALUE_LENGTH] = { 0U };
   int8_t        scale                      = 0U;
   uint16_t      units[MAX_UNITS_LENGTH]    = { 0U };
-  eConfigBitMap bitMap[MAX_BIT_MAP_LENGTH] = { 0U };
   /*------------- Length control --------------*/
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {
@@ -429,7 +428,7 @@ USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
       count++;
     /*----------- Configuration units -----------*/
       vDecodeURI( ( char* )( &report->data[count] ), units, MAX_UNITS_LENGTH );
-      if ( eDATAAPIconfig( DATA_API_CMD_WRITE, report->adr, valueBuf, &scale, units, bitMap ) != DATA_API_STAT_OK )
+      if ( eDATAAPIconfig( DATA_API_CMD_WRITE, report->adr, valueBuf, &scale, units ) != DATA_API_STAT_OK )
       {
         res = USB_STORAGE_ERROR;
       }

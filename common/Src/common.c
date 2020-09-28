@@ -27,9 +27,9 @@ void vSYSInitSerial ( UART_HandleTypeDef* uart )
  * input:	msg - string with message
  * output:	none
  */
-void vSYSSerial ( char* msg )
+void vSYSSerial ( const char* msg )
 {
-  HAL_UART_Transmit(debug_huart, (uint8_t*)msg, strlen(msg), 0xFFFF);
+  HAL_UART_Transmit(debug_huart, ( uint8_t* )msg, strlen(msg), 0xFFFF);
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

@@ -175,7 +175,7 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
   position += uRESTmakeStrRecord( CONFIG_REG_UNITS_STR,         ( uint16_t* )( &( reg->units ) ),        MAX_UNITS_LENGTH, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          ( uint16_t* )( &( reg->atrib->type ) ), 1U, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_BIT_MAP_SIZE_STR,  reg->atrib->bitMapSize, REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeBitMapArray( reg->atrib->bitMapSize, reg->bitMap, &output[position] );
+  position += uRESTmakeBitMapArray( reg->atrib->bitMapSize, reg->atrib->bitMap, &output[position] );
   position++;
   output[position] = '}';
   position++;
@@ -396,16 +396,9 @@ REST_ERROR eRESTparsingConfig ( char* input, uint16_t adr )
           res = eRESTparsingValueRecord( input, CONFIG_REG_VALUE_STR, configReg[adr]->atrib->type, valueBuf, configReg[adr]->atrib->len );
           if (res == REST_OK )
           {
-            if ( ( res == REST_OK ) && ( configReg[adr]->atrib->bitMapSize > 0U ) )
+            if ( eDATAAPIconfig( DATA_API_CMD_WRITE, adr, valueBuf, &scale, units ) != DATA_API_STAT_OK )
             {
-              res = eRESTparsingBitMapArray( input, CONFIG_REG_BIT_MAP_STR, bitMap, configReg[adr]->atrib->bitMapSize );
-            }
-            if ( res == REST_OK )
-            {
-              if ( eDATAAPIconfig( DATA_API_CMD_WRITE, adr, valueBuf, &scale, units, bitMap ) != DATA_API_STAT_OK )
-              {
-                res = REST_RECORD_COPY_ERROR;
-              }
+              res = REST_RECORD_COPY_ERROR;
             }
           }
         }

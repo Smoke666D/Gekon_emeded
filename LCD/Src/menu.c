@@ -795,7 +795,6 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   uint8_t           i                       = 0U;
   int8_t            scale                   = 0U;
   uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
-  eConfigBitMap*    bitMap                  = NULL;
   Data[0U] = 0U;
   switch ( cmd )
   {
@@ -805,7 +804,7 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       {
         if ( xAtrib.len == 1U )
         {
-          eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units, bitMap );
+          eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
           for ( i=0; i<MAX_UNITS_LENGTH; i++ )
           {
             if ( ( units[i] >> 8U) != 0U )
@@ -830,8 +829,7 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   uint16_t          buff                    = 0U;
   int8_t            scale                   = 0U;
   uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
-  eConfigBitMap*    bitMap                  = NULL;
-  int16_t           sbuff                   = 0U;
+  uint16_t          sbuff                   = 0U;
   Data[0U] = 0U;
   switch ( cmd )
   {
@@ -844,7 +842,7 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
           switch ( xAtrib.type )
           {
             case 'U':
-              eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units, bitMap );
+              eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
               vUToStr ( ( uint8_t* )Data, buff, scale );
               break;
             case 'S':

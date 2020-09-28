@@ -96,7 +96,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       else
       {
         //Усредняем сырые значения АЦП
-        uSCT = GetAverVDD( 7U, DC_SIZE );
+        uSFL = GetAverVDD( 7U, DC_SIZE );
         if ( ( uCSD - uSCT ) <= DELTA )
         {
           xSCT = 0U;
@@ -130,7 +130,8 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       //Переводим в наряжние на канале АЦП
       uCSD = GetAverVDD( 5U, DC_SIZE );
       //Усредняем сырые значения АЦП
-      uSFL = GetAverVDD( 6U, DC_SIZE );
+
+      uSCT= GetAverVDD( 6U, DC_SIZE );
       //Усредняем сырые значения АЦП
       uSOP = GetAverVDD( 7U, DC_SIZE );
       break;

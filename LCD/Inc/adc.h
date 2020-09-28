@@ -99,6 +99,6 @@ fix16_t xADCGetSCT();
 fix16_t xADCGetSFL();
 uint8_t vADCGetADC3Data();
 
-
+uint8_t vADCGetADC12Data();
 
 #endif /* INC_ADC_H_ */

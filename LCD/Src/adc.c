@@ -62,7 +62,7 @@ static fix16_t xGEN_F1_CUR =0;
 static fix16_t xGEN_F2_CUR =0;
 static fix16_t xGEN_F3_CUR =0;
 static uint32_t ADC3Freq =40200;
-
+static uint32_t ADC2Freq =40200;
 
 
 /*
@@ -593,13 +593,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 void StartADCTask(void *argument)
 {
-   uint16_t result=0;
-   uint8_t uADC3FreqState =0;
-   uint16_t uCurPeriod = 0;
-   q15_t  RES =0;
-   uint32_t Index =0;
-   uint32_t ulNotifiedValue=0;
-   fix16_t TEMP = 0;
+
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
@@ -638,9 +632,6 @@ void StartADCTask(void *argument)
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-    //Вычитаем из фаз, значение на линии нейтрали
-    vDecNetural(&ADC2_IN_Buffer);
-
 
     //Обработка значений АЦП3.
      switch (vADCGetADC3Data())
@@ -653,30 +644,19 @@ void StartADCTask(void *argument)
          break;
      }
 
+    switch (vADCGetADC12Data())
+    {
+
+      case LOW_FREQ:
+           break;
+         case HIGH_FREQ:
+           break;
+         default:
+           break;
 
 
+    }
 
-
-    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,0,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,400,&RES);
-    xGEN_F3_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,1,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,400,&RES);
-    xGEN_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,2,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,400,&RES);
-    xGEN_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-
-
-    vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,0,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,400,&RES);
-    xGEN_F3_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-    vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,1,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,400,&RES);
-    xGEN_F2_CUR= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-    vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,2,ADC_FRAME_SIZE);
-    arm_rms_q15(&TEMP_BUFFER,400,&RES);
-    xGEN_F1_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
 
    }
 
@@ -846,6 +826,89 @@ uint8_t vADCGetADC3Data()
   return result;
 }
 
+uint8_t vADCGetADC12Data()
+{
+  uint16_t result=ADC_ERROR;
+  uint16_t uCurPeriod = 0;
+   q15_t  RES =0;
+   uint32_t Index =0;
 
+   //Вычитаем из фаз, значение на линии нейтрали
+     vDecNetural(&ADC2_IN_Buffer);
+
+    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,0,ADC_FRAME_SIZE);
+
+
+     arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);          //Проверям есть ли на канале напряжение.
+     if( RES >= MIN_AMP_VALUE )
+     {
+           result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+           if (result==ADC_OK)
+           {
+             xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
+             xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+             arm_rms_q15(&TEMP_BUFFER, uCurPeriod ,&RES);
+             xGEN_F3_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+           }
+           else
+           {
+             return result;
+           }
+    }
+    else
+    {
+      xGEN_F3_VDD =0;
+    }
+
+    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,1,uCurPeriod);
+    arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
+        if( RES >= MIN_AMP_VALUE )
+        {
+              result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+              if (result==ADC_OK)
+              {
+                xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
+                xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+                arm_rms_q15(&TEMP_BUFFER, uCurPeriod ,&RES);
+                xGEN_F2_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+              }
+              else
+              {
+                return result;
+              }
+       }
+       else
+       {
+         xGEN_F2_VDD =0;
+       }
+
+
+      vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,2,ADC_FRAME_SIZE);
+
+
+
+
+
+
+
+
+      arm_rms_q15(&TEMP_BUFFER,400,&RES);
+      xGEN_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+
+
+      vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,0,ADC_FRAME_SIZE);
+      arm_rms_q15(&TEMP_BUFFER,400,&RES);
+      xGEN_F3_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+      vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,1,ADC_FRAME_SIZE);
+      arm_rms_q15(&TEMP_BUFFER,400,&RES);
+      xGEN_F2_CUR= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+      vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,2,ADC_FRAME_SIZE);
+      arm_rms_q15(&TEMP_BUFFER,400,&RES);
+      xGEN_F1_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+
+
+  return result;
+
+}
 
 

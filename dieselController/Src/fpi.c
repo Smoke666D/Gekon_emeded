@@ -16,9 +16,10 @@
 #include "dataProces.h"
 #include "engine.h"
 /*-------------------------------- Structures --------------------------------*/
-static QueueHandle_t pFPIQueue = NULL;
-static StaticQueue_t xFPIQueue = { 0U };
-static osThreadId_t  fpiHandle = NULL;
+static QueueHandle_t     pFPIQueue     = NULL;
+static StaticQueue_t     xFPIQueue     = { 0U };
+static osThreadId_t      fpiHandle     = NULL;
+static SemaphoreHandle_t xFPIsemaphore = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
 {
@@ -213,6 +214,8 @@ void vFPIinit ( const FPI_INIT* init )
   };
   fpiHandle = osThreadNew( vFPITask, NULL, &fpiTask_attributes );
 
+  xFPIsemaphore = xSemaphoreCreateMutex();
+
   vFPIprintSetup();
   return;
 }
@@ -241,12 +244,15 @@ FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
 void vFPIsetBlock ( void )
 {
   uint8_t i = 0U;
-  vTaskSuspend ( &fpiHandle );
+  while ( xSemaphoreTake( xCHARTSemaphore, FPI_TASK_DELAY ) != pdTRUE )
+  {
+    osDelay( 10U );
+  }
   for ( i=0U; i<FPI_NUMBER; i++ )
   {
     fpis[i].state = FPI_BLOCK;
   }
-  vTaskResume ( &fpiHandle );
+  xSemaphoreGive( xCHARTSemaphore );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -256,42 +262,46 @@ void vFPITask ( void const* argument )
   uint8_t   i     = 0U;
   for (;;)
   {
-    for ( i=0U; i<FPI_NUMBER; i++ )
+    if ( xSemaphoreTake( xCHARTSemaphore, FPI_TASK_DELAY ) == pdTRUE )
     {
-      if ( fpis[i].function != FPI_FUN_NONE )
+      for ( i=0U; i<FPI_NUMBER; i++ )
       {
-        switch ( fpis[i].state )
+        if ( fpis[i].function != FPI_FUN_NONE )
         {
-          case FPI_BLOCK:
-            if ( fpis[i].getArming() > 0U )
-            {
-              fpis[i].state = FPI_IDLE;
-            }
-            break;
-          case FPI_IDLE:
-            if ( vFPIgetTrig( &fpis[i] ) > 0U )
-            {
-              fpis[i].state = FPI_TRIGGERED;
-              vLOGICstartTimer( fpis[i].delay, &fpis[i].timerID );
-            }
-            break;
-          case FPI_TRIGGERED:
-            vFPIcheckReset ( &fpis[i] );
-            if ( uLOGICisTimer( fpis[i].timerID ) > 0U )
-            {
-              event.level    = fpis[i].level;
-              event.function = fpis[i].function;
-              event.action   = fpis[i].action;
-              event.message  = fpis[i].message;
-              fpis[i].state  = FPI_IDLE;
-              xQueueSend( pFPIQueue, &event, portMAX_DELAY );
-            }
-            break;
-          default:
-            fpis[i].state = FPI_BLOCK;
-            break;
+          switch ( fpis[i].state )
+          {
+            case FPI_BLOCK:
+              if ( fpis[i].getArming() > 0U )
+              {
+                fpis[i].state = FPI_IDLE;
+              }
+              break;
+            case FPI_IDLE:
+              if ( vFPIgetTrig( &fpis[i] ) > 0U )
+              {
+                fpis[i].state = FPI_TRIGGERED;
+                vLOGICstartTimer( fpis[i].delay, &fpis[i].timerID );
+              }
+              break;
+            case FPI_TRIGGERED:
+              vFPIcheckReset ( &fpis[i] );
+              if ( uLOGICisTimer( fpis[i].timerID ) > 0U )
+              {
+                event.level    = fpis[i].level;
+                event.function = fpis[i].function;
+                event.action   = fpis[i].action;
+                event.message  = fpis[i].message;
+                fpis[i].state  = FPI_IDLE;
+                xQueueSend( pFPIQueue, &event, portMAX_DELAY );
+              }
+              break;
+            default:
+              fpis[i].state = FPI_BLOCK;
+              break;
+          }
         }
       }
+      xSemaphoreGive( xCHARTSemaphore );
     }
     osDelay( FPI_TASK_DELAY );
   }

@@ -362,18 +362,18 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       DownScreen     = 0U;
     break;
     case KEY_STOP:
-      xTaskNotify( xProccesToNotify, HMI_CMD_STOP, eSetBits );
+      xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_STOP, eSetBits );
       uSettingScreen = 1U;
       break;
     case KEY_STOP_BREAK:
       uSettingScreen = 0U;
       break;
     case KEY_AUTO:
-      xTaskNotify( xProccesToNotify, HMI_CMD_AUTO, eSetBits );
+      xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_AUTO, eSetBits );
       uSettingScreen = 0U;
       break;
     case KEY_START:
-      xTaskNotify( xProccesToNotify, HMI_CMD_START, eSetBits );
+      xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_START, eSetBits );
       uSettingScreen = 0U;
       break;
     default:

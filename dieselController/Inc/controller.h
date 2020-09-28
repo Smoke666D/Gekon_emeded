@@ -12,7 +12,9 @@
 #include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
-#define  KEY_NOTIFY_WAIT_DELAY   10U
+#define  KEY_NOTIFY_WAIT_DELAY       10U
+#define  CONTROLLER_LOAD_BTN_EXIST   0U
+#define  CONTROLLER_MANUAL_BTN_EXIST 0U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -42,6 +44,19 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
+  uint16_t      startPIN;
+  GPIO_TypeDef* startGPIO;
+  uint16_t      loadPIN;
+  GPIO_TypeDef* loadGPIO;
+  uint16_t      autoPIN;
+  GPIO_TypeDef* autoGPIO;
+  uint16_t      manualPIN;
+  GPIO_TypeDef* manualGPIO;
+  uint16_t      stopPIN;
+  GPIO_TypeDef* stopGPIO;
+} CONTROLLER_INIT;
+typedef struct __packed
+{
   CONTROLLER_MODE   mode;
   CONTROLLER_STATE  state;
   uint8_t           banAutoShutdown;
@@ -51,6 +66,6 @@ typedef struct __packed
   timerID_t         timerID;
 } CONTROLLER_TYPE;
 /*----------------------- Functions ------------------------------------*/
-void vCONTROLLERinit ( void );
+void vCONTROLLERinit ( const CONTROLLER_INIT* init );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

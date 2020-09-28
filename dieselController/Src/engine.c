@@ -36,6 +36,7 @@ static osThreadId_t          engineHandle        = NULL;
 static StaticQueue_t         xEngineCommandQueue = { 0U };
 static QueueHandle_t         pEngineCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
+const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTIVE", "CURRENT" };
 /*-------------------------------- Variables ---------------------------------*/
 static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
 static uint8_t        starterFinish                                    = 0U;
@@ -292,6 +293,9 @@ void vENGINEprintSetup ( void )
 {
   char buf[8U];
   vSYSSerial( ">>Oil pressure sensor \r\n" );
+  vSYSSerial( "    Type           : ");
+  vSYSSerial( cSensorTypes[oil.pressure.type] );
+  vSYSSerial( "\n\r" );
   vSYSSerial( "    Alarm          : ");
   vENGINEenbToStr( oil.alarm.enb, buf );
   vSYSSerial( buf );
@@ -302,6 +306,9 @@ void vENGINEprintSetup ( void )
   vSYSSerial( "\r\n" );
 
   vSYSSerial( ">>Fuel level sensor \r\n" );
+  vSYSSerial( "    Type           : ");
+  vSYSSerial( cSensorTypes[fuel.level.type] );
+  vSYSSerial( "\n\r" );
   vSYSSerial( "    Low alarm      : ");
   vENGINEenbToStr( fuel.lowAlarm.enb, buf );
   vSYSSerial( buf );
@@ -317,6 +324,11 @@ void vENGINEprintSetup ( void )
   vSYSSerial( "    Hight prealarm : ");
   vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
   vSYSSerial( buf );
+  vSYSSerial( "\r\n" );
+
+  vSYSSerial( ">>Coolant temperature \r\n" );
+  vSYSSerial( "    Type           : ");
+  vSYSSerial( cSensorTypes[coolant.temp.type] );
   vSYSSerial( "\r\n" );
 
   vSYSSerial( ">>Speed sensor     : " );
@@ -448,19 +460,7 @@ void vENGINEinit ( void )
   preHeater.status       = RELAY_DELAY_IDLE;
   preHeater.delay        = getValue( &enginePreHeatDelay );
   /*--------------------------------------------------------------*/
-  uint8_t read = getBitMap( &fuelLevelSetup, 0U );
-  if ( read == 0U )
-  {
-    fuel.level.type = SENSOR_TYPE_NONE;
-  }
-  if ( read == 1U )
-  {
-    fuel.level.type = SENSOR_TYPE_RESISTIVE;
-  }
-  if ( read == 2U )
-  {
-    fuel.level.type = SENSOR_TYPE_CURRENT;
-  }
+  fuel.level.type                = getBitMap( &fuelLevelSetup, 0U );
   fuel.level.chart               = &fuelSensorChart;
   fuel.level.get                 = xADCGetSFL;
   fuel.level.cutout.enb          = getBitMap( &fuelLevelSetup, 1U );

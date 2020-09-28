@@ -12,8 +12,8 @@
  *      Author: photo_Mickey
  */
 /*--------------------------------- Includes ---------------------------------*/
-#include "electro.h"
 #include "controller.h"
+#include "electro.h"
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
@@ -27,6 +27,7 @@
 #include "menu.h"
 #include "journal.h"
 /*-------------------------------- Structures --------------------------------*/
+CONTROLLER_INIT controllerGPIO = { 0U };
 CONTROLLER_TYPE controller =
 {
   .mode            = CONTROLLER_MODE_MANUAL,
@@ -49,6 +50,51 @@ void vCONTROLLERtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
+{
+  GPIO_PinState GPIOstate = GPIO_PIN_RESET;
+  if ( state == 0U )
+  {
+    GPIOstate = GPIO_PIN_SET;
+  }
+  switch( led )
+  {
+    case HMI_CMD_START:
+      if ( controllerGPIO.startGPIO != NULL )
+      {
+        HAL_GPIO_WritePin( controllerGPIO.startGPIO, controllerGPIO.startPIN, GPIOstate );
+      }
+      break;
+    case HMI_CMD_STOP:
+      if ( controllerGPIO.stopGPIO != NULL )
+      {
+        HAL_GPIO_WritePin( controllerGPIO.stopGPIO, controllerGPIO.stopPIN, GPIOstate );
+      }
+      break;
+    case HMI_CMD_AUTO:
+      if ( controllerGPIO.autoGPIO != NULL )
+      {
+        HAL_GPIO_WritePin( controllerGPIO.autoGPIO, controllerGPIO.autoPIN, GPIOstate );
+      }
+      break;
+    case HMI_CMD_LOAD:
+      if ( controllerGPIO.loadGPIO != NULL )
+      {
+        HAL_GPIO_WritePin( controllerGPIO.loadGPIO, controllerGPIO.loadPIN, GPIOstate );
+      }
+      break;
+    case HMI_CMD_MANUAL:
+      if ( controllerGPIO.manualGPIO != NULL )
+      {
+        HAL_GPIO_WritePin( controllerGPIO.manualGPIO, controllerGPIO.manualPIN, GPIOstate );
+      }
+      break;
+    default:
+      break;
+  }
+  return;
+}
+
 void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
 {
   switch ( event.action )
@@ -261,8 +307,15 @@ void vCONTROLLERfpiProcess ()
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERinit ( void )
+void vCONTROLLERinit ( const CONTROLLER_INIT* init )
 {
+
+  controllerGPIO = *init;
+  vCONTROLLERsetLED( HMI_CMD_START,  0U );
+  vCONTROLLERsetLED( HMI_CMD_STOP,   0U );
+  vCONTROLLERsetLED( HMI_CMD_AUTO,   0U );
+  vCONTROLLERsetLED( HMI_CMD_LOAD,   0U );
+  vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
   controller.stopDelay = getValue( &timerReturnDelay );
   const osThreadAttr_t controllerTask_attributes = {
     .name       = "fpiTask",
@@ -300,18 +353,33 @@ void vCONTROLLERtask ( void const* argument )
     generatorState = eELECTROgetGeneratorStatus();
     mainsState     = eELECTROgetMainsStatus();
     /*-------------------------------------- KEYBOARD INPUT --------------------------------------*/
-    if ( xTaskNotifyWait( pdFALSE, pdTRUE, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
+    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
     {
       switch ( inputKeyboardCommand )
       {
         case HMI_CMD_START:
-          vFPIsetBlock();
-          if ( ( controller.mode  == CONTROLLER_MODE_MANUAL ) &&
-               ( controller.state != CONTROLLER_STATUS_ALARM ) )
+          if ( ( controller.state != CONTROLLER_STATUS_ALARM ) && ( controller.mode  == CONTROLLER_MODE_MANUAL ) )
           {
-            controller.state = CONTROLLER_STATUS_START;
-            engineCmd        = ENGINE_CMD_START;
-            xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
+            /* LOAD */
+            if ( ( CONTROLLER_LOAD_BTN_EXIST == 0U                      ) &&
+                 ( controller.state          == CONTROLLER_STATUS_START ) &&
+                 ( controller.banGenLoad     == 0U                      ) &&
+                 ( engineState               == ENGINE_STATUS_WORK      ) )
+            {
+              vCONTROLLERsetLED( HMI_CMD_LOAD, 1U );
+              electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
+              xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
+            }
+            /* START */
+            else
+            {
+              vCONTROLLERsetLED( HMI_CMD_START, 1U );
+              vCONTROLLERsetLED( HMI_CMD_STOP,  0U );
+              vFPIsetBlock();
+              controller.state = CONTROLLER_STATUS_START;
+              engineCmd        = ENGINE_CMD_START;
+              xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
+            }
           }
           break;
         case HMI_CMD_LOAD:
@@ -320,20 +388,35 @@ void vCONTROLLERtask ( void const* argument )
                ( controller.banGenLoad == 0U                      ) &&
                ( engineState           == ENGINE_STATUS_WORK      ) )
           {
+            vCONTROLLERsetLED( HMI_CMD_LOAD, 1U );
             electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
             xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
           }
           break;
         case HMI_CMD_STOP :
           if ( ( controller.mode  == CONTROLLER_MODE_MANUAL  ) &&
-               ( controller.state != CONTROLLER_STATUS_ALARM ) )
+               ( controller.state == CONTROLLER_STATUS_WORK  ) &&
+               ( controller.state == CONTROLLER_STATUS_START ) )
           {
+            vCONTROLLERsetLED( HMI_CMD_START, 0U );
+            vCONTROLLERsetLED( HMI_CMD_STOP,  1U );
             controller.state = CONTROLLER_STATUS_PLAN_STOP;
           }
           break;
         case HMI_CMD_AUTO:
-          if ( controller.mode == CONTROLLER_MODE_MANUAL )
+          /* MANUAL */
+          if ( ( CONTROLLER_MANUAL_BTN_EXIST == 0U ) && ( controller.mode == CONTROLLER_MODE_AUTO ) )
           {
+            vCONTROLLERsetLED( HMI_CMD_AUTO,   0U );
+            vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
+            vFPOsetAutoMode( RELAY_OFF );
+            controller.mode = CONTROLLER_MODE_MANUAL;
+          }
+          /* AUTO */
+          else if ( controller.mode  == CONTROLLER_MODE_MANUAL )
+          {
+            vCONTROLLERsetLED( HMI_CMD_AUTO,   1U );
+            vCONTROLLERsetLED( HMI_CMD_MANUAL, 0U );
             vFPOsetAutoMode( RELAY_ON );
             controller.mode = CONTROLLER_MODE_AUTO;
             if ( ( ( controller.state == CONTROLLER_STATUS_START ) ||
@@ -343,10 +426,16 @@ void vCONTROLLERtask ( void const* argument )
               controller.state = CONTROLLER_STATUS_PLAN_STOP;
             }
           }
+          else
+          {
+
+          }
           break;
         case HMI_CMD_MANUAL:
           if ( controller.mode == CONTROLLER_MODE_AUTO )
           {
+            vCONTROLLERsetLED( HMI_CMD_AUTO,   0U );
+            vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
             vFPOsetAutoMode( RELAY_OFF );
             controller.mode = CONTROLLER_MODE_MANUAL;
           }
@@ -354,7 +443,6 @@ void vCONTROLLERtask ( void const* argument )
         default:
           break;
       }
-      inputKeyboardCommand = HMI_CMD_NONE;
     }
     /*-------------------------------------- DIGITAL INPUTS -------------------------------------*/
     if ( xQueueReceive( pFPIgetQueue(), &inputFpiEvent, 0U ) == pdPASS )

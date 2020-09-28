@@ -212,6 +212,18 @@ const FPO_INIT fpoInitStruct = {
   .disPortCD = POUT_CD_CS_GPIO_Port,
   .disPortEF = POUT_EF_CS_GPIO_Port,
 };
+const CONTROLLER_INIT controllerInitStruct = {
+  .autoPIN    = LED2_Pin,
+  .autoGPIO   = LED2_GPIO_Port,
+  .manualPIN  = 0U,
+  .manualGPIO = NULL,
+  .startPIN   = LED3_Pin,
+  .startGPIO  = LED3_GPIO_Port,
+  .loadPIN    = 0U,
+  .loadGPIO   = NULL,
+  .stopPIN    = LED1_Pin,
+  .stopGPIO   = LED1_GPIO_Port,
+};
 /* USER CODE END 0 */
 
 /**
@@ -1175,7 +1187,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : USER_Btn_Pin */
   GPIO_InitStruct.Pin = VR_COUNT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(VR_COUNT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : ON_INPOW_Pin ANALOG_SWITCH_Pin DIN_OFFSET_Pin */
@@ -1251,7 +1263,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LCD_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 8, 0);
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
@@ -1283,7 +1295,7 @@ void StartDefaultTask(void *argument)
   vENGINEinit();                              /**/
   vELECTROinit();                             /**/
   vLOGICinit( &htim5 );                       /**/
-  vCONTROLLERinit();                          /**/
+  vCONTROLLERinit( &controllerInitStruct );   /**/
   /* Infinite loop */
   for(;;)
   {

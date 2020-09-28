@@ -8,7 +8,7 @@
 //#define ARM_MATH_CM3
 
 #include "adc.h"
-#include "arm_math.h"
+
 #include "fix16.h"
 
 static   EventGroupHandle_t xADCEvent;
@@ -16,10 +16,15 @@ static   StaticEventGroup_t xADCCreatedEventGroup;
 volatile int16_t            ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS] = { 0U };   //ADC1 input data buffer
 volatile int16_t            ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS] = { 0U };   //ADC2 input data buffer
 volatile int16_t            ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS] = { 0U };   //ADC3 input data buffer
-static   q15_t              TEMP_BUFFER[ADC_FRAME_SIZE]                  = { 0U };
-static   q15_t              TEMP_BUFFER1[ADC_FRAME_SIZE]                 = { 0U };
 static   xADCFSMType        xADCFSM                                      = DC;
 static   uint16_t           ADCDATA[8U]                                  = { 0U };
+
+
+uint8_t vADCGetADC3Data();
+uint8_t vADCGetADC12Data();
+fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size );
+int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size );
+
 
 
 uint16_t GetAverVDD(uint8_t channel,uint8_t size)
@@ -52,12 +57,11 @@ static fix16_t xNET_F1_VDD =0;
 static fix16_t xNET_F2_VDD =0;
 static fix16_t xNET_F3_VDD =0;
 static fix16_t xNET_FREQ =0;
-static uint16_t uNetPerodCount = 0;
 
 static fix16_t xGEN_F1_VDD =0;
 static fix16_t xGEN_F2_VDD =0;
 static fix16_t xGEN_F3_VDD =0;
-static fix16_t xGEB_FREQ =0;
+static fix16_t xGEN_FREQ =0;
 static fix16_t xGEN_F1_CUR =0;
 static fix16_t xGEN_F2_CUR =0;
 static fix16_t xGEN_F3_CUR =0;
@@ -66,12 +70,42 @@ static uint32_t ADC3Freq =10000;
 static uint32_t ADC2Freq =10000;
 
 
+
+fix16_t xADCGetSOP()
+{
+  return xSOP;
+}
+fix16_t xADCGetSCT()
+{
+  return xSCT;
+
+}
+fix16_t xADCGetSFL()
+{
+  return xSFL;
+}
+
+fix16_t xADCGetNETL1()
+{
+  return xNET_F1_VDD;
+}
+fix16_t xADCGetNETL2()
+{
+  return xNET_F2_VDD;
+
+}
+fix16_t xADCGetNETL3()
+{
+  return xNET_F3_VDD;
+}
+
+
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
  */
 void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
-  fix16_t  delta    = 0U;
+
   uint16_t temp_int = 0U;
   xEventGroupClearBits( xADCEvent, ADC_READY );
   switch ( AnalogSwitch )
@@ -143,19 +177,8 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
   return;
 }
 
-fix16_t xADCGetSOP()
-{
-  return xSOP;
-}
-fix16_t xADCGetSCT()
-{
-  return xSCT;
 
-}
-fix16_t xADCGetSFL()
-{
-  return xSFL;
-}
+
 
 void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -193,6 +216,20 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         break;
       case ADC_TEMP:
         fix16_to_str( xADC_TEMP, Data, 0U );
+        break;
+      case GEN_F1_VDD:
+         fix16_to_str( xGEN_F1_VDD, Data, 0U );
+         break;
+      case GEN_F2_VDD:
+         fix16_to_str( xGEN_F2_VDD, Data, 0U );
+         break;
+      case GEN_F3_VDD:
+         fix16_to_str( xGEN_F3_VDD, Data, 0U );
+         break;
+     case GEN_FREQ:
+         fix16_to_str( xGEN_FREQ, Data, 1U );
+         break;
+
       default:
         break;
     }
@@ -207,119 +244,54 @@ extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
 
-void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size);
 
-uint16_t  fADC3Init(uint16_t freq)
+
+void  vADC3FrInit(uint16_t freq)
 {
 
   uint16_t Period = 60000000U / ( freq  );
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = Period;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
+
+  HAL_TIM_Base_Init(&htim3);
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
   HAL_TIM_Base_Start_IT( &htim3 );
-  return Period;
+  return;
 }
 
 
-
-
-
-
-
-float  fADC12Init(uint16_t freq)
+void  vADC12FrInit(uint16_t freq)
 {
 
     uint16_t Period = 60000000U/ (freq*4);
     TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-    /* USER CODE BEGIN TIM8_Init 1 */
-
-    /* USER CODE END TIM8_Init 1 */
-    htim8.Instance = TIM8;
-    htim8.Init.Prescaler = 0;
-    htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim8.Init.Period = Period;
-    htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
-    htim8.Init.RepetitionCounter = 0;
-    htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    if (HAL_TIM_Base_Init(&htim8) != HAL_OK)
-    {
-      Error_Handler();
-    }
+    HAL_TIM_Base_Init(&htim8);
     sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    if (HAL_TIM_ConfigClockSource(&htim8, &sClockSourceConfig) != HAL_OK)
-    {
-      Error_Handler();
-    }
+    HAL_TIM_ConfigClockSource(&htim8, &sClockSourceConfig);
     sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
     sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig) != HAL_OK)
-    {
-      Error_Handler();
-    }
-  HAL_TIM_Base_Start_IT( &htim8 );
-  return (float)(1/Period);
-}
+    HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig);
 
-
-
-float  fADC1Init(uint16_t freq)
-{
-
-  uint16_t Period = 60000000U/ (freq*4);
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-    /* USER CODE BEGIN TIM8_Init 1 */
-
-    /* USER CODE END TIM8_Init 1 */
-    htim2.Instance = TIM2;
-    htim2.Init.Prescaler = 0;
-    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim2.Init.Period = Period;
-    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
-    htim2.Init.RepetitionCounter = 0;
-    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
-    {
-      Error_Handler();
-    }
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-    {
-      Error_Handler();
-    }
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-    {
-      Error_Handler();
-    }
-  HAL_TIM_Base_Start_IT( &htim2 );
-  return (float)(1/Period);
+    HAL_TIM_Base_Init(&htim2);
+    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
+    HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
+
+    HAL_TIM_Base_Start_IT( &htim2 );
+    HAL_TIM_Base_Start_IT( &htim8 );
+    return;
 }
+
+
 
 /*
  *
@@ -328,20 +300,14 @@ float  fADC1Init(uint16_t freq)
 void vADC3DCInit(xADCFSMType xADCType)
 {
 
-  ADC_ChannelConfTypeDef sConfig = {0};
-
   HAL_ADC_DeInit(&hadc3);
 
-  hadc3.Instance = ADC3;
-  hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
-  hadc3.Init.Resolution = ADC_RESOLUTION_12B;
   hadc3.Init.ScanConvMode = ENABLE;
   hadc3.Init.ContinuousConvMode = DISABLE;
   hadc3.Init.DiscontinuousConvMode = DISABLE;
   hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
   hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-
   hadc3.Init.DMAContinuousRequests = ENABLE;
   hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (xADCType == DC)
@@ -363,13 +329,13 @@ void vADCInit(void)
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       vADC3DCInit(DC);
 
-      fADC3Init(ADC3Freq);
-      fADC12Init(ADC2Freq);
-      fADC1Init(ADC2Freq);
+      vADC3FrInit(ADC3Freq);
+      vADC12FrInit(ADC2Freq);
+
       break;
     case AC:
-      fADC12Init(ADC2Freq);
-      fADC3Init(ADC3Freq);
+      vADC12FrInit(ADC2Freq);
+      vADC3FrInit(ADC3Freq);
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
       HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_ADD_FRAME_SIZE);
       HAL_ADC_Start_DMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_ADD_FRAME_SIZE);
@@ -387,8 +353,7 @@ void vADCInit(void)
 void vADC_Ready ( uint8_t adc_number )
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
-  /* Process locked */
-  EventBits_t t;
+
   xHigherPriorityTaskWoken = pdFALSE;
   switch ( adc_number )
   {
@@ -404,7 +369,6 @@ void vADC_Ready ( uint8_t adc_number )
     default:
       break;
   }
-  t= xEventGroupGetBitsFromISR(xADCEvent);
   portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
   return;
 }
@@ -475,15 +439,11 @@ static void ADC_DMAConv(DMA_HandleTypeDef *hdma)
 static void ADC_DMAErro(DMA_HandleTypeDef *hdma)
 {
   ADC_HandleTypeDef* hadc = ( ADC_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
+
   hadc->State= HAL_ADC_STATE_ERROR_DMA;
   /* Set ADC error code to DMA error */
   hadc->ErrorCode |= HAL_ADC_ERROR_DMA;
-   /* Error callback */
-#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
-  hadc->ErrorCallback(hadc);
-#else
-  HAL_ADC_ErrorCallback(hadc);
-#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
+
 }
 
 void InitADCDMA(ADC_HandleTypeDef* hadc)
@@ -594,7 +554,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
           __HAL_TIM_ENABLE(&htim2);
         }
     /* Return function status */
-    return HAL_OK;
+    return;
 
 }
 
@@ -608,7 +568,6 @@ void StartADCTask(void *argument)
    InitADCDMA(&hadc3);
    InitADCDMA(&hadc2);
    InitADCDMA(&hadc1);
-
 
    for(;;)
    {
@@ -650,7 +609,7 @@ void StartADCTask(void *argument)
          {
            ADC3Freq = ADC3Freq - ADC3Freq/10;
            if (ADC3Freq <2000)  ADC3Freq = 2000;
-           fADC3Init(ADC3Freq);
+           vADC3FrInit(ADC3Freq);
            OF=0;
          }
          OF++;
@@ -660,7 +619,7 @@ void StartADCTask(void *argument)
          {
            ADC3Freq = ADC3Freq + ADC3Freq/4;
            if (ADC3Freq >70000)  ADC3Freq = 40000;
-           fADC3Init(ADC3Freq);
+           vADC3FrInit(ADC3Freq);
            OF=0;
          }
          OF++;
@@ -674,49 +633,34 @@ void StartADCTask(void *argument)
 
       case LOW_FREQ:
         if (OF1>0)
-                 {
-                   ADC2Freq = ADC2Freq - ADC2Freq/10;
-                   if (ADC2Freq <2000)  ADC2Freq = 2000;
-                   fADC1Init(ADC2Freq);
-                   fADC12Init(ADC2Freq);
-
-                   OF1=0;
-                 }
-                 OF1++;
-                 break;
-           break;
-         case HIGH_FREQ:
-           if (OF1>0)
-                   {
-                     ADC2Freq = ADC2Freq + ADC2Freq/4;
-                     if (ADC2Freq >70000)  ADC2Freq = 40000;
-                     fADC1Init(ADC2Freq);
-                     fADC12Init(ADC2Freq);
-                     OF1=0;
-                   }
-                   OF1++;
-           break;
-         default:
-           break;
-
-
+        {
+           ADC2Freq = ADC2Freq - ADC2Freq/10;
+          if (ADC2Freq <2000)  ADC2Freq = 2000;
+          vADC12FrInit(ADC2Freq);
+          OF1=0;
+        }
+        OF1++;
+        break;
+      case HIGH_FREQ:
+        if (OF1>0)
+        {
+           ADC2Freq = ADC2Freq + ADC2Freq/4;
+           if (ADC2Freq >70000)  ADC2Freq = 40000;
+           vADC12FrInit(ADC2Freq);
+           OF1=0;
+         }
+         OF1++;
+         break;
+      default:
+        break;
     }
  //  xADC_TEMP = HAL_GetTick() - adctime;
 
    }
 
 }
-/*
- *  Функция получения из буффера DMA непрерывных данных указанного канала данных
- */
-void vGetChannel(q15_t * dest, int16_t * source, uint8_t off, uint16_t size)
-{
-  for (uint16_t i=0;i<size;i++)
-  {
-    dest[i] = source[4*i+off];
-  }
-  return;
-}
+
+
 
 void vDecNetural(int16_t * data)
 {
@@ -734,7 +678,7 @@ void vDecNetural(int16_t * data)
 #define MAX_ZERO_POINT 20
 #define FD  3
 
-uint8_t vADCFindFreq(int16_t * data, uint16_t * count)
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off)
 {
   uint8_t F1=0,F2=0;
   uint16_t tt=0;
@@ -743,10 +687,10 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count)
   for (uint16_t i=FD;i<ADC_FRAME_SIZE-FD;i++)
   {
     //Если значение попадет в корридор окло нуля
-    if ((data[i] > -AMP_DELTA) && (data[i] < AMP_DELTA))
+    if ((data[i*4+off] > -AMP_DELTA) && (data[i*4+off] < AMP_DELTA))
     {
         //то прверяем текущую фазу
-        if ((data[i] > data[i-FD]) || (data[i] < data[i+FD]))
+        if ((data[i*4+off] > data[i*4-FD*4+off]) || (data[i*4+off] < data[i*4+off+FD*4]))
             F2  = 1U;
         else
             F2 = 0U;
@@ -792,21 +736,13 @@ uint8_t vADCGetADC3Data()
 {
   uint8_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
-  q15_t  RES =0;
-  uint32_t Index =0;
-  int16_t maxdata;
+
+
   vDecNetural(&ADC3_IN_Buffer);
-  vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,uCurPeriod); //Разврачиваем данные нужного канала АЦП в неперерывный массив данных
 
-  arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);
-  maxdata = xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod );
-
-  xADC_TEMP = fix16_mul(fix16_from_int(maxdata) ,fix16_from_float( AC_COOF ) );
-  xADC_TEMP  =fix16_div(xADC_TEMP, fix16_sqrt(fix16_from_int(2) ) );
- // arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
-  if( RES >= MIN_AMP_VALUE )
+  if( xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod ) >= MIN_AMP_VALUE )
   {
-        result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+        result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2);
         if (result==ADC_OK)
         {
           xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
@@ -822,15 +758,14 @@ uint8_t vADCGetADC3Data()
  {
    xNET_F1_VDD =0;
  }
- //Разврачиваем данные нужного канала АЦП в неперерывный массив данных
- vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,1,uCurPeriod);
+
  //Проверям есть ли на канале напряжение.
- arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);
- if( RES >= MIN_AMP_VALUE )
+
+ if(  xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod ) >= MIN_AMP_VALUE )
  {
       if (result!=ADC_OK)
       {
-         result = vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+         result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,1);
          if (result==ADC_OK)
          {
             xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
@@ -847,15 +782,14 @@ uint8_t vADCGetADC3Data()
  {
    xNET_F2_VDD = 0;
   }
-  //Получаем данные 3-й фазы сети
-  vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,0,uCurPeriod);
+
   //Проверям есть ли на канале напряжение.
-  arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);
-  if( RES >= MIN_AMP_VALUE )
+
+  if( xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod ) >= MIN_AMP_VALUE )
   {
          if (result!=ADC_OK)
          {
-            result = vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+            result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,0);
             if (result==ADC_OK)
             {
                xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
@@ -879,21 +813,20 @@ uint8_t vADCGetADC12Data()
 {
   uint16_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE;
-   q15_t  RES =0;
-   uint32_t Index =0;
+
 
    //Вычитаем из фаз, значение на линии нейтрали
      vDecNetural(&ADC2_IN_Buffer);
 
-     vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,0,uCurPeriod);
-     arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
-     if( RES >= MIN_AMP_VALUE )
+
+
+     if( xADCMax(  &ADC2_IN_Buffer, 0, uCurPeriod ) >= MIN_AMP_VALUE )
      {
-           result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+           result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,0);
            if (result==ADC_OK)
            {
              xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
-             xNET_FREQ=  fix16_mul(xNET_FREQ,fix16_from_int(10));
+             xNET_FREQ =  fix16_mul(xNET_FREQ,fix16_from_int(10));
              xGEN_F3_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
            }
            else
@@ -904,17 +837,16 @@ uint8_t vADCGetADC12Data()
       xGEN_F3_VDD =0;
     }
 
-    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,1,uCurPeriod);
-    arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
-    if( RES >= MIN_AMP_VALUE )
+             //Проверям есть ли на канале напряжение.
+    if( xADCMax(  &ADC2_IN_Buffer, 1, uCurPeriod ) >= MIN_AMP_VALUE )
     {
            if (result!=ADC_OK)
            {
-              result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+              result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,1);
               if (result==ADC_OK)
               {
-                xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
-                xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+                xNET_FREQ  = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
+                xNET_FREQ  = fix16_mul(xNET_FREQ,fix16_from_int(10));
               }
               else
               {
@@ -928,15 +860,13 @@ uint8_t vADCGetADC12Data()
         xGEN_F2_VDD =0;
      }
 
-
-      vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,2,uCurPeriod);
-      arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
-       if( RES >= MIN_AMP_VALUE )
+       //Проверям есть ли на канале напряжение.
+       if(xADCMax(  &ADC2_IN_Buffer, 2, uCurPeriod ) >= MIN_AMP_VALUE )
        {
 
                   if (result!=ADC_OK)
                   {
-                     result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+                     result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2);
                     if (result==ADC_OK)
                     {
                       xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
@@ -947,8 +877,6 @@ uint8_t vADCGetADC12Data()
                       goto CUR;
                   }
                   xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
-
-
       }
       else
       {
@@ -966,6 +894,9 @@ uint8_t vADCGetADC12Data()
 
 }
 
+/*
+ * Сервисная функция для расчета RMS
+ */
 
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
 {
@@ -979,7 +910,9 @@ fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
   return fix16_from_int (sqrt(sum));
 
 }
-
+/*
+ * Сервисная функция для вычисоения максимального значения
+ */
 int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size )
 {
 

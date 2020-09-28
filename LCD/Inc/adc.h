@@ -59,6 +59,11 @@
 #define NET_FREQ   11U
 #define ADC_FREQ   12U
 #define ADC_TEMP   13U
+#define GEN_F1_VDD 14U
+#define GEN_F2_VDD 15U
+#define GEN_F3_VDD 16U
+#define GEN_FREQ   17U
+
 
 #define DC_SIZE  50
 
@@ -91,17 +96,16 @@ void    vDecNetural(int16_t * data);
 void    vADC3R(DMA_HandleTypeDef *_hdma);
 void    vADCInit(void);
 void    StartADCTask(void *argument);
-uint16_t  fADC3Init(uint16_t freq);
+void    vADC3FrInit(uint16_t freq);
+void    vADC12FrInit(uint16_t freq);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-uint8_t vADCFindFreq(int16_t * data, uint16_t * count);
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off);
 void    SetSQR(int16_t * data);
 void    vADCConvertToVDD(uint8_t AnalogSwitch);
 fix16_t xADCGetSOP();
 fix16_t xADCGetSCT();
 fix16_t xADCGetSFL();
-uint8_t vADCGetADC3Data();
-
-uint8_t vADCGetADC12Data();
-fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size );
-int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size );
+fix16_t xADCGetNETL3();
+fix16_t xADCGetNETL2();
+fix16_t xADCGetNETL1();
 #endif /* INC_ADC_H_ */

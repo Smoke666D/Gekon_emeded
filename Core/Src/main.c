@@ -279,7 +279,7 @@ int main(void)
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
   vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
   /*--------------------------------------------------------------------------*/
-  vSYSSerial("\n\r***********************\n\r");
+  vSYSSerial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();

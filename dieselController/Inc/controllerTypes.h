@@ -114,7 +114,7 @@ typedef enum
 
 typedef enum
 {
-  RELAY_OFF,
+  RELAY_OFF = 0U,
   RELAY_ON,
 } RELAY_STATUS;
 

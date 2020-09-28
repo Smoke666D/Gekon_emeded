@@ -35,7 +35,7 @@ eChartData coolantSensorChart = {
   .ymin     = 0x00000000U,
   .ymax     = 0x000F0000U,
   .xunit    = {'О','м',' '},
-  .yunit    = {'Б','а','р'},
+  .yunit    = {'°','C',' '},
   .size     = 2U,
   .dots[0]  =
   {
@@ -55,7 +55,7 @@ eChartData fuelSensorChart = {
   .ymin     = 0x00000000U,
   .ymax     = 0x000F0000U,
   .xunit    = {'О','м',' '},
-  .yunit    = {'Б','а','р'},
+  .yunit    = {'%',' ',' '},
   .size     = 2U,
   .dots[0U]  =
   {
@@ -70,7 +70,7 @@ eChartData fuelSensorChart = {
 };
 
 eChartData* const charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart, &fuelSensorChart};
-
+/*---------------------------------------------------------------------------------------------------*/
 void vCHARTinitCharts ( void )
 {
   xCHARTSemaphore = xSemaphoreCreateMutex();
@@ -96,11 +96,11 @@ void vCHARTcalcFunction ( const eChartData* chart, uint16_t n, eChartFunction* f
  *         y     - output value
  * output: error status
  */
-eFunctionError eCHARTfunc( const eChartData* chart, fix16_t x, fix16_t* y )
+eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
 {
   eFunctionError res  = FUNC_OK;
   uint16_t       i    = 0U;
-  eChartFunction func = { .b = 0, .k = 0 };
+  eChartFunction func = { 0U };
 
   if ( x <= chart->xmax )
   {
@@ -118,9 +118,20 @@ eFunctionError eCHARTfunc( const eChartData* chart, fix16_t x, fix16_t* y )
         vCHARTcalcFunction( chart, i, &func );
         *y = fix16_add( fix16_mul( func.k, x ), func.b );
       }
-      else res = FUNC_SIZE_ERROR;
-    } else res = FUNC_OVER_MIN_X_ERROR;
-  } else res = FUNC_OVER_MAX_X_ERROR;
+      else
+      {
+        res = FUNC_SIZE_ERROR;
+      }
+    }
+    else
+    {
+      res = FUNC_OVER_MIN_X_ERROR;
+    }
+  }
+  else
+  {
+    res = FUNC_OVER_MAX_X_ERROR;
+  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

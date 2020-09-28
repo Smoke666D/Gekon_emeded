@@ -344,7 +344,6 @@ void vENGINEprintSetup ( void )
   vSYSSerial( buf );
   vSYSSerial( "\r\n" );
 
-
   vSYSSerial( "\r\n" );
   return;
 }
@@ -829,6 +828,12 @@ void vENGINEtask ( void const* argument )
     batteryVal = fBATTERYprocess();
     chargerVal = fCHARGERprocess();
     vENGINEmileageProcess( &maintenanceReset );
+
+
+    char str[20] = { 0U };
+    fix16_to_str( oilVal, str, 2U );
+    vSYSSerial( str );
+    vSYSSerial( "\r\n" );
     /*------------------------- Input commands -------------------------*/
     switch ( engine.cmd )
     {

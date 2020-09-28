@@ -137,7 +137,7 @@ eConfigReg hysteresisLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap moduleSetupBitMap[2U] = 
+static eConfigBitMap moduleSetupBitMap[2U] =
 {
    { 1U, 0U },     // moduleType
    { 2U, 1U },     // alarmAllBlock
@@ -161,7 +161,7 @@ eConfigReg moduleSetup =
    .bitMap     = moduleSetupBitMap
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap oilPressureSetupBitMap[4U] = 
+static eConfigBitMap oilPressureSetupBitMap[4U] =
 {
    { 15U, 0U },     // oilPressureSensorType
    { 16U, 4U },     // oilPressureOpenCircuitAlarmEnb
@@ -225,7 +225,7 @@ eConfigReg oilPressurePreAlarmLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap coolantTempSetupBitMap[6U] = 
+static eConfigBitMap coolantTempSetupBitMap[6U] =
 {
    { 15U, 0U },     // coolantTempSensorType
    { 16U, 4U },     // coolantTempOpenCircuitAlarmEnb
@@ -367,7 +367,7 @@ eConfigReg coolantTempCoolerOnLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap fuelLevelSetupBitMap[9U] = 
+static eConfigBitMap fuelLevelSetupBitMap[9U] =
 {
    { 7U, 0U },     // fuelLevelSensorType
    { 8U, 3U },     // fuelLevelOpenCircuitAlarmEnb
@@ -588,7 +588,7 @@ eConfigReg fuelPumpOffLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap speedSetupBitMap[2U] = 
+static eConfigBitMap speedSetupBitMap[2U] =
 {
    { 1U, 0U },     // speedEnb
    { 2U, 1U },     // speedLowAlarmEnb
@@ -669,7 +669,7 @@ eConfigReg speedHightAlarmLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap diaSetupBitMap[4U] = 
+static eConfigBitMap diaSetupBitMap[4U] =
 {
    { 31U, 0U },     // diaFunction
    { 32U, 5U },     // diaPolarity
@@ -733,7 +733,7 @@ eConfigReg diaMessage =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap dibSetupBitMap[4U] = 
+static eConfigBitMap dibSetupBitMap[4U] =
 {
    { 31U, 0U },     // dibFunction
    { 32U, 5U },     // dibPolarity
@@ -797,7 +797,7 @@ eConfigReg dibMessage =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap dicSetupBitMap[4U] = 
+static eConfigBitMap dicSetupBitMap[4U] =
 {
    { 31U, 0U },     // dicFunction
    { 32U, 5U },     // dicPolarity
@@ -861,7 +861,7 @@ eConfigReg dicMessage =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap didSetupBitMap[4U] = 
+static eConfigBitMap didSetupBitMap[4U] =
 {
    { 31U, 0U },     // didFunction
    { 32U, 5U },     // didPolarity
@@ -925,7 +925,7 @@ eConfigReg didMessage =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap doSetupBitMap[6U] = 
+static eConfigBitMap doSetupBitMap[6U] =
 {
    { 1U, 0U },     // doaNOC
    { 2U, 1U },     // dobNOC
@@ -953,7 +953,7 @@ eConfigReg doSetup =
    .bitMap     = doSetupBitMap
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap doabTypeBitMap[2U] = 
+static eConfigBitMap doabTypeBitMap[2U] =
 {
    { 255U, 0U },     // doaType
    { 65280U, 8U },     // dobType
@@ -977,7 +977,7 @@ eConfigReg doabType =
    .bitMap     = doabTypeBitMap
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap docdTypeBitMap[2U] = 
+static eConfigBitMap docdTypeBitMap[2U] =
 {
    { 255U, 0U },     // docType
    { 65280U, 8U },     // dodType
@@ -1001,7 +1001,7 @@ eConfigReg docdType =
    .bitMap     = docdTypeBitMap
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap doefTypeBitMap[2U] = 
+static eConfigBitMap doefTypeBitMap[2U] =
 {
    { 255U, 0U },     // doeType
    { 65280U, 8U },     // dofType
@@ -1386,7 +1386,7 @@ eConfigReg timerGenTransientDelay =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap genSetupBitMap[2U] = 
+static eConfigBitMap genSetupBitMap[2U] =
 {
    { 1U, 0U },     // genPowerGeneratorControlEnb
    { 6U, 1U },     // genAcSys
@@ -1524,7 +1524,7 @@ eConfigReg genCurrentFullLoadRatingLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap genAlarmsBitMap[12U] = 
+static eConfigBitMap genAlarmsBitMap[12U] =
 {
    { 1U, 0U },     // genUnderVoltageAlarmEnb
    { 2U, 1U },     // genUnderVoltagePreAlarmEnb
@@ -1862,7 +1862,7 @@ eConfigReg genCurrentOverPhaseImbalanceDelay =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap mainsSetupBitMap[2U] = 
+static eConfigBitMap mainsSetupBitMap[2U] =
 {
    { 1U, 0U },     // mainsControlEnb
    { 2U, 1U },     // mainsPowerOffImmediatelyEnb
@@ -1886,7 +1886,7 @@ eConfigReg mainsSetup =
    .bitMap     = mainsSetupBitMap
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap mainsAlarmsBitMap[4U] = 
+static eConfigBitMap mainsAlarmsBitMap[4U] =
 {
    { 1U, 0U },     // mainsUnderVoltageAlarmEnb
    { 2U, 1U },     // mainsOverVoltageAlarmEnb
@@ -1988,7 +1988,7 @@ eConfigReg mainsOverFrequencyAlarmLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap engineSetupBitMap[2U] = 
+static eConfigBitMap engineSetupBitMap[2U] =
 {
    { 15U, 0U },     // engineStartAttempts
    { 16U, 4U },     // enginePreHeatEnb
@@ -2050,7 +2050,7 @@ eConfigReg enginePreHeatDelay =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap starterStopSetupBitMap[4U] = 
+static eConfigBitMap starterStopSetupBitMap[4U] =
 {
    { 1U, 0U },     // starterOilPressureCheckOnStartEnb
    { 2U, 1U },     // starterStopOilPressureEnb
@@ -2152,7 +2152,7 @@ eConfigReg starterStopSpeedLevel =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap batteryAlarmsBitMap[4U] = 
+static eConfigBitMap batteryAlarmsBitMap[4U] =
 {
    { 1U, 0U },     // batteryUnderVoltageEnb
    { 2U, 1U },     // batteryOverVoltageEnb
@@ -2330,7 +2330,7 @@ eConfigReg batteryChargeWarningDelay =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap maintenanceAlarmsBitMap[6U] = 
+static eConfigBitMap maintenanceAlarmsBitMap[6U] =
 {
    { 1U, 0U },     // maintenanceAlarmOilEnb
    { 2U, 1U },     // maintenanceAlarmOilAction
@@ -2415,7 +2415,7 @@ eConfigReg maintenanceAlarmFuelTime =
    .bitMap     = NULL,
 };
 /*----------------------------------------------------------------*/
-static eConfigBitMap logSetupBitMap[1U] = 
+static eConfigBitMap logSetupBitMap[1U] =
 {
    { 1U, 0U },     // logSaveWarningEventsEnb
 };

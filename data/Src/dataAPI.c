@@ -114,7 +114,6 @@ void vDATAAPIdataInit ( void )
       {
         vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
       }
-
       for ( i=0U; i<FREE_DATA_SIZE; i++ )
       {
         res = eSTORAGEreadFreeData( i );

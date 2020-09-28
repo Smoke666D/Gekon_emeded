@@ -56,7 +56,7 @@ REST_ADDRESS eRESTgetRequest( char* path, REST_REQUEST* request, uint16_t* adr )
   uint32_t      length     = 0U;
   uint8_t       p1         = 0U;
   uint8_t       j          = 0U;
-  char          buffer[5U] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
+  char          buffer[5U] = { 0U };
 
   while( pchStr == NULL )
   {
@@ -380,7 +380,6 @@ REST_ERROR eRESTparsingConfig ( char* input, uint16_t adr )
   uint16_t      valueBuf[MAX_VALUE_LENGTH] = { 0U };
   signed char   scale                      = 0U;
   uint16_t      units[MAX_UNITS_LENGTH]    = { 0U };
-  eConfigBitMap bitMap[MAX_BIT_MAP_LENGTH];
 
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
@@ -856,9 +855,8 @@ uint8_t uRESTmakeStartRecord( const char* header, char* output )
 uint8_t uRESTmakeSignedRecord( const char* header, signed char data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
-  char*   pStr  = NULL;
 
-  pStr = itoa( data, &output[shift], 10U );
+  itoa( data, &output[shift], 10U );
   shift += strlen( &output[shift] );
   if ( last == REST_CONT_RECORD )
   {
@@ -872,18 +870,17 @@ uint8_t uRESTmakeValueRecord( const char* header, uint16_t* data, uint16_t len, 
 {
   uint16_t i     = 0U;
   uint8_t  shift = uRESTmakeStartRecord( header, output );
-  char*    pStr  = NULL;
 
   if ( len == 1U )
   {
-    pStr   = itoa( data[0U], &output[shift], 10U );
+    itoa( data[0U], &output[shift], 10U );
     shift += strlen( &output[shift] );
   }
   else
   {
-  output[shift] = '[';
+    output[shift] = '[';
     shift++;
-    for( i=0U; i<len; i++ )
+    for ( i=0U; i<len; i++ )
     {
       if ( type == ( uint16_t )( 'S' ) )
       {
@@ -895,7 +892,7 @@ uint8_t uRESTmakeValueRecord( const char* header, uint16_t* data, uint16_t len, 
       }
       else
       {
-        pStr   = itoa( data[i], &output[shift], 10U );
+        itoa( data[i], &output[shift], 10U );
         shift += strlen( &output[shift] );
       }
       output[shift] = ',';
@@ -914,9 +911,8 @@ uint8_t uRESTmakeValueRecord( const char* header, uint16_t* data, uint16_t len, 
 uint8_t uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
-  char*   pStr  = NULL;
 
-  pStr = itoa( data, &output[shift], 10U );
+  itoa( data, &output[shift], 10U );
   shift += strlen( &output[shift] );
   if ( last == REST_CONT_RECORD )
   {
@@ -929,9 +925,8 @@ uint8_t uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos la
 uint8_t uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
-  char*   pStr  = NULL;
 
-  pStr = itoa( (uint32_t)data, &output[shift], 10U );
+  itoa( (uint32_t)data, &output[shift], 10U );
   shift += strlen( &output[shift] );
   if ( last == REST_CONT_RECORD )
   {

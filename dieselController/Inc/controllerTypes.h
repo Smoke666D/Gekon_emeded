@@ -186,7 +186,6 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  //uint8_t       number;
   uint32_t      time;   /* 4 bytes */
   SYSTEM_EVENT  event;  /* 2 bytes */
 } LOG_RECORD_TYPE;

@@ -14,14 +14,14 @@
 #include "common.h"
 #include "ip_addr.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static struct netconn* nc;             // Connection to the port 80
-static struct netconn* in_nc;          // New user connection
+static struct netconn* nc    = NULL;   // Connection to the port 80
+static struct netconn* in_nc = NULL;   // New user connection
 /*------------------------- Task --------------------------------------------------------------------*/
-static osThreadId_t  netClientHandle;  // Network task handle
+static osThreadId_t  netClientHandle = NULL;  // Network task handle
 /*----------------------- Variables -----------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void            startNetClientTask (void const * argument);              // Network task function
+void            startNetClientTask ( void const * argument );              // Network task function
 SERVER_ERROR    eHTTPsendRequest ( const char* hostName, char* httpStr );
 RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length );
 /*---------------------------------------------------------------------------------------------------*/
@@ -184,7 +184,6 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
   {
     res = RECEIVE_MESSAGE_COMPLETE;
   }
-
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -206,8 +205,8 @@ void startNetClientTask ( void const * argument )
   char*            endInput   = input;
   RECEIVE_MESSAGE  endMessage = RECEIVE_MESSAGE_CONTINUES;
   char*            output     = pvPortMalloc( HTTP_OUTPUT_BUFFER_SIZE );
-  HTTP_RESPONSE    response;
-  HTTP_REQUEST     request;
+  HTTP_RESPONSE    response   = { 0U };
+  HTTP_REQUEST     request    = { 0U };
   uint32_t         len        = 0U;
   STREAM_STATUS    status     = STREAM_CONTINUES;
   uint32_t         remoteIP   = 0U;
@@ -260,7 +259,9 @@ void startNetClientTask ( void const * argument )
       {
         vSERVERclientClose( netcon, input, output );
       }
-    } else {
+    }
+    else
+    {
     /*--------------------- Close connection ---------------------*/
       vSERVERclientClose( netcon, input, output );
     }
@@ -270,12 +271,12 @@ void startNetClientTask ( void const * argument )
 /*---------------------------------------------------------------------------------------------------*/
 SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
 {
-  SERVER_ERROR 	   res     = SERVER_OK;
-  struct netconn * ncr;
-  struct netbuf  * nbr;
-  char*            IPstr;
-  ip_addr_t        remote_ip;
-  uint16_t         len;
+  SERVER_ERROR 	  res       = SERVER_OK;
+  struct netconn* ncr       = NULL;
+  struct netbuf*  nbr       = NULL;
+  char*           IPstr     = NULL;
+  ip_addr_t       remote_ip = { 0U };
+  uint16_t        len       = 0U;
 
   if ( netconn_gethostbyname( hostName, &remote_ip ) == ERR_OK )
   {

@@ -61,8 +61,9 @@ static fix16_t xGEB_FREQ =0;
 static fix16_t xGEN_F1_CUR =0;
 static fix16_t xGEN_F2_CUR =0;
 static fix16_t xGEN_F3_CUR =0;
+static fix16_t xADC_TEMP =0;
 static uint32_t ADC3Freq =10000;
-static uint32_t ADC2Freq =40200;
+static uint32_t ADC2Freq =10000;
 
 
 /*
@@ -190,6 +191,8 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case ADC_FREQ:
         fix16_to_str(fix16_from_int( ADC3Freq/10), Data, 0U );
         break;
+      case ADC_TEMP:
+        fix16_to_str( xADC_TEMP, Data, 0U );
       default:
         break;
     }
@@ -361,12 +364,12 @@ void vADCInit(void)
       vADC3DCInit(DC);
 
       fADC3Init(ADC3Freq);
-      fADC12Init(20000);
-      fADC1Init(20000);
+      fADC12Init(ADC2Freq);
+      fADC1Init(ADC2Freq);
       break;
     case AC:
-      fADC12Init(20000);
-      fADC3Init(20000);
+      fADC12Init(ADC2Freq);
+      fADC3Init(ADC3Freq);
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
       HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_ADD_FRAME_SIZE);
       HAL_ADC_Start_DMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_ADD_FRAME_SIZE);
@@ -597,7 +600,8 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 void StartADCTask(void *argument)
 {
-   static uint8_t OF =0;
+   static uint8_t OF =0,OF1=0;
+   static uint16_t adctime=0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
@@ -636,7 +640,7 @@ void StartADCTask(void *argument)
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-
+    adctime = HAL_GetTick();
     //Обработка значений АЦП3.
      switch (vADCGetADC3Data())
      {
@@ -669,15 +673,35 @@ void StartADCTask(void *argument)
     {
 
       case LOW_FREQ:
+        if (OF1>0)
+                 {
+                   ADC2Freq = ADC2Freq - ADC2Freq/10;
+                   if (ADC2Freq <2000)  ADC2Freq = 2000;
+                   fADC1Init(ADC2Freq);
+                   fADC12Init(ADC2Freq);
+
+                   OF1=0;
+                 }
+                 OF1++;
+                 break;
            break;
          case HIGH_FREQ:
+           if (OF1>0)
+                   {
+                     ADC2Freq = ADC2Freq + ADC2Freq/4;
+                     if (ADC2Freq >70000)  ADC2Freq = 40000;
+                     fADC1Init(ADC2Freq);
+                     fADC12Init(ADC2Freq);
+                     OF1=0;
+                   }
+                   OF1++;
            break;
          default:
            break;
 
 
     }
-
+ //  xADC_TEMP = HAL_GetTick() - adctime;
 
    }
 
@@ -766,14 +790,20 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count)
 
 uint8_t vADCGetADC3Data()
 {
-  uint16_t result=ADC_ERROR;
-  uint16_t uCurPeriod = 0;
+  uint8_t result=ADC_ERROR;
+  uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   q15_t  RES =0;
   uint32_t Index =0;
-
+  int16_t maxdata;
   vDecNetural(&ADC3_IN_Buffer);
-  vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,ADC_FRAME_SIZE); //Разврачиваем данные нужного канала АЦП в неперерывный массив данных
-  arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);          //Проверям есть ли на канале напряжение.
+  vGetChannel(&TEMP_BUFFER,&ADC3_IN_Buffer,2,uCurPeriod); //Разврачиваем данные нужного канала АЦП в неперерывный массив данных
+
+  arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);
+  maxdata = xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod );
+
+  xADC_TEMP = fix16_mul(fix16_from_int(maxdata) ,fix16_from_float( AC_COOF ) );
+  xADC_TEMP  =fix16_div(xADC_TEMP, fix16_sqrt(fix16_from_int(2) ) );
+ // arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
   if( RES >= MIN_AMP_VALUE )
   {
         result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
@@ -781,8 +811,7 @@ uint8_t vADCGetADC3Data()
         {
           xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
           xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
-          arm_rms_q15(&TEMP_BUFFER, uCurPeriod/2 ,&RES);
-          xNET_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+          xNET_F1_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
         }
         else
         {
@@ -812,8 +841,7 @@ uint8_t vADCGetADC3Data()
            return result;
          }
       }
-      arm_rms_q15(&TEMP_BUFFER,uCurPeriod,&RES);
-      xNET_F2_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+      xNET_F2_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
  }
  else
  {
@@ -838,8 +866,7 @@ uint8_t vADCGetADC3Data()
               return result;
             }
          }
-        arm_rms_q15(&TEMP_BUFFER,uCurPeriod,&RES);
-        xNET_F3_VDD= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+        xNET_F3_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
   }
   else
   {
@@ -851,31 +878,26 @@ uint8_t vADCGetADC3Data()
 uint8_t vADCGetADC12Data()
 {
   uint16_t result=ADC_ERROR;
-  uint16_t uCurPeriod = 0;
+  uint16_t uCurPeriod = ADC_FRAME_SIZE;
    q15_t  RES =0;
    uint32_t Index =0;
 
    //Вычитаем из фаз, значение на линии нейтрали
      vDecNetural(&ADC2_IN_Buffer);
 
-    vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,0,ADC_FRAME_SIZE);
-
-
-     arm_max_q15(&TEMP_BUFFER,ADC_FRAME_SIZE,&RES,&Index);          //Проверям есть ли на канале напряжение.
+     vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,0,uCurPeriod);
+     arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
      if( RES >= MIN_AMP_VALUE )
      {
            result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
            if (result==ADC_OK)
            {
              xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
-             xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
-             arm_rms_q15(&TEMP_BUFFER, uCurPeriod ,&RES);
-             xGEN_F3_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
+             xNET_FREQ=  fix16_mul(xNET_FREQ,fix16_from_int(10));
+             xGEN_F3_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
            }
            else
-           {
-             return result;
-           }
+             goto CUR;
     }
     else
     {
@@ -884,53 +906,89 @@ uint8_t vADCGetADC12Data()
 
     vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,1,uCurPeriod);
     arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
-        if( RES >= MIN_AMP_VALUE )
-        {
+    if( RES >= MIN_AMP_VALUE )
+    {
+           if (result!=ADC_OK)
+           {
               result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
               if (result==ADC_OK)
               {
                 xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
                 xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
-                arm_rms_q15(&TEMP_BUFFER, uCurPeriod ,&RES);
-                xGEN_F2_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
               }
               else
               {
-                return result;
+                goto CUR;
               }
-       }
-       else
+           }
+           xGEN_F2_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
+     }
+     else
+     {
+        xGEN_F2_VDD =0;
+     }
+
+
+      vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,2,uCurPeriod);
+      arm_max_q15(&TEMP_BUFFER,uCurPeriod,&RES,&Index);          //Проверям есть ли на канале напряжение.
+       if( RES >= MIN_AMP_VALUE )
        {
-         xGEN_F2_VDD =0;
-       }
+
+                  if (result!=ADC_OK)
+                  {
+                     result =  vADCFindFreq(&TEMP_BUFFER, &uCurPeriod);
+                    if (result==ADC_OK)
+                    {
+                      xNET_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
+                      xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+                    }
+                    else
+
+                      goto CUR;
+                  }
+                  xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
 
 
-      vGetChannel(&TEMP_BUFFER,&ADC2_IN_Buffer,2,ADC_FRAME_SIZE);
-
-
-
-
-
-
-
-
-      arm_rms_q15(&TEMP_BUFFER,400,&RES);
-      xGEN_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-
-
-      vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,0,ADC_FRAME_SIZE);
-      arm_rms_q15(&TEMP_BUFFER,400,&RES);
-      xGEN_F3_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-      vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,1,ADC_FRAME_SIZE);
-      arm_rms_q15(&TEMP_BUFFER,400,&RES);
-      xGEN_F2_CUR= fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-      vGetChannel(&TEMP_BUFFER,&ADC1_IN_Buffer,2,ADC_FRAME_SIZE);
-      arm_rms_q15(&TEMP_BUFFER,400,&RES);
-      xGEN_F1_CUR = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
-
+      }
+      else
+      {
+         xGEN_F1_VDD =0;
+      }
+   CUR:
+   if (result==ADC_OK)
+   {
+     xGEN_F3_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
+     xGEN_F2_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
+     xGEN_F1_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
+   }
 
   return result;
 
 }
 
 
+fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
+{
+  uint64_t sum =0;
+  for (uint16_t i=0;i<size;i++)
+  {
+    sum =sum+ source[i*4+off]*source[i*4+off];
+
+  }
+  sum =sum/size;
+  return fix16_from_int (sqrt(sum));
+
+}
+
+int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size )
+{
+
+  int16_t max =0;
+  for (uint16_t i=0;i<size;i++)
+  {
+      if ( source[i*4 + off] >  max)
+        max = source[i*4 + off];
+  }
+  return max;
+
+}

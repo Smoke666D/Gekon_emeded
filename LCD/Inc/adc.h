@@ -58,6 +58,7 @@
 #define NET_F3_VDD 10U
 #define NET_FREQ   11U
 #define ADC_FREQ   12U
+#define ADC_TEMP   13U
 
 #define DC_SIZE  50
 
@@ -101,5 +102,6 @@ fix16_t xADCGetSFL();
 uint8_t vADCGetADC3Data();
 
 uint8_t vADCGetADC12Data();
-
+fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size );
+int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size );
 #endif /* INC_ADC_H_ */

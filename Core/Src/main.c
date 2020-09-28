@@ -127,7 +127,7 @@ osThreadId_t ADCTaskHandle;
 const osThreadAttr_t ADCTask_attributes = {
   .name = "ADCTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1512
+  .stack_size = 1612
 };
 /* USER CODE END PD */
 

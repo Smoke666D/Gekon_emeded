@@ -61,7 +61,7 @@ static fix16_t xGEB_FREQ =0;
 static fix16_t xGEN_F1_CUR =0;
 static fix16_t xGEN_F2_CUR =0;
 static fix16_t xGEN_F3_CUR =0;
-static uint32_t ADC3Freq =40200;
+static uint32_t ADC3Freq =10000;
 static uint32_t ADC2Freq =40200;
 
 
@@ -604,7 +604,7 @@ void StartADCTask(void *argument)
 
    for(;;)
    {
-    osDelay( 200U );
+    osDelay( 100U );
     vADC3DCInit( DC );
     StartADCDMA( &hadc3, ( uint32_t* )&ADC3_IN_Buffer, ( DC_SIZE * 9U ) );         /* Запускаем преобразвоание АЦП */
     xEventGroupWaitBits( xADCEvent, ADC3_READY, pdTRUE, pdTRUE, portMAX_DELAY);   /* Ожидаем флага готовонсти о завершении преобразования */
@@ -636,9 +636,16 @@ void StartADCTask(void *argument)
     //Обработка значений АЦП3.
      switch (vADCGetADC3Data())
      {
-       case LOW_FREQ:
-         break;
+
        case HIGH_FREQ:
+         ADC3Freq = ADC3Freq - ADC3Freq/10;
+         if (ADC3Freq <2000)  ADC3Freq = 2000;
+         fADC3Init(ADC3Freq);
+         break;
+       case LOW_FREQ:
+         ADC3Freq = ADC3Freq + ADC3Freq/4;
+         if (ADC3Freq >50000)  ADC3Freq = 40000;
+         fADC3Init(ADC3Freq);
          break;
        default:
          break;
@@ -685,7 +692,7 @@ void vDecNetural(int16_t * data)
   return;
 }
 
-#define AMP_DELTA 10
+#define AMP_DELTA 15
 #define MAX_ZERO_POINT 20
 
 uint8_t vADCFindFreq(int16_t * data, uint16_t * count)
@@ -759,7 +766,7 @@ uint8_t vADCGetADC3Data()
         {
           xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
           xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
-          arm_rms_q15(&TEMP_BUFFER, uCurPeriod ,&RES);
+          arm_rms_q15(&TEMP_BUFFER, uCurPeriod/2 ,&RES);
           xNET_F1_VDD = fix16_mul( fix16_from_int( RES ), fix16_from_float( AC_COOF ) );
         }
         else

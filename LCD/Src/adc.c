@@ -258,22 +258,11 @@ void  vADC3FrInit(uint16_t freq)
 void  vADC12FrInit(uint16_t freq)
 {
 
-   // uint16_t Period = 120000000U/ (freq);
-    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-
     htim8.Init.Period = 120000000U/ (freq);
     HAL_TIM_Base_Init(&htim8);
-    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-    HAL_TIM_ConfigClockSource(&htim8, &sClockSourceConfig);
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    HAL_TIMEx_MasterConfigSynchronization(&htim8, &sMasterConfig);
 
     htim2.Init.Period = 60000000U / ( freq  );
     HAL_TIM_Base_Init(&htim2);
-    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
-    HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 
     HAL_TIM_Base_Start_IT( &htim2 );
     HAL_TIM_Base_Start_IT( &htim8 );
@@ -874,6 +863,11 @@ uint8_t vADCGetADC12Data()
      xGEN_F3_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
      xGEN_F2_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
      xGEN_F1_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
+   }
+   else
+   {
+
+
    }
 
   return result;

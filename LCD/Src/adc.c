@@ -663,7 +663,7 @@ void vDecNetural(int16_t * data)
   return;
 }
 
-#define AMP_DELTA 12
+#define AMP_DELTA 15
 #define MAX_ZERO_POINT 20
 #define FD  3
 
@@ -806,9 +806,6 @@ uint8_t vADCGetADC12Data()
 
    //Вычитаем из фаз, значение на линии нейтрали
      vDecNetural(&ADC2_IN_Buffer);
-
-
-
      if( xADCMax(  &ADC2_IN_Buffer, 2, uCurPeriod ) >= MIN_AMP_VALUE )
      {
            result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2);
@@ -826,7 +823,7 @@ uint8_t vADCGetADC12Data()
       xGEN_F1_VDD =0;
     }
 
-             //Проверям есть ли на канале напряжение.
+    //Проверям есть ли на канале напряжение.
     if( xADCMax(  &ADC2_IN_Buffer, 1, uCurPeriod ) >= MIN_AMP_VALUE )
     {
            if (result!=ADC_OK)
@@ -890,9 +887,9 @@ uint8_t vADCGetADC12Data()
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
 {
   uint64_t sum =0;
-  for (uint16_t i=0;i<size;i++)
+  for (uint16_t i=0;i<size*4;i=i+4)
   {
-    sum =sum+ source[i*4+off]*source[i*4+off];
+    sum =sum+ source[i+off]*source[i+off];
 
   }
   sum =sum/size;

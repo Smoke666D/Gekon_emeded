@@ -250,19 +250,50 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue )
   return;
 }
 
-void vRELAYproces ( RELAY_AUTO_DEVICE* device, fix16_t val )
+void vRELAYproces ( RELAY_AUTO_DEVICE* device, fix16_t value )
 {
+  float fVal = fix16_to_float( value );
+  float fOff = fix16_to_float( device->offLevel );
+  float fOn  = fix16_to_float( device->onLevel );
   if ( device->relay.enb > 0U )
   {
-    if ( ( val < device->offLevel ) && ( device->relay.status != RELAY_OFF ) )
+    if ( device->onLevel < device->offLevel )
     {
-      device->relay.set( RELAY_OFF );
-      device->relay.status = RELAY_OFF;
+      if ( device->relay.status == RELAY_OFF )
+      {
+        if ( ( value > device->onLevel ) && ( value < device->offLevel ) )
+        {
+          device->relay.set( RELAY_ON );
+          device->relay.status = RELAY_ON;
+        }
+      }
+      else
+      {
+        if ( ( value <= device->onLevel ) || ( value >= device->offLevel ) )
+        {
+          device->relay.set( RELAY_OFF );
+          device->relay.status = RELAY_OFF;
+        }
+      }
     }
-    if ( ( val > device->onLevel ) && ( device->relay.status != RELAY_ON ) )
+    else
     {
-      device->relay.set( RELAY_ON );
-      device->relay.status = RELAY_ON;
+      if ( device->relay.status == RELAY_OFF )
+      {
+        if ( ( value < device->onLevel ) && ( value > device->offLevel ) )
+        {
+          device->relay.set( RELAY_ON );
+          device->relay.status = RELAY_ON;
+        }
+      }
+      else
+      {
+        if ( ( value >= device->onLevel ) || ( value <= device->offLevel ) )
+        {
+          device->relay.set( RELAY_OFF );
+          device->relay.status = RELAY_OFF;
+        }
+      }
     }
   }
   return;

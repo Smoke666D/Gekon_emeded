@@ -54,13 +54,13 @@ fix16_t getBatteryVoltage ( void )
   fix16_t res = 0U;
   return res;
 }
-
+/*----------------------------------------------------------------------------*/
 fix16_t getChargerVoltage ( void )
 {
   fix16_t res = 0U;
   return res;
 }
-
+/*----------------------------------------------------------------------------*/
 void vSENSORprocess ( SENSOR* sensor, fix16_t* value, QueueHandle_t queue )
 {
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
@@ -94,7 +94,7 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value, QueueHandle_t queue )
   }
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 fix16_t fOILprocess ( void )
 {
   fix16_t value = 0U;
@@ -106,7 +106,7 @@ fix16_t fOILprocess ( void )
   }
   return value;
 }
-
+/*----------------------------------------------------------------------------*/
 fix16_t fCOOLANTprocess ( void )
 {
   fix16_t value = 0U;
@@ -114,13 +114,13 @@ fix16_t fCOOLANTprocess ( void )
   vALARMcheck( &coolant.alarm, value, pLOGICgetEventQueue() );
   if ( coolant.alarm.status == ALARM_STATUS_IDLE )
   {
-    vALARMcheck( &coolant.preAlarm, value, pLOGICgetEventQueue() );
+    vALARMcheck( &coolant.preAlarm, value,  pLOGICgetEventQueue() );
   }
   vRELAYproces( &coolant.heater, value );
   vRELAYproces( &coolant.cooler, value );
   return value;
 }
-
+/*----------------------------------------------------------------------------*/
 fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
@@ -141,7 +141,7 @@ fix16_t fFUELprocess ( void )
   vRELAYproces( &fuel.booster, value );
   return value;
 }
-
+/*----------------------------------------------------------------------------*/
 fix16_t fSPEEDprocess ( void )
 {
   fix16_t value = 0U;
@@ -156,7 +156,7 @@ fix16_t fSPEEDprocess ( void )
   }
   return value;
 }
-
+/*----------------------------------------------------------------------------*/
 fix16_t fBATTERYprocess ( void )
 {
   fix16_t value = battery.get();
@@ -167,7 +167,7 @@ fix16_t fBATTERYprocess ( void )
   }
   return value;
 }
-
+/*----------------------------------------------------------------------------*/
 fix16_t fCHARGERprocess ( void )
 {
   fix16_t value = charger.get();
@@ -178,7 +178,7 @@ fix16_t fCHARGERprocess ( void )
   }
   return value;
 }
-
+/*----------------------------------------------------------------------------*/
 void vENGINEmileageProcess ( uint8_t* reset )
 {
   static timerID_t timerID = LOGIC_COUNTERS_SIZE + 1U;
@@ -241,7 +241,7 @@ void vENGINEmileageProcess ( uint8_t* reset )
   vALARMcheck( &maintence.fuel, fix16_div( F16( data ), F16( 60U ) ), pLOGICgetEventQueue() );
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t speed )
 {
   uint8_t res = 0U;
@@ -254,7 +254,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   }
   return res;
 }
-
+/*----------------------------------------------------------------------------*/
 uint8_t uENGINEisStop( fix16_t pressure, fix16_t speed  )
 {
   uint8_t res = 0U;
@@ -264,7 +264,7 @@ uint8_t uENGINEisStop( fix16_t pressure, fix16_t speed  )
   }
   return res;
 }
-
+/*----------------------------------------------------------------------------*/
 void vENGINEenbToStr ( uint8_t enb, char* str )
 {
   if ( enb > 0U )
@@ -290,7 +290,7 @@ void vENGINEenbToStr ( uint8_t enb, char* str )
   }
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 void vENGINEprintSetup ( void )
 {
   char buf[8U];

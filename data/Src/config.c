@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-09-28 14:32:57
+ * Make time: 2020-10-02 10:29:16
  */
 #include   "config.h"
 
@@ -329,7 +329,7 @@ eConfigReg coolantTempHeaterOnLevel =
    .units      = {'C', ' ', ' ', ' '},
 };
 /*----------------------------------------------------------------*/
-uint16_t coolantTempCoolerOffLevelValue[1U] = { 120U };
+uint16_t coolantTempCoolerOffLevelValue[1U] = { 80U };
 const eConfigAttributes coolantTempCoolerOffLevelAtrib =
 {
    .adr        = 16U,
@@ -348,7 +348,7 @@ eConfigReg coolantTempCoolerOffLevel =
    .units      = {'C', ' ', ' ', ' '},
 };
 /*----------------------------------------------------------------*/
-uint16_t coolantTempCoolerOnLevelValue[1U] = { 80U };
+uint16_t coolantTempCoolerOnLevelValue[1U] = { 120U };
 const eConfigAttributes coolantTempCoolerOnLevelAtrib =
 {
    .adr        = 17U,

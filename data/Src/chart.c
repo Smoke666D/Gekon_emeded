@@ -6,66 +6,70 @@
  */
 /*----------------------- Includes -------------------------------------*/
 #include "chart.h"
-
+/*----------------------- Constant -------------------------------------*/
+#define  OIL_Y_MAX_DEF       F16( 2U )
+#define  COOLANT_Y_MAX_DEF   F16( 250U )
+#define  FUEL_Y_MAX_DEF      F16( 100U )
+#define  RESIST_X_MAX_DEF    F16( 1048U )
 /*---------------------- Structures ------------------------------------*/
 SemaphoreHandle_t xCHARTSemaphore;
 eChartData oilSensorChart = {
-  .xmin     = 0x00000000U,
-  .xmax     = 0x05DC0000U,
-  .ymin     = 0x00000000U,
-  .ymax     = 0x000F0000U,
+  .xmin     = 0U,
+  .xmax     = RESIST_X_MAX_DEF,
+  .ymin     = 0U,
+  .ymax     = OIL_Y_MAX_DEF,
   .xunit    = {'О','м',' '},
   .yunit    = {'Б','а','р'},
   .size     = 2U,
   .dots[0]  =
   {
-    .x = 0x00000000U,
-    .y = 0x00000000U,
+    .x = 0U,
+    .y = 0U,
   },
   .dots[1]  =
   {
-    .x = 0x05DC0000U,
-    .y = 0x000F0000U,
+    .x = RESIST_X_MAX_DEF,
+    .y = OIL_Y_MAX_DEF,
   },
 };
 
 eChartData coolantSensorChart = {
-  .xmin     = 0x00000000U,
-  .xmax     = 0x05DC0000U,
-  .ymin     = 0x00000000U,
-  .ymax     = 0x000F0000U,
+  .xmin     = 0U,
+  .xmax     = RESIST_X_MAX_DEF,
+  .ymin     = 0U,
+  .ymax     = COOLANT_Y_MAX_DEF,
   .xunit    = {'О','м',' '},
   .yunit    = {'°','C',' '},
   .size     = 2U,
   .dots[0]  =
   {
-    .x = 0x00000000U,
-    .y = 0x00000000U,
+    .x = 0U,
+    .y = 0U,
   },
   .dots[1]  =
   {
-    .x = 0x05DC0000U,
-    .y = 0x000F0000U,
+    .x = RESIST_X_MAX_DEF,
+    .y = COOLANT_Y_MAX_DEF,
   },
 };
 
 eChartData fuelSensorChart = {
-  .xmin     = 0x00000000U,
-  .xmax     = 0x05DC0000U,
-  .ymin     = 0x00000000U,
-  .ymax     = 0x000F0000U,
+  .xmin     = 0U,
+  .xmax     = RESIST_X_MAX_DEF,
+  .ymin     = 0U,
+  .ymax     = FUEL_Y_MAX_DEF,
   .xunit    = {'О','м',' '},
   .yunit    = {'%',' ',' '},
   .size     = 2U,
   .dots[0U]  =
   {
-    .x = 0x00000000U,
-    .y = 0x00000000U,
+    .x = 0U,
+    .y = 0U,
   },
   .dots[1U]  =
   {
-    .x = 0x05DC0000U,
-    .y = 0x000F0000U,
+    .x = RESIST_X_MAX_DEF,
+    .y = FUEL_Y_MAX_DEF,
   },
 };
 

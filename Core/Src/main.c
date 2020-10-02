@@ -179,7 +179,14 @@ extern void vStartUsbTask(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-TaskHandle_t*  notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
+TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
+{
+  ( TaskHandle_t* )&lcdTaskHandle,
+  ( TaskHandle_t* )&engineHandle,
+  ( TaskHandle_t* )&fpiHandle,
+  ( TaskHandle_t* )&controllerHandle,
+  ( TaskHandle_t* )&electroHandle,
+};
 const FPI_INIT fpiInitStruct = {
   .pinA   = 0U,
   .pinB   = FPI_B_Pin,
@@ -1284,7 +1291,6 @@ void StartDefaultTask(void *argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
   //uint32_t  waterMark = 0U;
-
   vSYSSerial( ">>Start Default Task!\n\r" );
   vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIdataInit();                         /* Data from EEPROM initialization */

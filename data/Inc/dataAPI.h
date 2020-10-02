@@ -19,17 +19,12 @@
 #include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
 #define  SEMAPHORE_TAKE_DELAY   ( ( TickType_t ) 10U )
-#define  NOTIFY_TARGETS_NUMBER  1U
+#define  NOTIFY_TARGETS_NUMBER  5U
 #define  EWA_ERASE_SIZE         8U
 #define  REWRITE_ALL_EEPROM     0U                     /* Rewrite all data in EEPROM to define at each start. Set it to 0 for normal work */
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/
-typedef enum
-{
-  DATA_API_MESSAGE_REINIT = 0x55,
-} DATA_API_MESSAGE;
-
 typedef enum
 {
   DATA_API_CMD_READ,     /* Read data from local register */

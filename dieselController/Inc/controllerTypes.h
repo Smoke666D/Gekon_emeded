@@ -17,13 +17,16 @@
 #include "task.h"
 #include "semphr.h"
 /*------------------------ Define --------------------------------------*/
-#define  LOG_SIZE             255U
-#define  LOG_RECORD_SIZE      6U
-#define  LOGIC_TIMER_STEP     100U  /* ms */
-#define  LOGIC_COUNTERS_SIZE  10U
-#define  EVENT_QUEUE_LENGTH   16U
-#define  LOG_TYPES_SIZE       34U
-#define  LOG_ACTION_SIZE      7U
+#define  LOG_SIZE                255U
+#define  LOG_RECORD_SIZE         6U
+#define  LOGIC_TIMER_STEP        100U  /* ms */
+#define  LOGIC_COUNTERS_SIZE     10U
+#define  EVENT_QUEUE_LENGTH      16U
+#define  LOG_TYPES_SIZE          34U
+#define  LOG_ACTION_SIZE         7U
+#define  HMI_CMD_MASK            0xFFU
+
+#define  TASK_NOTIFY_WAIT_DELAY  10U
 
 typedef  uint8_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
@@ -31,6 +34,11 @@ typedef  uint8_t timerID_t;
 extern const char* logTypesDictionary[LOG_TYPES_SIZE];
 extern const char* logActionsDictionary[LOG_ACTION_SIZE];
 /*------------------------- Enum ---------------------------------------*/
+typedef enum
+{
+  DATA_API_MESSAGE_REINIT = 0x00010000,
+} DATA_API_MESSAGE;
+
 typedef enum
 {
   ACTION_NONE,

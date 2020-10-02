@@ -19,12 +19,13 @@
 static GENERATOR_TYPE      generator            = { 0U };
 static MAINS_TYPE          mains                = { 0U } ;
 static ELECTRO_SYSTEM_TYPE electro              = { 0U };
-static osThreadId_t        electroHandle        = NULL;
 static StaticQueue_t       xElectroCommandQueue = { 0U };
 static QueueHandle_t       pElectroCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
-static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH];
+static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U };
+/*-------------------------------- External ----------------------------------*/
+osThreadId_t electroHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -259,10 +260,8 @@ void vGENERATORprocess ( void )
 
   return;
 }
-/*----------------------------------------------------------------------------*/
-/*----------------------- PABLICK --------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void vELECTROinit ( /*TIM_HandleTypeDef* currentTIM*/ void )
+/*---------------------------------------------------------------------------------------------------*/
+void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
 {
   uint8_t i = 0U;
 
@@ -530,6 +529,14 @@ void vELECTROinit ( /*TIM_HandleTypeDef* currentTIM*/ void )
     mains.line[i].getCurrent = getCallback;
   }
   /*----------------------------------------------------------------------------*/
+  return;
+}
+/*----------------------------------------------------------------------------*/
+/*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void vELECTROinit ( void )
+{
+  vELECTROdataInit();
   pElectroCommandQueue = xQueueCreateStatic( ELECTRO_COMMAND_QUEUE_LENGTH, sizeof( ELECTRO_COMMAND ), electroCommandBuffer, &xElectroCommandQueue );
   const osThreadAttr_t electroTask_attributes = {
     .name       = "electroTask",
@@ -604,11 +611,21 @@ void vELECTROalarmIdleEnable ( void )
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROtask ( void const* argument )
 {
-  fix16_t         valOff   = 0U;
-  fix16_t         valOn    = 0U;
-  ELECTRO_COMMAND inputCmd = ELECTRO_CMD_NONE;
+  fix16_t         valOff      = 0U;
+  fix16_t         valOn       = 0U;
+  ELECTRO_COMMAND inputCmd    = ELECTRO_CMD_NONE;
+  uint32_t        inputNotifi = 0U;
   for(;;)
   {
+    /*-------------------- Read system notification --------------------*/
+    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    {
+      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
+      {
+        vELECTROdataInit();
+      }
+    }
+    /**/
     vGENERATORprocess();
     vMAINSprocess();
     if ( electro.state == ELECTRO_PROC_STATUS_IDLE )

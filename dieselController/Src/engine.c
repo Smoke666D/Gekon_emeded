@@ -18,6 +18,7 @@
 #include "semphr.h"
 #include "dataAPI.h"
 #include "adc.h"
+#include "stdio.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE           engine              = { 0U };
 static OIL_TYPE              oil                 = { 0U };
@@ -32,7 +33,6 @@ static MAINTENCE_TYPE        maintence           = { 0U };
 static RELAY_DEVICE          stopSolenoid        = { 0U };
 static RELAY_DEVICE          idleRelay           = { 0U };
 static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
-static osThreadId_t          engineHandle        = NULL;
 static StaticQueue_t         xEngineCommandQueue = { 0U };
 static QueueHandle_t         pEngineCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
@@ -42,6 +42,8 @@ static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
 static uint8_t        starterFinish                                    = 0U;
 static uint8_t        blockTimerFinish                                 = 0U;
 static uint8_t        maintenanceReset                                 = 0U;
+/*--------------------------------- Extern -----------------------------------*/
+osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 void vENGINEtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
@@ -348,9 +350,7 @@ void vENGINEprintSetup ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-/*----------------------- PABLICK --------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void vENGINEinit ( void )
+void vENGINEdataInit ( void )
 {
   oil.pressure.type                = getBitMap( &oilPressureSetup, 0U );
   oil.pressure.chart               = &oilSensorChart;
@@ -701,6 +701,16 @@ void vENGINEinit ( void )
   }
   maintence.fuel.relax.enb = 0U;
   maintence.fuel.status    = ALARM_STATUS_IDLE;
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void vENGINEinit ( void )
+{
+  vENGINEdataInit();
   /*--------------------------------------------------------------*/
   vFPOsetReadyToStart( RELAY_ON );
   /*--------------------------------------------------------------*/
@@ -711,9 +721,7 @@ void vENGINEinit ( void )
     .stack_size = 1024U
   };
   engineHandle = osThreadNew( vENGINEtask, NULL, &engineTask_attributes );
-
   vENGINEprintSetup();
-
   return;
 }
 
@@ -755,22 +763,30 @@ ENGINE_STATUS eENGINEgetEngineStatus ( void )
 
 void vENGINEtask ( void const* argument )
 {
-  fix16_t        oilVal     = 0U;
-  fix16_t        coolantVal = 0U;
-  fix16_t        fuelVal    = 0U;
-  fix16_t        speedVal   = 0U;
-  fix16_t        batteryVal = 0U;
-  fix16_t        chargerVal = 0U;
-  timerID_t      timerID    = 0U;
-  ENGINE_COMMAND inputCmd   = ENGINE_CMD_NONE;
-  SYSTEM_EVENT   event      = { 0U };
+  fix16_t        oilVal      = 0U;
+  fix16_t        coolantVal  = 0U;
+  fix16_t        fuelVal     = 0U;
+  fix16_t        speedVal    = 0U;
+  fix16_t        batteryVal  = 0U;
+  fix16_t        chargerVal  = 0U;
+  timerID_t      timerID     = 0U;
+  ENGINE_COMMAND inputCmd    = ENGINE_CMD_NONE;
+  SYSTEM_EVENT   event       = { 0U };
+  uint32_t       inputNotifi = 0U;
 
   for (;;)
   {
+    /*-------------------- Read system notification --------------------*/
+    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    {
+      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
+      {
+        vENGINEdataInit();
+      }
+    }
     /*----------------------- Read input command -----------------------*/
     if ( xQueueReceive( pEngineCommandQueue, &inputCmd, 0U ) == pdPASS )
     {
-
       if ( engine.cmd != inputCmd )
       {
         switch ( engine.status )

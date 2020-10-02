@@ -37,7 +37,6 @@ CONTROLLER_TYPE controller =
   .stopDelay       = 0U,
   .timerID         = 0U,
 };
-static osThreadId_t  controllerHandle = NULL;
 /*---------------------------------- MACROS ----------------------------------*/
 #define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, 0U ) )
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
@@ -45,6 +44,8 @@ static osThreadId_t  controllerHandle = NULL;
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
 static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
+/*-------------------------------- External ----------------------------------*/
+osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 void vCONTROLLERtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
@@ -300,6 +301,12 @@ void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS genera
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vCONTROLLERdataInit ( void )
+{
+  controller.stopDelay = getValue( &timerReturnDelay );
+  return;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERinit ( const CONTROLLER_INIT* init )
@@ -310,7 +317,7 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERsetLED( HMI_CMD_AUTO,   0U );
   vCONTROLLERsetLED( HMI_CMD_LOAD,   0U );
   vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
-  controller.stopDelay = getValue( &timerReturnDelay );
+  vCONTROLLERdataInit();
   const osThreadAttr_t controllerTask_attributes = {
     .name       = "fpiTask",
     .priority   = ( osPriority_t ) osPriorityLow,
@@ -331,24 +338,26 @@ void vCONTROLLERtask ( void const* argument )
   SYSTEM_EVENT    interiorEvent        = { .type = EVENT_NONE, .action = ACTION_NONE };
   SYSTEM_EVENT    inputEvent           = { .type = EVENT_NONE, .action = ACTION_NONE };
   FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
-  uint32_t        inputKeyboardCommand = HMI_CMD_NONE;
+  uint32_t        inputNotifi          = 0U;
+  uint8_t         inputKeyboardCommand = HMI_CMD_NONE;
 
-  uint8_t  imulator = 1U;
 
   for (;;)
   {
-    if ( imulator == 0U )
-    {
-      inputKeyboardCommand = HMI_CMD_START;
-      imulator = 1U;
-    }
     /*------------------------------------ GET BLOCKS STATUS -------------------------------------*/
     engineState    = eENGINEgetEngineStatus();
     generatorState = eELECTROgetGeneratorStatus();
     mainsState     = eELECTROgetMainsStatus();
-    /*-------------------------------------- KEYBOARD INPUT --------------------------------------*/
-    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
+    /*--------------------------------- KEYBOARD & SYSTEM INPUT -----------------------------------*/
+    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
     {
+    /*--------------------------------------- SYSTEM INPUT ----------------------------------------*/
+      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
+      {
+        vCONTROLLERdataInit();
+      }
+    /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/
+      inputKeyboardCommand = ( uint8_t )( inputNotifi & HMI_CMD_MASK );
       switch ( inputKeyboardCommand )
       {
         case HMI_CMD_START:

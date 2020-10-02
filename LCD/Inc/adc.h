@@ -28,7 +28,7 @@
 #define ADC2_CHANNELS      4U
 #define ADC3_CHANNELS      4U
 #define ADC3_ADD_CHANNEL   5U
-#define ADC_FRAME_SIZE     512U
+#define ADC_FRAME_SIZE     1024//700U//512U
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
 
 /*
@@ -39,6 +39,7 @@
 #define R118_R122 104.7
 #define R122 4.7
 #define VDD_CF ((R118_R122/R122)*3.3/4095)
+#define AC_COOF (401*3.3/4095)
 #define R3   1416
 #define R12      22.2
 #define R12_R11  122.2
@@ -51,11 +52,22 @@
 #define CANC    6U
 #define CFUEL   2U
 #define CPRES   3U
-#define CTEMP   7U
+#define CTEMP      7U
+#define NET_F1_VDD 8U
+#define NET_F2_VDD 9U
+#define NET_F3_VDD 10U
+#define NET_FREQ   11U
+#define ADC_FREQ   12U
+#define ADC_TEMP   13U
+#define GEN_F1_VDD 14U
+#define GEN_F2_VDD 15U
+#define GEN_F3_VDD 16U
+#define GEN_FREQ   17U
+
 
 #define DC_SIZE  50
 
-
+#define MIN_AMP_VALUE 100
 
 #define NO_COMMON 0x01
 #define NO_SOP    0x02
@@ -65,7 +77,10 @@
 #define NO_SFL    0x20
 #define SC_SFL    0x04
 
-
+#define ADC_OK    0x00
+#define LOW_FREQ  0x01
+#define HIGH_FREQ 0x02
+#define ADC_ERROR 0x03
 
 
 typedef enum
@@ -81,16 +96,16 @@ void    vDecNetural(int16_t * data);
 void    vADC3R(DMA_HandleTypeDef *_hdma);
 void    vADCInit(void);
 void    StartADCTask(void *argument);
-float   fADC3Init(uint16_t freq);
+void    vADC3FrInit(uint16_t freq);
+void    vADC12FrInit(uint16_t freq);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-void    vADCFindFreq(int16_t * data);
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off);
 void    SetSQR(int16_t * data);
 void    vADCConvertToVDD(uint8_t AnalogSwitch);
 fix16_t xADCGetSOP();
 fix16_t xADCGetSCT();
 fix16_t xADCGetSFL();
-
-
-
-
+fix16_t xADCGetNETL3();
+fix16_t xADCGetNETL2();
+fix16_t xADCGetNETL1();
 #endif /* INC_ADC_H_ */

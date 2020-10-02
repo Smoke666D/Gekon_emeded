@@ -59,7 +59,7 @@ EEPROM_STATUS eSTORAGEsetFreeData ( DATA_ADR n, const uint16_t* data );
 EEPROM_STATUS eSTORAGEreadLogPointer ( uint16_t* pointer );
 EEPROM_STATUS eSTORAGEwriteLogPointer ( uint16_t pointer );
 EEPROM_STATUS eSTORAGEreadLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
-EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
+EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, const LOG_RECORD_TYPE* record );
 EEPROM_STATUS eSTORAGEsavePassword ( void );
 EEPROM_STATUS eSTORAGEloadPassword ( void );
 /*----------------------------------------------------------------------*/

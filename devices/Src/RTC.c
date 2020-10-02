@@ -14,7 +14,7 @@
 #define  RTC_MEMORY_SIZE      19U
 /*----------------------- Structures ----------------------------------------------------------------*/
 static   I2C_HandleTypeDef*   RTCi2c        = NULL;
-static   SemaphoreHandle_t    xRTCSemaphore;
+static   SemaphoreHandle_t    xRTCSemaphore = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -211,7 +211,7 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
  */
 void vRTCinit ( I2C_HandleTypeDef* hi2c )
 {
-  RTCi2c           = hi2c;
+  RTCi2c        = hi2c;
   xRTCSemaphore = xSemaphoreCreateMutex();
   return;
 }
@@ -371,7 +371,7 @@ RTC_STATUS eRTCgetCalibration ( signed char* value )
  */
 RTC_STATUS eRTCgetTemperature ( float* data )
 {
-  uint8_t    buffer[2U] = { 0x00U, 0x00U };
+  uint8_t    buffer[2U] = { 0U };
   RTC_STATUS res        = eRTCread( RTC_UTR, buffer, 2U );
   if ( res == RTC_OK )
   {
@@ -389,7 +389,7 @@ RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb )
 {
   RTC_FREQ   freq     = RTC_FREQ_1HZ;
   uint8_t    start    = 0U;
-  uint8_t    data[2U] = { 0x00U, 0x00U };
+  uint8_t    data[2U] = { 0U };
   RTC_STATUS res      = eRTCread( RTC_CR, data, 2U );
   if ( res == RTC_OK )
   {
@@ -434,7 +434,7 @@ RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb )
 RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm )
 {
   RTC_STATUS res        = eVerifyAlarm( alarm );
-  uint8_t    buffer[5U] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
+  uint8_t    buffer[5U] = { 0U };
   if ( res == RTC_OK )
   {
     res = eRTCread( RTC_CR, &buffer[4U], 1U );
@@ -492,7 +492,7 @@ RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm )
 RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm )
 {
   RTC_STATUS res        = RTC_OK;
-  uint8_t    buffer[5U] = { 0x00U, 0x00U, 0x00U, 0x00U, 0x00U };
+  uint8_t    buffer[5U] = { 0U };
   switch ( n )
   {
     case 1:

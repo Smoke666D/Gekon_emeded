@@ -19,17 +19,12 @@
 #include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
 #define  SEMAPHORE_TAKE_DELAY   ( ( TickType_t ) 10U )
-#define  NOTIFY_TARGETS_NUMBER  1U
+#define  NOTIFY_TARGETS_NUMBER  5U
 #define  EWA_ERASE_SIZE         8U
 #define  REWRITE_ALL_EEPROM     0U                     /* Rewrite all data in EEPROM to define at each start. Set it to 0 for normal work */
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/
-typedef enum
-{
-  DATA_API_MESSAGE_REINIT = 0x55,
-} DATA_API_MESSAGE;
-
 typedef enum
 {
   DATA_API_CMD_READ,     /* Read data from local register */
@@ -62,7 +57,7 @@ void            vDATAAPIinit ( TaskHandle_t* targets );
 DATA_API_STATUS eDATAAPIisInit ( void );
 DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
 DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib );
-DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units, eConfigBitMap* bitMap );
+DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units );
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart );
 DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
 DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* password );

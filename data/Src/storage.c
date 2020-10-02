@@ -11,13 +11,13 @@
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
-uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob );
-uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob );
+uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob );
+uint8_t uBlobToConfig ( eConfigReg* reg, const uint8_t* blob );
 uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob );
-uint8_t uBlobToFix16 ( fix16_t* val, uint8_t* blob );
+uint8_t uBlobToFix16 ( fix16_t* val, const uint8_t* blob );
 uint8_t uUint16ToBlob ( uint16_t val, uint8_t* blob );
-uint8_t uBlobToUint16 ( uint16_t* val, uint8_t* blob );
-uint8_t uBlobToUint32 ( uint32_t* val, uint8_t* blob );
+uint8_t uBlobToUint16 ( uint16_t* val, const uint8_t* blob );
+uint8_t uBlobToUint32 ( uint32_t* val, const uint8_t* blob );
 uint8_t uUint32ToBlob ( uint32_t val, uint8_t* blob );
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
@@ -29,13 +29,13 @@ uint8_t uUint16ToBlob ( uint16_t val, uint8_t* blob )
   return 2U;
 }
 
-uint8_t uBlobToUint16 ( uint16_t* val, uint8_t* blob )
+uint8_t uBlobToUint16 ( uint16_t* val, const uint8_t* blob )
 {
   *val = ( uint16_t )blob[0U] | ( ( uint16_t )blob[1U] << 8U );
   return 2U;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uBlobToUint32 ( uint32_t* val, uint8_t* blob )
+uint8_t uBlobToUint32 ( uint32_t* val, const uint8_t* blob )
 {
   *val = ( uint32_t )blob[0U] | ( ( uint32_t )blob[1U] << 8U ) | ( ( uint32_t )blob[2U] << 16U ) | ( ( uint32_t )blob[3U] << 24U );
   return 4U;
@@ -54,8 +54,8 @@ uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob )
 {
   return uUint32ToBlob( ( uint32_t )val, blob );
 }
-
-uint8_t uBlobToFix16 ( fix16_t* val, uint8_t* blob )
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uBlobToFix16 ( fix16_t* val, const uint8_t* blob )
 {
   return uBlobToUint32( ( ( uint32_t* )val ), blob );
 }
@@ -66,7 +66,7 @@ uint8_t uBlobToFix16 ( fix16_t* val, uint8_t* blob )
  *         blob - target data array. Size need to be minimum CONFIG_MAX_SIZE ( from config.h )
  * Output: Size of output blob
  */
-uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
+uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
@@ -80,13 +80,6 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
   {
     count += uUint16ToBlob( reg->units[i], &blob[count] );
   }
-  /*
-  for ( i=0U; i<reg->atrib->bitMapSize; i++ )
-  {
-    count += uUint16ToBlob( reg->bitMap[i].mask, &blob[count] );
-    blob[count++] = ( uint8_t )  reg->bitMap[i].shift;
-  }
-  */
   return count;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -96,7 +89,7 @@ uint8_t uConfigToBlob ( eConfigReg* reg, uint8_t* blob )
  *         blob - data array
  * Output: Size of output blob
  */
-uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
+uint8_t uBlobToConfig ( eConfigReg* reg, const uint8_t* blob )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
@@ -110,13 +103,6 @@ uint8_t uBlobToConfig ( eConfigReg* reg, uint8_t* blob )
   {
     count += uBlobToUint16( &reg->units[i], &blob[count] );
   }
-  /*
-  for ( i=0U; i<reg->atrib->bitMapSize; i++ )
-  {
-    count += uBlobToUint16( &reg->bitMap[i].mask, &blob[count] );
-    reg->bitMap[i].shift = ( uint8_t ) blob[count++];
-  }
-  */
   return count;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -209,27 +195,27 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
       size += len;
       for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
       {
-	res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	len   = uBlobToUint16( &charts[i]->xunit[j], buffer );
-	size += len;
+	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
+	      len   = uBlobToUint16( &charts[i]->xunit[j], buffer );
+	      size += len;
       }
       for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
       {
-	res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	len   = uBlobToUint16( &charts[i]->yunit[j], buffer );
-	size += len;
+	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
+	      len   = uBlobToUint16( &charts[i]->yunit[j], buffer );
+	      size += len;
       }
       res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
       len   = uBlobToUint16( &charts[i]->size, buffer );
       size += len;
       for ( j=0U; j<charts[i]->size; j++ )
       {
-	res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	len   = uBlobToFix16( &charts[i]->dots[j].x, buffer );
-	size += len;
-	res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	len   = uBlobToFix16( &charts[i]->dots[j].y, buffer );
-	size += len;
+	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
+	      len   = uBlobToFix16( &charts[i]->dots[j].x, buffer );
+	      size += len;
+	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
+	      len   = uBlobToFix16( &charts[i]->dots[j].y, buffer );
+	      size += len;
       }
       adr += size;
 
@@ -275,7 +261,7 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEdeleteConfigs( void )
+EEPROM_STATUS eSTORAGEdeleteConfigs ( void )
 {
   EEPROM_STATUS res        = EEPROM_OK;
   uint32_t      i          = 0U;
@@ -294,7 +280,7 @@ EEPROM_STATUS eSTORAGEdeleteConfigs( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEreadConfigs( void )
+EEPROM_STATUS eSTORAGEreadConfigs ( void )
 {
   EEPROM_STATUS res                     = EEPROM_OK;
   uint8_t       i                       = 0U;
@@ -354,7 +340,7 @@ EEPROM_STATUS eSTORAGEwriteLogPointer ( uint16_t pointer )
   return eEEPROMwriteMemory( STORAGE_LOG_POINTER_ADR, data, 2U );
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record )
+EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, const LOG_RECORD_TYPE* record )
 {
   uint8_t data[LOG_RECORD_SIZE] = { 0x00U };
 
@@ -363,7 +349,7 @@ EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record )
   data[2U] = ( uint8_t )( record->time >> 24U );
   data[3U] = ( uint8_t )( record->time >> 16U );
   data[4U] = ( uint8_t )( record->time >> 8U  );
-  data[5U] = ( uint8_t )( record->time );
+  data[5U] = ( uint8_t )( record->time        );
   return eEEPROMwriteMemory( ( STORAGE_LOG_ADR + ( adr * LOG_RECORD_SIZE ) ), data, LOG_RECORD_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/

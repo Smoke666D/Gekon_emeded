@@ -21,7 +21,7 @@
 
 /*----------------------- Functions ------------------------------------*/
 void    vSYSInitSerial ( UART_HandleTypeDef* uart );
-void    vSYSSerial ( char* msg );
+void    vSYSSerial ( const char* msg );
 void    vSYSgetUniqueID32 ( uint32_t* id );
 void    vSYSgetUniqueID16 ( uint16_t* id );
 uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output );

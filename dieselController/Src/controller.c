@@ -37,7 +37,6 @@ CONTROLLER_TYPE controller =
   .stopDelay       = 0U,
   .timerID         = 0U,
 };
-static osThreadId_t  controllerHandle = NULL;
 /*---------------------------------- MACROS ----------------------------------*/
 #define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, 0U ) )
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
@@ -45,6 +44,8 @@ static osThreadId_t  controllerHandle = NULL;
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
 static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
+/*-------------------------------- External ----------------------------------*/
+osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 void vCONTROLLERtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
@@ -300,23 +301,23 @@ void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS genera
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERfpiProcess ()
+void vCONTROLLERdataInit ( void )
 {
-
+  controller.stopDelay = getValue( &timerReturnDelay );
+  return;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERinit ( const CONTROLLER_INIT* init )
 {
-
   controllerGPIO = *init;
   vCONTROLLERsetLED( HMI_CMD_START,  0U );
   vCONTROLLERsetLED( HMI_CMD_STOP,   0U );
   vCONTROLLERsetLED( HMI_CMD_AUTO,   0U );
   vCONTROLLERsetLED( HMI_CMD_LOAD,   0U );
   vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
-  controller.stopDelay = getValue( &timerReturnDelay );
+  vCONTROLLERdataInit();
   const osThreadAttr_t controllerTask_attributes = {
     .name       = "fpiTask",
     .priority   = ( osPriority_t ) osPriorityLow,
@@ -329,32 +330,34 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERtask ( void const* argument )
 {
-  ENGINE_STATUS   engineState          = eENGINEgetEngineStatus();
-  ELECTRO_STATUS  generatorState       = eELECTROgetGeneratorStatus();
-  ELECTRO_STATUS  mainsState           = eELECTROgetMainsStatus();
+  ENGINE_STATUS   engineState          = ENGINE_STATUS_IDLE;
+  ELECTRO_STATUS  generatorState       = ELECTRO_STATUS_IDLE;
+  ELECTRO_STATUS  mainsState           = ELECTRO_STATUS_IDLE;
   ENGINE_COMMAND  engineCmd            = ENGINE_CMD_NONE;
   ELECTRO_COMMAND electroCmd           = ELECTRO_CMD_NONE;
   SYSTEM_EVENT    interiorEvent        = { .type = EVENT_NONE, .action = ACTION_NONE };
   SYSTEM_EVENT    inputEvent           = { .type = EVENT_NONE, .action = ACTION_NONE };
   FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
-  uint32_t        inputKeyboardCommand = HMI_CMD_NONE;
+  uint32_t        inputNotifi          = 0U;
+  uint8_t         inputKeyboardCommand = HMI_CMD_NONE;
 
-  uint8_t  imulator = 1U;
 
   for (;;)
   {
-    if ( imulator == 0U )
-    {
-      inputKeyboardCommand = HMI_CMD_START;
-      imulator = 1U;
-    }
     /*------------------------------------ GET BLOCKS STATUS -------------------------------------*/
     engineState    = eENGINEgetEngineStatus();
     generatorState = eELECTROgetGeneratorStatus();
     mainsState     = eELECTROgetMainsStatus();
-    /*-------------------------------------- KEYBOARD INPUT --------------------------------------*/
-    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputKeyboardCommand, KEY_NOTIFY_WAIT_DELAY ) == pdPASS )
+    /*--------------------------------- KEYBOARD & SYSTEM INPUT -----------------------------------*/
+    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
     {
+    /*--------------------------------------- SYSTEM INPUT ----------------------------------------*/
+      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
+      {
+        vCONTROLLERdataInit();
+      }
+    /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/
+      inputKeyboardCommand = ( uint8_t )( inputNotifi & HMI_CMD_MASK );
       switch ( inputKeyboardCommand )
       {
         case HMI_CMD_START:
@@ -366,15 +369,15 @@ void vCONTROLLERtask ( void const* argument )
                  ( controller.banGenLoad     == 0U                      ) &&
                  ( engineState               == ENGINE_STATUS_WORK      ) )
             {
-              vCONTROLLERsetLED( HMI_CMD_LOAD, 1U );
+              vCONTROLLERsetLED( HMI_CMD_LOAD, RELAY_ON );
               electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
               xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
             }
             /* START */
             else
             {
-              vCONTROLLERsetLED( HMI_CMD_START, 1U );
-              vCONTROLLERsetLED( HMI_CMD_STOP,  0U );
+              vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+              vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
               vFPIsetBlock();
               controller.state = CONTROLLER_STATUS_START;
               engineCmd        = ENGINE_CMD_START;
@@ -388,7 +391,7 @@ void vCONTROLLERtask ( void const* argument )
                ( controller.banGenLoad == 0U                      ) &&
                ( engineState           == ENGINE_STATUS_WORK      ) )
           {
-            vCONTROLLERsetLED( HMI_CMD_LOAD, 1U );
+            vCONTROLLERsetLED( HMI_CMD_LOAD, RELAY_ON );
             electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
             xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
           }
@@ -398,8 +401,8 @@ void vCONTROLLERtask ( void const* argument )
                ( controller.state == CONTROLLER_STATUS_WORK  ) &&
                ( controller.state == CONTROLLER_STATUS_START ) )
           {
-            vCONTROLLERsetLED( HMI_CMD_START, 0U );
-            vCONTROLLERsetLED( HMI_CMD_STOP,  1U );
+            vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
+            vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON  );
             controller.state = CONTROLLER_STATUS_PLAN_STOP;
           }
           break;
@@ -407,16 +410,16 @@ void vCONTROLLERtask ( void const* argument )
           /* MANUAL */
           if ( ( CONTROLLER_MANUAL_BTN_EXIST == 0U ) && ( controller.mode == CONTROLLER_MODE_AUTO ) )
           {
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   0U );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
+            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
+            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
             vFPOsetAutoMode( RELAY_OFF );
             controller.mode = CONTROLLER_MODE_MANUAL;
           }
           /* AUTO */
           else if ( controller.mode  == CONTROLLER_MODE_MANUAL )
           {
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   1U );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, 0U );
+            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_ON  );
+            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_OFF );
             vFPOsetAutoMode( RELAY_ON );
             controller.mode = CONTROLLER_MODE_AUTO;
             if ( ( ( controller.state == CONTROLLER_STATUS_START ) ||
@@ -434,8 +437,8 @@ void vCONTROLLERtask ( void const* argument )
         case HMI_CMD_MANUAL:
           if ( controller.mode == CONTROLLER_MODE_AUTO )
           {
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   0U );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
+            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
+            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
             vFPOsetAutoMode( RELAY_OFF );
             controller.mode = CONTROLLER_MODE_MANUAL;
           }

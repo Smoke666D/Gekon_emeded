@@ -156,6 +156,8 @@ typedef struct __packed
   RELAY_IMPULSE_DEVICE  relayOn;
   RELAY_IMPULSE_DEVICE  relayOff;
 } MAINS_TYPE;
+/*----------------------- Extern ---------------------------------------*/
+extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
 void           vELECTROinit ( /*TIM_HandleTypeDef* currentTIM*/ void );
 ELECTRO_STATUS eELECTROgetGeneratorStatus ( void );

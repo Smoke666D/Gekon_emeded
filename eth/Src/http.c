@@ -830,16 +830,16 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
  */
 void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remoteIP )
 {
-  char*           strStr  = NULL;
-  uint16_t        adr     = 0xFFFFU;
-  REST_REQUEST    request = REST_REQUEST_ERROR;
-  REST_ADDRESS    adrFlag = REST_NO_ADR;
-  HTTP_STREAM*    stream  = NULL;
-  uint32_t        i       = 0U;
-  uint32_t        ewaLen  = 0U;
-  uint8_t         buffer[EEPROM_LENGTH_SIZE];
-  DATA_API_STATUS status = DATA_API_STAT_OK;
-  LOG_RECORD_TYPE record;
+  char*           strStr                     = NULL;
+  uint16_t        adr                        = 0xFFFFU;
+  REST_REQUEST    request                    = REST_REQUEST_ERROR;
+  REST_ADDRESS    adrFlag                    = REST_NO_ADR;
+  HTTP_STREAM*    stream                     = NULL;
+  uint32_t        i                          = 0U;
+  uint32_t        ewaLen                     = 0U;
+  uint8_t         buffer[EEPROM_LENGTH_SIZE] = { 0U };
+  DATA_API_STATUS status                     = DATA_API_STAT_OK;
+  LOG_RECORD_TYPE record                     = { 0U };
   /*----------------- Common header -----------------*/
   strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;

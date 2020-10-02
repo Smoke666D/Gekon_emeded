@@ -12,7 +12,6 @@
 #include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
-#define  KEY_NOTIFY_WAIT_DELAY       10U
 #define  CONTROLLER_LOAD_BTN_EXIST   0U
 #define  CONTROLLER_MANUAL_BTN_EXIST 0U
 /*------------------------- Enum ---------------------------------------*/
@@ -65,6 +64,8 @@ typedef struct __packed
   fix16_t           stopDelay;
   timerID_t         timerID;
 } CONTROLLER_TYPE;
+/*----------------------- Extern ---------------------------------------*/
+extern osThreadId_t controllerHandle;
 /*----------------------- Functions ------------------------------------*/
 void vCONTROLLERinit ( const CONTROLLER_INIT* init );
 /*----------------------------------------------------------------------*/

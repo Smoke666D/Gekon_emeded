@@ -200,6 +200,7 @@ typedef struct __packed
   ENGINE_STATUS   status;
 } ENGINE_TYPE;
 /*----------------------- Extern ---------------------------------------*/
+extern osThreadId_t engineHandle;
 /*----------------------- Functions ------------------------------------*/
 void          vENGINEinit ( void );
 void          vENGINEemergencyStop ( void );

@@ -18,7 +18,6 @@
 /*-------------------------------- Structures --------------------------------*/
 static QueueHandle_t     pFPIQueue     = NULL;
 static StaticQueue_t     xFPIQueue     = { 0U };
-static osThreadId_t      fpiHandle     = NULL;
 static SemaphoreHandle_t xFPIsemaphore = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
@@ -59,6 +58,8 @@ const char* cFPInames[FPI_NUMBER] =
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
 static FPI     fpis[FPI_NUMBER]                         = { 0U };
+/*-------------------------------- External -----------------------------------*/
+osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 void    vFPITask ( void const* argument );
 /*----------------------------------------------------------------------------*/
@@ -153,6 +154,14 @@ void vFPIprintSetup ( void )
   vSYSSerial( "\n\r" );
   return;
 }
+void vFPIdataInit ( void )
+{
+  vFPIreadConfigs( &fpis[FPI_A], &diaSetup, &diaDelay );
+  vFPIreadConfigs( &fpis[FPI_B], &dibSetup, &dibDelay );
+  vFPIreadConfigs( &fpis[FPI_C], &dicSetup, &dicDelay );
+  vFPIreadConfigs( &fpis[FPI_D], &didSetup, &didDelay );
+  return;
+}
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -170,10 +179,7 @@ void vFPIinit ( const FPI_INIT* init )
   fpis[FPI_D].pin  = init->pinD;
   HAL_GPIO_WritePin( init->portCS, init->pinCS, GPIO_PIN_SET );
   /* Read parameters form memory */
-  vFPIreadConfigs( &fpis[FPI_A], &diaSetup, &diaDelay );
-  vFPIreadConfigs( &fpis[FPI_B], &dibSetup, &dibDelay );
-  vFPIreadConfigs( &fpis[FPI_C], &dicSetup, &dicDelay );
-  vFPIreadConfigs( &fpis[FPI_D], &didSetup, &didDelay );
+  vFPIdataInit();
   /* Logic part */
   for ( i=0U; i<FPI_NUMBER; i++ )
   {
@@ -258,10 +264,19 @@ void vFPIsetBlock ( void )
 /*----------------------------------------------------------------------------*/
 void vFPITask ( void const* argument )
 {
-  FPI_EVENT event = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
-  uint8_t   i     = 0U;
+  FPI_EVENT event       = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
+  uint8_t   i           = 0U;
+  uint32_t  inputNotifi = 0U;
   for (;;)
   {
+    /*-------------------- Read system notification --------------------*/
+    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    {
+      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
+      {
+        vFPIdataInit();
+      }
+    }
     if ( xSemaphoreTake( xCHARTSemaphore, FPI_TASK_DELAY ) == pdTRUE )
     {
       for ( i=0U; i<FPI_NUMBER; i++ )

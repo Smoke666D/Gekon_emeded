@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-09-11 11:26:21
+ * Make time: 2020-09-28 14:32:57
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -16,10 +16,11 @@
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
 #define   CONFIG_MAX_SIZE              77U     // bytes
-#define   CONFIG_TOTAL_SIZE            1834U   // bytes
+#define   CONFIG_TOTAL_SIZE            1570U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )
+
 #define   CONFIG_REG_ADR_STR           "adr"
 #define   CONFIG_REG_SCALE_STR         "scale"
 #define   CONFIG_REG_VALUE_STR         "value"
@@ -31,11 +32,12 @@
 #define   CONFIG_REG_LEN_STR           "len"
 #define   CONFIG_REG_BIT_MAP_SIZE_STR  "bitMapSize"
 #define   CONFIG_REG_BIT_MAP_STR       "bit"
+
 #define   BIT_MAP_MASK_STR             "mask"
 #define   BIT_MAP_SHIFT_STR            "shift"
 #define   BIT_MAP_MIN_STR              "min"
 #define   BIT_MAP_MAX_STR              "max"
-/*------------------------- Enum ---------------------------------------*/
+/*----------------------- Structures -----------------------------------*/
 typedef enum
 {
   CONFIG_NO    = 0x00U,
@@ -51,7 +53,7 @@ typedef enum
   CONFIG_TYPE_CHAR      = 'C',
   CONFIG_TYPE_BITMAP    = 'B',
 } CONFIG_TYPE;
-/*----------------------- Structures -----------------------------------*/
+
 typedef struct __packed
 {
   uint16_t  mask;
@@ -66,6 +68,7 @@ typedef struct __packed
   CONFIG_TYPE      type;        // R
   uint8_t          len;         // R
   uint8_t          bitMapSize;  // R
+  eConfigBitMap*   bitMap;      // R
 } eConfigAttributes;
 
 typedef struct __packed
@@ -74,7 +77,6 @@ typedef struct __packed
   int8_t                   scale;                   // RW
   uint16_t*                value;                   // RW
   uint16_t                 units[MAX_UNITS_LENGTH]; // RW
-  eConfigBitMap*           bitMap;                  // RW
 } eConfigReg;
 /*------------------------ Addresses -----------------------------------*/
 #define   VERSION_CONTROLLER_ADR                                 0U

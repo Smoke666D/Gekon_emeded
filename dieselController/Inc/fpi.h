@@ -118,6 +118,7 @@ typedef struct __packed
   uint16_t       pinCS;
 } FPI_INIT;
 /*----------------------- Extern ---------------------------------------*/
+extern osThreadId_t fpiHandle;
 /*----------------------- Functions ------------------------------------*/
 void          vFPIinit ( const FPI_INIT* init );
 QueueHandle_t pFPIgetQueue ( void );

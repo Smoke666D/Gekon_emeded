@@ -9,6 +9,7 @@
 #define INC_COMMON_H_
 /*----------------------- Includes -------------------------------------*/
 #include    "stm32f2xx_hal.h"
+#include    "fix16.h"
 /*------------------------ Define --------------------------------------*/
 #define     UNIQUE_ID_ADR               0x1FFF7A10U
 /*------------------------ Macros --------------------------------------*/
@@ -22,6 +23,7 @@
 /*----------------------- Functions ------------------------------------*/
 void    vSYSInitSerial ( UART_HandleTypeDef* uart );
 void    vSYSSerial ( const char* msg );
+void    vSYSprintFix16 ( fix16_t value );
 void    vSYSgetUniqueID32 ( uint32_t* id );
 void    vSYSgetUniqueID16 ( uint16_t* id );
 uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output );

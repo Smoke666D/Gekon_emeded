@@ -355,6 +355,7 @@ void vCONTROLLERtask ( void const* argument )
       if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
       {
         vCONTROLLERdataInit();
+        vFPOdataInit();
       }
     /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/
       inputKeyboardCommand = ( uint8_t )( inputNotifi & HMI_CMD_MASK );

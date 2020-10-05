@@ -36,51 +36,46 @@
  */
 
 
-#define R118_R122 104.7
-#define R122 4.7
-#define VDD_CF ((R118_R122/R122)*3.3/4095)
-#define AC_COOF (401*3.3/4095)
-#define R3   1416
-#define R12      22.2
-#define R12_R11  122.2
-#define VT4  0
-#define MAX_RESISTANCE 1000
-#define DELTA  0.04*4095/3.3
-#define VDD_CH  0U
-#define COFDIN  1U
-#define COFAIN  5U
-#define CANC    6U
-#define CFUEL   2U
-#define CPRES   3U
-#define CTEMP      7U
-#define NET_F1_VDD 8U
-#define NET_F2_VDD 9U
-#define NET_F3_VDD 10U
-#define NET_FREQ   11U
-#define ADC_FREQ   12U
-#define ADC_TEMP   13U
-#define GEN_F1_VDD 14U
-#define GEN_F2_VDD 15U
-#define GEN_F3_VDD 16U
-#define GEN_FREQ   17U
-
-
-#define DC_SIZE  50
-
-#define MIN_AMP_VALUE 100
-
-#define NO_COMMON 0x01
-#define NO_SOP    0x02
-#define SC_SOP    0x04
-#define NO_SCT    0x08
-#define SC_SCT    0x10
-#define NO_SFL    0x20
-#define SC_SFL    0x04
-
-#define ADC_OK    0x00
-#define LOW_FREQ  0x01
-#define HIGH_FREQ 0x02
-#define ADC_ERROR 0x03
+#define R118_R122      104.7
+#define R122           4.7
+#define VDD_CF         ( ( R118_R122 / R122 ) * 3.3 / 4095U )
+#define AC_COOF        ( 401U * 3.3 / 4095U )
+#define R3             1416U
+#define R12            22.2
+#define R12_R11        122.2
+#define VT4            0U
+#define MAX_RESISTANCE 5000U
+#define DELTA          ( 0.04 * 4095U / 3.3 )
+#define VDD_CH         0U
+#define COFDIN         1U
+#define COFAIN         5U
+#define CANC           6U
+#define CFUEL          2U
+#define CPRES          3U
+#define CTEMP          7U
+#define NET_F1_VDD     8U
+#define NET_F2_VDD     9U
+#define NET_F3_VDD     10U
+#define NET_FREQ       11U
+#define ADC_FREQ       12U
+#define ADC_TEMP       13U
+#define GEN_F1_VDD     14U
+#define GEN_F2_VDD     15U
+#define GEN_F3_VDD     16U
+#define GEN_FREQ       17U
+#define DC_SIZE        50U
+#define MIN_AMP_VALUE  100U
+#define NO_COMMON      0x01U
+#define NO_SOP         0x02U
+#define SC_SOP         0x04U
+#define NO_SCT         0x08U
+#define SC_SCT         0x10U
+#define NO_SFL         0x20U
+#define SC_SFL         0x04U
+#define ADC_OK         0x00U
+#define LOW_FREQ       0x01U
+#define HIGH_FREQ      0x02U
+#define ADC_ERROR      0x03U
 
 
 typedef enum

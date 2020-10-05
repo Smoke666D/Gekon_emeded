@@ -46,8 +46,6 @@ void vVRextiCallback ( void )
 void vVRtimCallback ( void )
 {
   strob  = vrCounter;
-
-
   vrSpeed   = fix16_mul( fix16_div( fix16_from_int( vrCounter ), fix16_from_int( vrTeethNumber ) ), vrCoef ); /* RPM */
   vrOut     = fix16_to_float( vrSpeed );
   vrCounter = 0U;

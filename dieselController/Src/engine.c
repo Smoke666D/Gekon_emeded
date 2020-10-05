@@ -64,33 +64,40 @@ fix16_t getChargerVoltage ( void )
 void vSENSORprocess ( SENSOR* sensor, fix16_t* value, QueueHandle_t queue )
 {
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
-  if ( ( sensor->type == SENSOR_TYPE_RESISTIVE ) || ( sensor->type == SENSOR_TYPE_CURRENT ) )
+  if ( ( *value == MAX_RESISTANCE ) && ( sensor->cutout.enb > 0U ) )
   {
-    funcStat = eCHARTfunc( sensor->chart, sensor->get(), value );
-    switch ( funcStat )
-    {
-      case FUNC_OK:
-        sensor->status = SENSOR_STATUS_NORMAL;
-        break;
-      case FUNC_OVER_MAX_X_ERROR:
-        sensor->status = SENSOR_STATUS_OPEN_CIRCUIT_ERROR;
-        xQueueSend( queue, &sensor->cutout.event, portMAX_DELAY );
-        break;
-      case FUNC_OVER_MIN_X_ERROR:
-        sensor->status = SENSOR_STATUS_ERROR;
-        break;
-      case FUNC_SIZE_ERROR:
-        sensor->status = SENSOR_STATUS_ERROR;
-        break;
-      default:
-        sensor->status = SENSOR_STATUS_ERROR;
-        break;
-    }
+    sensor->status = SENSOR_STATUS_LINE_ERROR;
+    xQueueSend( queue, &sensor->cutout.event, portMAX_DELAY );
   }
   else
   {
-    *value         = sensor->get();
-    sensor->status = SENSOR_STATUS_NORMAL;
+    if ( ( sensor->type == SENSOR_TYPE_RESISTIVE ) || ( sensor->type == SENSOR_TYPE_CURRENT ) )
+    {
+      funcStat = eCHARTfunc( sensor->chart, sensor->get(), value );
+      switch ( funcStat )
+      {
+        case FUNC_OK:
+          sensor->status = SENSOR_STATUS_NORMAL;
+          break;
+        case FUNC_OVER_MAX_X_ERROR:
+          sensor->status = SENSOR_STATUS_ERROR;
+          break;
+        case FUNC_OVER_MIN_X_ERROR:
+          sensor->status = SENSOR_STATUS_ERROR;
+          break;
+        case FUNC_SIZE_ERROR:
+          sensor->status = SENSOR_STATUS_ERROR;
+          break;
+        default:
+          sensor->status = SENSOR_STATUS_ERROR;
+          break;
+      }
+    }
+    else
+    {
+      *value         = sensor->get();
+      sensor->status = SENSOR_STATUS_NORMAL;
+    }
   }
   return;
 }
@@ -99,10 +106,13 @@ fix16_t fOILprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &oil.pressure, &value, pLOGICgetEventQueue() );
-  vALARMcheck( &oil.alarm, value, pLOGICgetEventQueue() );
-  if ( oil.alarm.status == ALARM_STATUS_IDLE )
+  if ( oil.pressure.status == SENSOR_STATUS_NORMAL )
   {
-    vALARMcheck( &oil.preAlarm, value, pLOGICgetEventQueue() );
+    vALARMcheck( &oil.alarm, value, pLOGICgetEventQueue() );
+    if ( oil.alarm.status == ALARM_STATUS_IDLE )
+    {
+      vALARMcheck( &oil.preAlarm, value, pLOGICgetEventQueue() );
+    }
   }
   return value;
 }
@@ -111,13 +121,16 @@ fix16_t fCOOLANTprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &coolant.temp, &value, pLOGICgetEventQueue() );
-  vALARMcheck( &coolant.alarm, value, pLOGICgetEventQueue() );
-  if ( coolant.alarm.status == ALARM_STATUS_IDLE )
+  if ( coolant.temp.status == SENSOR_STATUS_NORMAL )
   {
-    vALARMcheck( &coolant.preAlarm, value,  pLOGICgetEventQueue() );
+    vALARMcheck( &coolant.alarm, value, pLOGICgetEventQueue() );
+    if ( coolant.alarm.status == ALARM_STATUS_IDLE )
+    {
+      vALARMcheck( &coolant.preAlarm, value,  pLOGICgetEventQueue() );
+    }
+    vRELAYproces( &coolant.heater, value );
+    vRELAYproces( &coolant.cooler, value );
   }
-  vRELAYproces( &coolant.heater, value );
-  vRELAYproces( &coolant.cooler, value );
   return value;
 }
 /*----------------------------------------------------------------------------*/
@@ -125,20 +138,20 @@ fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value, pLOGICgetEventQueue() );
-  vALARMcheck( &fuel.lowAlarm, value, pLOGICgetEventQueue() );
-  if ( fuel.lowAlarm.status == ALARM_STATUS_IDLE )
+  if ( fuel.level.status == SENSOR_STATUS_NORMAL )
   {
-    vALARMcheck( &fuel.lowPreAlarm, value, pLOGICgetEventQueue() );
-    if ( fuel.lowPreAlarm.status == ALARM_STATUS_IDLE )
+    vALARMcheck( &fuel.lowAlarm, value, pLOGICgetEventQueue() );
+    if ( fuel.lowAlarm.status == ALARM_STATUS_IDLE )
+    {
+      vALARMcheck( &fuel.lowPreAlarm, value, pLOGICgetEventQueue() );
+    }
+    vALARMcheck( &fuel.hightAlarm, value, pLOGICgetEventQueue() );
+    if ( fuel.hightPreAlarm.status == ALARM_STATUS_IDLE )
     {
       vALARMcheck( &fuel.hightPreAlarm, value, pLOGICgetEventQueue() );
-      if ( fuel.hightPreAlarm.status == ALARM_STATUS_IDLE )
-      {
-        vALARMcheck( &fuel.hightAlarm, value, pLOGICgetEventQueue() );
-      }
     }
+    vRELAYproces( &fuel.booster, value );
   }
-  vRELAYproces( &fuel.booster, value );
   return value;
 }
 /*----------------------------------------------------------------------------*/
@@ -154,6 +167,7 @@ fix16_t fSPEEDprocess ( void )
       vALARMcheck( &speed.lowAlarm, value, pLOGICgetEventQueue() );
     }
   }
+  vSYSprintFix16( value );
   return value;
 }
 /*----------------------------------------------------------------------------*/
@@ -773,7 +787,6 @@ void vENGINEtask ( void const* argument )
   ENGINE_COMMAND inputCmd    = ENGINE_CMD_NONE;
   SYSTEM_EVENT   event       = { 0U };
   uint32_t       inputNotifi = 0U;
-
   for (;;)
   {
     /*-------------------- Read system notification --------------------*/
@@ -844,12 +857,6 @@ void vENGINEtask ( void const* argument )
     batteryVal = fBATTERYprocess();
     chargerVal = fCHARGERprocess();
     vENGINEmileageProcess( &maintenanceReset );
-
-
-    char str[20] = { 0U };
-    fix16_to_str( oilVal, str, 2U );
-    vSYSSerial( str );
-    vSYSSerial( "\r\n" );
     /*------------------------- Input commands -------------------------*/
     switch ( engine.cmd )
     {

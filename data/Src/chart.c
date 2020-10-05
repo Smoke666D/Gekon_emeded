@@ -108,7 +108,7 @@ eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
 
   if ( x <= chart->xmax )
   {
-    if ( x >= chart->xmin)
+    if ( x >= chart->xmin )
     {
       for ( i=0U; i<chart->size; i++ )
       {
@@ -125,16 +125,19 @@ eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
       else
       {
         res = FUNC_SIZE_ERROR;
+        *y  = chart->ymax;
       }
     }
     else
     {
       res = FUNC_OVER_MIN_X_ERROR;
+      *y  = chart->ymin;
     }
   }
   else
   {
     res = FUNC_OVER_MAX_X_ERROR;
+    *y  = chart->ymax;
   }
   return res;
 }

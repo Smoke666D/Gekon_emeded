@@ -106,6 +106,7 @@ void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun )
 {
   uint8_t i = 0U;
 
+  *fpo = NULL;
   for ( i=0U; i<FPO_NUMBER; i++ )
   {
     if ( fpos[i].function == fun )
@@ -290,28 +291,9 @@ void vFPOsetMainsOffImp ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFPOinit( const FPO_INIT* init )
+void vFPOdataInit ( void )
 {
   uint8_t i = 0U;
-  /* Phisical part */
-  fpos[FPO_A].port          = init->outPortA;
-  fpos[FPO_A].pin           = init->outPinA;
-  fpos[FPO_B].port          = init->outPortB;
-  fpos[FPO_B].pin           = init->outPinB;
-  fpos_dis[FPO_DIS_AB].port = init->disPortAB;
-  fpos_dis[FPO_DIS_AB].pin  = init->disPinAB;
-  fpos[FPO_C].port          = init->outPortC;
-  fpos[FPO_C].pin           = init->outPinC;
-  fpos[FPO_D].port          = init->outPortD;
-  fpos[FPO_D].pin           = init->outPinD;
-  fpos_dis[FPO_DIS_CD].port = init->disPortCD;
-  fpos_dis[FPO_DIS_CD].pin  = init->disPinCD;
-  fpos[FPO_E].port          = init->outPortE;
-  fpos[FPO_E].pin           = init->outPinE;
-  fpos[FPO_F].port          = init->outPortF;
-  fpos[FPO_F].pin           = init->outPinF;
-  fpos_dis[FPO_DIS_EF].port = init->disPortEF;
-  fpos_dis[FPO_DIS_EF].pin  = init->disPinEF;
   /* Read parameters form memory */
   fpos[FPO_A].polarity = getBitMap( &doSetup,  0U );
   fpos[FPO_B].polarity = getBitMap( &doSetup,  1U );
@@ -363,8 +345,36 @@ void vFPOinit( const FPO_INIT* init )
   vFPOanaliz( &mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( &mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( &mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
-
+  /* Start system condition */
+  vFPOsetStopSolenoid( RELAY_ON );
+  /* Debug data */
   vFPOprintSetup();
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOinit( const FPO_INIT* init )
+{
+  /* Phisical part */
+  fpos[FPO_A].port          = init->outPortA;
+  fpos[FPO_A].pin           = init->outPinA;
+  fpos[FPO_B].port          = init->outPortB;
+  fpos[FPO_B].pin           = init->outPinB;
+  fpos_dis[FPO_DIS_AB].port = init->disPortAB;
+  fpos_dis[FPO_DIS_AB].pin  = init->disPinAB;
+  fpos[FPO_C].port          = init->outPortC;
+  fpos[FPO_C].pin           = init->outPinC;
+  fpos[FPO_D].port          = init->outPortD;
+  fpos[FPO_D].pin           = init->outPinD;
+  fpos_dis[FPO_DIS_CD].port = init->disPortCD;
+  fpos_dis[FPO_DIS_CD].pin  = init->disPinCD;
+  fpos[FPO_E].port          = init->outPortE;
+  fpos[FPO_E].pin           = init->outPinE;
+  fpos[FPO_F].port          = init->outPortF;
+  fpos[FPO_F].pin           = init->outPinF;
+  fpos_dis[FPO_DIS_EF].port = init->disPortEF;
+  fpos_dis[FPO_DIS_EF].pin  = init->disPinEF;
+  /* Data init */
+  vFPOdataInit();
   return;
 }
 /*----------------------------------------------------------------------------*/

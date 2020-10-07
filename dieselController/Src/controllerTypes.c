@@ -131,6 +131,16 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
+void vLOGICresetTimer ( timerID_t id )
+{
+  aciveCounters &= ~( 1U << id );
+  if ( activeNumber > 0U )
+  {
+    activeNumber--;
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 uint8_t uLOGICisTimer ( timerID_t id )
 {
   uint8_t res = 0U;
@@ -138,17 +148,9 @@ uint8_t uLOGICisTimer ( timerID_t id )
   {
     res              = 1U;
     targetArray[id]  = 0U;
-    aciveCounters   &= ~( 1U << id );
-    activeNumber--;
+    vLOGICresetTimer( id );
   }
   return res;
-}
-/*-----------------------------------------------------------------------------------------*/
-void vLOGICresetTimer ( timerID_t id )
-{
-  aciveCounters |= ~( 1U << id );
-  activeNumber--;
-  return;
 }
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerCallback ( void )

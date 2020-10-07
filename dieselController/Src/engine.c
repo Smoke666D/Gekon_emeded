@@ -137,6 +137,8 @@ fix16_t fCOOLANTprocess ( void )
 fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
+
+
   vSENSORprocess( &fuel.level, &value, pLOGICgetEventQueue() );
   if ( fuel.level.status == SENSOR_STATUS_NORMAL )
   {
@@ -167,7 +169,6 @@ fix16_t fSPEEDprocess ( void )
       vALARMcheck( &speed.lowAlarm, value, pLOGICgetEventQueue() );
     }
   }
-  vSYSprintFix16( value );
   return value;
 }
 /*----------------------------------------------------------------------------*/
@@ -747,10 +748,6 @@ QueueHandle_t pENGINEgetCommandQueue ( void )
 void vENGINEemergencyStop ( void )
 {
   xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
-  //engine.cmd = ENGINE_CMD_EMEGENCY_STOP;
-  //starter.set( RELAY_OFF );
-  //fuel.pump.set( RELAY_OFF );
-  //stopSolenoid.set( RELAY_ON );
   return;
 }
 
@@ -832,13 +829,15 @@ void vENGINEtask ( void const* argument )
             }
             break;
           case ENGINE_STATUS_FAIL_STARTING:
-            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+            if ( ( inputCmd == ENGINE_CMD_EMEGENCY_STOP ) ||
+                 ( inputCmd == ENGINE_CMD_RESET_TO_IDLE ) )
             {
               engine.cmd = inputCmd;
             }
             break;
           case ENGINE_STATUS_FAIL_STOPPING:
-            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+            if ( ( inputCmd == ENGINE_CMD_EMEGENCY_STOP ) ||
+                 ( inputCmd == ENGINE_CMD_RESET_TO_IDLE ) )
             {
               engine.cmd = inputCmd;
             }

@@ -110,8 +110,8 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_EMERGENCY_STOP:
+      vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
       controller.state = CONTROLLER_STATUS_ALARM;
-      //xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
       vENGINEemergencyStop();
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );

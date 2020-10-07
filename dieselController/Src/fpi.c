@@ -299,7 +299,6 @@ void vFPITask ( void const* argument )
               }
               break;
             case FPI_TRIGGERED:
-              vFPIcheckReset ( &fpis[i] );
               if ( uLOGICisTimer( fpis[i].timerID ) > 0U )
               {
                 event.level    = fpis[i].level;

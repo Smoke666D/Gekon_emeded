@@ -885,6 +885,7 @@ void vENGINEtask ( void const* argument )
           switch ( starter.status )
           {
             case STARTER_IDLE:
+              vFPOsetReadyToStart( RELAY_OFF );
               vRELAYimpulseReset( &preHeater );
               preHeater.active             = 0U;
               starterFinish                = 0U;
@@ -1147,8 +1148,20 @@ void vENGINEtask ( void const* argument )
       case ENGINE_CMD_EMEGENCY_STOP:
         starter.set( RELAY_OFF );
         fuel.pump.set( RELAY_OFF );
+        fuel.pump.status = RELAY_OFF;
+        fuel.booster.relay.set( RELAY_OFF );
+        fuel.booster.relay.status = RELAY_OFF;
+        coolant.cooler.relay.set( RELAY_OFF );
+        coolant.cooler.relay.status = RELAY_OFF;
+        coolant.heater.relay.set( RELAY_OFF );
+        coolant.heater.relay.status = RELAY_OFF;
+        idleRelay.set( RELAY_OFF );
         stopSolenoid.set( RELAY_ON );
+        preHeater.active = 0U;
+        preHeater.relay.set( RELAY_OFF );
+        preHeater.relay.status = RELAY_OFF;
         vFPOsetGenReady( RELAY_OFF );
+        vFPOsetReadyToStart( RELAY_OFF );
         engine.status = ENGINE_STATUS_EMERGENCY_STOP;
         break;
       /*----------------------------------------------------------------------------------------*/

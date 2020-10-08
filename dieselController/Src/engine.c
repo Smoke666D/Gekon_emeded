@@ -169,6 +169,10 @@ fix16_t fSPEEDprocess ( void )
       vALARMcheck( &speed.lowAlarm, value, pLOGICgetEventQueue() );
     }
   }
+  if ( speed.hightAlarm.status != ALARM_STATUS_IDLE )
+  {
+    uint8_t i = 0;
+  }
   return value;
 }
 /*----------------------------------------------------------------------------*/
@@ -729,11 +733,14 @@ void vENGINEinit ( void )
   /*--------------------------------------------------------------*/
   vFPOsetReadyToStart( RELAY_ON );
   /*--------------------------------------------------------------*/
-  pEngineCommandQueue = xQueueCreateStatic( ENGINE_COMMAND_QUEUE_LENGTH, sizeof( ENGINE_COMMAND ), engineCommandBuffer, &xEngineCommandQueue );
+  pEngineCommandQueue = xQueueCreateStatic( ENGINE_COMMAND_QUEUE_LENGTH,
+                                            sizeof( ENGINE_COMMAND ),
+                                            engineCommandBuffer,
+                                            &xEngineCommandQueue );
   const osThreadAttr_t engineTask_attributes = {
     .name       = "engineTask",
-    .priority   = ( osPriority_t ) osPriorityLow,
-    .stack_size = 1024U
+    .priority   = ( osPriority_t ) ENGINE_TASK_PRIORITY,
+    .stack_size = ENGINE_TASK_STACK_SIZE
   };
   engineHandle = osThreadNew( vENGINEtask, NULL, &engineTask_attributes );
   vENGINEprintSetup();
@@ -747,7 +754,8 @@ QueueHandle_t pENGINEgetCommandQueue ( void )
 
 void vENGINEemergencyStop ( void )
 {
-  xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
+  ENGINE_COMMAND cmd = ENGINE_CMD_EMEGENCY_STOP;
+  xQueueSend( pENGINEgetCommandQueue(), &cmd, portMAX_DELAY );
   return;
 }
 
@@ -795,7 +803,7 @@ void vENGINEtask ( void const* argument )
       }
     }
     /*----------------------- Read input command -----------------------*/
-    if ( xQueueReceive( pEngineCommandQueue, &inputCmd, 0U ) == pdPASS )
+    if ( xQueueReceive( pENGINEgetCommandQueue(), &inputCmd, 0U ) == pdPASS )
     {
       if ( engine.cmd != inputCmd )
       {
@@ -952,7 +960,7 @@ void vENGINEtask ( void const* argument )
                 battery.lowAlarm.active      = 1U;
                 charger.hightAlarm.active    = 1U;
                 charger.hightPreAlarm.active = 1U;
-                vELECTROalarmStartToIdle();
+                //vELECTROalarmStartToIdle();
               }
               break;
             case STARTER_IDLE_WORK:
@@ -969,7 +977,7 @@ void vENGINEtask ( void const* argument )
                 vLOGICstartTimer( starter.warmingDelay, &timerID );
                 starter.status        = STARTER_WARMING;
                 speed.lowAlarm.active = 1U;
-                vELECTROalarmIdleEnable();
+                //vELECTROalarmIdleEnable();
               }
               break;
             case STARTER_WARMING:

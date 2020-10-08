@@ -320,8 +320,8 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERdataInit();
   const osThreadAttr_t controllerTask_attributes = {
     .name       = "fpiTask",
-    .priority   = ( osPriority_t ) osPriorityLow,
-    .stack_size = 1024U
+    .priority   = ( osPriority_t ) CONTROLLER_TASK_PRIORITY,
+    .stack_size = CONTROLLER_TASK_STACK_SIZE
   };
   controllerHandle = osThreadNew( vCONTROLLERtask, NULL, &controllerTask_attributes );
   vMenuMessageInit( controllerHandle );

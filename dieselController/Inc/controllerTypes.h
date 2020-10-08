@@ -17,17 +17,24 @@
 #include "task.h"
 #include "semphr.h"
 /*------------------------ Define --------------------------------------*/
-#define  LOG_SIZE                255U
-#define  LOG_RECORD_SIZE         6U
-#define  LOGIC_TIMER_STEP        100U  /* ms */
-#define  LOGIC_COUNTERS_SIZE     10U
-#define  EVENT_QUEUE_LENGTH      16U
-#define  LOG_TYPES_SIZE          34U
-#define  LOG_ACTION_SIZE         7U
-#define  HMI_CMD_MASK            0xFFU
-
-#define  TASK_NOTIFY_WAIT_DELAY  10U
-
+#define  LOG_SIZE                   255U
+#define  LOG_RECORD_SIZE            6U
+#define  LOGIC_TIMER_STEP           100U  /* ms */
+#define  LOGIC_COUNTERS_SIZE        10U
+#define  EVENT_QUEUE_LENGTH         16U
+#define  LOG_TYPES_SIZE             34U
+#define  LOG_ACTION_SIZE            7U
+#define  HMI_CMD_MASK               0xFFU
+#define  TASK_NOTIFY_WAIT_DELAY     10U
+/*------------------------ Tasks ---------------------------------------*/
+#define  FPI_TASK_PRIORITY          osPriorityLow
+#define  ENGINE_TASK_PRIORITY       osPriorityLow
+#define  ELECTRO_TASK_PRIORITY      osPriorityLow
+#define  CONTROLLER_TASK_PRIORITY   osPriorityNormal
+#define  FPI_TASK_STACK_SIZE        1024U
+#define  ENGINE_TASK_STACK_SIZE     1024U
+#define  ELECTRO_TASK_STACK_SIZE    1024U
+#define  CONTROLLER_TASK_STACK_SIZE 1024U
 typedef  uint8_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/

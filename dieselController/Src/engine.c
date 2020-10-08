@@ -812,6 +812,12 @@ void vENGINEtask ( void const* argument )
           case ENGINE_STATUS_IDLE:
             engine.cmd = inputCmd;
             break;
+          case ENGINE_STATUS_EMERGENCY_STOP:
+            if ( inputCmd == ENGINE_CMD_RESET_TO_IDLE )
+            {
+              engine.cmd = inputCmd;
+            }
+            break;
           case ENGINE_STATUS_BUSY_STARTING:
             if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
             {
@@ -1143,6 +1149,7 @@ void vENGINEtask ( void const* argument )
         fuel.pump.set( RELAY_OFF );
         stopSolenoid.set( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
+        engine.status = ENGINE_STATUS_EMERGENCY_STOP;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/

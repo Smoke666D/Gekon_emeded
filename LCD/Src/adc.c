@@ -8,7 +8,6 @@
 //#define ARM_MATH_CM3
 
 #include "adc.h"
-
 #include "fix16.h"
 
 static   EventGroupHandle_t xADCEvent;
@@ -18,14 +17,17 @@ volatile int16_t            ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS] = { 0U 
 volatile int16_t            ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS] = { 0U };   //ADC3 input data buffer
 static   xADCFSMType        xADCFSM                                      = DC;
 static   uint16_t           ADCDATA[8U]                                  = { 0U };
-
+static   uint8_t            ADC_VALID_DATA                               =  0;
 
 uint8_t vADCGetADC3Data();
 uint8_t vADCGetADC12Data();
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size );
 int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size );
 
-
+uint8_t uADCGetValidDataFlag()
+{
+  return ADC_VALID_DATA;
+}
 
 uint16_t GetAverVDD(uint8_t channel,uint8_t size)
 {
@@ -160,6 +162,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           xSOP = fix16_from_int( temp_int );
         }
       }
+      ADC_VALID_DATA =1;
       break;
     case 0U:
       //Переводим в наряжние на канале АЦП
@@ -652,7 +655,7 @@ void vDecNetural(int16_t * data)
   return;
 }
 
-#define AMP_DELTA 15
+static uint8_t AMP_DELTA = 15;
 #define MAX_ZERO_POINT 20
 #define FD  3
 
@@ -714,12 +717,13 @@ uint8_t vADCGetADC3Data()
 {
   uint8_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
-
+  int16_t iMax =0;
 
   vDecNetural(&ADC3_IN_Buffer);
-
-  if( xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod ) >= MIN_AMP_VALUE )
+  iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod );
+  if( iMax >= MIN_AMP_VALUE )
   {
+      //  AMP_DELTA = iMax/50;
         result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2);
         if (result==ADC_OK)
         {
@@ -738,8 +742,8 @@ uint8_t vADCGetADC3Data()
  }
 
  //Проверям есть ли на канале напряжение.
-
- if(  xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod ) >= MIN_AMP_VALUE )
+  iMax =xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod );
+ if( iMax  >= MIN_AMP_VALUE )
  {
       if (result!=ADC_OK)
       {
@@ -762,8 +766,8 @@ uint8_t vADCGetADC3Data()
   }
 
   //Проверям есть ли на канале напряжение.
-
-  if( xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod ) >= MIN_AMP_VALUE )
+ iMax =xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod );
+  if( iMax >= MIN_AMP_VALUE )
   {
          if (result!=ADC_OK)
          {
@@ -891,7 +895,7 @@ fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
 
 }
 /*
- * Сервисная функция для вычисоения максимального значения
+ * Сервисная функция для вычисления максимального значения
  */
 int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size )
 {

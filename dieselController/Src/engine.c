@@ -61,7 +61,7 @@ const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTI
     "FAIL_STARTING",
     "FAIL_STOPPING",
   };
-  const char* starterStatusStr[] =
+  const char* starterStatusStr[11U] =
   {
     "IDLE",
     "START_DELAY",
@@ -72,6 +72,15 @@ const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTI
     "IDLE_WORK",
     "MOVE_TO_NOMINAL",
     "WARMING",
+    "FAIL",
+    "OK",
+  };
+  const char* planStopStatusStr[6U] =
+  {
+    "IDLE",
+    "COOLDOWN",
+    "IDLE_COOLDOWN",
+    "PROCESSING",
     "FAIL",
     "OK",
   };
@@ -313,10 +322,10 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   return res;
 }
 /*----------------------------------------------------------------------------*/
-uint8_t uENGINEisStop( fix16_t pressure, fix16_t speed  )
+uint8_t uENGINEisStop ( fix16_t pressure, fix16_t speed  )
 {
   uint8_t res = 0U;
-  if ( ( pressure == 0U ) && ( speed == 0U ) )
+  if ( ( pressure < ENGINE_OIL_PRESSURE_TRESH_HOLD ) && ( speed == 0U ) )
   {
     res = 1U;
   }
@@ -433,6 +442,16 @@ void vLOGICprintStarterStatus ( STARTER_STATUS status )
   #if ( DEBUG_SERIAL_STATUS > 0U )
     vSYSSerial( ">>Starter status: " );
     vSYSSerial( starterStatusStr[status] );
+    vSYSSerial( "\r\n" );
+  #endif
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vLOGICprintPlanStopStatus ( PLAN_STOP_STATUS status )
+{
+  #if ( DEBUG_SERIAL_STATUS > 0U )
+    vSYSSerial( ">>Plan stop status: " );
+    vSYSSerial( planStopStatusStr[status] );
     vSYSSerial( "\r\n" );
   #endif
   return;
@@ -1156,6 +1175,7 @@ void vENGINEtask ( void const* argument )
               planStop.status = STOP_COOLDOWN;
               vFPOsetGenReady( RELAY_OFF );
               vLOGICstartTimer( planStop.coolingDelay, &timerID );
+              vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_COOLDOWN:
               if ( uLOGICisTimer( timerID ) > 0U )
@@ -1164,7 +1184,8 @@ void vENGINEtask ( void const* argument )
                 vELECTROalarmIdleDisable();
                 idleRelay.set( RELAY_ON );
                 vLOGICstartTimer( planStop.coolingIdleDelay, &timerID );
-                engine.status = STOP_IDLE_COOLDOWN;
+                planStop.status = STOP_IDLE_COOLDOWN;
+                vLOGICprintPlanStopStatus( planStop.status );
               }
               break;
             case STOP_IDLE_COOLDOWN:
@@ -1177,18 +1198,20 @@ void vENGINEtask ( void const* argument )
                 stopSolenoid.set( RELAY_ON );
                 vLOGICstartTimer( planStop.processDelay, &timerID );
                 planStop.status = STOP_PROCESSING;
+                vLOGICprintPlanStopStatus( planStop.status );
               }
               break;
             case STOP_PROCESSING:
               if ( uLOGICisTimer( timerID ) > 0U )
               {
                 planStop.status = STOP_FAIL;
+                vLOGICprintPlanStopStatus( planStop.status );
               }
               if ( uENGINEisStop( oilVal, speedVal ) > 0U )
               {
                 vLOGICresetTimer( timerID );
-                stopSolenoid.set( RELAY_OFF );
                 planStop.status = STOP_OK;
+                vLOGICprintPlanStopStatus( planStop.status );
               }
               break;
             case STOP_FAIL:
@@ -1198,6 +1221,7 @@ void vENGINEtask ( void const* argument )
               event.action    = ACTION_EMERGENCY_STOP;
               event.type      = EVENT_STOP_FAIL;
               xQueueSend( pLOGICgetEventQueue(), &event, portMAX_DELAY );
+              vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_OK:
               engine.status         = ENGINE_STATUS_IDLE;
@@ -1206,10 +1230,14 @@ void vENGINEtask ( void const* argument )
               maintence.oil.active  = 0U;
               maintence.air.active  = 0U;
               maintence.fuel.active = 0U;
+              vFPOsetReadyToStart( RELAY_ON );
+
+              vLOGICprintPlanStopStatus( planStop.status );
               break;
             default:
               vLOGICresetTimer( timerID );
               planStop.status = STOP_FAIL;
+              vLOGICprintPlanStopStatus( planStop.status );
               break;
           }
         }

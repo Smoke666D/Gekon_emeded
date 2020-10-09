@@ -204,6 +204,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       if ( mainsState == ELECTRO_STATUS_LOAD )
       {
         engineCmd = ENGINE_CMD_PLAN_STOP;
+        stopState = CONTROLLER_TURNING_FINISH;
         xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
       }
       break;
@@ -211,6 +212,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_FINISH:
       if ( engineState == ENGINE_STATUS_IDLE )
       {
+        vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_OFF );
         controller.state = CONTROLLER_STATUS_IDLE;
         stopState        = CONTROLLER_TURNING_IDLE;
       }
@@ -400,8 +402,8 @@ void vCONTROLLERtask ( void const* argument )
           break;
         case HMI_CMD_STOP :
           if ( ( controller.mode  == CONTROLLER_MODE_MANUAL  ) &&
-               ( controller.state == CONTROLLER_STATUS_WORK  ) &&
-               ( controller.state == CONTROLLER_STATUS_START ) )
+               ( ( controller.state == CONTROLLER_STATUS_WORK  ) ||
+                 ( controller.state == CONTROLLER_STATUS_START ) ) )
           {
             vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
             vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON  );

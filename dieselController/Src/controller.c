@@ -98,6 +98,7 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 
 void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
 {
+  vLOGICprintEvent( event );
   switch ( event.action )
   {
     case ACTION_WARNING:

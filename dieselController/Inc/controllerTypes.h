@@ -26,6 +26,8 @@
 #define  LOG_ACTION_SIZE            7U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
+#define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
+#define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
 /*------------------------ Tasks ---------------------------------------*/
 #define  FPI_TASK_PRIORITY          osPriorityLow
 #define  ENGINE_TASK_PRIORITY       osPriorityLow
@@ -163,15 +165,16 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t           enb;
-  uint8_t           active;
-  ALARM_LEVEL       type;
-  fix16_t           level;
-  fix16_t           delay;   /* sec */
-  timerID_t         timerID;
-  SYSTEM_EVENT      event;
-  ALARM_RELAX_TYPE  relax;
-  ALARM_STATUS      status;
+  uint8_t           enb;      /* Enable alarm at initialization */
+  uint8_t           active;   /* On/Off alarm check in work flow */
+  ALARM_LEVEL       type;     /* Type of alarm above or below set point  */
+  fix16_t           level;    /* Set point */
+  fix16_t           delay;    /* Delay to active event after triggered, seconds */
+  timerID_t         timerID;  /* Number of system timer */
+  SYSTEM_EVENT      event;    /* Event of event */
+  ALARM_RELAX_TYPE  relax;    /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
+  ALARM_STATUS      status;   /* Status of the alarm */
+  uint8_t           trig;     /* Alarm triggered flag. Reset from outside */
 } ALARM_TYPE;
 
 typedef struct __packed
@@ -218,5 +221,6 @@ uint8_t       uLOGICisTimer ( timerID_t id );
 void          vLOGICresetTimer ( timerID_t id );
 void          vLOGICtimerCallback ( void );
 void          vLOGICtoogle ( uint8_t* input );
+void          vLOGICprintEvent ( SYSTEM_EVENT event );
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOGICTYPES_H_ */

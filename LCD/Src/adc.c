@@ -656,16 +656,20 @@ void vDecNetural(int16_t * data)
   return;
 }
 
-static uint8_t AMP_DELTA = 15;
 #define MAX_ZERO_POINT 20
-static uint8_t   FD =  15;//5;
 
-uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off)
+
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP)
 {
+  uint8_t AMP_DELTA = 15;
+  uint8_t FD =  15;//5;
   uint8_t F1=0,F2=0;
   uint16_t tt=0;
   uint8_t CNT=0,index = 0,res =ADC_ERROR;
   uint16_t PER[MAX_ZERO_POINT];
+
+  vADCSetFreqDetectParam(AMP,&AMP_DELTA,&FD);
+
   for (uint16_t i=FD;i<ADC_FRAME_SIZE-FD;i++)
   {
     //Если значение попадет в корридор окло нуля
@@ -708,7 +712,7 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off)
     *count = ADC_FRAME_SIZE;
     if (index < 3) res = HIGH_FREQ;
     if (index > 4) res = LOW_FREQ;
-   // if (index==15) res = FASE_ERROR;
+
   }
   return res;
 }
@@ -727,69 +731,7 @@ uint8_t vADCGetADC3Data()
   xADC_TEMP =fix16_from_int( iMax);
   if( iMax >= MIN_AMP_VALUE )
   {
-
-        switch (iMax/100)
-        {
-          case 0:
-            AMP_DELTA = 0;
-            FD =  70;
-          case 1:
-            AMP_DELTA = 2;
-            FD =  40;
-            break;
-          case 2:
-            AMP_DELTA = 4;
-            FD =  25;
-            break;
-          case 3:
-            AMP_DELTA = 5;
-            FD =  20;
-            break;
-          case 4:
-            AMP_DELTA = 7;
-            FD =  15;
-            break;
-          case 5:
-            AMP_DELTA = 8;
-            FD =  10;
-            break;
-          case 6:
-            AMP_DELTA = 11;
-            FD =  8;
-            break;
-          case 7:
-            AMP_DELTA = 12;
-            FD =  7;
-            break;
-          case 8:
-            AMP_DELTA = 14;
-            FD =  6;
-            break;
-          case 9:
-            AMP_DELTA = 15;
-            FD =  5;
-            break;
-          case 10:
-            AMP_DELTA = 16;
-            FD =  4;
-            break;
-          case 11:
-          case 12:
-          case 13:
-          case 14:
-          case 15:
-          case 16:
-          case 17:
-          case 18:
-          case 19:
-          case 20:
-          default:
-            AMP_DELTA = 15;
-            FD =  5;
-            break;
-        }
-
-        result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2);
+        result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2,iMax);
         if (result==ADC_OK)
         {
           xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
@@ -812,8 +754,7 @@ uint8_t vADCGetADC3Data()
  {
       if (result!=ADC_OK)
       {
-         AMP_DELTA = iMax/50;
-         result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,1);
+         result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,1,iMax);
          if (result==ADC_OK)
          {
             xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
@@ -837,8 +778,7 @@ uint8_t vADCGetADC3Data()
   {
          if (result!=ADC_OK)
          {
-           AMP_DELTA = iMax/50;
-            result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,0);
+            result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,0,iMax);
             if (result==ADC_OK)
             {
                xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
@@ -862,13 +802,14 @@ uint8_t vADCGetADC12Data()
 {
   uint16_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
-
+  int16_t iMax =0;
 
    //Вычитаем из фаз, значение на линии нейтрали
      vDecNetural(&ADC2_IN_Buffer);
-     if( xADCMax(  &ADC2_IN_Buffer, 2, uCurPeriod ) >= MIN_AMP_VALUE )
+     iMax=xADCMax(  &ADC2_IN_Buffer, 2, uCurPeriod );
+     if( iMax  >= MIN_AMP_VALUE )
      {
-           result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2);
+           result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2,iMax);
            if (result==ADC_OK)
            {
              xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
@@ -884,11 +825,12 @@ uint8_t vADCGetADC12Data()
     }
 
     //Проверям есть ли на канале напряжение.
-    if( xADCMax(  &ADC2_IN_Buffer, 1, uCurPeriod ) >= MIN_AMP_VALUE )
+     iMax=xADCMax(  &ADC2_IN_Buffer, 1, uCurPeriod );
+    if( iMax >= MIN_AMP_VALUE )
     {
            if (result!=ADC_OK)
            {
-              result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,1);
+              result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,1,iMax);
               if (result==ADC_OK)
               {
                 xGEN_FREQ  = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
@@ -907,12 +849,13 @@ uint8_t vADCGetADC12Data()
      }
 
        //Проверям есть ли на канале напряжение.
-       if(xADCMax(  &ADC2_IN_Buffer, 0, uCurPeriod ) >= MIN_AMP_VALUE )
+    iMax =xADCMax(  &ADC2_IN_Buffer, 0, uCurPeriod );
+       if(iMax >= MIN_AMP_VALUE )
        {
 
                   if (result!=ADC_OK)
                   {
-                     result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,0);
+                     result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,0,iMax);
                     if (result==ADC_OK)
                     {
                       xGEN_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
@@ -976,11 +919,71 @@ int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size )
   return max;
 
 }
-
-void  vADCSetFreqDetectParam(int16_t AMP,uint8_t del,uint8_t fd)
+/*
+ * Процедура настройки параметров алгоритма определния частоты в зависимости от амплитуды входного сигнала
+ */
+void  vADCSetFreqDetectParam(int16_t AMP,uint8_t * del,uint8_t * fd)
 {
-
-
+  switch (AMP/100)
+         {
+           case 0:
+             *del = 0;
+             *fd =  70;
+           case 1:
+             *del = 2;
+             *fd =  40;
+             break;
+           case 2:
+             *del = 4;
+             *fd =  25;
+             break;
+           case 3:
+             *del = 5;
+             *fd =  20;
+             break;
+           case 4:
+             *del = 7;
+             *fd =  15;
+             break;
+           case 5:
+             *del = 8;
+             *fd =  10;
+             break;
+           case 6:
+             *del = 11;
+             *fd =  8;
+             break;
+           case 7:
+             *del = 12;
+             *fd =  7;
+             break;
+           case 8:
+             *del = 14;
+             *fd =  6;
+             break;
+           case 9:
+             *del = 15;
+             *fd =  5;
+             break;
+           case 10:
+             *del = 16;
+             *fd =  4;
+             break;
+           case 11:
+           case 12:
+           case 13:
+           case 14:
+           case 15:
+           case 16:
+           case 17:
+           case 18:
+           case 19:
+           case 20:
+           default:
+             *del = 20;
+             *fd =  4;
+             break;
+         }
 }
 
 

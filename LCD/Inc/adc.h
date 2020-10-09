@@ -100,7 +100,7 @@ void    StartADCTask(void *argument);
 void    vADC3FrInit(uint16_t freq);
 void    vADC12FrInit(uint16_t freq);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off);
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP);
 void    SetSQR(int16_t * data);
 void    vADCConvertToVDD(uint8_t AnalogSwitch);
 fix16_t xADCGetSOP();
@@ -109,5 +109,5 @@ fix16_t xADCGetSFL();
 fix16_t xADCGetNETL3();
 fix16_t xADCGetNETL2();
 fix16_t xADCGetNETL1();
-void  vADCSetFreqDetectParam(int16_t AMP,uint8_t del,uint8_t fd);
+void  vADCSetFreqDetectParam(int16_t AMP,uint8_t * del,uint8_t * fd);
 #endif /* INC_ADC_H_ */

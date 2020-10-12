@@ -15,7 +15,6 @@ static   StaticEventGroup_t xADCCreatedEventGroup;
 volatile int16_t            ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS] = { 0U };   //ADC1 input data buffer
 volatile int16_t            ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS] = { 0U };   //ADC2 input data buffer
 volatile int16_t            ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS] = { 0U };   //ADC3 input data buffer
-static   xADCFSMType        xADCFSM                                      = DC;
 static   uint16_t           ADCDATA[8U]                                  = { 0U };
 static   uint8_t            ADC_VALID_DATA                               =  0;
 
@@ -23,23 +22,17 @@ uint8_t vADCGetADC3Data();
 uint8_t vADCGetADC12Data();
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size );
 int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size );
+uint16_t GetAverVDD(uint8_t channel,uint8_t size);
 
-uint8_t uADCGetValidDataFlag()
-{
-  return ADC_VALID_DATA;
-}
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim8;
+extern TIM_HandleTypeDef htim2;
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+extern ADC_HandleTypeDef hadc3;
 
-uint16_t GetAverVDD(uint8_t channel,uint8_t size)
-{
 
-   uint32_t Buffer=0;
-   for (uint8_t i=0;i<size;i++)
-   {
-     Buffer =Buffer+ ADC3_IN_Buffer[i*9+channel];
-   }
-   Buffer =Buffer/size;
-   return  (uint16_t)Buffer;
-}
+
 
 
 static fix16_t xVDD =0; //Напяжение АЦП канала PowInMCU (измерение напряжения питания)
@@ -73,6 +66,11 @@ static uint32_t ADC2Freq =10000;
 
 
 
+fix16_t xADCGetVDD()
+{
+  return xVDD;
+}
+
 fix16_t xADCGetSOP()
 {
   return xSOP;
@@ -80,7 +78,6 @@ fix16_t xADCGetSOP()
 fix16_t xADCGetSCT()
 {
   return xSCT;
-
 }
 fix16_t xADCGetSFL()
 {
@@ -99,6 +96,25 @@ fix16_t xADCGetNETL2()
 fix16_t xADCGetNETL3()
 {
   return xNET_F3_VDD;
+}
+
+fix16_t xADCGetGENL1()
+{
+  return xGEN_F1_VDD;
+}
+fix16_t xADCGetGENL2()
+{
+  return xGEN_F2_VDD;
+
+}
+fix16_t xADCGetGENL3()
+{
+  return xGEN_F3_VDD;
+}
+
+uint8_t uADCGetValidDataFlag()
+{
+  return ADC_VALID_DATA;
 }
 
 
@@ -191,7 +207,7 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     switch ( ID - 1U )
     {
       case VDD_CH:
-        fix16_to_str( xVDD, Data, 2U );
+        fix16_to_str( xADCGetVDD(), Data, 2U );
         break;
       case CFUEL:
         fix16_to_str( xADCGetSFL(), Data, 0U );
@@ -240,12 +256,7 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   return;
 }
 
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim8;
-extern TIM_HandleTypeDef htim2;
-extern ADC_HandleTypeDef hadc1;
-extern ADC_HandleTypeDef hadc2;
-extern ADC_HandleTypeDef hadc3;
+
 
 
 
@@ -303,32 +314,11 @@ void vADC3DCInit(xADCFSMType xADCType)
 
 void vADCInit(void)
 {
-  switch (xADCFSM)
-  {
-    case DC:
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       vADC3DCInit(DC);
-
       vADC3FrInit(ADC3Freq);
       vADC12FrInit(ADC2Freq);
-
-      break;
-    case AC:
-      vADC12FrInit(ADC2Freq);
-      vADC3FrInit(ADC3Freq);
-      HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
-      HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_ADD_FRAME_SIZE);
-      HAL_ADC_Start_DMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_ADD_FRAME_SIZE);
-      HAL_ADC_Start_DMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_ADD_FRAME_SIZE);
-      break;
-    case IDLE:
-      HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_RESET );
-      HAL_TIM_Base_Stop_IT( &htim3 );
-      break;
-
-
-  }
 }
 
 void vADC_Ready ( uint8_t adc_number )
@@ -637,7 +627,7 @@ void StartADCTask(void *argument)
       default:
         break;
     }
- //  xADC_TEMP =fix16_from_int( HAL_GetTick() - adctime);
+   xADC_TEMP =fix16_from_int( HAL_GetTick() - adctime);
 
    }
 
@@ -728,7 +718,6 @@ uint8_t vADCGetADC3Data()
 
   vDecNetural(&ADC3_IN_Buffer);
   iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod );
-  xADC_TEMP =fix16_from_int( iMax);
   if( iMax >= MIN_AMP_VALUE )
   {
         result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2,iMax);
@@ -804,12 +793,12 @@ uint8_t vADCGetADC12Data()
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   int16_t iMax =0;
 
-   //Вычитаем из фаз, значение на линии нейтрали
-     vDecNetural(&ADC2_IN_Buffer);
-     iMax=xADCMax(  &ADC2_IN_Buffer, 2, uCurPeriod );
-     if( iMax  >= MIN_AMP_VALUE )
+
+     vDecNetural(&ADC2_IN_Buffer);  //Вычитаем из фазы, значение на линии нейтрали
+     iMax=xADCMax(  &ADC2_IN_Buffer, 2, uCurPeriod ); //Вычисляем максимальное амплитудное значение
+     if( iMax  >= MIN_AMP_VALUE ) //Если маскимальное омплитудно значение меньше нижнего предела, то фиксируем нулевое напряжение на входе
      {
-           result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2,iMax);
+           result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2,iMax);  //Вычисляем частоту
            if (result==ADC_OK)
            {
              xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
@@ -906,6 +895,9 @@ fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
 }
 /*
  * Сервисная функция для вычисления максимального значения
+ *  source  -адрес буфера DMA
+ *  off     -номер канала, скоторым работает функция
+ *  size    -размер буфера для обработки
  */
 int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size )
 {
@@ -919,6 +911,20 @@ int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size )
   return max;
 
 }
+
+uint16_t GetAverVDD(uint8_t channel,uint8_t size)
+{
+
+   uint32_t Buffer=0;
+   for (uint8_t i=0;i<size;i++)
+   {
+     Buffer =Buffer+ ADC3_IN_Buffer[i*9+channel];
+   }
+   Buffer =Buffer/size;
+   return  (uint16_t)Buffer;
+}
+
+
 /*
  * Процедура настройки параметров алгоритма определния частоты в зависимости от амплитуды входного сигнала
  */

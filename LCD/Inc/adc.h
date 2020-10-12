@@ -91,6 +91,21 @@ typedef enum
   IDLE,
 } xADCFSMType;
 
+/*
+ * Функции API драйвера
+ */
+fix16_t xADCGetVDD();
+fix16_t xADCGetSOP();
+fix16_t xADCGetSCT();
+fix16_t xADCGetSFL();
+fix16_t xADCGetNETL3();
+fix16_t xADCGetNETL2();
+fix16_t xADCGetNETL1();
+fix16_t xADCGetGENL1();
+fix16_t xADCGetGENL2();
+fix16_t xADCGetGENL3();
+uint8_t uADCGetValidDataFlag();
+
 
 void    vADC_Ready(uint8_t adc_number);
 void    vDecNetural(int16_t * data);
@@ -103,11 +118,6 @@ void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP);
 void    SetSQR(int16_t * data);
 void    vADCConvertToVDD(uint8_t AnalogSwitch);
-fix16_t xADCGetSOP();
-fix16_t xADCGetSCT();
-fix16_t xADCGetSFL();
-fix16_t xADCGetNETL3();
-fix16_t xADCGetNETL2();
-fix16_t xADCGetNETL1();
+
 void  vADCSetFreqDetectParam(int16_t AMP,uint8_t * del,uint8_t * fd);
 #endif /* INC_ADC_H_ */

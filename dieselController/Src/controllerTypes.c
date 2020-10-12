@@ -57,6 +57,55 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "???",
     "???"
 };
+#if ( DEBUG_SERIAL_ALARM > 0U )
+  const char* eventTypesStr[] =
+  {
+    "NONE",                       /* NONE */
+    "EXTERN_EMERGENCY_STOP",      /* EMERGENCY_STOP */
+    "START_FAIL",                 /* EMERGENCY_STOP */
+    "STOP_FAIL",                  /* EMERGENCY_STOP */
+    "OIL_LOW_PRESSURE",           /* WARNING & EMERGENCY_STOP */
+    "OIL_SENSOR_ERROR",           /* EMERGENCY_STOP */
+    "ENGINE_HIGHT_TEMP",          /* WARNING & EMERGENCY_STOP */
+    "ENGINE_TEMP_SENSOR_ERROR",   /* EMERGENCY_STOP */
+    "FUEL_LOW_LEVEL",             /* WARNING & EMERGENCY_STOP */
+    "FUEL_HIGHT_LEVEL",           /* WARNING & EMERGENCY_STOP */
+    "FUEL_LEVEL_SENSOR_ERROR",    /* EMERGENCY_STOP */
+    "SPEED_HIGHT",                /* EMERGENCY_STOP */
+    "SPEED_LOW",                  /* EMERGENCY_STOP */
+    "SPEED_SENSOR_ERROR",         /* EMERGENCY_STOP */
+    "CHARGER_FAIL",               /* WARNING & EMERGENCY_STOP */
+    "BATTERY_LOW",                /* WARNING */
+    "BATTERY_HIGHT",              /* WARNING */
+    "GENERATOR_LOW_VOLTAGE",      /* WARNING & EMERGENCY_STOP */
+    "GENERATOR_HIGHT_VOLTAGE",    /* WARNING & EMERGENCY_STOP */
+    "GENERATOR_LOW_FREQUENCY",    /* WARNING & EMERGENCY_STOP */
+    "GENERATOR_HIGHT_FREQUENCY",  /* WARNING & EMERGENCY_STOP */
+    "PHASE_IMBALANCE",            /* EMERGENCY_STOP */
+    "OVER_CURRENT",               /* EMERGENCY_STOP */
+    "OVER_POWER",                 /* EMERGENCY_STOP */
+    "SHORT_CIRCUIT",              /* EMERGENCY_STOP */
+    "MAINS_LOW_VOLTAGE",          /* WARNING */
+    "MAINS_HIGHT_VOLTAGE",        /* WARNING */
+    "MAINS_LOW_FREQUENCY",        /* WARNING */
+    "MAINS_HIGHT_FREQUENCY",      /* WARNING */
+    "MAINTENANCE_OIL",            /* WARNING */
+    "MAINTENANCE_AIR",            /* WARNING */
+    "MAINTENANCE_FUEL",           /* WARNING */
+    "MAINS_VOLTAGE_RELAX",
+    "MAINS_FREQUENCY_RELAX",
+  };
+  const char* alarmActionStr[] =
+  {
+    "NONE",
+    "WARNING",
+    "EMERGENCY_STOP",
+    "LOAD_GENERATOR",
+    "LOAD_MAINS",
+    "PLAN_STOP",
+    "LOAD_SHUTDOWN",
+  };
+#endif
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t   eventBuffer[ EVENT_QUEUE_LENGTH * sizeof( SYSTEM_EVENT ) ] = { 0U };
 static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                           = { 0U };
@@ -72,6 +121,18 @@ static fix16_t   hysteresis                                                 = 0U
 
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void vLOGICprintEvent ( SYSTEM_EVENT event )
+{
+  #if ( DEBUG_SERIAL_ALARM > 0U )
+    vSYSSerial( ">>Event: " );
+    vSYSSerial( eventTypesStr[event.type] );
+    vSYSSerial( "; Action: " );
+    vSYSSerial( alarmActionStr[event.action] );
+    vSYSSerial( "\r\n" );
+  #endif
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vLOGICinit ( TIM_HandleTypeDef* tim )
 {
@@ -131,6 +192,16 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
+void vLOGICresetTimer ( timerID_t id )
+{
+  aciveCounters &= ~( 1U << id );
+  if ( activeNumber > 0U )
+  {
+    activeNumber--;
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 uint8_t uLOGICisTimer ( timerID_t id )
 {
   uint8_t res = 0U;
@@ -138,17 +209,9 @@ uint8_t uLOGICisTimer ( timerID_t id )
   {
     res              = 1U;
     targetArray[id]  = 0U;
-    aciveCounters   &= ~( 1U << id );
-    activeNumber--;
+    vLOGICresetTimer( id );
   }
   return res;
-}
-/*-----------------------------------------------------------------------------------------*/
-void vLOGICresetTimer ( timerID_t id )
-{
-  aciveCounters |= ~( 1U << id );
-  activeNumber--;
-  return;
 }
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerCallback ( void )
@@ -202,7 +265,10 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue )
         }
         else if ( uLOGICisTimer( alarm->timerID ) > 0U )
         {
-          alarm->status = ALARM_STATUS_TRIG;
+          if ( alarm->trig == 0U )
+          {
+            alarm->status = ALARM_STATUS_TRIG;
+          }
         }
         else
         {
@@ -214,6 +280,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue )
         {
           xQueueSend( queue, &alarm->event, portMAX_DELAY );
         }
+        alarm->trig   = 1U;
         alarm->status = ALARM_STATUS_RELAX;
         break;
       case ALARM_STATUS_RELAX:

@@ -98,6 +98,7 @@ typedef struct __packed
 } FPO_DIS;
 /*----------------------- Functions ------------------------------------*/
 void    vFPOinit ( const FPO_INIT* init );
+void    vFPOdataInit ( void );
 uint8_t uFPOisEnable ( FPO_FUNCTION fun );
 void    vFPOsetPump ( RELAY_STATUS stat );
 void    vFPOsetBooster ( RELAY_STATUS stat );

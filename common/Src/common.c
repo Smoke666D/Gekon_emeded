@@ -32,6 +32,16 @@ void vSYSSerial ( const char* msg )
   HAL_UART_Transmit(debug_huart, ( uint8_t* )msg, strlen(msg), 0xFFFF);
   return;
 }
+
+void vSYSprintFix16 ( fix16_t value )
+{
+  char buffer[10U] = { 0U };
+  fix16_to_str( value, buffer, 2U );
+  vSYSSerial( "$" );
+  vSYSSerial( buffer );
+  vSYSSerial( ";\r\n" );
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 void vSYSgetUniqueID32 ( uint32_t* id )
 {

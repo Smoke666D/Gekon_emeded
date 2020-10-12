@@ -98,6 +98,7 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 
 void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
 {
+  vLOGICprintEvent( event );
   switch ( event.action )
   {
     case ACTION_WARNING:
@@ -110,8 +111,8 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_EMERGENCY_STOP:
+      vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
       controller.state = CONTROLLER_STATUS_ALARM;
-      //xQueueSend( pENGINEgetCommandQueue(), ENGINE_CMD_EMEGENCY_STOP, portMAX_DELAY );
       vENGINEemergencyStop();
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
@@ -203,6 +204,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       if ( mainsState == ELECTRO_STATUS_LOAD )
       {
         engineCmd = ENGINE_CMD_PLAN_STOP;
+        stopState = CONTROLLER_TURNING_FINISH;
         xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
       }
       break;
@@ -210,6 +212,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_FINISH:
       if ( engineState == ENGINE_STATUS_IDLE )
       {
+        vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_OFF );
         controller.state = CONTROLLER_STATUS_IDLE;
         stopState        = CONTROLLER_TURNING_IDLE;
       }
@@ -320,8 +323,8 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERdataInit();
   const osThreadAttr_t controllerTask_attributes = {
     .name       = "fpiTask",
-    .priority   = ( osPriority_t ) osPriorityLow,
-    .stack_size = 1024U
+    .priority   = ( osPriority_t ) CONTROLLER_TASK_PRIORITY,
+    .stack_size = CONTROLLER_TASK_STACK_SIZE
   };
   controllerHandle = osThreadNew( vCONTROLLERtask, NULL, &controllerTask_attributes );
   vMenuMessageInit( controllerHandle );
@@ -355,6 +358,7 @@ void vCONTROLLERtask ( void const* argument )
       if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
       {
         vCONTROLLERdataInit();
+        vFPOdataInit();
       }
     /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/
       inputKeyboardCommand = ( uint8_t )( inputNotifi & HMI_CMD_MASK );
@@ -398,8 +402,8 @@ void vCONTROLLERtask ( void const* argument )
           break;
         case HMI_CMD_STOP :
           if ( ( controller.mode  == CONTROLLER_MODE_MANUAL  ) &&
-               ( controller.state == CONTROLLER_STATUS_WORK  ) &&
-               ( controller.state == CONTROLLER_STATUS_START ) )
+               ( ( controller.state == CONTROLLER_STATUS_WORK  ) ||
+                 ( controller.state == CONTROLLER_STATUS_START ) ) )
           {
             vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
             vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON  );

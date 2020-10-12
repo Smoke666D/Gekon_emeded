@@ -215,8 +215,8 @@ void vFPIinit ( const FPI_INIT* init )
   pFPIQueue  = xQueueCreateStatic( 16U, sizeof( FPI_EVENT ), eventBuffer, &xFPIQueue );
   const osThreadAttr_t fpiTask_attributes = {
     .name       = "fpiTask",
-    .priority   = ( osPriority_t ) osPriorityLow,
-    .stack_size = 1024U
+    .priority   = ( osPriority_t ) FPI_TASK_PRIORITY,
+    .stack_size = FPI_TASK_STACK_SIZE
   };
   fpiHandle = osThreadNew( vFPITask, NULL, &fpiTask_attributes );
 
@@ -299,7 +299,6 @@ void vFPITask ( void const* argument )
               }
               break;
             case FPI_TRIGGERED:
-              vFPIcheckReset ( &fpis[i] );
               if ( uLOGICisTimer( fpis[i].timerID ) > 0U )
               {
                 event.level    = fpis[i].level;

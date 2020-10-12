@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-10-02 10:29:16
+ * Make time: 2020-10-02 11:57:08
  */
 #include   "config.h"
 
@@ -377,7 +377,7 @@ const eConfigBitMap fuelLevelSetupBitMap[9U] =
    { 128U, 7U },     // fuelLevelHightPreAlarmEnb
    { 256U, 8U },     // fuelLevelHightAlarmEnb
    { 512U, 9U },     // fuelLevelHightAlarmAction
-   { 0U, 10U },     // fuelPumpEnb
+   { 1024U, 10U },     // fuelPumpEnb
 };
 uint16_t fuelLevelSetupValue[1U] = { 1339U };
 const eConfigAttributes fuelLevelSetupAtrib =

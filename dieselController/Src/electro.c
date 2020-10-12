@@ -540,8 +540,8 @@ void vELECTROinit ( void )
   pElectroCommandQueue = xQueueCreateStatic( ELECTRO_COMMAND_QUEUE_LENGTH, sizeof( ELECTRO_COMMAND ), electroCommandBuffer, &xElectroCommandQueue );
   const osThreadAttr_t electroTask_attributes = {
     .name       = "electroTask",
-    .priority   = ( osPriority_t ) osPriorityLow,
-    .stack_size = 1024U
+    .priority   = ( osPriority_t ) ELECTRO_TASK_PRIORITY,
+    .stack_size = ELECTRO_TASK_STACK_SIZE
   };
   electroHandle = osThreadNew( vELECTROtask, NULL, &electroTask_attributes );
   /*----------------------------------------------------------------------------*/

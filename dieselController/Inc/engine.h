@@ -15,8 +15,9 @@
 #include "fpo.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
-#define  ENGINE_EVENT_QUEUE_LENGTH    16U
-#define  ENGINE_COMMAND_QUEUE_LENGTH  8U
+#define  ENGINE_EVENT_QUEUE_LENGTH      16U
+#define  ENGINE_COMMAND_QUEUE_LENGTH    8U
+#define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -31,7 +32,8 @@ typedef enum
 {
   SENSOR_STATUS_NORMAL,
   SENSOR_STATUS_ERROR,
-  SENSOR_STATUS_OPEN_CIRCUIT_ERROR,
+  SENSOR_STATUS_LINE_ERROR,
+  SENSOR_STATUS_COMMON_ERROR,
 } SENSOR_STATUS;
 
 typedef enum
@@ -49,6 +51,7 @@ typedef enum
 typedef enum
 {
   ENGINE_STATUS_IDLE,
+  ENGINE_STATUS_EMERGENCY_STOP,
   ENGINE_STATUS_BUSY_STARTING,
   ENGINE_STATUS_BUSY_STOPPING,
   ENGINE_STATUS_WORK,

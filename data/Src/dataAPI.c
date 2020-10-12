@@ -679,10 +679,6 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
                 break;
               }
             }
-            if ( res == DATA_API_STAT_OK )
-            {
-              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
-            }
             xSemaphoreGive( xSemaphore );
           }
           else

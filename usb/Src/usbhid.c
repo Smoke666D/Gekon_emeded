@@ -445,7 +445,7 @@ void vUSBParsingChart( uint16_t adr, const uint8_t* data )
 {
   uint8_t    counter = 0U;
 
-  while ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) != pdTRUE )
+  while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
   {
 
   }
@@ -463,7 +463,7 @@ void vUSBParsingChart( uint16_t adr, const uint8_t* data )
   counter   += CHART_UNIT_LENGTH * 6U;
   charts[adr]->size = ( uint16_t )( data[counter] ) | ( ( uint16_t )( data[counter + 1U] ) << 8U );
   counter   += 2U;
-  xSemaphoreGive( xCHARTSemaphore );
+  xSemaphoreGive( xCHARTgetSemophore() );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

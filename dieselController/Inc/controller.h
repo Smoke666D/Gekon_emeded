@@ -67,6 +67,7 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t controllerHandle;
 /*----------------------- Functions ------------------------------------*/
-void vCONTROLLERinit ( const CONTROLLER_INIT* init );
+void     vCONTROLLERinit ( const CONTROLLER_INIT* init );
+uint16_t vCONTROLLERgetAckLogPointer ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

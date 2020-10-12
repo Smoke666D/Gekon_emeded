@@ -26,6 +26,7 @@
 #define  LOG_ACTION_SIZE            7U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
+#define  SYS_TIMER_SEMAPHORE_DELAY  200U
 #define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
 #define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
 /*------------------------ Tasks ---------------------------------------*/
@@ -113,6 +114,7 @@ typedef enum
 {
   TIMER_OK,
   TIMER_NO_SPACE,
+  TIMER_ACCESS,
 } TIMER_ERROR;
 
 typedef enum
@@ -218,7 +220,7 @@ void          vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
 void          vLOGICtimerHandler ( void );
 TIMER_ERROR   vLOGICstartTimer ( fix16_t delay, timerID_t* id );
 uint8_t       uLOGICisTimer ( timerID_t id );
-void          vLOGICresetTimer ( timerID_t id );
+TIMER_ERROR   vLOGICresetTimer ( timerID_t id );
 void          vLOGICtimerCallback ( void );
 void          vLOGICtoogle ( uint8_t* input );
 void          vLOGICprintEvent ( SYSTEM_EVENT event );

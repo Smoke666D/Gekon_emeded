@@ -9,8 +9,9 @@
 #include "dataProces.h"
 #include "config.h"
 /*-------------------------------- Structures --------------------------------*/
-static StaticQueue_t xEventQueue;
-static QueueHandle_t pEventQueue;
+static StaticQueue_t     xEventQueue;
+static QueueHandle_t     pEventQueue;
+static SemaphoreHandle_t xSYSTIMERsemaphore;
 /*--------------------------------- Constant ---------------------------------*/
 const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",
@@ -139,6 +140,7 @@ void vLOGICinit ( TIM_HandleTypeDef* tim )
   hysteresis  = fix16_div( getValue( &hysteresisLevel ), F16( 100U ) );
   pEventQueue = xQueueCreateStatic( EVENT_QUEUE_LENGTH, sizeof( SYSTEM_EVENT ), eventBuffer, &xEventQueue );
   HAL_TIM_Base_Start_IT( tim );
+  xSYSTIMERsemaphore = xSemaphoreCreateMutex();
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
@@ -180,10 +182,18 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
       }
     }
     *id = i;
-    aciveCounters |= 1U << *id;
-    activeNumber++;
-    targetArray[*id]  = inc;
-    counterArray[*id] = 0U;
+    if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
+    {
+      aciveCounters |= 1U << *id;
+      activeNumber++;
+      targetArray[*id]  = inc;
+      counterArray[*id] = 0U;
+      xSemaphoreGive( xSYSTIMERsemaphore );
+    }
+    else
+    {
+      stat = TIMER_ACCESS;
+    }
   }
   else
   {
@@ -192,14 +202,28 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vLOGICresetTimer ( timerID_t id )
+TIMER_ERROR vLOGICresetTimer ( timerID_t id )
 {
-  aciveCounters &= ~( 1U << id );
-  if ( activeNumber > 0U )
+  TIMER_ERROR stat = TIMER_OK;
+  if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
   {
-    activeNumber--;
+    aciveCounters  &= ~( 1U << id );
+    targetArray[id] = 0U;
+    if ( activeNumber > 0U )
+    {
+      activeNumber--;
+    }
+    else
+    {
+      stat = TIMER_NO_SPACE;
+    }
+    xSemaphoreGive( xSYSTIMERsemaphore );
   }
-  return;
+  else
+  {
+    stat = TIMER_ACCESS;
+  }
+  return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
 uint8_t uLOGICisTimer ( timerID_t id )
@@ -207,9 +231,10 @@ uint8_t uLOGICisTimer ( timerID_t id )
   uint8_t res = 0U;
   if ( targetArray[id] <= counterArray[id] )
   {
-    res              = 1U;
-    targetArray[id]  = 0U;
-    vLOGICresetTimer( id );
+    if ( vLOGICresetTimer( id ) == TIMER_OK )
+    {
+      res = 1U;
+    }
   }
   return res;
 }

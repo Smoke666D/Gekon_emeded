@@ -302,7 +302,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
 
   if ( adr < CHART_NUMBER )
   {
-    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) && ( xCHARTSemaphore != NULL) )
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) && ( xCHARTgetSemophore() != NULL) )
     {
       switch ( cmd )
       {
@@ -310,11 +310,11 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
           *chart = *charts[adr];
           break;
         case DATA_API_CMD_WRITE:
-          if ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
             flTakeSource = 1U;
             *charts[adr] = *chart;
-            xSemaphoreGive( xCHARTSemaphore );
+            xSemaphoreGive( xCHARTgetSemophore() );
           }
           else
           {
@@ -343,14 +343,14 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            if ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+            if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) == pdTRUE )
             {
               flTakeSource = 3U;
               if ( eSTORAGEreadCharts() != EEPROM_OK )
               {
                 res = DATA_API_STAT_EEPROM_ERROR;
               }
-              xSemaphoreGive( xCHARTSemaphore );
+              xSemaphoreGive( xCHARTgetSemophore() );
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -829,7 +829,57 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
- * API for Embedded Web Application
+ * API for Log pointer
+ * input:  cmd     - command
+ *         pointer - pointer for last record in the log
+ * output: status of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - read pointer
+ * 2. DATA_API_CMD_WRITE - none
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - none
+ * 6. DATA_API_CMD_LOAD  - none
+ * 7. DATA_API_CMD_ERASE - none
+ * 8. DATA_API_CMD_ADD   - none
+ */
+DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer )
+{
+  DATA_API_STATUS res = DATA_API_STAT_OK;
+  if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
+  {
+    switch ( cmd )
+    {
+      case DATA_API_CMD_READ:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          if ( eSTORAGEreadLogPointer( pointer ) != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          xSemaphoreGive( xSemaphore );
+        }
+        else
+        {
+          res = DATA_API_STAT_BUSY;
+        }
+        break;
+      default:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+    }
+  }
+  else
+  {
+    res = DATA_API_STAT_INIT_ERROR;
+  }
+  return res;
+}
+
+
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for log
  * input:  cmd    - command
  *         adr    - address of log record
  *         record - log record structure
@@ -890,6 +940,10 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
             }
             xSemaphoreGive( xSemaphore );
           }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
           break;
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
@@ -913,6 +967,10 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
             }
             xSemaphoreGive( xSemaphore );
           }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
           break;
         case DATA_API_CMD_ERASE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
@@ -934,6 +992,10 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
               }
             }
             xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
           }
           break;
         default:

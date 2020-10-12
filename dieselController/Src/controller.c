@@ -42,8 +42,9 @@ CONTROLLER_TYPE controller =
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
-static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
-static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
+static CONTROLLER_TURNING stopState     = CONTROLLER_TURNING_IDLE;
+static CONTROLLER_TURNING startState    = CONTROLLER_TURNING_IDLE;
+static uint16_t           ackLogPointer = 0U;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -172,6 +173,8 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_IDLE:
       if ( delayStop >0U )
       {
+        vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
+        vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON  );
         vLOGICstartTimer( controller.stopDelay, &controller.timerID );
         stopState = CONTROLLER_TURNING_DELAY;
       }
@@ -229,7 +232,6 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
 {
   ENGINE_COMMAND  engineCmd  = ENGINE_CMD_NONE;
   ELECTRO_COMMAND electroCmd = ELECTRO_CMD_NONE;
-
   /*------------------------ REMOTE START ------------------------*/
   if ( ( controller.state        == CONTROLLER_STATUS_START ) &&
        ( controller.banAutoStart == 0U ) )
@@ -237,6 +239,8 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
     switch ( startState )
     {
       case CONTROLLER_TURNING_IDLE:
+        vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+        vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
         vFPIsetBlock();
         if ( ( POWER_OFF_IMMEDIATELY > 0U  ) &&
              ( controller.banGenLoad == 0U ) )
@@ -246,7 +250,6 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
         }
         startState = CONTROLLER_TURNING_ENGINE;
         break;
-
       case CONTROLLER_TURNING_ENGINE:
         engineCmd = ENGINE_CMD_START;
         xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
@@ -327,8 +330,14 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
     .stack_size = CONTROLLER_TASK_STACK_SIZE
   };
   controllerHandle = osThreadNew( vCONTROLLERtask, NULL, &controllerTask_attributes );
+  eDATAAPIlogPointer( DATA_API_CMD_READ, &ackLogPointer );
   vMenuMessageInit( controllerHandle );
   return;
+}
+
+uint16_t vCONTROLLERgetAckLogPointer ( void )
+{
+  return ackLogPointer;
 }
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERtask ( void const* argument )
@@ -468,6 +477,7 @@ void vCONTROLLERtask ( void const* argument )
             engineCmd        = ENGINE_CMD_RESET_TO_IDLE;
             vFPOsetAlarm( RELAY_OFF );
             vFPOsetNetFault( RELAY_OFF );
+            eDATAAPIlogPointer( DATA_API_CMD_READ, &ackLogPointer );
             xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
           }
           break;

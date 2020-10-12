@@ -212,7 +212,8 @@ void vFPIinit ( const FPI_INIT* init )
     }
   }
   /* Queue init */
-  pFPIQueue  = xQueueCreateStatic( 16U, sizeof( FPI_EVENT ), eventBuffer, &xFPIQueue );
+  xFPIsemaphore = xSemaphoreCreateMutex();
+  pFPIQueue     = xQueueCreateStatic( 16U, sizeof( FPI_EVENT ), eventBuffer, &xFPIQueue );
   const osThreadAttr_t fpiTask_attributes = {
     .name       = "fpiTask",
     .priority   = ( osPriority_t ) FPI_TASK_PRIORITY,
@@ -250,7 +251,7 @@ FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
 void vFPIsetBlock ( void )
 {
   uint8_t i = 0U;
-  while ( xSemaphoreTake( xCHARTSemaphore, FPI_TASK_DELAY ) != pdTRUE )
+  while ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) != pdTRUE )
   {
     osDelay( 10U );
   }
@@ -258,7 +259,7 @@ void vFPIsetBlock ( void )
   {
     fpis[i].state = FPI_BLOCK;
   }
-  xSemaphoreGive( xCHARTSemaphore );
+  xSemaphoreGive( xFPIsemaphore );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -277,10 +278,14 @@ void vFPITask ( void const* argument )
         vFPIdataInit();
       }
     }
-    if ( xSemaphoreTake( xCHARTSemaphore, FPI_TASK_DELAY ) == pdTRUE )
+    if ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) == pdTRUE )
     {
       for ( i=0U; i<FPI_NUMBER; i++ )
       {
+        if ( i == 2 )
+        {
+          uint8_t y =0;
+        }
         if ( fpis[i].function != FPI_FUN_NONE )
         {
           switch ( fpis[i].state )
@@ -315,7 +320,7 @@ void vFPITask ( void const* argument )
           }
         }
       }
-      xSemaphoreGive( xCHARTSemaphore );
+      xSemaphoreGive( xFPIsemaphore );
     }
     osDelay( FPI_TASK_DELAY );
   }

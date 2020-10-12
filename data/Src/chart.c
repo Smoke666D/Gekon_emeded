@@ -142,7 +142,10 @@ eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-
+SemaphoreHandle_t xCHARTgetSemophore ( void )
+{
+  return xCHARTSemaphore;
+}
 
 
 

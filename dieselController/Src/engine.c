@@ -421,7 +421,7 @@ void vLOGICprintEngineStatus ( ENGINE_STATUS status )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
     vSYSSerial( ">>Engine status: " );
-    vSYSSerial( engineCmdStr[status] );
+    vSYSSerial( engineStatusStr[status] );
     vSYSSerial( "\r\n" );
   #endif
   return;
@@ -1013,7 +1013,7 @@ void vENGINEtask ( void const* argument )
               battery.lowAlarm.active      = 0U;
               charger.hightAlarm.active    = 0U;
               charger.hightPreAlarm.active = 0U;
-              vELECTROalarmStartDisable();
+              //vELECTROalarmStartDisable();
               if ( ( engine.startCheckOil > 0U ) && ( oilVal != 0U ) )
               {
                 starter.status = STARTER_FAIL;
@@ -1181,7 +1181,7 @@ void vENGINEtask ( void const* argument )
               if ( uLOGICisTimer( timerID ) > 0U )
               {
                 speed.lowAlarm.active = 0U;
-                vELECTROalarmIdleDisable();
+                //vELECTROalarmIdleDisable();
                 idleRelay.set( RELAY_ON );
                 vLOGICstartTimer( planStop.coolingIdleDelay, &timerID );
                 planStop.status = STOP_IDLE_COOLDOWN;
@@ -1231,7 +1231,6 @@ void vENGINEtask ( void const* argument )
               maintence.air.active  = 0U;
               maintence.fuel.active = 0U;
               vFPOsetReadyToStart( RELAY_ON );
-
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             default:
@@ -1249,11 +1248,13 @@ void vENGINEtask ( void const* argument )
         if ( engine.status == ENGINE_STATUS_WORK )
         {
           speed.lowAlarm.active = 0U;
-          vELECTROalarmIdleDisable();
+          //vELECTROalarmIdleDisable();
           idleRelay.set( RELAY_ON );
           vFPOsetGenReady( RELAY_OFF );
           engine.status = ENGINE_STATUS_WORK_ON_IDLE;
+          vLOGICprintEngineStatus( engine.status );
         }
+        engine.cmd = ENGINE_CMD_NONE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*--------------------------- ENGINE GO TO NOMINAL FROM IDLE -----------------------------*/
@@ -1264,19 +1265,23 @@ void vENGINEtask ( void const* argument )
           case ENGINE_STATUS_WORK_ON_IDLE:
             idleRelay.set( RELAY_OFF );
             engine.status = ENGINE_STATUS_WORK_GOTO_NOMINAL;
+            vLOGICprintEngineStatus( engine.status );
             vLOGICstartTimer( starter.nominalDelay, &timerID );
             break;
           case ENGINE_STATUS_WORK_GOTO_NOMINAL:
             if ( uLOGICisTimer( timerID ) > 0U )
             {
               engine.status = ENGINE_STATUS_WORK;
+              vLOGICprintEngineStatus( engine.status );
               speed.lowAlarm.active = 1U;
               vFPOsetGenReady( RELAY_ON );
-              vELECTROalarmIdleEnable();
+              //vELECTROalarmIdleEnable();
+              engine.cmd = ENGINE_CMD_NONE;
             }
             break;
           default:
-            engine.status = ENGINE_STATUS_WORK_ON_IDLE;
+            engine.cmd = ENGINE_CMD_NONE;
+            vLOGICprintEngineStatus( engine.status );
             break;
         }
         break;

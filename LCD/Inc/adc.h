@@ -67,7 +67,7 @@
 
 #define DC_SIZE  50
 
-#define MIN_AMP_VALUE 100
+#define MIN_AMP_VALUE 50
 
 #define NO_COMMON 0x01
 #define NO_SOP    0x02
@@ -81,6 +81,7 @@
 #define LOW_FREQ  0x01
 #define HIGH_FREQ 0x02
 #define ADC_ERROR 0x03
+#define FASE_ERROR 0x04
 
 
 typedef enum
@@ -89,6 +90,21 @@ typedef enum
   AC,
   IDLE,
 } xADCFSMType;
+
+/*
+ * Функции API драйвера
+ */
+fix16_t xADCGetVDD();
+fix16_t xADCGetSOP();
+fix16_t xADCGetSCT();
+fix16_t xADCGetSFL();
+fix16_t xADCGetNETL3();
+fix16_t xADCGetNETL2();
+fix16_t xADCGetNETL1();
+fix16_t xADCGetGENL1();
+fix16_t xADCGetGENL2();
+fix16_t xADCGetGENL3();
+uint8_t uADCGetValidDataFlag();
 
 
 void    vADC_Ready(uint8_t adc_number);
@@ -99,13 +115,9 @@ void    StartADCTask(void *argument);
 void    vADC3FrInit(uint16_t freq);
 void    vADC12FrInit(uint16_t freq);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off);
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP);
 void    SetSQR(int16_t * data);
 void    vADCConvertToVDD(uint8_t AnalogSwitch);
-fix16_t xADCGetSOP();
-fix16_t xADCGetSCT();
-fix16_t xADCGetSFL();
-fix16_t xADCGetNETL3();
-fix16_t xADCGetNETL2();
-fix16_t xADCGetNETL1();
+
+void  vADCSetFreqDetectParam(int16_t AMP,uint8_t * del,uint8_t * fd);
 #endif /* INC_ADC_H_ */

@@ -64,7 +64,7 @@
 #define GEN_F3_VDD     16U
 #define GEN_FREQ       17U
 #define DC_SIZE        50U
-#define MIN_AMP_VALUE  100U
+#define MIN_AMP_VALUE  50U
 #define NO_COMMON      0x01U
 #define NO_SOP         0x02U
 #define SC_SOP         0x04U
@@ -77,24 +77,6 @@
 #define HIGH_FREQ      0x02U
 #define ADC_ERROR      0x03U
 
-
-#define DC_SIZE  50
-
-#define MIN_AMP_VALUE 50
-
-#define NO_COMMON 0x01
-#define NO_SOP    0x02
-#define SC_SOP    0x04
-#define NO_SCT    0x08
-#define SC_SCT    0x10
-#define NO_SFL    0x20
-#define SC_SFL    0x04
-
-#define ADC_OK    0x00
-#define LOW_FREQ  0x01
-#define HIGH_FREQ 0x02
-#define ADC_ERROR 0x03
-#define FASE_ERROR 0x04
 
 
 typedef enum

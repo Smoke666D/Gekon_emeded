@@ -560,7 +560,6 @@ void StartADCTask(void *argument)
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
     vADCConvertToVDD(1);
 
-
     //Переключаем обратно аналоговый коммутатор
     HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
 
@@ -786,6 +785,9 @@ uint8_t vADCGetADC3Data()
   }
   return result;
 }
+
+
+
 
 uint8_t vADCGetADC12Data()
 {

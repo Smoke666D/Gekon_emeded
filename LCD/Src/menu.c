@@ -41,6 +41,24 @@ xScreenSetObject xYesNoMenu =
   0U,
   ( void* )&xYesNoScreenKeyCallBack,
 };
+void EventScreenKeyCallBack( xScreenSetObject* menu, char key )
+{
+  switch ( key )
+     {
+       case KEY_EXIT:
+         pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+         vExitCurObject();
+         DownScreen = 0U;
+         uiSetting  = 0U;
+         break;
+       default:
+         break;
+     }
+
+
+}
+
+
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция обработки клавишей меню да-нет?
@@ -573,6 +591,15 @@ xScreenSetObject xSettingsMenu =
   ( void* )&xSettingsScreenKeyCallBack,
 };
 
+xScreenSetObject xEventMenu =
+{
+  xEventScreens,
+  ( EVENT_MENU_COUNT  - 1U ),
+  0U,
+  ( void* )&EventScreenKeyCallBack,
+};
+
+
 void vUCTOSTRING ( uint8_t * str, uint8_t data )
 {
   uint8_t fb = 0U;
@@ -804,6 +831,22 @@ void vGetStatusData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   return;
 }
 
+void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  switch ( IP_ADRESS )
+  {
+    case 1:
+      cSERVERgetStrIP( Data );
+      break;
+    default:
+      break;
+
+  }
+
+
+}
+
+
 void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   switch ( ID )
@@ -853,56 +896,6 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       Data[2]=',';
       Data[3]='6';
       Data[4]=0;
-      break;
-    case 10:
-      Data[0]='1';
-      Data[1]='9';
-      Data[2]='2';
-      Data[3]='.';
-      Data[4]='1';
-      Data[5]='6';
-      Data[6]='8';
-      Data[7]='.';
-      Data[8]='1';
-      Data[9]='0';
-      Data[10]='0';
-      Data[11]='.';
-      Data[12]='5';
-      Data[13]=0;
-      break;
-    case 9:
-      Data[0]='2';
-      Data[1]='5';
-      Data[2]='5';
-      Data[3]='.';
-      Data[4]='2';
-      Data[5]='5';
-      Data[6]='5';
-      Data[7]='.';
-      Data[8]='2';
-      Data[9]='5';
-      Data[10]='5';
-      Data[11]='.';
-      Data[12]='0';
-      Data[13]=0;
-      break;
-    case 8:
-      Data[0]='1';
-      Data[1]='9';
-      Data[2]='2';
-      Data[3]='.';
-      Data[4]='1';
-      Data[5]='6';
-      Data[6]='8';
-      Data[7]='.';
-      Data[8]='1';
-      Data[9]='0';
-      Data[10]='0';
-      Data[11]='.';
-      Data[12]='1';
-      Data[13]='2';
-      Data[14]='1';
-      Data[15]=0;
       break;
     case 7:
       Data[0]='2';

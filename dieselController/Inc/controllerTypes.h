@@ -207,7 +207,7 @@ typedef struct __packed
   fix16_t            delay;    /* Delay to turn off after triggered */
   timerID_t          timerID;  /* Number of system timer */
   RELAY_DELAY_STATUS status;   /* Current status of device */
-} RELAY_DELAY_DEVICE __packed; /* Relay with auto turn off after delay */
+} RELAY_DELAY_DEVICE;          /* Relay with auto turn off after delay */
 
 typedef struct __packed
 {

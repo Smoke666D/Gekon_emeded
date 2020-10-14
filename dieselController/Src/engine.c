@@ -918,17 +918,18 @@ ENGINE_STATUS eENGINEgetEngineStatus ( void )
 
 void vENGINEtask ( void const* argument )
 {
-  fix16_t        oilVal      = 0U;
-  fix16_t        coolantVal  = 0U;
-  fix16_t        fuelVal     = 0U;
-  fix16_t        speedVal    = 0U;
-  fix16_t        batteryVal  = 0U;
-  fix16_t        chargerVal  = 0U;
-  timerID_t      timerID     = 0U;
-  ENGINE_COMMAND inputCmd    = ENGINE_CMD_NONE;
-  SYSTEM_EVENT   event       = { 0U };
-  uint32_t       inputNotifi = 0U;
-  ENGINE_COMMAND lastCmd     = ENGINE_CMD_NONE;
+  fix16_t        oilVal        = 0U;
+  fix16_t        coolantVal    = 0U;
+  fix16_t        fuelVal       = 0U;
+  fix16_t        speedVal      = 0U;
+  fix16_t        batteryVal    = 0U;
+  fix16_t        chargerVal    = 0U;
+  timerID_t      timerID       = 0U;
+  ENGINE_COMMAND inputCmd      = ENGINE_CMD_NONE;
+  SYSTEM_EVENT   event         = { 0U };
+  uint32_t       inputNotifi   = 0U;
+  uint8_t        idleStopError = 0U;
+  ENGINE_COMMAND lastCmd       = ENGINE_CMD_NONE;
   for (;;)
   {
     /*-------------------- Read system notification --------------------*/
@@ -1018,7 +1019,6 @@ void vENGINEtask ( void const* argument )
     chargerVal = fCHARGERprocess();
     vENGINEmileageProcess();
     /*------------------------- Input commands -------------------------*/
-
     if ( engine.cmd != lastCmd )
     {
       lastCmd = engine.cmd;
@@ -1026,6 +1026,16 @@ void vENGINEtask ( void const* argument )
     switch ( engine.cmd )
     {
       case ENGINE_CMD_NONE:
+        if ( ( idleStopError == 0U ) && ( engine.status == ENGINE_STATUS_IDLE ) )
+        {
+          if ( uENGINEisStop( oilVal, speedVal ) == 0U )
+          {
+            idleStopError   = 1U;
+            event.action    = ACTION_EMERGENCY_STOP;
+            event.type      = EVENT_STOP_FAIL;
+            xQueueSend( pLOGICgetEventQueue(), &event, portMAX_DELAY );
+          }
+        }
         break;
       /*----------------------------------------------------------------------------------------*/
       /*-------------------------------------- ENGINE START ------------------------------------*/
@@ -1347,13 +1357,15 @@ void vENGINEtask ( void const* argument )
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_RESET_TO_IDLE:
         vENGINEresetAlarms();
-        starter.status      = STARTER_IDLE;
-        planStop.status     = STOP_IDLE;
-        engine.status       = ENGINE_STATUS_IDLE;
+        starter.status  = STARTER_IDLE;
+        planStop.status = STOP_IDLE;
+        engine.status   = ENGINE_STATUS_IDLE;
+        idleStopError   = 0U;
         stopSolenoid.relay.set( RELAY_OFF );
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
         engine.cmd = ENGINE_CMD_NONE;
+
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

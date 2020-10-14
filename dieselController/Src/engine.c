@@ -36,8 +36,11 @@ static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
 static StaticQueue_t         xEngineCommandQueue = { 0U };
 static QueueHandle_t         pEngineCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTIVE", "CURRENT" };
+static const fix16_t fix60               = F16( 60U );
+static const fix16_t dryContactTrigLevel = F16( 0x7FFFU );
+
 #if ( DEBUG_SERIAL_STATUS > 0U )
+  const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTIVE", "CURRENT" };
   const char* engineCmdStr[8U] =
   {
     "NONE",
@@ -89,7 +92,6 @@ const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTI
 static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
 static uint8_t        starterFinish                                    = 0U;
 static uint8_t        blockTimerFinish                                 = 0U;
-static uint8_t        maintenanceReset                                 = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -186,7 +188,6 @@ fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
 
-
   vSENSORprocess( &fuel.level, &value, pLOGICgetEventQueue() );
   if ( fuel.level.status == SENSOR_STATUS_NORMAL )
   {
@@ -217,10 +218,6 @@ fix16_t fSPEEDprocess ( void )
       vALARMcheck( &speed.lowAlarm, value, pLOGICgetEventQueue() );
     }
   }
-  if ( speed.hightAlarm.status != ALARM_STATUS_IDLE )
-  {
-    uint8_t i = 0;
-  }
   return value;
 }
 /*----------------------------------------------------------------------------*/
@@ -246,78 +243,112 @@ fix16_t fCHARGERprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
-void vENGINEmileageProcess ( uint8_t* reset )
+void vENGINEmileageProcess ( void )
 {
-  static timerID_t timerID = LOGIC_COUNTERS_SIZE + 1U;
-  static uint8_t   stat    = 0U;
-  uint16_t         data    = 0U;
-  if ( *reset > 0U )
-  {
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, maintenanceAlarmOilTimeLeft, &data );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, maintenanceAlarmAirTimeLeft, &data );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, maintenanceAlarmFuelTimeLeft, &data );
-    eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-    *reset = 0U;
-  }
+  uint16_t data   = 0U;
+  uint8_t  flSave = 0U;
+
   if ( engine.status == ENGINE_STATUS_WORK )
   {
-    if ( stat == 0U )
+    switch ( maintence.status )
     {
-      vLOGICstartTimer( 60U, &timerID );
-      stat = 1U;
-    }
-    else if ( uLOGICisTimer( timerID ) > 0U )
-    {
-      //mileage++;
-      if ( ( maintence.oil.enb > 0U ) && ( maintence.oil.active > 0U ) )
-      {
-        eDATAAPIfreeData( DATA_API_CMD_INC, maintenanceAlarmOilTimeLeft, &data );
-        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-      }
-      if ( ( maintence.air.enb > 0U ) && ( maintence.air.active > 0U ) )
-      {
-        eDATAAPIfreeData( DATA_API_CMD_INC, maintenanceAlarmAirTimeLeft, &data );
-        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-      }
-      if ( ( maintence.fuel.enb > 0U ) && ( maintence.fuel.active > 0U ) )
-      {
-        eDATAAPIfreeData( DATA_API_CMD_INC, maintenanceAlarmFuelTimeLeft, &data );
-        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-      }
-      vLOGICstartTimer( 60U, &timerID );
-    }
-    else
-    {
-
+      case MAINTENCE_STATUS_STOP:
+        vLOGICstartTimer( fix60, &maintence.timerID );
+        maintence.status = MAINTENCE_STATUS_RUN;
+        break;
+      case MAINTENCE_STATUS_RUN:
+        if ( uLOGICisTimer( maintence.timerID ) > 0U )
+        {
+          if ( ( maintence.oil.enb > 0U ) && ( maintence.oil.active > 0U ) )
+          {
+            eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
+            eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
+            vALARMcheck( &maintence.oil,  fix16_div( F16( data ),  F16( 60U ) ), pLOGICgetEventQueue() );
+            flSave = 1U;
+          }
+          if ( ( maintence.air.enb > 0U ) && ( maintence.air.active > 0U ) )
+          {
+            eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
+            eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
+            vALARMcheck( &maintence.air,  fix16_div( F16( data ),  F16( 60U ) ), pLOGICgetEventQueue() );
+            flSave = 1U;
+          }
+          if ( ( maintence.fuel.enb > 0U ) && ( maintence.fuel.active > 0U ) )
+          {
+            eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
+            eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
+            vALARMcheck( &maintence.fuel, fix16_div( F16( data ), F16( 60U ) ), pLOGICgetEventQueue() );
+            flSave = 1U;
+          }
+          if ( flSave > 0U )
+          {
+            eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+          }
+          vLOGICstartTimer( fix60, &maintence.timerID );
+        }
+        break;
+      default:
+        maintence.status = MAINTENCE_STATUS_STOP;
+        break;
     }
   }
-  else if ( stat > 0U )
+  else if ( maintence.status == MAINTENCE_STATUS_RUN )
   {
-    stat = 0U;
-    vLOGICresetTimer( timerID );
+    maintence.status = MAINTENCE_STATUS_STOP;
+    vLOGICresetTimer( maintence.timerID );
   }
   else
   {
 
   }
-  eDATAAPIfreeData( DATA_API_CMD_READ, maintenanceAlarmOilTimeLeft, &data );
-  vALARMcheck( &maintence.oil,  fix16_div( F16( data ),  F16( 60U ) ), pLOGICgetEventQueue() );
-  eDATAAPIfreeData( DATA_API_CMD_READ, maintenanceAlarmAirTimeLeft, &data );
-  vALARMcheck( &maintence.air,  fix16_div( F16( data ),  F16( 60U ) ), pLOGICgetEventQueue() );
-  eDATAAPIfreeData( DATA_API_CMD_READ, maintenanceAlarmFuelTimeLeft, &data );
-  vALARMcheck( &maintence.fuel, fix16_div( F16( data ), F16( 60U ) ), pLOGICgetEventQueue() );
   return;
 }
 /*----------------------------------------------------------------------------*/
 uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t speed )
 {
   uint8_t res = 0U;
-  if ( ( ( starter.startCrit.critGenFreqEnb  > 0U ) && ( freq     >= starter.startCrit.critGenFreqLevel ) )  ||
-       ( ( starter.startCrit.critOilPressEnb > 0U ) && ( pressure >= starter.startCrit.critOilPressLevel ) ) ||
-       ( ( starter.startCrit.critChargeEnb   > 0U ) && ( voltage  >= starter.startCrit.critChargeLevel ) )   ||
-       ( ( starter.startCrit.critSpeedEnb    > 0U ) && ( speed    >= starter.startCrit.critSpeedLevel ) ) )
+  #if ( DEBUG_SERIAL_STATUS > 0U )
+    char buffer[10U] = { 0U };
+  #endif
+  if ( ( starter.startCrit.critGenFreqEnb > 0U ) && ( freq >= starter.startCrit.critGenFreqLevel ) )
   {
     res = 1U;
+    #if ( DEBUG_SERIAL_STATUS > 0U )
+      vSYSSerial( ">>Engine started by generator frequency: " );
+      fix16_to_str( freq, buffer, 2U );
+      vSYSSerial( buffer );
+      vSYSSerial( "\r\n" );
+    #endif
+  }
+  if ( ( starter.startCrit.critOilPressEnb > 0U ) && ( pressure >= starter.startCrit.critOilPressLevel ) )
+  {
+    res = 1U;
+    #if ( DEBUG_SERIAL_STATUS > 0U )
+      vSYSSerial( ">>Engine started by oil pressure: " );
+      fix16_to_str( pressure, buffer, 2U );
+      vSYSSerial( buffer );
+      vSYSSerial( "\r\n" );
+    #endif
+  }
+  if ( ( starter.startCrit.critChargeEnb > 0U ) && ( voltage >= starter.startCrit.critChargeLevel ) )
+  {
+    res = 1U;
+    #if ( DEBUG_SERIAL_STATUS > 0U )
+      vSYSSerial( ">>Engine started by charger voltage: " );
+      fix16_to_str( voltage, buffer, 2U );
+      vSYSSerial( buffer );
+      vSYSSerial( "\r\n" );
+    #endif
+  }
+  if ( ( starter.startCrit.critSpeedEnb > 0U ) && ( speed >= starter.startCrit.critSpeedLevel ) )
+  {
+    res = 1U;
+    #if ( DEBUG_SERIAL_STATUS > 0U )
+      vSYSSerial( ">>Engine started by engine speed: " );
+      fix16_to_str( speed, buffer, 2U );
+      vSYSSerial( buffer );
+      vSYSSerial( "\r\n" );
+    #endif
   }
   return res;
 }
@@ -360,60 +391,62 @@ void vENGINEenbToStr ( uint8_t enb, char* str )
 /*----------------------------------------------------------------------------*/
 void vENGINEprintSetup ( void )
 {
-  char buf[8U];
-  vSYSSerial( ">>Oil pressure sensor \r\n" );
-  vSYSSerial( "    Type           : ");
-  vSYSSerial( cSensorTypes[oil.pressure.type] );
-  vSYSSerial( "\n\r" );
-  vSYSSerial( "    Alarm          : ");
-  vENGINEenbToStr( oil.alarm.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
-  vSYSSerial( "    Prealarm       : ");
-  vENGINEenbToStr( oil.alarm.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
+  #if ( DEBUG_SERIAL_STATUS > 0U )
+    char buf[8U];
+    vSYSSerial( ">>Oil pressure sensor \r\n" );
+    vSYSSerial( "    Type           : ");
+    vSYSSerial( cSensorTypes[oil.pressure.type] );
+    vSYSSerial( "\n\r" );
+    vSYSSerial( "    Alarm          : ");
+    vENGINEenbToStr( oil.alarm.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
+    vSYSSerial( "    Prealarm       : ");
+    vENGINEenbToStr( oil.alarm.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
 
-  vSYSSerial( ">>Fuel level sensor \r\n" );
-  vSYSSerial( "    Type           : ");
-  vSYSSerial( cSensorTypes[fuel.level.type] );
-  vSYSSerial( "\n\r" );
-  vSYSSerial( "    Low alarm      : ");
-  vENGINEenbToStr( fuel.lowAlarm.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
-  vSYSSerial( "    Low prealarm   : ");
-  vENGINEenbToStr( fuel.lowPreAlarm.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
-  vSYSSerial( "    Hight alarm    : ");
-  vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
-  vSYSSerial( "    Hight prealarm : ");
-  vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
+    vSYSSerial( ">>Fuel level sensor \r\n" );
+    vSYSSerial( "    Type           : ");
+    vSYSSerial( cSensorTypes[fuel.level.type] );
+    vSYSSerial( "\n\r" );
+    vSYSSerial( "    Low alarm      : ");
+    vENGINEenbToStr( fuel.lowAlarm.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
+    vSYSSerial( "    Low prealarm   : ");
+    vENGINEenbToStr( fuel.lowPreAlarm.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
+    vSYSSerial( "    Hight alarm    : ");
+    vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
+    vSYSSerial( "    Hight prealarm : ");
+    vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
 
-  vSYSSerial( ">>Coolant temperature \r\n" );
-  vSYSSerial( "    Type           : ");
-  vSYSSerial( cSensorTypes[coolant.temp.type] );
-  vSYSSerial( "\r\n" );
+    vSYSSerial( ">>Coolant temperature \r\n" );
+    vSYSSerial( "    Type           : ");
+    vSYSSerial( cSensorTypes[coolant.temp.type] );
+    vSYSSerial( "\r\n" );
 
-  vSYSSerial( ">>Speed sensor     : " );
-  vENGINEenbToStr( speed.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
-  vSYSSerial( "    Teeth number   : " );
-  sprintf( buf, "%d", speedToothNumber.value[0U] );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
-  vSYSSerial( "    Low alarm      : ");
-  vENGINEenbToStr( speed.lowAlarm.enb, buf );
-  vSYSSerial( buf );
-  vSYSSerial( "\r\n" );
+    vSYSSerial( ">>Speed sensor     : " );
+    vENGINEenbToStr( speed.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
+    vSYSSerial( "    Teeth number   : " );
+    sprintf( buf, "%d", speedToothNumber.value[0U] );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
+    vSYSSerial( "    Low alarm      : ");
+    vENGINEenbToStr( speed.lowAlarm.enb, buf );
+    vSYSSerial( buf );
+    vSYSSerial( "\r\n" );
 
-  vSYSSerial( "\r\n" );
+    vSYSSerial( "\r\n" );
+  #endif
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -477,7 +510,7 @@ void vENGINEdataInit ( void )
   else
   {
     oil.alarm.enb   = 1U;
-    oil.alarm.level = F16( 0x7FFFU );
+    oil.alarm.level = dryContactTrigLevel;
     oil.alarm.type  = ALARM_LEVEL_LOW;
   }
   oil.alarm.delay        = 0U;
@@ -523,7 +556,7 @@ void vENGINEdataInit ( void )
   {
     coolant.alarm.enb   = 1U;
     coolant.alarm.type  = ALARM_LEVEL_LOW;
-    coolant.alarm.level = F16( 0x7FFFU );
+    coolant.alarm.level = dryContactTrigLevel;
   }
   coolant.alarm.active       = 1U;
   coolant.alarm.delay        = 0U;
@@ -875,12 +908,6 @@ uint8_t uENGINEisBlockTimerFinish ( void )
   return blockTimerFinish;
 }
 
-void vENGINEmaintenanceReset ( void )
-{
-  maintenanceReset = 1U;
-  return;
-}
-
 ENGINE_STATUS eENGINEgetEngineStatus ( void )
 {
   return engine.status;
@@ -898,6 +925,9 @@ void vENGINEtask ( void const* argument )
   ENGINE_COMMAND inputCmd    = ENGINE_CMD_NONE;
   SYSTEM_EVENT   event       = { 0U };
   uint32_t       inputNotifi = 0U;
+
+  uint8_t temp = 0;
+  ENGINE_COMMAND lastCmd = ENGINE_CMD_NONE;
   for (;;)
   {
     /*-------------------- Read system notification --------------------*/
@@ -985,8 +1015,13 @@ void vENGINEtask ( void const* argument )
     speedVal   = fSPEEDprocess();
     batteryVal = fBATTERYprocess();
     chargerVal = fCHARGERprocess();
-    vENGINEmileageProcess( &maintenanceReset );
+    vENGINEmileageProcess();
     /*------------------------- Input commands -------------------------*/
+
+    if ( engine.cmd != lastCmd )
+    {
+      lastCmd = engine.cmd;
+    }
     switch ( engine.cmd )
     {
       case ENGINE_CMD_NONE:
@@ -1306,6 +1341,7 @@ void vENGINEtask ( void const* argument )
         vFPOsetGenReady( RELAY_OFF );
         vFPOsetReadyToStart( RELAY_OFF );
         engine.status = ENGINE_STATUS_EMERGENCY_STOP;
+        engine.cmd = ENGINE_CMD_NONE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/
@@ -1318,11 +1354,14 @@ void vENGINEtask ( void const* argument )
         engine.status   = ENGINE_STATUS_IDLE;
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
+        engine.cmd = ENGINE_CMD_NONE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/
       default:
+        temp = engine.cmd;
+        //engine.cmd = ENGINE_CMD_NONE;
         break;
     }
     /* Process outputs */

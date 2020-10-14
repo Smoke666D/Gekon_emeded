@@ -173,8 +173,6 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_IDLE:
       if ( delayStop >0U )
       {
-        vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
-        vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON  );
         vLOGICstartTimer( controller.stopDelay, &controller.timerID );
         stopState = CONTROLLER_TURNING_DELAY;
       }
@@ -215,7 +213,8 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_FINISH:
       if ( engineState == ENGINE_STATUS_IDLE )
       {
-        vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_OFF );
+        vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
+        vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON   );
         controller.state = CONTROLLER_STATUS_IDLE;
         stopState        = CONTROLLER_TURNING_IDLE;
       }
@@ -332,6 +331,7 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   controllerHandle = osThreadNew( vCONTROLLERtask, NULL, &controllerTask_attributes );
   eDATAAPIlogPointer( DATA_API_CMD_READ, &ackLogPointer );
   vMenuMessageInit( controllerHandle );
+  vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
   return;
 }
 
@@ -410,13 +410,37 @@ void vCONTROLLERtask ( void const* argument )
           }
           break;
         case HMI_CMD_STOP :
-          if ( ( controller.mode  == CONTROLLER_MODE_MANUAL  ) &&
-               ( ( controller.state == CONTROLLER_STATUS_WORK  ) ||
-                 ( controller.state == CONTROLLER_STATUS_START ) ) )
+          if ( controller.mode  == CONTROLLER_MODE_MANUAL  )
           {
-            vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
-            vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON  );
-            controller.state = CONTROLLER_STATUS_PLAN_STOP;
+            switch ( controller.state )
+            {
+              case CONTROLLER_STATUS_WORK:
+                controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              case CONTROLLER_STATUS_START:
+                controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              case CONTROLLER_STATUS_PLAN_STOP:
+                vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
+                interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                interiorEvent.action = ACTION_EMERGENCY_STOP;
+                xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+                controller.state = CONTROLLER_STATUS_ALARM;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              case CONTROLLER_STATUS_PLAN_STOP_DELAY:
+                vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
+                interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                interiorEvent.action = ACTION_EMERGENCY_STOP;
+                xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+                controller.state = CONTROLLER_STATUS_ALARM;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              default:
+                break;
+            }
           }
           break;
         case HMI_CMD_AUTO:

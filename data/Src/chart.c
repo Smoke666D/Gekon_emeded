@@ -110,13 +110,14 @@ eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
   {
     if ( x >= chart->xmin )
     {
-      for ( i=0U; i<chart->size; i++ )
+      for ( i=1U; i<chart->size; i++ )
       {
-        if ( x > chart->dots[i].x )
+        if ( x < chart->dots[i].x )
         {
           break;
         }
       }
+      i--;
       if ( i != chart->size)
       {
         vCHARTcalcFunction( chart, i, &func );

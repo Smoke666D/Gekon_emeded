@@ -184,10 +184,10 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
     *id = i;
     if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {
-      aciveCounters |= 1U << *id;
-      activeNumber++;
       targetArray[*id]  = inc;
       counterArray[*id] = 0U;
+      aciveCounters    |= 1U << *id;
+      activeNumber++;
       xSemaphoreGive( xSYSTIMERsemaphore );
     }
     else

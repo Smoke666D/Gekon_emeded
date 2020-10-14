@@ -313,7 +313,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  defaultTaskHandle = osThreadNew( StartDefaultTask, NULL, &defaultTask_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
   netTaskHandle      = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
   lcdTaskHandle      = osThreadNew( StartLcdTask,  NULL, &lcdTask_attributes );
@@ -1292,7 +1292,7 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
-  osDelay( 300U );
+  osDelay( 500U );
   vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIdataInit();                         /* Data from EEPROM initialization */
   vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/

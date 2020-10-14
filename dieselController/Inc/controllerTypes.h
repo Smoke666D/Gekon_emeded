@@ -188,7 +188,6 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  //uint8_t       active;
   fix16_t       onLevel;
   fix16_t       offLevel;
   RELAY_DEVICE  relay;

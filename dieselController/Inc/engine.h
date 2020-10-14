@@ -85,6 +85,12 @@ typedef enum
   STOP_FAIL,
   STOP_OK,
 } PLAN_STOP_STATUS;
+
+typedef enum
+{
+  MAINTENCE_STATUS_STOP,
+  MAINTENCE_STATUS_RUN,
+} MAINTENCE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
@@ -167,9 +173,11 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  ALARM_TYPE  oil;
-  ALARM_TYPE  air;
-  ALARM_TYPE  fuel;
+  MAINTENCE_STATUS status;
+  timerID_t        timerID;
+  ALARM_TYPE       oil;
+  ALARM_TYPE       air;
+  ALARM_TYPE       fuel;
 } MAINTENCE_TYPE;
 
 typedef struct __packed
@@ -211,6 +219,5 @@ QueueHandle_t pENGINEgetCommandQueue ( void );
 uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
-void          vENGINEmaintenanceReset ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

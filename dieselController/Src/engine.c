@@ -30,7 +30,7 @@ static CHARGER_TYPE          charger             = { 0U };
 static STARTER_TYPE          starter             = { 0U };
 static PLAN_STOP_TYPE        planStop            = { 0U };
 static MAINTENCE_TYPE        maintence           = { 0U };
-static RELAY_DEVICE          stopSolenoid        = { 0U };
+static RELAY_DELAY_DEVICE    stopSolenoid        = { 0U };
 static RELAY_DEVICE          idleRelay           = { 0U };
 static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
 static StaticQueue_t         xEngineCommandQueue = { 0U };
@@ -178,8 +178,8 @@ fix16_t fCOOLANTprocess ( void )
     {
       vALARMcheck( &coolant.preAlarm, value,  pLOGICgetEventQueue() );
     }
-    vRELAYproces( &coolant.heater, value );
-    vRELAYproces( &coolant.cooler, value );
+    vRELAYautoProces( &coolant.heater, value );
+    vRELAYautoProces( &coolant.cooler, value );
   }
   return value;
 }
@@ -201,7 +201,7 @@ fix16_t fFUELprocess ( void )
     {
       vALARMcheck( &fuel.hightPreAlarm, value, pLOGICgetEventQueue() );
     }
-    vRELAYproces( &fuel.booster, value );
+    vRELAYautoProces( &fuel.booster, value );
   }
   return value;
 }
@@ -779,10 +779,13 @@ void vENGINEdataInit ( void )
   speed.hightAlarm.relax.enb    = 0U;
   speed.hightAlarm.status       = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
-  stopSolenoid.enb    = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
-  stopSolenoid.set    = vFPOsetStopSolenoid;
-  stopSolenoid.status = RELAY_OFF;
-  stopSolenoid.set( RELAY_ON );
+  stopSolenoid.relay.enb    = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
+  stopSolenoid.relay.set    = vFPOsetStopSolenoid;
+  stopSolenoid.relay.status = RELAY_OFF;
+  stopSolenoid.timerID      = LOGIC_DEFAULT_TIMER_ID;
+  stopSolenoid.delay        = getValue( configReg[TIMER_SOLENOID_HOLD_ADR] );
+  stopSolenoid.triger       = 0U;
+  stopSolenoid.status       = RELAY_DELAY_IDLE;
   /*--------------------------------------------------------------*/
   idleRelay.enb    = uFPOisEnable( FPO_FUN_IDLING );
   idleRelay.set    = vFPOsetIdle;
@@ -925,9 +928,7 @@ void vENGINEtask ( void const* argument )
   ENGINE_COMMAND inputCmd    = ENGINE_CMD_NONE;
   SYSTEM_EVENT   event       = { 0U };
   uint32_t       inputNotifi = 0U;
-
-  uint8_t temp = 0;
-  ENGINE_COMMAND lastCmd = ENGINE_CMD_NONE;
+  ENGINE_COMMAND lastCmd     = ENGINE_CMD_NONE;
   for (;;)
   {
     /*-------------------- Read system notification --------------------*/
@@ -1049,7 +1050,7 @@ void vENGINEtask ( void const* argument )
               charger.hightAlarm.active    = 0U;
               charger.hightPreAlarm.active = 0U;
               //vELECTROalarmStartDisable();
-              if ( ( engine.startCheckOil > 0U ) && ( oilVal != 0U ) )
+              if ( ( engine.startCheckOil > 0U ) && ( oilVal != ENGINE_OIL_PRESSURE_TRESH_HOLD ) )
               {
                 starter.status = STARTER_FAIL;
               }
@@ -1070,7 +1071,6 @@ void vENGINEtask ( void const* argument )
             case STARTER_READY:
               starter.startIteration++;
               starter.status = STARTER_CRANKING;
-              stopSolenoid.set( RELAY_OFF );
               starter.set( RELAY_ON );
               vLOGICstartTimer( starter.crankingDelay, &timerID );
               vLOGICprintStarterStatus( starter.status );
@@ -1097,9 +1097,9 @@ void vENGINEtask ( void const* argument )
                 else
                 {
                   fuel.pump.set( RELAY_OFF );
-                  stopSolenoid.set( RELAY_ON );
-                  preHeater.active = 0U;
-                  starter.status   = STARTER_FAIL;
+                  vRELAYdelayTrig( &stopSolenoid );
+                  preHeater.active    = 0U;
+                  starter.status      = STARTER_FAIL;
                   vLOGICprintStarterStatus( starter.status );
                 }
               }
@@ -1189,7 +1189,6 @@ void vENGINEtask ( void const* argument )
               starter.set( RELAY_OFF );
               preHeater.relay.set( RELAY_OFF );
               idleRelay.set( RELAY_OFF );
-              stopSolenoid.set( RELAY_OFF );
               fuel.pump.set( RELAY_OFF );
               vFPOsetGenReady( RELAY_OFF );
               break;
@@ -1230,7 +1229,7 @@ void vENGINEtask ( void const* argument )
                 oil.preAlarm.active = 0U;
                 idleRelay.set( RELAY_OFF );
                 fuel.pump.set( RELAY_OFF );
-                stopSolenoid.set( RELAY_ON );
+                vRELAYdelayTrig( &stopSolenoid );
                 vLOGICstartTimer( planStop.processDelay, &timerID );
                 planStop.status = STOP_PROCESSING;
                 vLOGICprintPlanStopStatus( planStop.status );
@@ -1334,8 +1333,8 @@ void vENGINEtask ( void const* argument )
         coolant.heater.relay.set( RELAY_OFF );
         coolant.heater.relay.status = RELAY_OFF;
         idleRelay.set( RELAY_OFF );
-        stopSolenoid.set( RELAY_ON );
-        preHeater.active = 0U;
+        vRELAYdelayTrig( &stopSolenoid );
+        preHeater.active    = 0U;
         preHeater.relay.set( RELAY_OFF );
         preHeater.relay.status = RELAY_OFF;
         vFPOsetGenReady( RELAY_OFF );
@@ -1348,10 +1347,10 @@ void vENGINEtask ( void const* argument )
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_RESET_TO_IDLE:
         vENGINEresetAlarms();
-        stopSolenoid.set( RELAY_ON );
-        starter.status  = STARTER_IDLE;
-        planStop.status = STOP_IDLE;
-        engine.status   = ENGINE_STATUS_IDLE;
+        starter.status      = STARTER_IDLE;
+        planStop.status     = STOP_IDLE;
+        engine.status       = ENGINE_STATUS_IDLE;
+        stopSolenoid.relay.set( RELAY_OFF );
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
         engine.cmd = ENGINE_CMD_NONE;
@@ -1360,12 +1359,12 @@ void vENGINEtask ( void const* argument )
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/
       default:
-        temp = engine.cmd;
-        //engine.cmd = ENGINE_CMD_NONE;
+        engine.cmd = ENGINE_CMD_NONE;
         break;
     }
     /* Process outputs */
     vRELAYimpulseProcess( &preHeater, coolantVal );
+    vRELAYdelayProcess( &stopSolenoid );
     /* Send status */
 
     /*---------------------*/

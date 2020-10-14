@@ -342,11 +342,8 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue )
   return;
 }
 
-void vRELAYproces ( RELAY_AUTO_DEVICE* device, fix16_t value )
+void vRELAYautoProces ( RELAY_AUTO_DEVICE* device, fix16_t value )
 {
-  float fVal = fix16_to_float( value );
-  float fOff = fix16_to_float( device->offLevel );
-  float fOn  = fix16_to_float( device->onLevel );
   if ( device->relay.enb > 0U )
   {
     if ( device->onLevel < device->offLevel )
@@ -391,6 +388,47 @@ void vRELAYproces ( RELAY_AUTO_DEVICE* device, fix16_t value )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device )
+{
+  if ( device->triger == 0U )
+  {
+    device->triger = 1U;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device )
+{
+  if ( device->relay.enb > 0U )
+  {
+    switch ( device->status )
+    {
+      case RELAY_DELAY_IDLE:
+        if ( device->triger > 0U )
+        {
+          vLOGICstartTimer( device->delay, &device->timerID );
+          device->relay.set( RELAY_ON );
+          device->relay.status = RELAY_ON;
+          device->status       = RELAY_DELAY_WORK;
+        }
+        break;
+      case RELAY_DELAY_WORK:
+        if ( uLOGICisTimer( device->timerID ) > 0U )
+        {
+          device->relay.set( RELAY_OFF );
+          device->relay.status = RELAY_OFF;
+          device->status       = RELAY_DELAY_IDLE;
+          device->triger       = 0U;
+        }
+        break;
+      default:
+        device->status = RELAY_DELAY_IDLE;
+        break;
+    }
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device )
 {
   device->relay.set( RELAY_OFF );
@@ -403,7 +441,7 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
 {
   if ( device->active > 0U )
   {
-    if ( ( device->relay.enb > 0U ) && ( device->status != RELAY_DELAY_DONE ) )
+    if ( ( device->relay.enb > 0U ) && ( device->status != RELAY_IMPULSE_DONE ) )
     {
       if ( ( device->level >= val ) && ( device->relay.status != RELAY_ON ) )
       {
@@ -415,14 +453,14 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
         device->relay.set( RELAY_OFF );
         device->relay.status = RELAY_OFF;
       }
-      if ( ( device->relay.status == RELAY_ON ) && ( device->status != RELAY_DELAY_START ) )
+      if ( ( device->relay.status == RELAY_ON ) && ( device->status != RELAY_IMPULSE_START ) )
       {
-        device->status = RELAY_DELAY_START;
+        device->status = RELAY_IMPULSE_START;
         vLOGICstartTimer( device->delay, &device->timerID );
       }
-      if ( ( device->status == RELAY_DELAY_START ) && ( uLOGICisTimer( device->timerID ) > 0U ) )
+      if ( ( device->status == RELAY_IMPULSE_START ) && ( uLOGICisTimer( device->timerID ) > 0U ) )
       {
-        device->status = RELAY_DELAY_DONE;
+        device->status = RELAY_IMPULSE_DONE;
       }
     }
   }

@@ -652,7 +652,7 @@ void vELECTROtask ( void const* argument )
               electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
               break;
             case ELECTRO_PROC_STATUS_DISCONNECT:
-              if ( ( generator.relayOff.status == RELAY_DELAY_DONE ) || ( generator.relayOff.relay.enb == 0U ) )
+              if ( ( generator.relayOff.status == RELAY_IMPULSE_DONE ) || ( generator.relayOff.relay.enb == 0U ) )
               {
                 vLOGICstartTimer( electro.switchDelay, &electro.timerID );
                 electro.state   = ELECTRO_PROC_STATUS_CONNECT;
@@ -668,7 +668,7 @@ void vELECTROtask ( void const* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_DONE:
-              if ( ( mains.relayOn.status == RELAY_DELAY_DONE ) || ( mains.relayOn.relay.enb == 0U ) )
+              if ( ( mains.relayOn.status == RELAY_IMPULSE_DONE ) || ( mains.relayOn.relay.enb == 0U ) )
               {
                 electro.state = ELECTRO_STATUS_IDLE;
                 mains.state   = ELECTRO_STATUS_LOAD;
@@ -698,7 +698,7 @@ void vELECTROtask ( void const* argument )
               electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
               break;
             case ELECTRO_PROC_STATUS_DISCONNECT:
-              if ( ( mains.relayOff.status == RELAY_DELAY_DONE ) || ( mains.relayOff.relay.enb == 0U ) )
+              if ( ( mains.relayOff.status == RELAY_IMPULSE_DONE ) || ( mains.relayOff.relay.enb == 0U ) )
               {
                 vLOGICstartTimer( electro.switchDelay, &electro.timerID );
                 electro.state = ELECTRO_PROC_STATUS_CONNECT;
@@ -714,7 +714,7 @@ void vELECTROtask ( void const* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_DONE:
-              if ( ( generator.relayOn.status == RELAY_DELAY_DONE ) || ( generator.relayOn.relay.enb == 0U ) )
+              if ( ( generator.relayOn.status == RELAY_IMPULSE_DONE ) || ( generator.relayOn.relay.enb == 0U ) )
               {
                 generator.state = ELECTRO_STATUS_LOAD;
                 electro.state   = ELECTRO_STATUS_IDLE;

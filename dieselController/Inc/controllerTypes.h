@@ -21,6 +21,7 @@
 #define  LOG_RECORD_SIZE            6U
 #define  LOGIC_TIMER_STEP           100U  /* ms */
 #define  LOGIC_COUNTERS_SIZE        10U
+#define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
 #define  LOG_TYPES_SIZE             34U
 #define  LOG_ACTION_SIZE            7U
@@ -140,8 +141,14 @@ typedef enum
 typedef enum
 {
   RELAY_DELAY_IDLE,
-  RELAY_DELAY_START,
-  RELAY_DELAY_DONE,
+  RELAY_DELAY_WORK,
+} RELAY_DELAY_STATUS;
+
+typedef enum
+{
+  RELAY_IMPULSE_IDLE,
+  RELAY_IMPULSE_START,
+  RELAY_IMPULSE_DONE,
 } RELAY_IMPULSE_STATUS;
 
 typedef enum
@@ -167,31 +174,40 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t           enb;      /* Enable alarm at initialization */
-  uint8_t           active;   /* On/Off alarm check in work flow */
-  ALARM_LEVEL       type;     /* Type of alarm above or below set point  */
-  fix16_t           level;    /* Set point */
-  fix16_t           delay;    /* Delay to active event after triggered, seconds */
-  timerID_t         timerID;  /* Number of system timer */
-  SYSTEM_EVENT      event;    /* Event of event */
-  ALARM_RELAX_TYPE  relax;    /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
-  ALARM_STATUS      status;   /* Status of the alarm */
-  uint8_t           trig;     /* Alarm triggered flag. Reset from outside */
+  uint8_t           enb;       /* Enable alarm at initialization */
+  uint8_t           active;    /* On/Off alarm check in work flow */
+  ALARM_LEVEL       type;      /* Type of alarm above or below set point  */
+  fix16_t           level;     /* Set point */
+  fix16_t           delay;     /* Delay to active event after triggered, seconds */
+  timerID_t         timerID;   /* Number of system timer */
+  SYSTEM_EVENT      event;     /* Event of event */
+  ALARM_RELAX_TYPE  relax;     /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
+  ALARM_STATUS      status;    /* Status of the alarm */
+  uint8_t           trig;      /* Alarm triggered flag. Reset from outside */
 } ALARM_TYPE;
 
 typedef struct __packed
 {
-  uint8_t           enb;
-  RELAY_STATUS      status;
-  setRelayCallBack  set;
-} RELAY_DEVICE;
+  uint8_t           enb;       /* Enable flag of relay */
+  RELAY_STATUS      status;    /* Current status of relay */
+  setRelayCallBack  set;       /* Callback for relay control */
+} RELAY_DEVICE;                /* Simple on/off relay device */
 
 typedef struct __packed
 {
-  fix16_t       onLevel;
-  fix16_t       offLevel;
-  RELAY_DEVICE  relay;
-} RELAY_AUTO_DEVICE;
+  fix16_t           onLevel;   /* Level to relay turn on */
+  fix16_t           offLevel;  /* Level to relay turn off */
+  RELAY_DEVICE      relay;     /* Relay device */
+} RELAY_AUTO_DEVICE;           /* Auto on/off relay: On at onLevel and Off at offLevel. offLevel van be less, than offLevel  */
+
+typedef struct __packed
+{
+  RELAY_DEVICE       relay;    /* Relay device */
+  uint8_t            triger;   /* Input to start relay processing */
+  fix16_t            delay;    /* Delay to turn off after triggered */
+  timerID_t          timerID;  /* Number of system timer */
+  RELAY_DELAY_STATUS status;   /* Current status of device */
+} RELAY_DELAY_DEVICE __packed; /* Relay with auto turn off after delay */
 
 typedef struct __packed
 {
@@ -213,7 +229,9 @@ typedef struct __packed
 void          vLOGICinit ( TIM_HandleTypeDef* tim );
 QueueHandle_t pLOGICgetEventQueue ( void );
 void          vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue );
-void          vRELAYproces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
+void          vRELAYautoProces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
+void          vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device );
+void          vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );
 void          vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val );
 void          vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
 void          vLOGICtimerHandler ( void );

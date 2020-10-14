@@ -150,7 +150,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       {
         //Усредняем сырые значения АЦП
         uSFL = GetAverVDD( 7U, DC_SIZE );
-        if ( ( uCSD - uSCT ) <= DELTA )
+        if ( ( ( uCSD - uSCT ) <= DELTA ) || (uSCT <  uCAS) )
         {
           xSCT = 0U;
         }
@@ -159,7 +159,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           temp_int = ( ( uSCT - uCAS ) * R3 ) / ( uCSD - uSCT );
           xSCT = fix16_from_int( temp_int );
         }
-        if ( ( uCSD - uSFL ) <= DELTA )
+        if ( ( ( uCSD - uSFL ) <= DELTA ) || ( uSFL - uCAS ) )
         {
           xSFL = 0U;
         }
@@ -168,7 +168,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           temp_int = ( ( uSFL - uCAS ) * R3 ) / ( uCSD - uSFL );
           xSFL = fix16_from_int( temp_int );
         }
-        if ( ( uCSD - uSOP ) <= DELTA )
+        if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP - uCAS ) )
         {
           xSOP = 0U;
         }
@@ -320,6 +320,8 @@ void vADCInit(void)
       vADC3FrInit(ADC3Freq);
       vADC12FrInit(ADC2Freq);
 }
+
+
 
 void vADC_Ready ( uint8_t adc_number )
 {

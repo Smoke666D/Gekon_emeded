@@ -76,6 +76,7 @@
 #define LOW_FREQ       0x01U
 #define HIGH_FREQ      0x02U
 #define ADC_ERROR      0x03U
+#define LOW_AMP        0x04U
 
 
 

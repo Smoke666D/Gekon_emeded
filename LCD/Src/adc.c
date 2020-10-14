@@ -21,7 +21,7 @@ static   uint8_t            ADC_VALID_DATA                               =  0;
 uint8_t vADCGetADC3Data();
 uint8_t vADCGetADC12Data();
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size );
-int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size );
+int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size , uint16_t * delay);
 uint16_t GetAverVDD(uint8_t channel,uint8_t size);
 
 extern TIM_HandleTypeDef htim3;
@@ -638,9 +638,9 @@ void vDecNetural(int16_t * data)
 {
  for (int16_t i = 0;i<ADC_FRAME_SIZE<<2;i=i+4)
  {
-   data[i]   = data[i]   - data[i+4];
-   data[i+1] = data[i+1] - data[i+4];
-   data[i+2] = data[i+2] - data[i+4];
+   data[i]   = data[i]   - data[i+3];
+   data[i+1] = data[i+1] - data[i+3];
+   data[i+2] = data[i+2] - data[i+3];
  }
   return;
 }
@@ -714,9 +714,9 @@ uint8_t vADCGetADC3Data()
   uint8_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   int16_t iMax =0;
-
+  uint16_t DF1,DF2,DF3;
   vDecNetural(&ADC3_IN_Buffer);
-  iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod );
+  iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1);
   if( iMax >= MIN_AMP_VALUE )
   {
         result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2,iMax);
@@ -734,56 +734,31 @@ uint8_t vADCGetADC3Data()
  else
  {
    xNET_F1_VDD =0;
+   xNET_F2_VDD =0;
+   xNET_F3_VDD =0;
+   return LOW_AMP;
  }
-
  //Проверям есть ли на канале напряжение.
-  iMax =xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod );
+ iMax =xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod, &DF2 );
  if( iMax  >= MIN_AMP_VALUE )
  {
-      if (result!=ADC_OK)
-      {
-         result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,1,iMax);
-         if (result==ADC_OK)
-         {
-            xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
-            xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
-         }
-         else
-         {
-           return result;
-         }
-      }
-      xNET_F2_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
+     xNET_F2_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
  }
  else
  {
    xNET_F2_VDD = 0;
   }
-
-  //Проверям есть ли на канале напряжение.
- iMax =xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod );
-  if( iMax >= MIN_AMP_VALUE )
-  {
-         if (result!=ADC_OK)
-         {
-            result = vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,0,iMax);
-            if (result==ADC_OK)
-            {
-               xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
-               xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
-            }
-            else
-            {
-              return result;
-            }
-         }
-        xNET_F3_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
-  }
-  else
-  {
-    xNET_F3_VDD = 0;
-  }
-  return result;
+ //Проверям есть ли на канале напряжение.
+ iMax =xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod,&DF3 );
+ if( iMax >= MIN_AMP_VALUE )
+ {
+      xNET_F3_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
+ }
+ else
+ {
+   xNET_F3_VDD = 0;
+ }
+  return ADC_OK;
 }
 
 
@@ -794,75 +769,48 @@ uint8_t vADCGetADC12Data()
   uint16_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   int16_t iMax =0;
+  uint16_t DF1,DF2,DF3;
 
-
-     vDecNetural(&ADC2_IN_Buffer);  //Вычитаем из фазы, значение на линии нейтрали
-     iMax=xADCMax(  &ADC2_IN_Buffer, 2, uCurPeriod ); //Вычисляем максимальное амплитудное значение
-     if( iMax  >= MIN_AMP_VALUE ) //Если маскимальное омплитудно значение меньше нижнего предела, то фиксируем нулевое напряжение на входе
-     {
-           result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2,iMax);  //Вычисляем частоту
-           if (result==ADC_OK)
-           {
-             xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
-             xGEN_FREQ =  fix16_mul(xGEN_FREQ,fix16_from_int(10));
-             xGEN_F3_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
-           }
-           else
-             goto CUR;
+  vDecNetural(&ADC2_IN_Buffer);  //Вычитаем из фазы, значение на линии нейтрали
+  iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 ); //Вычисляем максимальное амплитудное значение
+  if( iMax  >= MIN_AMP_VALUE ) //Если маскимальное омплитудно значение меньше нижнего предела, то фиксируем нулевое напряжение на входе
+  {
+      result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2,iMax);  //Вычисляем частоту
+      if (result==ADC_OK)
+      {
+        xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
+        xGEN_FREQ =  fix16_mul(xGEN_FREQ,fix16_from_int(10));
+        xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC2_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ));
+      }
+      else
+        goto CUR;
     }
     else
     {
       xGEN_F1_VDD =0;
     }
-
     //Проверям есть ли на канале напряжение.
-     iMax=xADCMax(  &ADC2_IN_Buffer, 1, uCurPeriod );
+    iMax=xADCMax( &ADC2_IN_Buffer, 1, uCurPeriod, &DF2 );
     if( iMax >= MIN_AMP_VALUE )
-    {
-           if (result!=ADC_OK)
-           {
-              result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,1,iMax);
-              if (result==ADC_OK)
-              {
-                xGEN_FREQ  = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
-                xGEN_FREQ  = fix16_mul(xGEN_FREQ,fix16_from_int(10));
-              }
-              else
-              {
-                goto CUR;
-              }
-           }
-           xGEN_F2_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
+     {
+         xGEN_F2_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ));
      }
      else
      {
         xGEN_F2_VDD =0;
      }
+    //Проверям есть ли на канале напряжение.
+    iMax =xADCMax( &ADC2_IN_Buffer, 0, uCurPeriod, &DF3 );
+    if(iMax >= MIN_AMP_VALUE )
+    {
 
-       //Проверям есть ли на канале напряжение.
-    iMax =xADCMax(  &ADC2_IN_Buffer, 0, uCurPeriod );
-       if(iMax >= MIN_AMP_VALUE )
-       {
-
-                  if (result!=ADC_OK)
-                  {
-                     result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,0,iMax);
-                    if (result==ADC_OK)
-                    {
-                      xGEN_FREQ = fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
-                      xGEN_FREQ= fix16_mul(xGEN_FREQ,fix16_from_int(10));
-                    }
-                    else
-
-                      goto CUR;
-                  }
-                  xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
-      }
-      else
-      {
-         xGEN_F3_VDD =0;
-      }
-   CUR:
+          xGEN_F3_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ));
+    }
+    else
+    {
+       xGEN_F3_VDD =0;
+    }
+    CUR:
    if (result==ADC_OK)
    {
      xGEN_F3_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
@@ -901,15 +849,21 @@ fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
  *  off     -номер канала, скоторым работает функция
  *  size    -размер буфера для обработки
  */
-int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size )
+int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size, uint16_t * delay )
 {
 
   int16_t max =0;
-  for (uint16_t i=0;i<size;i++)
+  uint16_t del =0,i;
+
+  for (i=0;i<size;i++)
   {
       if ( source[i*4 + off] >  max)
+      {
         max = source[i*4 + off];
+        del = i;
+      }
   }
+  *delay = i;
   return max;
 
 }

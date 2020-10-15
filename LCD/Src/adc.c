@@ -134,7 +134,6 @@ fix16_t xADCGetNETL3FaseVDD()
   return xNET_F3_VDD;
 }
 
-
 fix16_t xADCGetGENL1()
 {
   xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
@@ -1003,13 +1002,8 @@ uint8_t vADCGetADC12Data()
 
       }
 
-    }
-
-
-
-
-
-    CUR:
+   }
+   CUR:
    xEventGroupSetBits( xADCEvent, GEN_READY );
    if (result==ADC_OK)
    {

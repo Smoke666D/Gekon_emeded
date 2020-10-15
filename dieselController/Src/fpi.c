@@ -122,11 +122,11 @@ uint8_t vFPIgetTrig ( FPI* fpi )
  */
 void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* delayReg )
 {
-  fpi->delay    = getUintValue( delayReg );
-  fpi->function = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
-  fpi->polarity = getBitMap( setupReg, 1U );
-  fpi->action   = getBitMap( setupReg, 2U );
-  fpi->arming   = getBitMap( setupReg, 3U );
+  fpi->timer.delay = getUintValue( delayReg );
+  fpi->function    = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
+  fpi->polarity    = getBitMap( setupReg, 1U );
+  fpi->action      = getBitMap( setupReg, 2U );
+  fpi->arming      = getBitMap( setupReg, 3U );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ void vFPIcheckReset ( FPI* fpi )
 {
   if ( vFPIgetTrig( fpi ) == 0U )
   {
-    vLOGICresetTimer( fpi->timerID );
+    vLOGICresetTimer( fpi->timer );
     fpi->state = FPI_IDLE;
   }
   return;
@@ -183,10 +183,10 @@ void vFPIinit ( const FPI_INIT* init )
   /* Logic part */
   for ( i=0U; i<FPI_NUMBER; i++ )
   {
-    fpis[i].timerID = 0U;                    /* Reset timer ID */
-    fpis[i].state   = FPI_BLOCK;             /* Toogle fpi to the start state */
-    fpis[i].level   = FPI_LEVEL_LOW;         /* Reset current level */
-    if ( fpis[i].function != FPI_FUN_USER )  /* Reset arming for non user functions */
+    fpis[i].timer.id = 0U;                    /* Reset timer ID */
+    fpis[i].state    = FPI_BLOCK;             /* Toogle fpi to the start state */
+    fpis[i].level    = FPI_LEVEL_LOW;         /* Reset current level */
+    if ( fpis[i].function != FPI_FUN_USER )   /* Reset arming for non user functions */
     {
       fpis[i].arming = FRI_ARM_ALWAYS;
       fpis[i].action = FPI_ACT_NONE;
@@ -282,10 +282,6 @@ void vFPITask ( void const* argument )
     {
       for ( i=0U; i<FPI_NUMBER; i++ )
       {
-        if ( i == 2 )
-        {
-          uint8_t y =0;
-        }
         if ( fpis[i].function != FPI_FUN_NONE )
         {
           switch ( fpis[i].state )
@@ -300,11 +296,11 @@ void vFPITask ( void const* argument )
               if ( vFPIgetTrig( &fpis[i] ) > 0U )
               {
                 fpis[i].state = FPI_TRIGGERED;
-                vLOGICstartTimer( fpis[i].delay, &fpis[i].timerID );
+                vLOGICstartTimer( &fpis[i].timer );
               }
               break;
             case FPI_TRIGGERED:
-              if ( uLOGICisTimer( fpis[i].timerID ) > 0U )
+              if ( uLOGICisTimer( fpis[i].timer ) > 0U )
               {
                 event.level    = fpis[i].level;
                 event.function = fpis[i].function;

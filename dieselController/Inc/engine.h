@@ -174,7 +174,7 @@ typedef struct __packed
 typedef struct __packed
 {
   MAINTENCE_STATUS status;
-  timerID_t        timerID;
+  SYSTEM_TIMER     timer;
   ALARM_TYPE       oil;
   ALARM_TYPE       air;
   ALARM_TYPE       fuel;
@@ -182,7 +182,9 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  /* Callback */
   setRelayCallBack       set;
+  /* Delays */
   fix16_t                startDelay;      /* sec */
   fix16_t                crankingDelay;   /* sec */
   fix16_t                crankDelay;      /* sec */
@@ -190,9 +192,12 @@ typedef struct __packed
   fix16_t                idlingDelay;     /* sec */
   fix16_t                nominalDelay;    /* sec */
   fix16_t                warmingDelay;    /* sec */
+  /* Counters */
   uint8_t                startAttempts;
   uint8_t                startIteration;
+  /* Structures */
   START_CRITERIONS_TYPE  startCrit;
+  /* Status */
   STARTER_STATUS         status;
 } STARTER_TYPE;
 

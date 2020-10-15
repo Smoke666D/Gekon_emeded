@@ -14,8 +14,6 @@
 /*------------------------ Define --------------------------------------*/
 #define  CONTROLLER_LOAD_BTN_EXIST   0U
 #define  CONTROLLER_MANUAL_BTN_EXIST 0U
-#define  ACTIV_ERROR_LIST_SIZE       20U
-#define  SEMAPHORE_AEL_TAKE_DELAY    200U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -42,30 +40,7 @@ typedef enum
   CONTROLLER_TURNING_ENGINE,
   CONTROLLER_TURNING_FINISH,
 } CONTROLLER_TURNING;
-
-typedef enum
-{
-  ERROR_LIST_STATUS_EMPTY,
-  ERROR_LIST_STATUS_NOT_EMPTY,
-  ERROR_LIST_STATUS_OVER,
-} ERROR_LIST_STATUS;
-
-typedef enum
-{
-  ERROR_LIST_CMD_ERASE,
-  ERROR_LIST_CMD_ADD,
-  ERROR_LIST_CMD_READ,
-  ERROR_LIST_CMD_ACK,
-  ERROR_LIST_CMD_COUNTER,
-} ERROR_LIST_CMD;
 /*----------------------- Structures -----------------------------------*/
-typedef struct __packed
-{
-  ERROR_LIST_STATUS status;
-  LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
-  uint8_t           counter;
-} ACTIVE_ERROR_LIST;
-
 typedef struct __packed
 {
   uint16_t      startPIN;
@@ -87,12 +62,11 @@ typedef struct __packed
   uint8_t           banAutoStart;
   uint8_t           banGenLoad;
   fix16_t           stopDelay;
-  timerID_t         timerID;
+  SYSTEM_TIMER      timer;
 } CONTROLLER_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t controllerHandle;
 /*----------------------- Functions ------------------------------------*/
 void     vCONTROLLERinit ( const CONTROLLER_INIT* init );
-uint16_t vCONTROLLERgetAckLogPointer ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

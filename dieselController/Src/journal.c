@@ -19,17 +19,24 @@
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-LOG_STATUS vLOGaddRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
+LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 {
-  LOG_STATUS      res    = LOG_STATUS_ERROR;
-  RTC_TIME        time;
+  LOG_STATUS res  = LOG_STATUS_ERROR;
+  RTC_TIME   time = { 0U };
 
   if ( eRTCgetTime( &time ) == RTC_OK )
   {
-    record->time = SET_LOG_DATE( time.day, time.month, time.year, time.hour, time.min, time.sec );
+    record->event = event;
+    record->time  = SET_LOG_DATE( time.day, time.month, time.year, time.hour, time.min, time.sec );
+    res           = LOG_STATUS_OK;
   }
-  record->event = event;
-  if ( eDATAAPIlog( DATA_API_CMD_ADD, 0U, &record ) == DATA_API_STAT_OK )
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
+{
+  LOG_STATUS res  = LOG_STATUS_ERROR;
+  if ( eDATAAPIlog( DATA_API_CMD_ADD, 0U, record ) == DATA_API_STAT_OK )
   {
     res = LOG_STATUS_OK;
   }

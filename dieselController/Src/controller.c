@@ -28,15 +28,7 @@
 #include "journal.h"
 /*-------------------------------- Structures --------------------------------*/
 CONTROLLER_INIT controllerGPIO = { 0U };
-CONTROLLER_TYPE controller =
-{
-  .mode            = CONTROLLER_MODE_MANUAL,
-  .banAutoStart    = 0U,
-  .banAutoShutdown = 0U,
-  .banGenLoad      = 0U,
-  .stopDelay       = 0U,
-  .timerID         = 0U,
-};
+CONTROLLER_TYPE controller     = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 #define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, 0U ) )
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
@@ -44,112 +36,12 @@ CONTROLLER_TYPE controller =
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState       = CONTROLLER_TURNING_IDLE;
 static CONTROLLER_TURNING startState      = CONTROLLER_TURNING_IDLE;
-static uint16_t           ackLogPointer   = 0U;
-static ACTIVE_ERROR_LIST  activeErrorList = { 0U };
-static SemaphoreHandle_t  xAELsemaphore   = NULL;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 void vCONTROLLERtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-/*
- * API for active error list control
- * input:  cmd    - command for the list
- *            - ERROR_LIST_CMD_ERASE:   erase all records in the list
- *            - ERROR_LIST_CMD_ADD:     add new one record to the list
- *            - ERROR_LIST_CMD_READ:    get pointer to the start of the list
- *            - ERROR_LIST_CMD_ACK:     remove record from the list with specific address
- *            - ERROR_LIST_CMD_COUNTER: get last active address in the list
- *         record - return record with address
- *         adr    - address of the record in the list
- * output: status of the list
- *   - ERROR_LIST_STATUS_EMPTY:     no records in the list
- *   - ERROR_LIST_STATUS_NOT_EMPTY: more than 1 record in the list
- *   - ERROR_LIST_STATUS_OVER:      the list is full of records. No write
- */
-ERROR_LIST_STATUS eCONTROLLERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr )
-{
-  uint8_t i = 0U;
-  if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
-  {
-    switch ( cmd )
-    {
-      case ERROR_LIST_CMD_ERASE:
-        for ( i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
-        {
-          activeErrorList.array[i].event.action = ACTION_NONE;
-          activeErrorList.array[i].event.type   = EVENT_NONE;
-          activeErrorList.array[i].time         = 0U;
-        }
-        activeErrorList.counter = 0U;
-        activeErrorList.status  = ERROR_LIST_STATUS_EMPTY;
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_ACK:
-        if ( adr < activeErrorList.counter )
-        {
-          for ( i=adr; i<activeErrorList.counter; i++ )
-          {
-            activeErrorList.array[i] = activeErrorList.array[i + 1U];
-          }
-          activeErrorList.counter--;
-        }
-        if ( activeErrorList.counter > 0U )
-        {
-          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
-        }
-        else
-        {
-          activeErrorList.status = ERROR_LIST_STATUS_EMPTY;
-        }
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_COUNTER:
-        *adr = activeErrorList.counter;
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_ADD:
-        if ( activeErrorList.counter <= ACTIV_ERROR_LIST_SIZE )
-        {
-          activeErrorList.array[activeErrorList.counter] = *record;
-          activeErrorList.counter++;
-          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
-        }
-        else
-        {
-          activeErrorList.status = ERROR_LIST_STATUS_OVER;
-        }
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_READ:
-        *record = activeErrorList.array[*adr];
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      default:
-        break;
-    }
-  }
-  return activeErrorList.status;
-}
-/*----------------------------------------------------------------------------*/
-void vCONTROLLERprintActiveErrorList ( void )
-{
-  uint8_t         i       = 0;
-  uint8_t         counter = 0U;
-  LOG_RECORD_TYPE record  = { 0U };
-
-  vSYSSerial( "------------------Active Error List------------------\r\n" );
-  eCONTROLLERactiveErrorList( ERROR_LIST_CMD_COUNTER, &record, &counter );
-  for ( i=0U; i<counter; i++ )
-  {
-    eCONTROLLERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
-    vLOGICprintLogRecord( record );
-  }
-  vSYSSerial( "-----------------------------------------------------\r\n" );
-  return;
-}
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 {
@@ -206,9 +98,10 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       vFPOsetWarning( RELAY_ON );
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGaddRecord( event, &record );
+        eLOGmakeRecord( event, &record );
+        eLOGaddRecord( &record );
       }
-      // >>Send warning to LCD
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, 0U );
       break;
 
     case ACTION_EMERGENCY_STOP:
@@ -218,13 +111,15 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
       vFPOsetReadyToStart( RELAY_OFF );
-      vLOGaddRecord( event, &record );
+      eLOGmakeRecord( event, &record );
+      eLOGaddRecord( &record );
       break;
 
     case ACTION_LOAD_GENERATOR:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGaddRecord( event, &record );
+        eLOGmakeRecord( event, &record );
+        eLOGaddRecord( &record );
       }
       // >>Send warning to LCD
       controller.state = CONTROLLER_STATUS_START;
@@ -244,7 +139,8 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_LOAD_SHUTDOWN:
-      vLOGaddRecord( event, &record );
+      eLOGmakeRecord( event, &record );
+      eLOGaddRecord( &record );
       controller.state = CONTROLLER_STATUS_SHUTDOWN;
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
@@ -273,18 +169,20 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_IDLE:
       if ( delayStop >0U )
       {
-        vLOGICstartTimer( controller.stopDelay, &controller.timerID );
+        controller.timer.delay = controller.stopDelay;
+        vLOGICstartTimer( &controller.timer );
         stopState = CONTROLLER_TURNING_DELAY;
       }
       else
       {
-        vLOGICstartTimer( 0U, &controller.timerID );
+        controller.timer.delay = 0U;
+        vLOGICstartTimer( &controller.timer );
         stopState = CONTROLLER_TURNING_RELOAD;
       }
       break;
 
     case CONTROLLER_TURNING_DELAY:
-      if ( uLOGICisTimer( controller.timerID ) > 0U )
+      if ( uLOGICisTimer( controller.timer ) > 0U )
       {
         stopState = CONTROLLER_TURNING_ENGINE;
       }
@@ -429,15 +327,9 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
     .stack_size = CONTROLLER_TASK_STACK_SIZE
   };
   controllerHandle = osThreadNew( vCONTROLLERtask, NULL, &controllerTask_attributes );
-  eDATAAPIlogPointer( DATA_API_CMD_READ, &ackLogPointer );
   vMenuMessageInit( controllerHandle );
   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
   return;
-}
-
-uint16_t vCONTROLLERgetAckLogPointer ( void )
-{
-  return ackLogPointer;
 }
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERtask ( void const* argument )
@@ -526,7 +418,7 @@ void vCONTROLLERtask ( void const* argument )
                 vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
                 interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
                 interiorEvent.action = ACTION_EMERGENCY_STOP;
-                xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+                vSYSeventSend( interiorEvent, NULL );
                 controller.state = CONTROLLER_STATUS_ALARM;
                 stopState        = CONTROLLER_TURNING_IDLE;
                 break;
@@ -534,7 +426,7 @@ void vCONTROLLERtask ( void const* argument )
                 vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
                 interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
                 interiorEvent.action = ACTION_EMERGENCY_STOP;
-                xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+                vSYSeventSend( interiorEvent, NULL );
                 controller.state = CONTROLLER_STATUS_ALARM;
                 stopState        = CONTROLLER_TURNING_IDLE;
                 break;
@@ -601,7 +493,7 @@ void vCONTROLLERtask ( void const* argument )
             engineCmd        = ENGINE_CMD_RESET_TO_IDLE;
             vFPOsetAlarm( RELAY_OFF );
             vFPOsetNetFault( RELAY_OFF );
-            eDATAAPIlogPointer( DATA_API_CMD_READ, &ackLogPointer );
+            eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
             xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
           }
           break;
@@ -661,7 +553,7 @@ void vCONTROLLERtask ( void const* argument )
           {
             interiorEvent.type   = EVENT_ENGINE_HIGHT_TEMP;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+            vSYSeventSend( interiorEvent, NULL );
           }
           break;
         /*----------------------- Сигнал низкого уровня топлива ----------------------*/
@@ -670,7 +562,7 @@ void vCONTROLLERtask ( void const* argument )
           {
             interiorEvent.type   = EVENT_FUEL_LOW_LEVEL;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+            vSYSeventSend( interiorEvent, NULL );
           }
           break;
         /*-------------------------- Датчик давления масла ---------------------------*/
@@ -679,7 +571,7 @@ void vCONTROLLERtask ( void const* argument )
           {
             interiorEvent.type   = EVENT_OIL_LOW_PRESSURE;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+            vSYSeventSend( interiorEvent, NULL );
           }
           break;
         /*-------------------------- Работа на холостом ходу -------------------------*/

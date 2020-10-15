@@ -94,14 +94,13 @@ typedef struct __packed
   FPI_FUNCTION    function;                         /* Meaning of the input */
   FPI_ACTION      action;                           /* What to do on trig */
   FPI_ARMING      arming;                           /* Condition of triggering */
-  uint16_t        delay;                            /* Delay after arming in seconds */
   uint16_t        message[FPI_USER_MESSAGE_LENGTH]; /* User string message to the display */
   FPI_LEVEL       level;                            /* Current level */
   /* Callbacks */
   armingCallBack  getArming;                        /* Function check condition of triggering */
   /* System */
+  SYSTEM_TIMER    timer;
   FPI_STATE       state;                            /* Condition of the FPI */
-  timerID_t       timerID;                          /* ID of timer*/
 } FPI;
 
 typedef struct __packed

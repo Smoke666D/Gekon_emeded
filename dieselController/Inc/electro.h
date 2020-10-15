@@ -113,8 +113,7 @@ typedef struct __packed
   ELECTRO_SCHEME          scheme;
   ELECTRO_PROCESS_STATUS  state;
   ELECTRO_COMMAND         cmd;
-  timerID_t               timerID;
-  fix16_t                 switchDelay;
+  SYSTEM_TIMER            timer;
 } ELECTRO_SYSTEM_TYPE;
 
 typedef struct __packed

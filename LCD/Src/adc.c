@@ -10,6 +10,7 @@
 #include "adc.h"
 #include "fix16.h"
 
+
 static   EventGroupHandle_t xADCEvent;
 static   StaticEventGroup_t xADCCreatedEventGroup;
 volatile int16_t            ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS] = { 0U };   //ADC1 input data buffer
@@ -63,8 +64,10 @@ static fix16_t xGEN_F3_CUR =0;
 static fix16_t xADC_TEMP =0;
 static uint32_t ADC3Freq =10000;
 static uint32_t ADC2Freq =10000;
+static uint8_t uNetFaseRotation = NO_ROTATION;
+static uint8_t uGenFaseRotation = NO_ROTATION;
 
-
+static uint8_t xNetWiring  =STAR;
 
 fix16_t xADCGetVDD()
 {
@@ -86,37 +89,117 @@ fix16_t xADCGetSFL()
 
 fix16_t xADCGetNETL1()
 {
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
   return xNET_F1_VDD;
 }
 fix16_t xADCGetNETL2()
 {
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
   return xNET_F2_VDD;
 
 }
 fix16_t xADCGetNETL3()
 {
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
   return xNET_F3_VDD;
 }
 
+fix16_t xADCGetNETL1FaseVDD()
+{
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
+  if (xNetWiring==STAR)
+  {
+    return fix16_mul(xNET_F1_VDD, fix16_sqrt(fix16_from_int(3) ));
+  }
+  return xNET_F1_VDD;
+
+}
+fix16_t xADCGetNETL2FaseVDD()
+{
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
+  if (xNetWiring==STAR)
+   {
+    return fix16_mul(xNET_F2_VDD, fix16_sqrt(fix16_from_int(3)));
+   }
+  return xNET_F2_VDD;
+
+}
+fix16_t xADCGetNETL3FaseVDD()
+{
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
+  if (xNetWiring==STAR)
+  {
+      return fix16_mul(xNET_F3_VDD, fix16_sqrt(fix16_from_int(3) ));
+  }
+  return xNET_F3_VDD;
+}
+
+
 fix16_t xADCGetGENL1()
 {
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
   return xGEN_F1_VDD;
 }
+fix16_t xADCGetGENL1FaseVDD()
+{
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  if (xNetWiring==STAR)
+  {
+      return fix16_mul(xGEN_F1_VDD, fix16_sqrt(fix16_from_int(3) ));
+  }
+  return xGEN_F1_VDD;
+}
+
 fix16_t xADCGetGENL2()
 {
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
   return xGEN_F2_VDD;
 
 }
+
+fix16_t xADCGetGENL2FaseVDD()
+{
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  if (xNetWiring==STAR)
+  {
+      return fix16_mul(xGEN_F2_VDD, fix16_sqrt(fix16_from_int(3) ));
+  }
+  return xGEN_F2_VDD;
+}
+
 fix16_t xADCGetGENL3()
 {
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
   return xGEN_F3_VDD;
 }
+
+fix16_t xADCGetGENL3FaseVDD()
+{
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  if (xNetWiring==STAR)
+  {
+      return fix16_mul(xGEN_F3_VDD, fix16_sqrt(fix16_from_int(3) ));
+  }
+  return xGEN_F3_VDD;
+}
+
 
 uint8_t uADCGetValidDataFlag()
 {
   return ADC_VALID_DATA;
 }
 
+uint8_t uADCGetGenFaseRotation()
+{
+  return uGenFaseRotation;
+
+}
+
+uint8_t uADCGetNetFaseRotation()
+{
+  return uNetFaseRotation;
+
+}
 
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
@@ -204,7 +287,6 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   if (cmd == mREAD)
   {
-    xEventGroupWaitBits( xADCEvent, ADC_READY, pdFALSE, pdTRUE, portMAX_DELAY );
     switch ( ID - 1U )
     {
       case VDD_CH:
@@ -231,6 +313,15 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case NET_FREQ:
         fix16_to_str( xNET_FREQ, Data, 1U );
         break;
+      case NET_F1_F_VDD:
+        fix16_to_str(xADCGetNETL1FaseVDD(), Data, 0U );
+        break;
+      case NET_F2_F_VDD:
+        fix16_to_str( xADCGetNETL2FaseVDD(), Data, 0U );
+        break;
+      case NET_F3_F_VDD:
+        fix16_to_str( xADCGetNETL3FaseVDD(), Data, 0U );
+        break;
       case ADC_FREQ:
         fix16_to_str(fix16_from_int( ADC3Freq/10), Data, 0U );
         break;
@@ -246,18 +337,52 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case GEN_F3_VDD:
          fix16_to_str( xGEN_F3_VDD, Data, 0U );
          break;
+      case GEN_F1_F_VDD:
+          fix16_to_str( xADCGetGENL1FaseVDD(), Data, 0U );
+          break;
+      case GEN_F2_F_VDD:
+          fix16_to_str( xADCGetGENL2FaseVDD(), Data, 0U );
+          break;
+      case GEN_F3_F_VDD:
+          fix16_to_str( xADCGetGENL3FaseVDD(), Data, 0U );
+          break;
      case GEN_FREQ:
          fix16_to_str( xGEN_FREQ, Data, 1U );
          break;
-
+     case NET_ROTATION:
+         switch (uADCGetNetFaseRotation())
+         {
+           case B_C_ROTATION:
+             sprintf(Data,"L1-L2-L3");
+             break;
+           case C_B_ROTATION:
+             sprintf(Data,"L1-L3-L2");
+             break;
+           default:
+             sprintf(Data,"XX-XX-XX");
+             break;
+         }
+         break;
+     case GEN_ROTATION:
+          switch (uADCGetGenFaseRotation())
+          {
+            case B_C_ROTATION:
+             sprintf(Data,"L1-L2-L3");
+             break;
+           case C_B_ROTATION:
+             sprintf(Data,"L1-L3-L2");
+             break;
+           default:
+            sprintf(Data,"XX-XX-XX");
+            break;
+          }
+          break;
       default:
         break;
     }
   }
   return;
 }
-
-
 
 
 
@@ -574,7 +699,7 @@ void StartADCTask(void *argument)
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-    adctime = HAL_GetTick();
+  //  adctime = HAL_GetTick();
     //Обработка значений АЦП3.
      switch (vADCGetADC3Data())
      {
@@ -629,7 +754,7 @@ void StartADCTask(void *argument)
       default:
         break;
     }
-   xADC_TEMP =fix16_from_int( HAL_GetTick() - adctime);
+   xADC_TEMP =fix16_from_int( adctime++);
 
    }
 
@@ -710,7 +835,6 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP)
 }
 
 static uint8_t uValidFreq = 0;
-static uint8_t uNetFaseDetectFlag = 0;
 
 uint8_t vADCGetADC3Data()
 {
@@ -720,31 +844,37 @@ uint8_t vADCGetADC3Data()
   uint16_t DF1,DF2,DF3;
   vDecNetural(&ADC3_IN_Buffer);
   iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1);
+  xEventGroupClearBits( xADCEvent, NET_READY );
   if( iMax >= MIN_AMP_VALUE )
   {
         result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2,iMax);
         if (result==ADC_OK)
         {
           iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1);
+
           xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
           xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
         }
         else
         {
+          xEventGroupSetBits( xADCEvent, NET_READY );
           return result;
         }
         xNET_F1_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
+        xEventGroupSetBits( xADCEvent, NET_READY );
  }
  else
  {
    xNET_F1_VDD =0;
    xNET_F2_VDD =0;
    xNET_F3_VDD =0;
-   uNetFaseDetectFlag = 0;
+   uNetFaseRotation = NO_ROTATION;
+   xEventGroupSetBits( xADCEvent, NET_READY );
    return LOW_AMP;
  }
  //Проверям есть ли на канале напряжение.
  iMax =xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod, &DF2 );
+ xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax  >= MIN_AMP_VALUE )
  {
      xNET_F2_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
@@ -752,9 +882,12 @@ uint8_t vADCGetADC3Data()
  else
  {
    xNET_F2_VDD = 0;
+   uNetFaseRotation=NO_ROTATION;
   }
+ xEventGroupSetBits( xADCEvent, NET_READY );
  //Проверям есть ли на канале напряжение.
  iMax =xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod,&DF3 );
+ xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax >= MIN_AMP_VALUE )
  {
       xNET_F3_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
@@ -762,26 +895,32 @@ uint8_t vADCGetADC3Data()
  else
  {
    xNET_F3_VDD = 0;
+   uNetFaseRotation=NO_ROTATION;
  }
+ xEventGroupSetBits( xADCEvent, NET_READY );
  //Проверяем флаг чередования фаз.Если он сброшен, значит детектировали нулевое напряжение на 1-й фазе и
  //нужно проверить чередование фаз полсе востановления напряжния
- if (uNetFaseDetectFlag==0U)
+ if ( uNetFaseRotation==NO_ROTATION)
  {
-   if ((uCurPeriod*3 - DF1 -DF2- DF3 ) > FASE_DETECT_HISTERESIS ) //Проверяем что максисмумы амплитуды каждой фазы были зафиксировны
+   if (    ( (uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) || ((uCurPeriod - DF2 ) > FASE_DETECT_HISTERESIS )
+    || ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ) )
+     //Проверяем что максисмумы амплитуды каждой фазы были зафиксировны
      //не в конце перидоа. Это может провести к ошибки, поэтому пропускаем это измерение и ждем удачного.
    {
+     if (( abs (DF1 - DF2 )> FASE_DETECT_HISTERESIS ) &&  ( abs(DF2 - DF3 )> FASE_DETECT_HISTERESIS ))
 
-     uNetFaseDetectFlag  = 1;
+       if (DF2 < DF3)
+       {
+         uNetFaseRotation = B_C_ROTATION;
+       }
+       else
+       {
+         uNetFaseRotation = C_B_ROTATION;
+       }
    }
-
  }
-
-
-
-  return ADC_OK;
+ return ADC_OK;
 }
-
-
 
 
 uint8_t vADCGetADC12Data()
@@ -793,6 +932,7 @@ uint8_t vADCGetADC12Data()
 
   vDecNetural(&ADC2_IN_Buffer);  //Вычитаем из фазы, значение на линии нейтрали
   iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 ); //Вычисляем максимальное амплитудное значение
+  xEventGroupClearBits( xADCEvent, GEN_READY );
   if( iMax  >= MIN_AMP_VALUE ) //Если маскимальное омплитудно значение меньше нижнего предела, то фиксируем нулевое напряжение на входе
   {
       result =  vADCFindFreq(&ADC2_IN_Buffer, &uCurPeriod,2,iMax);  //Вычисляем частоту
@@ -800,17 +940,26 @@ uint8_t vADCGetADC12Data()
       {
         xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
         xGEN_FREQ =  fix16_mul(xGEN_FREQ,fix16_from_int(10));
+        iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 );
         xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC2_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ));
       }
       else
+      {
         goto CUR;
-    }
-    else
-    {
-      xGEN_F1_VDD =0;
-    }
+      }
+  }
+  else
+  {
+    uGenFaseRotation = NO_ROTATION;
+    xGEN_F1_VDD =0;
+    xGEN_F2_VDD =0;
+    xGEN_F3_VDD =0;
+    goto CUR;
+  }
+   xEventGroupSetBits( xADCEvent, GEN_READY );
     //Проверям есть ли на канале напряжение.
     iMax=xADCMax( &ADC2_IN_Buffer, 1, uCurPeriod, &DF2 );
+    xEventGroupClearBits( xADCEvent, GEN_READY );
     if( iMax >= MIN_AMP_VALUE )
      {
          xGEN_F2_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ));
@@ -819,18 +968,49 @@ uint8_t vADCGetADC12Data()
      {
         xGEN_F2_VDD =0;
      }
-    //Проверям есть ли на канале напряжение.
-    iMax =xADCMax( &ADC2_IN_Buffer, 0, uCurPeriod, &DF3 );
+    xEventGroupSetBits( xADCEvent, GEN_READY );
+
+    iMax =xADCMax( &ADC2_IN_Buffer, 0, uCurPeriod, &DF3 );  //Проверям есть ли на канале напряжение.
+    xEventGroupClearBits( xADCEvent, GEN_READY );
     if(iMax >= MIN_AMP_VALUE )
     {
-
-          xGEN_F3_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ));
+       xGEN_F3_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ));
     }
     else
     {
        xGEN_F3_VDD =0;
     }
+
+    //Проверяем флаг чередования фаз.Если он сброшен, значит детектировали нулевое напряжение на 1-й фазе и
+    //нужно проверить чередование фаз полсе востановления напряжния
+    if ( uGenFaseRotation==NO_ROTATION)
+    {
+      if (    ( (uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) || ((uCurPeriod - DF2 ) > FASE_DETECT_HISTERESIS )
+       || ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ) )
+        //Проверяем что максисмумы амплитуды каждой фазы были зафиксировны
+        //не в конце перидоа. Это может провести к ошибки, поэтому пропускаем это измерение и ждем удачного.
+      {
+        if (( abs (DF1 - DF2 )> FASE_DETECT_HISTERESIS ) &&  ( abs(DF2 - DF3 )> FASE_DETECT_HISTERESIS ))
+
+          if (DF2 < DF3)
+          {
+            uGenFaseRotation = B_C_ROTATION;
+          }
+          else
+          {
+            uGenFaseRotation = C_B_ROTATION;
+          }
+
+      }
+
+    }
+
+
+
+
+
     CUR:
+   xEventGroupSetBits( xADCEvent, GEN_READY );
    if (result==ADC_OK)
    {
      xGEN_F3_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );

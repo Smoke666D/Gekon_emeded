@@ -851,17 +851,7 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   switch ( ID )
   {
-    case 16U:
-      Data[0]='L';
-      Data[1]='1';
-      Data[2]='-';
-      Data[3]='L';
-      Data[4]='2';
-      Data[5]='-';
-      Data[6]='L';
-      Data[7]='3';
-      Data[8]=0;
-      break;
+
     case 15:
       Data[0]='1';
       Data[1]='2';

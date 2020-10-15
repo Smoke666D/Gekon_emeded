@@ -150,6 +150,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       {
         //Усредняем сырые значения АЦП
         uSFL = GetAverVDD( 7U, DC_SIZE );
+
         if ( ( ( uCSD - uSCT ) <= DELTA ) || (uSCT <  uCAS) )
         {
           xSCT = 0U;
@@ -159,7 +160,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           temp_int = ( ( uSCT - uCAS ) * R3 ) / ( uCSD - uSCT );
           xSCT = fix16_from_int( temp_int );
         }
-        if ( ( ( uCSD - uSFL ) <= DELTA ) || ( uSFL - uCAS ) )
+        if ( ( ( uCSD - uSFL ) <= DELTA ) || ( uSFL  < uCAS ) )
         {
           xSFL = 0U;
         }
@@ -168,7 +169,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           temp_int = ( ( uSFL - uCAS ) * R3 ) / ( uCSD - uSFL );
           xSFL = fix16_from_int( temp_int );
         }
-        if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP - uCAS ) )
+        if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP < uCAS ) )
         {
           xSOP = 0U;
         }
@@ -648,7 +649,7 @@ void vDecNetural(int16_t * data)
 }
 
 #define MAX_ZERO_POINT 20
-
+#define FASE_DETECT_HISTERESIS  10
 
 uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP)
 {
@@ -709,7 +710,7 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP)
 }
 
 static uint8_t uValidFreq = 0;
-
+static uint8_t uNetFaseDetectFlag = 0;
 
 uint8_t vADCGetADC3Data()
 {
@@ -724,6 +725,7 @@ uint8_t vADCGetADC3Data()
         result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2,iMax);
         if (result==ADC_OK)
         {
+          iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1);
           xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
           xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
         }
@@ -738,6 +740,7 @@ uint8_t vADCGetADC3Data()
    xNET_F1_VDD =0;
    xNET_F2_VDD =0;
    xNET_F3_VDD =0;
+   uNetFaseDetectFlag = 0;
    return LOW_AMP;
  }
  //Проверям есть ли на канале напряжение.
@@ -760,6 +763,21 @@ uint8_t vADCGetADC3Data()
  {
    xNET_F3_VDD = 0;
  }
+ //Проверяем флаг чередования фаз.Если он сброшен, значит детектировали нулевое напряжение на 1-й фазе и
+ //нужно проверить чередование фаз полсе востановления напряжния
+ if (uNetFaseDetectFlag==0U)
+ {
+   if ((uCurPeriod*3 - DF1 -DF2- DF3 ) > FASE_DETECT_HISTERESIS ) //Проверяем что максисмумы амплитуды каждой фазы были зафиксировны
+     //не в конце перидоа. Это может провести к ошибки, поэтому пропускаем это измерение и ждем удачного.
+   {
+
+     uNetFaseDetectFlag  = 1;
+   }
+
+ }
+
+
+
   return ADC_OK;
 }
 

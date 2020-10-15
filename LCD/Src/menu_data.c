@@ -44,6 +44,7 @@ static char EventLog[][44U]=
 #define GENERATOR_MENU_COUNT   7U
 #define SETTINGS_MENU_COUNT    1U
 #define YESNO_MENU_COUNT       1U
+#define EVENT_MENU_COUNT       1U
 
 
 #define MAX_HEADER_STRING_SIZE 40U
@@ -278,12 +279,7 @@ static xScreenObjet const LinkMainScreen[]=
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СВЯЗЬ Ethernet",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"IP ",NULL,0U},
-  {0U,FONT_SIZE*6U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,8U},
-  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Маска",NULL,0U},
-  {0U,FONT_SIZE*6U,LINE2+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,9U},
-  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"Шлюз",NULL,0U},
-  {1U,FONT_SIZE*6U,LINE3+3U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetTestData,10U}
-
+  {01U,FONT_SIZE*6U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vMenuGetData,IP_ADRESS},
 };
 
 static xScreenObjet const AlarmMainScreen[]=
@@ -297,6 +293,17 @@ static xScreenObjet const EventMainScreen[]=
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ЖУРНАЛ СОБЫТИЙ №",NULL,0U},
   {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U}
 };
+
+static xScreenObjet const EventScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СОБЫТИE",NULL,0U},
+  {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U}
+};
+
+
+
+
+
 
 static xScreenObjet const InfoMainScreen[]=
 {
@@ -353,10 +360,9 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
  // {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
-
   {LinkMainScreen,NULL,NULL,0U,0U},
   {AlarmMainScreen,NULL,NULL,0U,0U},
-  {EventMainScreen,NULL,NULL,0U,0U},
+  {EventMainScreen,&xMainMenu,NULL,0U,0U},
   {InfoMainScreen,NULL,NULL,0U,0U},
 };
 
@@ -384,6 +390,14 @@ static xScreenType xNetScreens[NET_MENU_COUNT]=
   { Net2Screen, &xMainMenu, NULL,  0U, 0U },
   { NetMainScreen, (void*)&xMainMenu, NULL,  0U, 0U},
 };
+
+
+
+static xScreenType   xEventScreens[EVENT_MENU_COUNT]=
+{
+  { EventScreen, &xMainMenu, NULL,  0U, 0U},
+};
+
 
 static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
 {

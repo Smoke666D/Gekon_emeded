@@ -99,12 +99,6 @@ void vENGINEtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-fix16_t getBatteryVoltage ( void )
-{
-  fix16_t res = 0U;
-  return res;
-}
-/*----------------------------------------------------------------------------*/
 fix16_t getChargerVoltage ( void )
 {
   fix16_t res = 0U;
@@ -679,7 +673,7 @@ void vENGINEdataInit ( void )
   fuel.pump.set    = vFPOsetPump;
   fuel.pump.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
-  battery.get = getBatteryVoltage;
+  battery.get = xADCGetVDD;
 
   battery.lowAlarm.enb          = getBitMap( &batteryAlarms, 0U );
   battery.lowAlarm.active       = 0U;

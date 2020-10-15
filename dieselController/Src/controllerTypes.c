@@ -8,6 +8,8 @@
 #include "controllerTypes.h"
 #include "dataProces.h"
 #include "config.h"
+#include "stdio.h"
+#include "journal.h"
 /*-------------------------------- Structures --------------------------------*/
 static StaticQueue_t     xEventQueue;
 static QueueHandle_t     pEventQueue;
@@ -122,6 +124,30 @@ static fix16_t   hysteresis                                                 = 0U
 
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void vLOGICprintTime ( uint32_t time )
+{
+  char buffer[21] = { 0U };
+  sprintf( &buffer[0U],  "%02d.", (uint16_t)GET_LOG_DAY( time ) );
+  sprintf( &buffer[3U],  "%02d.", (uint16_t)GET_LOG_MONTH( time ) );
+  sprintf( &buffer[6U],  "%04d/", (uint16_t)GET_LOG_YEAR( time ) );
+  sprintf( &buffer[11U], "%02d:", (uint16_t)GET_LOG_HOUR( time ) );
+  sprintf( &buffer[14U], "%02d:", (uint16_t)GET_LOG_MIN( time ) );
+  sprintf( &buffer[17U], "%02d",  (uint16_t)GET_LOG_SEC( time ) );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vLOGICprintLogRecord ( LOG_RECORD_TYPE record )
+{
+  vSYSSerial( "Time: " );
+  vLOGICprintTime( record.time );
+  vSYSSerial( "Event: " );
+  vSYSSerial( eventTypesStr[record.event.type] );
+  vSYSSerial( "; Action: " );
+  vSYSSerial( alarmActionStr[record.event.action] );
+  vSYSSerial( "\r\n" );
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vLOGICprintEvent ( SYSTEM_EVENT event )
 {

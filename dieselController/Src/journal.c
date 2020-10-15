@@ -19,16 +19,16 @@
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-LOG_STATUS vLOGaddRecord ( SYSTEM_EVENT event )
+LOG_STATUS vLOGaddRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 {
   LOG_STATUS      res    = LOG_STATUS_ERROR;
-  LOG_RECORD_TYPE record = { .event = event, .time = LOG_TIME_ERROR };
   RTC_TIME        time;
 
   if ( eRTCgetTime( &time ) == RTC_OK )
   {
-    record.time = SET_LOG_DATE( time.day, time.month, time.year, time.hour, time.min, time.sec );
+    record->time = SET_LOG_DATE( time.day, time.month, time.year, time.hour, time.min, time.sec );
   }
+  record->event = event;
   if ( eDATAAPIlog( DATA_API_CMD_ADD, 0U, &record ) == DATA_API_STAT_OK )
   {
     res = LOG_STATUS_OK;

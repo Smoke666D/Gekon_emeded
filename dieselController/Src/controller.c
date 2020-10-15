@@ -42,15 +42,114 @@ CONTROLLER_TYPE controller =
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
-static CONTROLLER_TURNING stopState     = CONTROLLER_TURNING_IDLE;
-static CONTROLLER_TURNING startState    = CONTROLLER_TURNING_IDLE;
-static uint16_t           ackLogPointer = 0U;
+static CONTROLLER_TURNING stopState       = CONTROLLER_TURNING_IDLE;
+static CONTROLLER_TURNING startState      = CONTROLLER_TURNING_IDLE;
+static uint16_t           ackLogPointer   = 0U;
+static ACTIVE_ERROR_LIST  activeErrorList = { 0U };
+static SemaphoreHandle_t  xAELsemaphore   = NULL;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 void vCONTROLLERtask ( void const* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*
+ * API for active error list control
+ * input:  cmd    - command for the list
+ *            - ERROR_LIST_CMD_ERASE:   erase all records in the list
+ *            - ERROR_LIST_CMD_ADD:     add new one record to the list
+ *            - ERROR_LIST_CMD_READ:    get pointer to the start of the list
+ *            - ERROR_LIST_CMD_ACK:     remove record from the list with specific address
+ *            - ERROR_LIST_CMD_COUNTER: get last active address in the list
+ *         record - return record with address
+ *         adr    - address of the record in the list
+ * output: status of the list
+ *   - ERROR_LIST_STATUS_EMPTY:     no records in the list
+ *   - ERROR_LIST_STATUS_NOT_EMPTY: more than 1 record in the list
+ *   - ERROR_LIST_STATUS_OVER:      the list is full of records. No write
+ */
+ERROR_LIST_STATUS eCONTROLLERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr )
+{
+  uint8_t i = 0U;
+  if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+  {
+    switch ( cmd )
+    {
+      case ERROR_LIST_CMD_ERASE:
+        for ( i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
+        {
+          activeErrorList.array[i].event.action = ACTION_NONE;
+          activeErrorList.array[i].event.type   = EVENT_NONE;
+          activeErrorList.array[i].time         = 0U;
+        }
+        activeErrorList.counter = 0U;
+        activeErrorList.status  = ERROR_LIST_STATUS_EMPTY;
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_ACK:
+        if ( adr < activeErrorList.counter )
+        {
+          for ( i=adr; i<activeErrorList.counter; i++ )
+          {
+            activeErrorList.array[i] = activeErrorList.array[i + 1U];
+          }
+          activeErrorList.counter--;
+        }
+        if ( activeErrorList.counter > 0U )
+        {
+          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
+        }
+        else
+        {
+          activeErrorList.status = ERROR_LIST_STATUS_EMPTY;
+        }
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_COUNTER:
+        *adr = activeErrorList.counter;
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_ADD:
+        if ( activeErrorList.counter <= ACTIV_ERROR_LIST_SIZE )
+        {
+          activeErrorList.array[activeErrorList.counter] = *record;
+          activeErrorList.counter++;
+          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
+        }
+        else
+        {
+          activeErrorList.status = ERROR_LIST_STATUS_OVER;
+        }
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_READ:
+        *record = activeErrorList.array[*adr];
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      default:
+        break;
+    }
+  }
+  return activeErrorList.status;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERprintActiveErrorList ( void )
+{
+  uint8_t         i       = 0;
+  uint8_t         counter = 0U;
+  LOG_RECORD_TYPE record  = { 0U };
+
+  vSYSSerial( "------------------Active Error List------------------\r\n" );
+  eCONTROLLERactiveErrorList( ERROR_LIST_CMD_COUNTER, &record, &counter );
+  for ( i=0U; i<counter; i++ )
+  {
+    eCONTROLLERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
+    vLOGICprintLogRecord( record );
+  }
+  vSYSSerial( "-----------------------------------------------------\r\n" );
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 {
@@ -99,6 +198,7 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 
 void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
 {
+  LOG_RECORD_TYPE record = { 0U };
   vLOGICprintEvent( event );
   switch ( event.action )
   {
@@ -106,7 +206,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       vFPOsetWarning( RELAY_ON );
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGaddRecord( event );
+        vLOGaddRecord( event, &record );
       }
       // >>Send warning to LCD
       break;
@@ -118,13 +218,13 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
       vFPOsetReadyToStart( RELAY_OFF );
-      vLOGaddRecord( event );
+      vLOGaddRecord( event, &record );
       break;
 
     case ACTION_LOAD_GENERATOR:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGaddRecord( event );
+        vLOGaddRecord( event, &record );
       }
       // >>Send warning to LCD
       controller.state = CONTROLLER_STATUS_START;
@@ -144,7 +244,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_LOAD_SHUTDOWN:
-      vLOGaddRecord( event );
+      vLOGaddRecord( event, &record );
       controller.state = CONTROLLER_STATUS_SHUTDOWN;
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );

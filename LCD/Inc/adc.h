@@ -75,6 +75,9 @@
 #define GEN_F1_F_VDD   23U
 #define GEN_F2_F_VDD   24U
 #define GEN_F3_F_VDD   25U
+#define GEN_F1_CUR     26U
+#define GEN_F2_CUR     27U
+#define GEN_F3_CUR     28U
 
 #define STAR           0x01U
 #define TRIANGLE       0x02U

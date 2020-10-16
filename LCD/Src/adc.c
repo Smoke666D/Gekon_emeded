@@ -21,7 +21,7 @@ static   uint8_t            ADC_VALID_DATA                               =  0;
 
 uint8_t vADCGetADC3Data();
 uint8_t vADCGetADC12Data();
-fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size );
+fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc  );
 int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size , uint16_t * delay);
 uint16_t GetAverVDD(uint8_t channel,uint8_t size);
 
@@ -231,7 +231,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       else
       {
         //Усредняем сырые значения АЦП
-        uSFL = GetAverVDD( 7U, DC_SIZE );
+        uSCT = GetAverVDD( 7U, DC_SIZE );
 
         if ( ( ( uCSD - uSCT ) <= DELTA ) || (uSCT <  uCAS) )
         {
@@ -268,7 +268,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       uCSD = GetAverVDD( 5U, DC_SIZE );
       //Усредняем сырые значения АЦП
 
-      uSCT= GetAverVDD( 6U, DC_SIZE );
+      uSFL = GetAverVDD( 6U, DC_SIZE );
       //Усредняем сырые значения АЦП
       uSOP = GetAverVDD( 7U, DC_SIZE );
       break;
@@ -347,6 +347,15 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
           break;
      case GEN_FREQ:
          fix16_to_str( xGEN_FREQ, Data, 1U );
+         break;
+     case GEN_F1_CUR:
+          fix16_to_str( xGEN_F1_CUR, Data, 3U );
+         break;
+     case GEN_F2_CUR:
+         fix16_to_str( xGEN_F2_CUR, Data, 3U );
+         break;
+     case GEN_F3_CUR:
+         fix16_to_str( xGEN_F3_CUR, Data, 3U );
          break;
      case NET_ROTATION:
          switch (uADCGetNetFaseRotation())
@@ -859,7 +868,7 @@ uint8_t vADCGetADC3Data()
           xEventGroupSetBits( xADCEvent, NET_READY );
           return result;
         }
-        xNET_F1_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
+        xNET_F1_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 2, uCurPeriod,4 ), fix16_from_float( AC_COOF ) );
         xEventGroupSetBits( xADCEvent, NET_READY );
  }
  else
@@ -876,7 +885,7 @@ uint8_t vADCGetADC3Data()
  xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax  >= MIN_AMP_VALUE )
  {
-     xNET_F2_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
+     xNET_F2_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 1, uCurPeriod,4), fix16_from_float( AC_COOF ) );
  }
  else
  {
@@ -889,7 +898,7 @@ uint8_t vADCGetADC3Data()
  xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax >= MIN_AMP_VALUE )
  {
-      xNET_F3_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
+      xNET_F3_VDD = fix16_mul( xADCRMS(&ADC3_IN_Buffer, 0, uCurPeriod,4 ), fix16_from_float( AC_COOF ) );
  }
  else
  {
@@ -922,6 +931,18 @@ uint8_t vADCGetADC3Data()
 }
 
 
+void vCurConvert(int16_t * data)
+{
+ for (int16_t i = 0;i<ADC_FRAME_SIZE*3;i=i+3)
+ {
+   data[i]   =0xFFF - data[i];
+   data[i+1] =0xFFF - data[i+1];
+   data[i+2] =0xFFF - data[i+2];
+ }
+  return;
+}
+
+
 uint8_t vADCGetADC12Data()
 {
   uint16_t result=ADC_ERROR;
@@ -940,7 +961,7 @@ uint8_t vADCGetADC12Data()
         xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
         xGEN_FREQ =  fix16_mul(xGEN_FREQ,fix16_from_int(10));
         iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 );
-        xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC2_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ));
+        xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC2_IN_Buffer, 2, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
       }
       else
       {
@@ -961,7 +982,7 @@ uint8_t vADCGetADC12Data()
     xEventGroupClearBits( xADCEvent, GEN_READY );
     if( iMax >= MIN_AMP_VALUE )
      {
-         xGEN_F2_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ));
+         xGEN_F2_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 1, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
      }
      else
      {
@@ -973,7 +994,7 @@ uint8_t vADCGetADC12Data()
     xEventGroupClearBits( xADCEvent, GEN_READY );
     if(iMax >= MIN_AMP_VALUE )
     {
-       xGEN_F3_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ));
+       xGEN_F3_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 0, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
     }
     else
     {
@@ -1007,9 +1028,10 @@ uint8_t vADCGetADC12Data()
    xEventGroupSetBits( xADCEvent, GEN_READY );
    if (result==ADC_OK)
    {
-     xGEN_F3_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 0, uCurPeriod ), fix16_from_float( AC_COOF ) );
-     xGEN_F2_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 1, uCurPeriod ), fix16_from_float( AC_COOF ) );
-     xGEN_F1_CUR =  fix16_mul( xADCRMS(&ADC1_IN_Buffer, 2, uCurPeriod ), fix16_from_float( AC_COOF ) );
+     vCurConvert(&ADC1_IN_Buffer);
+     xGEN_F1_CUR =    fix16_mul(xADCRMS(&ADC1_IN_Buffer, 0, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
+     xGEN_F2_CUR =    fix16_mul(xADCRMS(&ADC1_IN_Buffer, 1, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
+     xGEN_F3_CUR =    fix16_mul(xADCRMS(&ADC1_IN_Buffer, 2, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
    }
    else
    {
@@ -1025,10 +1047,10 @@ uint8_t vADCGetADC12Data()
  * Сервисная функция для расчета RMS
  */
 
-fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size )
+fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc )
 {
   uint64_t sum =0;
-  for (uint16_t i=0;i<size*4;i=i+4)
+  for (uint16_t i=0;i<size*cc;i=i+cc)
   {
     sum =sum+ source[i+off]*source[i+off];
 

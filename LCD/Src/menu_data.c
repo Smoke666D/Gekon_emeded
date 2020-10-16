@@ -174,14 +174,14 @@ static xScreenObjet const Generator3Screen[]=
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - Ток",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1 -",NULL,0U},
-  {0U,FONT_SIZE*5U,LINE1+6U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4U},
-  {0U,FONT_SIZE*9U,LINE2,0U,0U,TEXT_STRING,LeftText,"А",NULL,0U},
+  {0U,FONT_SIZE*5U,LINE1+6U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,GEN_F1_CUR+1},
+  {0U,FONT_SIZE*10U,LINE2,0U,0U,TEXT_STRING,LeftText,"А",NULL,0U},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2 -",NULL,0U},
-  {0U,FONT_SIZE*5U,LINE2+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4U},
-  {0U,FONT_SIZE*9U,LINE3,0U,0U,TEXT_STRING,LeftText,"А",NULL,0U},
+  {0U,FONT_SIZE*5U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,GEN_F2_CUR+1},
+  {0U,FONT_SIZE*10U,LINE3,0U,0U,TEXT_STRING,LeftText,"А",NULL,0U},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3 -",NULL,0U},
-  {0U,FONT_SIZE*5U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,4U},
-  {1U,FONT_SIZE*9U,LINE4,0U,0U,TEXT_STRING,LeftText,"А",NULL,0U}
+  {0U,FONT_SIZE*5U,LINE3+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetADCDC,GEN_F3_CUR+1},
+  {1U,FONT_SIZE*10U,LINE4,0U,0U,TEXT_STRING,LeftText,"А",NULL,0U}
 
 };
 
@@ -355,11 +355,10 @@ static xScreenObjet const xYesNoScreen[]=
 
 static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
+  {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
   {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
   {StatusMainScreen,NULL,NULL,0U,0U},
- // {SettingsMainScreen,&xMainMenu,&xSettingsMenu,PASSIVE,0U,0U,NULL},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
-  {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
   {LinkMainScreen,NULL,NULL,0U,0U},
   {AlarmMainScreen,NULL,NULL,0U,0U},
   {EventMainScreen,&xMainMenu,NULL,0U,0U},

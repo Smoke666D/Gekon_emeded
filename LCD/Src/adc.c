@@ -71,21 +71,32 @@ static uint8_t xNetWiring  =STAR;
 
 fix16_t xADCGetVDD()
 {
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return xVDD;
 }
 
 fix16_t xADCGetSOP()
 {
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return xSOP;
 }
 fix16_t xADCGetSCT()
 {
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return xSCT;
 }
 fix16_t xADCGetSFL()
 {
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return xSFL;
 }
+
+fix16_t xADCGetNETLFreq()
+{
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
+  return xNET_FREQ;
+}
+
 
 fix16_t xADCGetNETL1()
 {
@@ -134,6 +145,24 @@ fix16_t xADCGetNETL3FaseVDD()
   return xNET_F3_VDD;
 }
 
+
+fix16_t xADCGetGENL1Cur()
+{
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  return xGEN_F1_CUR;
+}
+fix16_t xADCGetGENL2Cur()
+{
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  return xGEN_F2_CUR;
+}
+fix16_t xADCGetGENL3Cur()
+{
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  return xGEN_F3_CUR;
+}
+
+
 fix16_t xADCGetGENL1()
 {
   xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
@@ -181,6 +210,11 @@ fix16_t xADCGetGENL3FaseVDD()
   }
   return xGEN_F3_VDD;
 }
+fix16_t xADCGetGENLFreq()
+{
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  return xGEN_FREQ;
+}
 
 
 uint8_t uADCGetValidDataFlag()
@@ -207,7 +241,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
 
   uint16_t temp_int = 0U;
-  xEventGroupClearBits( xADCEvent, ADC_READY );
+  xEventGroupClearBits( xADCEvent, DC_READY );
   switch ( AnalogSwitch )
   {
     case 1U:
@@ -275,7 +309,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
     default:
       break;
   }
-  xEventGroupSetBits( xADCEvent, ADC_READY );
+  xEventGroupSetBits( xADCEvent, DC_READY );
   return;
 }
 
@@ -288,103 +322,12 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   {
     switch ( ID - 1U )
     {
-      case VDD_CH:
-        fix16_to_str( xADCGetVDD(), Data, 2U );
-        break;
-      case CFUEL:
-        fix16_to_str( xADCGetSFL(), Data, 0U );
-        break;
-      case CPRES:
-        fix16_to_str( xADCGetSOP(), Data, 0U );
-        break;
-      case CTEMP:
-        fix16_to_str( xADCGetSCT(), Data, 0U );
-        break;
-      case NET_F1_VDD:
-        fix16_to_str( xNET_F1_VDD, Data, 0U );
-        break;
-      case NET_F2_VDD:
-        fix16_to_str( xNET_F2_VDD, Data, 0U );
-       break;
-      case NET_F3_VDD:
-        fix16_to_str( xNET_F3_VDD, Data, 0U );
-        break;
-      case NET_FREQ:
-        fix16_to_str( xNET_FREQ, Data, 1U );
-        break;
-      case NET_F1_F_VDD:
-        fix16_to_str(xADCGetNETL1FaseVDD(), Data, 0U );
-        break;
-      case NET_F2_F_VDD:
-        fix16_to_str( xADCGetNETL2FaseVDD(), Data, 0U );
-        break;
-      case NET_F3_F_VDD:
-        fix16_to_str( xADCGetNETL3FaseVDD(), Data, 0U );
-        break;
       case ADC_FREQ:
         fix16_to_str(fix16_from_int( ADC3Freq/10), Data, 0U );
         break;
       case ADC_TEMP:
         fix16_to_str( xADC_TEMP, Data, 0U );
         break;
-      case GEN_F1_VDD:
-         fix16_to_str( xGEN_F1_VDD, Data, 0U );
-         break;
-      case GEN_F2_VDD:
-         fix16_to_str( xGEN_F2_VDD, Data, 0U );
-         break;
-      case GEN_F3_VDD:
-         fix16_to_str( xGEN_F3_VDD, Data, 0U );
-         break;
-      case GEN_F1_F_VDD:
-          fix16_to_str( xADCGetGENL1FaseVDD(), Data, 0U );
-          break;
-      case GEN_F2_F_VDD:
-          fix16_to_str( xADCGetGENL2FaseVDD(), Data, 0U );
-          break;
-      case GEN_F3_F_VDD:
-          fix16_to_str( xADCGetGENL3FaseVDD(), Data, 0U );
-          break;
-     case GEN_FREQ:
-         fix16_to_str( xGEN_FREQ, Data, 1U );
-         break;
-     case GEN_F1_CUR:
-          fix16_to_str( xGEN_F1_CUR, Data, 3U );
-         break;
-     case GEN_F2_CUR:
-         fix16_to_str( xGEN_F2_CUR, Data, 3U );
-         break;
-     case GEN_F3_CUR:
-         fix16_to_str( xGEN_F3_CUR, Data, 3U );
-         break;
-     case NET_ROTATION:
-         switch (uADCGetNetFaseRotation())
-         {
-           case B_C_ROTATION:
-             sprintf(Data,"L1-L2-L3");
-             break;
-           case C_B_ROTATION:
-             sprintf(Data,"L1-L3-L2");
-             break;
-           default:
-             sprintf(Data,"XX-XX-XX");
-             break;
-         }
-         break;
-     case GEN_ROTATION:
-          switch (uADCGetGenFaseRotation())
-          {
-            case B_C_ROTATION:
-             sprintf(Data,"L1-L2-L3");
-             break;
-           case C_B_ROTATION:
-             sprintf(Data,"L1-L3-L2");
-             break;
-           default:
-            sprintf(Data,"XX-XX-XX");
-            break;
-          }
-          break;
       default:
         break;
     }

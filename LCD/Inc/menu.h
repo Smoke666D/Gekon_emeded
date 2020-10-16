@@ -39,9 +39,6 @@
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
 #define MAX_KEY_PRESS
 
-#define FUEL_LEVEL   0x01U
-#define OIL_PRESSURE 0x02U
-#define COOL_TEMP    0x03U
 
 
 #define IP_ADRESS           0x01

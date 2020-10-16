@@ -10,6 +10,7 @@
 #include "keyboard.h"
 #include "menu_data.c"
 #include "controllerTypes.h"
+#include "adc.h"
 /*------------------------ Define -------------------------------------------------------------------*/
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
@@ -836,6 +837,7 @@ void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   switch ( IP_ADRESS )
   {
     case 1:
+
       cSERVERgetStrIP( Data );
       break;
     default:
@@ -843,6 +845,29 @@ void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
   }
 
+
+}
+
+void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  fix16_t temp;
+  switch (ID)
+  {
+    case FUEL_LEVEL:
+      eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
+     break;
+    case OIL_PRESSURE:
+      eCHARTfunc(&oilSensorChart,  xADCGetSOP() ,   &temp);
+      break;
+    case  COOL_TEMP:
+      eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
+      break;
+    default:
+     break;
+
+
+  }
+  fix16_to_str( temp, Data, 0U );
 
 }
 

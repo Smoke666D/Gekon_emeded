@@ -96,16 +96,10 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  uint8_t       enb;
-  SYSTEM_EVENT  event;
-} CUTOUT_TYPE;
-
-typedef struct __packed
-{
   SENSOR_TYPE       type;
   eChartData*       chart;
   getValueCallBack  get;
-  CUTOUT_TYPE       cutout;
+  ALARM_TYPE        cutout;
   SENSOR_STATUS     status;
 } SENSOR;
 

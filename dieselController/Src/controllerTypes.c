@@ -10,6 +10,7 @@
 #include "config.h"
 #include "stdio.h"
 #include "journal.h"
+#include "common.h"
 /*-------------------------------- Structures --------------------------------*/
 static StaticQueue_t      xEventQueue;
 static QueueHandle_t      pEventQueue;
@@ -260,6 +261,8 @@ void vLOGICprintEvent ( SYSTEM_EVENT event )
   #endif
   return;
 }
+/*-----------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vLOGICinit ( TIM_HandleTypeDef* tim )
 {
@@ -275,6 +278,8 @@ QueueHandle_t pLOGICgetEventQueue ( void )
 {
   return pEventQueue;
 }
+/*-----------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerHandler ( void )
 {
@@ -356,12 +361,19 @@ TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
 uint8_t uLOGICisTimer ( SYSTEM_TIMER timer )
 {
   uint8_t res = 0U;
-  if ( targetArray[timer.id] <= counterArray[timer.id] )
+  if ( ( ( 1U << timer.id ) & aciveCounters ) )
   {
-    if ( vLOGICresetTimer( timer ) == TIMER_OK )
+    if ( targetArray[timer.id] <= counterArray[timer.id] )
     {
-      res = 1U;
+      if ( vLOGICresetTimer( timer ) == TIMER_OK )
+      {
+        res = 1U;
+      }
     }
+  }
+  else
+  {
+    res = 1U;
   }
   return res;
 }
@@ -379,18 +391,7 @@ void vLOGICtimerCallback ( void )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vLOGICtoogle ( uint8_t* input )
-{
-  if ( *input > 0U )
-  {
-    *input = 0U;
-  }
-  else
-  {
-    *input = 1U;
-  }
-  return;
-}
+/*-----------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
 void vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 {
@@ -399,6 +400,32 @@ void vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
   eLOGmakeRecord( event, &buffer );
   xQueueSend( pLOGICgetEventQueue(), &buffer, portMAX_DELAY );
   *record = buffer;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+uint8_t uALARMisForList ( ALARM_TYPE* alarm )
+{
+  uint8_t res = 0U;
+  if ( ( alarm->track.event.action == ACTION_WARNING ) || ( alarm->track.event.action == ACTION_EMERGENCY_STOP ) )
+  {
+    res = 1U;
+  }
+  return res;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vALARMrelax ( ALARM_TYPE* alarm )
+{
+  LOG_RECORD_TYPE record = { 0U };
+
+  if ( alarm->track.relax.enb == PERMISSION_ENABLE )
+  {
+    vSYSeventSend( alarm->track.event, &record );
+  }
+  if ( alarm->track.ack == PERMISSION_ENABLE )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &alarm->track.id );
+  }
+  alarm->status = ALARM_STATUS_IDLE;
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
@@ -432,6 +459,10 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
           {
             alarm->status = ALARM_STATUS_TRIG;
           }
+          else
+          {
+            alarm->status = ALARM_STATUS_RELAX;
+          }
         }
         else if ( ( ( alarm->type == ALARM_LEVEL_LOW   ) && ( val > alarm->level ) ) ||
                   ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val < alarm->level ) ) )
@@ -449,9 +480,28 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_TRIG:
         vSYSeventSend( alarm->track.event, &record );
-        eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, &alarm->track.id );
+        if ( uALARMisForList( alarm ) > 0U )
+        {
+          eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, &alarm->track.id );
+        }
         alarm->track.trig = TRIGGER_SET;
-        alarm->status     = ALARM_STATUS_RELAX;
+        if ( ( alarm->track.relax.enb == PERMISSION_ENABLE ) || ( alarm->track.ack == PERMISSION_ENABLE ) )
+        {
+          alarm->status = ALARM_STATUS_RELAX;
+        }
+        else
+        {
+          alarm->status = ALARM_STATUS_HOLD;
+        }
+        break;
+      /*-----------------------------------------------------------------------------------*/
+      /*------------------------------- Holding alarm state -------------------------------*/
+      /*-----------------------------------------------------------------------------------*/
+      case ALARM_STATUS_HOLD:
+        if ( alarm->track.trig == TRIGGER_IDLE )
+        {
+          alarm->status = ALARM_STATUS_IDLE;
+        }
         break;
       /*-----------------------------------------------------------------------------------*/
       /*----------------------------- Alarm trigger relaxation ----------------------------*/
@@ -462,11 +512,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
           levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
           if ( val > levelOff )
           {
-            alarm->status = ALARM_STATUS_IDLE;
-            if ( alarm->track.relax.enb == PERMISSION_ENABLE )
-            {
-              vSYSeventSend( alarm->track.event, &record );
-            }
+            vALARMrelax( alarm );
           }
         }
         else
@@ -474,11 +520,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
           levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
           if ( val < levelOff )
           {
-            alarm->status = ALARM_STATUS_IDLE;
-            if ( alarm->track.relax.enb == PERMISSION_ENABLE )
-            {
-              vSYSeventSend( alarm->track.event, &record );
-            }
+            vALARMrelax( alarm );
           }
         }
         break;

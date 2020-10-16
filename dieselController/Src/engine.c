@@ -107,13 +107,12 @@ fix16_t getChargerVoltage ( void )
 /*----------------------------------------------------------------------------*/
 void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
 {
-  LOG_RECORD_TYPE record = { 0U };
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
-  if ( ( *value == MAX_RESISTANCE ) && ( sensor->cutout.enb > 0U ) )
+
+  vALARMcheck( &sensor->cutout, *value );
+  if ( sensor->cutout.status != ALARM_STATUS_IDLE )
   {
     sensor->status = SENSOR_STATUS_LINE_ERROR;
-    vSYSeventSend( sensor->cutout.event, &record );
-
   }
   else
   {
@@ -493,8 +492,12 @@ void vENGINEdataInit ( void )
   oil.pressure.chart               = &oilSensorChart;
   oil.pressure.get                 = xADCGetSOP;
   oil.pressure.cutout.enb          = getBitMap( &oilPressureSetup, 1U );
+
+
   oil.pressure.cutout.event.action = ACTION_EMERGENCY_STOP;
   oil.pressure.cutout.event.type   = EVENT_OIL_SENSOR_ERROR;
+
+
   oil.pressure.status              = SENSOR_STATUS_NORMAL;
 
   oil.alarm.active = 0U;

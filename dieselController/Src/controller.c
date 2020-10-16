@@ -88,17 +88,15 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
   return;
 }
 
-void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
+void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 {
-  LOG_RECORD_TYPE record = { 0U };
-  vLOGICprintEvent( event );
-  switch ( event.action )
+  vLOGICprintEvent( record.event );
+  switch ( record.event.action )
   {
     case ACTION_WARNING:
       vFPOsetWarning( RELAY_ON );
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        eLOGmakeRecord( event, &record );
         eLOGaddRecord( &record );
       }
       eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, 0U );
@@ -111,14 +109,12 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
       vFPOsetReadyToStart( RELAY_OFF );
-      eLOGmakeRecord( event, &record );
       eLOGaddRecord( &record );
       break;
 
     case ACTION_LOAD_GENERATOR:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        eLOGmakeRecord( event, &record );
         eLOGaddRecord( &record );
       }
       // >>Send warning to LCD
@@ -139,7 +135,6 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_LOAD_SHUTDOWN:
-      eLOGmakeRecord( event, &record );
       eLOGaddRecord( &record );
       controller.state = CONTROLLER_STATUS_SHUTDOWN;
       vFPOsetGenReady( RELAY_OFF );
@@ -339,12 +334,11 @@ void vCONTROLLERtask ( void const* argument )
   ELECTRO_STATUS  mainsState           = ELECTRO_STATUS_IDLE;
   ENGINE_COMMAND  engineCmd            = ENGINE_CMD_NONE;
   ELECTRO_COMMAND electroCmd           = ELECTRO_CMD_NONE;
-  SYSTEM_EVENT    interiorEvent        = { .type = EVENT_NONE, .action = ACTION_NONE };
-  SYSTEM_EVENT    inputEvent           = { .type = EVENT_NONE, .action = ACTION_NONE };
-  FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
+  SYSTEM_EVENT    interiorEvent        = { 0U };
+  LOG_RECORD_TYPE inputEvent           = { 0U };
+  FPI_EVENT       inputFpiEvent        = { 0U };
   uint32_t        inputNotifi          = 0U;
   uint8_t         inputKeyboardCommand = HMI_CMD_NONE;
-
 
   for (;;)
   {

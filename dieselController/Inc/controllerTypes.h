@@ -138,6 +138,7 @@ typedef enum
   ALARM_STATUS_WAIT_DELAY,
   ALARM_STATUS_TRIG,
   ALARM_STATUS_RELAX,
+  ALARM_STATUS_HOLD,
 } ALARM_STATUS;
 
 typedef enum
@@ -199,7 +200,6 @@ typedef struct __packed
 typedef struct __packed
 {
   PERMISSION   enb;   /* Relaxation functions on/off */
-  PERMISSION   ack;   /* Auto acknowledgment on/off */
   SYSTEM_EVENT event; /* Event after relaxation */
 } ALARM_RELAX_TYPE;
 
@@ -214,18 +214,19 @@ typedef struct __packed
   SYSTEM_EVENT      event;     /* Event data of alarm */
   ALARM_RELAX_TYPE  relax;     /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
   TRIGGER_STATE     trig;      /* Alarm triggered flag. Reset from outside */
+  PERMISSION        ack;       /* Auto acknowledgment on/off */
   uint8_t           id;        /* ID in active error list */
 } TRACK_EVENT;
 
 typedef struct __packed
 {
-  PERMISSION        enb;       /* Enable alarm at initialization */
-  PERMISSION        active;    /* On/Off alarm check in work flow */
-  ALARM_STATUS      status;    /* Status of the alarm */
-  ALARM_LEVEL       type;      /* Type of alarm above or below set point  */
-  fix16_t           level;     /* Set point */
-  SYSTEM_TIMER      timer;     /* Timer for triggering delay */
-  TRACK_EVENT       track;     /* Tracking event */
+  PERMISSION        enb;       /* Enable alarm at initialization         - 1 byte */
+  PERMISSION        active;    /* On/Off alarm check in work flow        - 1 byte */
+  ALARM_STATUS      status;    /* Status of the alarm                    - 1 byte */
+  ALARM_LEVEL       type;      /* Type of alarm above or below set point - 1 byte */
+  fix16_t           level;     /* Set point                              - 4 byte */
+  SYSTEM_TIMER      timer;     /* Timer for triggering delay             - 6 byte */
+  TRACK_EVENT       track;     /* Tracking event                         - 4 byte */
 } ALARM_TYPE;
 
 typedef struct __packed
@@ -286,7 +287,6 @@ TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer );
 uint8_t           uLOGICisTimer ( SYSTEM_TIMER timer );
 TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER timer );
 void              vLOGICtimerCallback ( void );
-void              vLOGICtoogle ( uint8_t* input );
 void              vLOGICprintEvent ( SYSTEM_EVENT event );
 ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr );
 void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );

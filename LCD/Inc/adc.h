@@ -50,7 +50,7 @@
 #define VT4            0U
 #define MAX_RESISTANCE 5000U
 #define DELTA          ( 0.04 * 4095U / 3.3 )
-#define IN_VDD         0U
+#define IN_VDD         2U
 #define COFDIN         1U
 #define COFAIN         5U
 #define CANC           6U

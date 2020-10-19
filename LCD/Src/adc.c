@@ -23,7 +23,7 @@ uint8_t vADCGetADC3Data();
 uint8_t vADCGetADC12Data();
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc  );
 int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size , uint16_t * delay);
-uint16_t GetAverVDD(uint8_t channel,uint8_t size);
+uint16_t GetAverVDD(uint8_t channel,uint8_t size,uint8_t offset,int16_t * source);
 
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim8;
@@ -48,6 +48,7 @@ static uint16_t uSCT =0;
 static fix16_t xSFL =0; //Напряжение АЦП канала SensFuelLevel (напряжение канала уровня топлива)
 static uint16_t uSFL =0;
 static uint16_t uCSA =0;
+static uint16_t uTemp =0;
 
 static fix16_t xNET_F1_VDD =0;
 static fix16_t xNET_F2_VDD =0;
@@ -246,15 +247,20 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
   {
     case 1U:
       //Получем среднение заничение АЦП канала питания
-      temp_int = GetAverVDD( 4U, DC_SIZE );
+      temp_int = GetAverVDD( 4U, DC_SIZE,9,&ADC3_IN_Buffer  );
       //Пересчитываем его в реальное напяжение.
       xVDD = fix16_mul( fix16_from_int( temp_int ), fix16_from_float( VDD_CF ) );
       //Вычитаем падение на диоде
       xVDD = fix16_sub( xVDD, VT4 );
       //Усредняем сырые значения АЦП
-      uCSA = GetAverVDD( 5U, DC_SIZE );
+      uCSA = GetAverVDD( 5U, DC_SIZE,9,&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
-      uCAS = GetAverVDD( 6U, DC_SIZE );
+      uCAS = GetAverVDD( 6U, DC_SIZE, 9,&ADC3_IN_Buffer );
+
+      uTemp = GetAverVDD( 3U, DC_SIZE, 4,&ADC1_IN_Buffer );
+      xADC_TEMP = fix16_sub(  fix16_from_float(uTemp*3.3/4095U), fix16_from_float( 0.76 ) );
+      xADC_TEMP = fix16_div( xADC_TEMP, fix16_from_float(0.0025) );
+      xADC_TEMP = fix16_add(xADC_TEMP, fix16_from_int( 25 ) );
       //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
       if ( ( uCSA - uCAS ) <= DELTA )
       {
@@ -265,7 +271,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       else
       {
         //Усредняем сырые значения АЦП
-        uSCT = GetAverVDD( 7U, DC_SIZE );
+        uSCT = GetAverVDD( 7U, DC_SIZE ,9,&ADC3_IN_Buffer);
 
         if ( ( ( uCSD - uSCT ) <= DELTA ) || (uSCT <  uCAS) )
         {
@@ -299,12 +305,12 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       break;
     case 0U:
       //Переводим в наряжние на канале АЦП
-      uCSD = GetAverVDD( 5U, DC_SIZE );
+      uCSD = GetAverVDD( 5U, DC_SIZE,9,&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
 
-      uSFL = GetAverVDD( 6U, DC_SIZE );
+      uSFL = GetAverVDD( 6U, DC_SIZE,9,&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
-      uSOP = GetAverVDD( 7U, DC_SIZE );
+      uSOP = GetAverVDD( 7U, DC_SIZE ,9,&ADC3_IN_Buffer);
       break;
     default:
       break;
@@ -326,7 +332,7 @@ void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         fix16_to_str(fix16_from_int( ADC3Freq/10), Data, 0U );
         break;
       case ADC_TEMP:
-        fix16_to_str( xADC_TEMP, Data, 0U );
+        fix16_to_str( xADC_TEMP, Data, 1U );
         break;
       default:
         break;
@@ -370,7 +376,7 @@ void vADC3DCInit(xADCFSMType xADCType)
 {
 
   HAL_ADC_DeInit(&hadc3);
-
+  HAL_ADC_DeInit(&hadc1);
   hadc3.Init.ScanConvMode = ENABLE;
   hadc3.Init.ContinuousConvMode = DISABLE;
   hadc3.Init.DiscontinuousConvMode = DISABLE;
@@ -385,6 +391,14 @@ void vADC3DCInit(xADCFSMType xADCType)
      hadc3.Init.NbrOfConversion = 4;
 
   HAL_ADC_Init(&hadc3);
+
+
+  if (xADCType == DC)
+        hadc1.Init.NbrOfConversion = 4;
+    else
+       hadc1.Init.NbrOfConversion = 3;
+
+    HAL_ADC_Init(&hadc1);
 
 }
 
@@ -634,7 +648,8 @@ void StartADCTask(void *argument)
     osDelay(10);
     //Запускаем новоей преобразование
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,DC_SIZE*9);
-    xEventGroupWaitBits(xADCEvent,ADC3_READY,pdTRUE,pdTRUE,portMAX_DELAY);
+    StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,DC_SIZE*4);
+    xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC1_READY ,pdTRUE,pdTRUE,portMAX_DELAY);
 
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
     vADCConvertToVDD(1);
@@ -705,7 +720,7 @@ void StartADCTask(void *argument)
       default:
         break;
     }
-   xADC_TEMP =fix16_from_int( adctime++);
+ //  xADC_TEMP =fix16_from_int( adctime++);
 
    }
 
@@ -1027,13 +1042,13 @@ int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size, uint16_t * delay 
 
 }
 
-uint16_t GetAverVDD(uint8_t channel,uint8_t size)
+uint16_t GetAverVDD(uint8_t channel,uint8_t size,uint8_t offset,int16_t * source)
 {
 
    uint32_t Buffer=0;
    for (uint8_t i=0;i<size;i++)
    {
-     Buffer =Buffer+ ADC3_IN_Buffer[i*9+channel];
+     Buffer =Buffer+ source[i*offset+channel];
    }
    Buffer =Buffer/size;
    return  (uint16_t)Buffer;

@@ -8,7 +8,10 @@
 //#define ARM_MATH_CM3
 
 #include "adc.h"
+
+
 #include "fix16.h"
+
 
 
 static   EventGroupHandle_t xADCEvent;
@@ -22,7 +25,7 @@ static   uint8_t            ADC_VALID_DATA                               =  0;
 uint8_t vADCGetADC3Data();
 uint8_t vADCGetADC12Data();
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc  );
-int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size , uint16_t * delay);
+int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size , uint16_t * delay, uint8_t cc );
 uint16_t GetAverVDD(uint8_t channel,uint8_t size,uint8_t offset,int16_t * source);
 
 extern TIM_HandleTypeDef htim3;
@@ -67,6 +70,7 @@ static uint32_t ADC3Freq =10000;
 static uint32_t ADC2Freq =10000;
 static uint8_t uNetFaseRotation = NO_ROTATION;
 static uint8_t uGenFaseRotation = NO_ROTATION;
+static fix16_t xCosFi =0;
 
 static uint8_t xNetWiring  =STAR;
 
@@ -626,8 +630,8 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 void StartADCTask(void *argument)
 {
    static uint8_t OF =0,OF1=0;
-   static uint16_t adctime=0;
-   static uint8_t FEF =0;
+
+
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    vADCInit();
@@ -728,6 +732,18 @@ void StartADCTask(void *argument)
 
 
 
+void vCurConvert(int16_t * data, int16_t * ref, int16_t off)
+{
+ for (int16_t i = 0;i<ADC_FRAME_SIZE*3;i=i+3)
+ {
+   data[i]   =data[i] - ref[i/3*4+3];
+   data[i+1] =data[i+1]-ref[i/3*4+3];
+   data[i+2] =data[i+2]-ref[i/3*4+3];
+ }
+  return;
+}
+
+
 void vDecNetural(int16_t * data)
 {
  for (int16_t i = 0;i<ADC_FRAME_SIZE<<2;i=i+4)
@@ -800,7 +816,7 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP)
   return res;
 }
 
-static uint8_t uValidFreq = 0;
+
 
 uint8_t vADCGetADC3Data()
 {
@@ -809,14 +825,14 @@ uint8_t vADCGetADC3Data()
   int16_t iMax =0;
   uint16_t DF1,DF2,DF3;
   vDecNetural(&ADC3_IN_Buffer);
-  iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1);
+  iMax =xADCMax(&ADC3_IN_Buffer, 2, uCurPeriod,&DF1,4);
   xEventGroupClearBits( xADCEvent, NET_READY );
   if( iMax >= MIN_AMP_VALUE )
   {
         result =  vADCFindFreq(&ADC3_IN_Buffer, &uCurPeriod,2,iMax);
         if (result==ADC_OK)
         {
-          iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1);
+          iMax =xADCMax(  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1,4);
 
           xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
           xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
@@ -839,7 +855,7 @@ uint8_t vADCGetADC3Data()
    return LOW_AMP;
  }
  //Проверям есть ли на канале напряжение.
- iMax =xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod, &DF2 );
+ iMax =xADCMax(  &ADC3_IN_Buffer, 1, uCurPeriod, &DF2,4 );
  xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax  >= MIN_AMP_VALUE )
  {
@@ -852,7 +868,7 @@ uint8_t vADCGetADC3Data()
   }
  xEventGroupSetBits( xADCEvent, NET_READY );
  //Проверям есть ли на канале напряжение.
- iMax =xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod,&DF3 );
+ iMax =xADCMax(  &ADC3_IN_Buffer, 0, uCurPeriod,&DF3,4 );
  xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax >= MIN_AMP_VALUE )
  {
@@ -889,16 +905,6 @@ uint8_t vADCGetADC3Data()
 }
 
 
-void vCurConvert(int16_t * data)
-{
- for (int16_t i = 0;i<ADC_FRAME_SIZE*3;i=i+3)
- {
-   data[i]   =0xFFF - data[i];
-   data[i+1] =0xFFF - data[i+1];
-   data[i+2] =0xFFF - data[i+2];
- }
-  return;
-}
 
 
 uint8_t vADCGetADC12Data()
@@ -909,7 +915,7 @@ uint8_t vADCGetADC12Data()
   uint16_t DF1,DF2,DF3;
 
   vDecNetural(&ADC2_IN_Buffer);  //Вычитаем из фазы, значение на линии нейтрали
-  iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 ); //Вычисляем максимальное амплитудное значение
+  iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 ,4); //Вычисляем максимальное амплитудное значение
   xEventGroupClearBits( xADCEvent, GEN_READY );
   if( iMax  >= MIN_AMP_VALUE ) //Если маскимальное омплитудно значение меньше нижнего предела, то фиксируем нулевое напряжение на входе
   {
@@ -918,7 +924,7 @@ uint8_t vADCGetADC12Data()
       {
         xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
         xGEN_FREQ =  fix16_mul(xGEN_FREQ,fix16_from_int(10));
-        iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 );
+        iMax=xADCMax( &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 ,4);
         xGEN_F1_VDD= fix16_mul( xADCRMS(&ADC2_IN_Buffer, 2, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
       }
       else
@@ -932,32 +938,33 @@ uint8_t vADCGetADC12Data()
     xGEN_F1_VDD =0;
     xGEN_F2_VDD =0;
     xGEN_F3_VDD =0;
-    goto CUR;
+    xEventGroupSetBits( xADCEvent, GEN_READY );
+    return LOW_AMP;
   }
    xEventGroupSetBits( xADCEvent, GEN_READY );
-    //Проверям есть ли на канале напряжение.
-    iMax=xADCMax( &ADC2_IN_Buffer, 1, uCurPeriod, &DF2 );
-    xEventGroupClearBits( xADCEvent, GEN_READY );
-    if( iMax >= MIN_AMP_VALUE )
-     {
-         xGEN_F2_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 1, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
-     }
-     else
-     {
-        xGEN_F2_VDD =0;
-     }
-    xEventGroupSetBits( xADCEvent, GEN_READY );
+  //Проверям есть ли на канале напряжение.
+  iMax=xADCMax( &ADC2_IN_Buffer, 1, uCurPeriod, &DF2,4 );
+  xEventGroupClearBits( xADCEvent, GEN_READY );
+  if( iMax >= MIN_AMP_VALUE )
+  {
+      xGEN_F2_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 1, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
+  }
+  else
+  {
+     xGEN_F2_VDD =0;
+  }
+  xEventGroupSetBits( xADCEvent, GEN_READY );
 
-    iMax =xADCMax( &ADC2_IN_Buffer, 0, uCurPeriod, &DF3 );  //Проверям есть ли на канале напряжение.
-    xEventGroupClearBits( xADCEvent, GEN_READY );
-    if(iMax >= MIN_AMP_VALUE )
-    {
+  iMax =xADCMax( &ADC2_IN_Buffer, 0, uCurPeriod, &DF3,4 );  //Проверям есть ли на канале напряжение.
+  xEventGroupClearBits( xADCEvent, GEN_READY );
+  if(iMax >= MIN_AMP_VALUE )
+  {
        xGEN_F3_VDD= fix16_mul(xADCRMS(&ADC2_IN_Buffer, 0, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
-    }
-    else
-    {
-       xGEN_F3_VDD =0;
-    }
+  }
+  else
+  {
+      xGEN_F3_VDD =0;
+  }
 
     //Проверяем флаг чередования фаз.Если он сброшен, значит детектировали нулевое напряжение на 1-й фазе и
     //нужно проверить чередование фаз полсе востановления напряжния
@@ -984,19 +991,35 @@ uint8_t vADCGetADC12Data()
    }
    CUR:
    xEventGroupSetBits( xADCEvent, GEN_READY );
+   //Если драйвер смог пересчитать частоту сигнала напряжения генератора, то расчитываем значения через TrueRms, в противном случае считаем действующие значение от максимум
+   vCurConvert(&ADC1_IN_Buffer,&ADC2_IN_Buffer,4);
    if (result==ADC_OK)
    {
-     vCurConvert(&ADC1_IN_Buffer);
      xGEN_F1_CUR =    fix16_mul(xADCRMS(&ADC1_IN_Buffer, 0, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
      xGEN_F2_CUR =    fix16_mul(xADCRMS(&ADC1_IN_Buffer, 1, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
      xGEN_F3_CUR =    fix16_mul(xADCRMS(&ADC1_IN_Buffer, 2, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
+     //расчет косинуса фи.
+     //находим сдвиг относительно начал отсчета максимальной амплитуды тока
+     xADCMax( &ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 );
+     //
+     if (( (uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) || ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ))
+     {
+       float temp;
+       iMax = abs(DF3-DF1);
+       xCosFi =fix16_div(fix16_from_int(uCurPeriod),fix16_from_int(2));
+       xCosFi =fix16_div(xCosFi,fix16_pi);
+       xCosFi =fix16_mul(fix16_from_int(iMax),xCosFi);
+
+       xCosFi = fix16_cos(xCosFi);
+
+     }
    }
    else
    {
-
-
+     xGEN_F1_CUR = fix16_div( fix16_from_int( xADCMax( &ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 )),  fix16_sqrt(fix16_from_int(2)));
+     xGEN_F2_CUR = fix16_div( fix16_from_int( xADCMax( &ADC1_IN_Buffer, 1, uCurPeriod, &DF3,3 )),  fix16_sqrt(fix16_from_int(2)));
+     xGEN_F3_CUR = fix16_div( fix16_from_int( xADCMax( &ADC1_IN_Buffer, 2, uCurPeriod, &DF3,3 )),  fix16_sqrt(fix16_from_int(2)));
    }
-
   return result;
 
 }
@@ -1023,7 +1046,7 @@ fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc )
  *  off     -номер канала, скоторым работает функция
  *  size    -размер буфера для обработки
  */
-int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size, uint16_t * delay )
+int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size, uint16_t * delay, uint8_t cc )
 {
 
   int16_t max =0;
@@ -1031,13 +1054,13 @@ int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size, uint16_t * delay 
 
   for (i=0;i<size;i++)
   {
-      if ( source[i*4 + off] >  max)
+      if ( source[i*cc + off] >  max)
       {
-        max = source[i*4 + off];
+        max = source[i*cc + off];
         del = i;
       }
   }
-  *delay = i;
+  *delay = del;
   return max;
 
 }

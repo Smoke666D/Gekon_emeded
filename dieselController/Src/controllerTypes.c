@@ -8,9 +8,15 @@
 #include "controllerTypes.h"
 #include "dataProces.h"
 #include "config.h"
+#include "stdio.h"
+#include "journal.h"
+#include "common.h"
 /*-------------------------------- Structures --------------------------------*/
-static StaticQueue_t xEventQueue;
-static QueueHandle_t pEventQueue;
+static StaticQueue_t      xEventQueue;
+static QueueHandle_t      pEventQueue;
+static SemaphoreHandle_t  xSYSTIMERsemaphore = NULL;
+static ACTIVE_ERROR_LIST  activeErrorList    = { 0U };
+static SemaphoreHandle_t  xAELsemaphore      = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",
@@ -107,12 +113,12 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
   };
 #endif
 /*-------------------------------- Variables ---------------------------------*/
-static uint8_t   eventBuffer[ EVENT_QUEUE_LENGTH * sizeof( SYSTEM_EVENT ) ] = { 0U };
-static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                           = { 0U };
-static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                          = { 0U };
-static timerID_t aciveCounters                                              = 0U;
-static timerID_t activeNumber                                               = 0U;
-static fix16_t   hysteresis                                                 = 0U;
+static uint8_t   eventBuffer[ EVENT_QUEUE_LENGTH * sizeof( LOG_RECORD_TYPE ) ] = { 0U };
+static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                              = { 0U };
+static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                             = { 0U };
+static timerID_t aciveCounters                                                 = 0U;
+static timerID_t activeNumber                                                  = 0U;
+static fix16_t   hysteresis                                                    = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -121,6 +127,128 @@ static fix16_t   hysteresis                                                 = 0U
 
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/*
+ * API for active error list control
+ * input:  cmd    - command for the list
+ *            - ERROR_LIST_CMD_ERASE:   erase all records in the list
+ *            - ERROR_LIST_CMD_ADD:     add new one record to the list
+ *            - ERROR_LIST_CMD_READ:    get pointer to the start of the list
+ *            - ERROR_LIST_CMD_ACK:     remove record from the list with specific address
+ *            - ERROR_LIST_CMD_COUNTER: get last active address in the list
+ *         record - return record with address
+ *         adr    - address of the record in the list
+ * output: status of the list
+ *   - ERROR_LIST_STATUS_EMPTY:     no records in the list
+ *   - ERROR_LIST_STATUS_NOT_EMPTY: more than 1 record in the list
+ *   - ERROR_LIST_STATUS_OVER:      the list is full of records. No write
+ */
+ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr )
+{
+  uint8_t i = 0U;
+  if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+  {
+    switch ( cmd )
+    {
+      case ERROR_LIST_CMD_ERASE:
+        for ( i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
+        {
+          activeErrorList.array[i].event.action = ACTION_NONE;
+          activeErrorList.array[i].event.type   = EVENT_NONE;
+          activeErrorList.array[i].time         = 0U;
+        }
+        activeErrorList.counter = 0U;
+        activeErrorList.status  = ERROR_LIST_STATUS_EMPTY;
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_ACK:
+        if ( *adr < activeErrorList.counter )
+        {
+          for ( i=*adr; i<activeErrorList.counter; i++ )
+          {
+            activeErrorList.array[i] = activeErrorList.array[i + 1U];
+          }
+          activeErrorList.counter--;
+        }
+        if ( activeErrorList.counter > 0U )
+        {
+          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
+        }
+        else
+        {
+          activeErrorList.status = ERROR_LIST_STATUS_EMPTY;
+        }
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_COUNTER:
+        *adr = activeErrorList.counter;
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_ADD:
+        if ( activeErrorList.counter <= ACTIV_ERROR_LIST_SIZE )
+        {
+          activeErrorList.array[activeErrorList.counter] = *record;
+          *adr = activeErrorList.counter;
+          activeErrorList.counter++;
+          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
+        }
+        else
+        {
+          activeErrorList.status = ERROR_LIST_STATUS_OVER;
+        }
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      case ERROR_LIST_CMD_READ:
+        *record = activeErrorList.array[*adr];
+        xSemaphoreGive( xAELsemaphore );
+        break;
+      default:
+        break;
+    }
+  }
+  return activeErrorList.status;
+}
+/*----------------------------------------------------------------------------*/
+void vLOGICprintTime ( uint32_t time )
+{
+  char buffer[21] = { 0U };
+  sprintf( &buffer[0U],  "%02d.", (uint16_t)GET_LOG_DAY( time ) );
+  sprintf( &buffer[3U],  "%02d.", (uint16_t)GET_LOG_MONTH( time ) );
+  sprintf( &buffer[6U],  "%04d/", (uint16_t)GET_LOG_YEAR( time ) );
+  sprintf( &buffer[11U], "%02d:", (uint16_t)GET_LOG_HOUR( time ) );
+  sprintf( &buffer[14U], "%02d:", (uint16_t)GET_LOG_MIN( time ) );
+  sprintf( &buffer[17U], "%02d",  (uint16_t)GET_LOG_SEC( time ) );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vLOGICprintLogRecord ( LOG_RECORD_TYPE record )
+{
+  vSYSSerial( "Time: " );
+  vLOGICprintTime( record.time );
+  vSYSSerial( "Event: " );
+  vSYSSerial( eventTypesStr[record.event.type] );
+  vSYSSerial( "; Action: " );
+  vSYSSerial( alarmActionStr[record.event.action] );
+  vSYSSerial( "\r\n" );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERprintActiveErrorList ( void )
+{
+  uint8_t         i       = 0;
+  uint8_t         counter = 0U;
+  LOG_RECORD_TYPE record  = { 0U };
+
+  vSYSSerial( "------------------Active Error List------------------\r\n" );
+  eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, &record, &counter );
+  for ( i=0U; i<counter; i++ )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
+    vLOGICprintLogRecord( record );
+  }
+  vSYSSerial( "-----------------------------------------------------\r\n" );
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vLOGICprintEvent ( SYSTEM_EVENT event )
 {
@@ -133,12 +261,16 @@ void vLOGICprintEvent ( SYSTEM_EVENT event )
   #endif
   return;
 }
+/*-----------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vLOGICinit ( TIM_HandleTypeDef* tim )
 {
   hysteresis  = fix16_div( getValue( &hysteresisLevel ), F16( 100U ) );
-  pEventQueue = xQueueCreateStatic( EVENT_QUEUE_LENGTH, sizeof( SYSTEM_EVENT ), eventBuffer, &xEventQueue );
+  pEventQueue = xQueueCreateStatic( EVENT_QUEUE_LENGTH, sizeof( LOG_RECORD_TYPE ), eventBuffer, &xEventQueue );
   HAL_TIM_Base_Start_IT( tim );
+  xSYSTIMERsemaphore = xSemaphoreCreateMutex();
+  xAELsemaphore      = xSemaphoreCreateMutex();
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
@@ -146,6 +278,8 @@ QueueHandle_t pLOGICgetEventQueue ( void )
 {
   return pEventQueue;
 }
+/*-----------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerHandler ( void )
 {
@@ -164,10 +298,10 @@ void vLOGICtimerHandler ( void )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
+TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
 {
   TIMER_ERROR stat = TIMER_OK;
-  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( delay, F16( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
+  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, F16( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
   uint8_t     i    = 0U;
 
   if ( activeNumber < LOGIC_COUNTERS_SIZE )
@@ -179,11 +313,19 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
         break;
       }
     }
-    *id = i;
-    aciveCounters |= 1U << *id;
-    activeNumber++;
-    targetArray[*id]  = inc;
-    counterArray[*id] = 0U;
+    timer->id = i;
+    if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
+    {
+      targetArray[timer->id]  = inc;
+      counterArray[timer->id] = 0U;
+      aciveCounters          |= 1U << timer->id;
+      activeNumber++;
+      xSemaphoreGive( xSYSTIMERsemaphore );
+    }
+    else
+    {
+      stat = TIMER_ACCESS;
+    }
   }
   else
   {
@@ -192,24 +334,46 @@ TIMER_ERROR vLOGICstartTimer ( fix16_t delay, timerID_t* id )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vLOGICresetTimer ( timerID_t id )
+TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
 {
-  aciveCounters &= ~( 1U << id );
-  if ( activeNumber > 0U )
+  TIMER_ERROR stat = TIMER_OK;
+  if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
   {
-    activeNumber--;
+    aciveCounters  &= ~( 1U << timer.id );
+    targetArray[timer.id] = 0U;
+    if ( activeNumber > 0U )
+    {
+      activeNumber--;
+    }
+    else
+    {
+      stat = TIMER_NO_SPACE;
+    }
+    xSemaphoreGive( xSYSTIMERsemaphore );
   }
-  return;
+  else
+  {
+    stat = TIMER_ACCESS;
+  }
+  return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-uint8_t uLOGICisTimer ( timerID_t id )
+uint8_t uLOGICisTimer ( SYSTEM_TIMER timer )
 {
   uint8_t res = 0U;
-  if ( targetArray[id] <= counterArray[id] )
+  if ( ( ( 1U << timer.id ) & aciveCounters ) )
   {
-    res              = 1U;
-    targetArray[id]  = 0U;
-    vLOGICresetTimer( id );
+    if ( targetArray[timer.id] <= counterArray[timer.id] )
+    {
+      if ( vLOGICresetTimer( timer ) == TIMER_OK )
+      {
+        res = 1U;
+      }
+    }
+  }
+  else
+  {
+    res = 1U;
   }
   return res;
 }
@@ -227,73 +391,196 @@ void vLOGICtimerCallback ( void )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vLOGICtoogle ( uint8_t* input )
+/*-----------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------*/
+void vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 {
-  if ( *input > 0U )
+  LOG_RECORD_TYPE buffer = { 0U };
+
+  eLOGmakeRecord( event, &buffer );
+  xQueueSend( pLOGICgetEventQueue(), &buffer, portMAX_DELAY );
+  *record = buffer;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+uint8_t uALARMisForList ( SYSTEM_EVENT* event )
+{
+  uint8_t res = 0U;
+  if ( ( event->action == ACTION_WARNING ) || ( event->action == ACTION_EMERGENCY_STOP ) )
   {
-    *input = 0U;
+    res = 1U;
   }
-  else
+  return res;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORrelax ( ERROR_TYPE* error )
+{
+  LOG_RECORD_TYPE record = { 0U };
+
+  if ( error->relax.enb == PERMISSION_ENABLE )
   {
-    *input = 1U;
+    vSYSeventSend( error->event, &record );
+  }
+  if ( error->ack == PERMISSION_ENABLE )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &error->id );
+  }
+  error->status = ALARM_STATUS_IDLE;
+  error->trig   = TRIGGER_IDLE;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORtriggering ( ERROR_TYPE* error )
+{
+  LOG_RECORD_TYPE record   = { 0U };
+  vSYSeventSend( error->event, &record );
+  if ( uALARMisForList( &error->event ) > 0U )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, &error->id );
+  }
+  error->trig = TRIGGER_SET;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORholding ( ERROR_TYPE* error )
+{
+  if ( error->trig == TRIGGER_IDLE )
+  {
+    error->status = ALARM_STATUS_IDLE;
   }
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue )
+void vERRORreset ( ERROR_TYPE* error )
+{
+  error->trig   = TRIGGER_IDLE;
+  error->status = ALARM_STATUS_IDLE;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORcheck ( ERROR_TYPE* error, uint8_t flag )
+{
+  if ( error->enb == PERMISSION_ENABLE )
+  {
+    if ( error->active == PERMISSION_ENABLE )
+    {
+      switch ( error->status )
+      {
+        case ALARM_STATUS_IDLE:
+          if ( flag > 0U )
+          {
+            vERRORtriggering( error );
+            if ( ( error->relax.enb == PERMISSION_ENABLE ) || ( error->ack == PERMISSION_ENABLE ) )
+            {
+              error->status = ALARM_STATUS_RELAX;
+            }
+            else
+            {
+              error->status = ALARM_STATUS_HOLD;
+            }
+          }
+          break;
+        case ALARM_STATUS_RELAX:
+          if ( flag == 0U )
+          {
+            vERRORrelax( error );
+          }
+          break;
+        case ALARM_STATUS_HOLD:
+          vERRORholding( error );
+          break;
+        default:
+          error->status = ALARM_STATUS_IDLE;
+          break;
+      }
+    }
+    else if ( error->status != ALARM_STATUS_IDLE )
+    {
+      error->status = ALARM_STATUS_IDLE;
+    }
+    else
+    {
+
+    }
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
 {
   fix16_t levelOff = 0U;
 
-  if ( ( alarm->enb > 0U ) && ( alarm->active > 0U ) )
+  if ( ( alarm->error.enb == PERMISSION_ENABLE ) && ( alarm->error.active == PERMISSION_ENABLE ) )
   {
-    switch ( alarm->status )
+    switch ( alarm->error.status )
     {
+      /*-----------------------------------------------------------------------------------*/
+      /*---------------------------------- Start condition --------------------------------*/
+      /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_IDLE:
         if ( ( ( alarm->type == ALARM_LEVEL_LOW   ) && ( val <= alarm->level ) ) ||
              ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val >= alarm->level ) ) )
         {
-          alarm->status = ALARM_STATUS_WAIT_DELAY;
-          vLOGICstartTimer( alarm->delay, &alarm->timerID );
+          alarm->error.status = ALARM_STATUS_WAIT_DELAY;
+          vLOGICstartTimer( &alarm->timer );
         }
         break;
+      /*-----------------------------------------------------------------------------------*/
+      /*--------------------------------- Delay of trigger --------------------------------*/
+      /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_WAIT_DELAY:
-        if ( ( ( alarm->type == ALARM_LEVEL_LOW   ) && ( val > alarm->level ) ) ||
-             ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val < alarm->level ) ) )
+        if ( uLOGICisTimer( alarm->timer ) > 0U )
         {
-          alarm->status = ALARM_STATUS_IDLE;
-          vLOGICresetTimer( alarm->timerID );
-        }
-        else if ( uLOGICisTimer( alarm->timerID ) > 0U )
-        {
-          if ( alarm->trig == 0U )
+          if ( alarm->error.trig == TRIGGER_IDLE )
           {
-            alarm->status = ALARM_STATUS_TRIG;
+            alarm->error.status = ALARM_STATUS_TRIG;
           }
+          else
+          {
+            alarm->error.status = ALARM_STATUS_RELAX;
+          }
+        }
+        else if ( ( ( alarm->type == ALARM_LEVEL_LOW   ) && ( val > alarm->level ) ) ||
+                  ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val < alarm->level ) ) )
+        {
+          alarm->error.status = ALARM_STATUS_IDLE;
+          vLOGICresetTimer( alarm->timer );
         }
         else
         {
 
         }
         break;
+      /*-----------------------------------------------------------------------------------*/
+      /*---------------------------------- Alarm trigger ----------------------------------*/
+      /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_TRIG:
-        if ( queue != NULL )
+        vERRORtriggering( &alarm->error );
+        if ( ( alarm->error.relax.enb == PERMISSION_ENABLE ) || ( alarm->error.ack == PERMISSION_ENABLE ) )
         {
-          xQueueSend( queue, &alarm->event, portMAX_DELAY );
+          alarm->error.status = ALARM_STATUS_RELAX;
         }
-        alarm->trig   = 1U;
-        alarm->status = ALARM_STATUS_RELAX;
+        else
+        {
+          alarm->error.status = ALARM_STATUS_HOLD;
+        }
         break;
+      /*-----------------------------------------------------------------------------------*/
+      /*------------------------------- Holding alarm state -------------------------------*/
+      /*-----------------------------------------------------------------------------------*/
+      case ALARM_STATUS_HOLD:
+        vERRORholding( &alarm->error );
+        break;
+      /*-----------------------------------------------------------------------------------*/
+      /*----------------------------- Alarm trigger relaxation ----------------------------*/
+      /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_RELAX:
         if ( alarm->type == ALARM_LEVEL_LOW )
         {
           levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
           if ( val > levelOff )
           {
-            alarm->status = ALARM_STATUS_IDLE;
-            if ( alarm->relax.enb > 0U )
-            {
-              xQueueSend( queue, &alarm->relax.event, portMAX_DELAY );
-            }
+            vERRORrelax( &alarm->error );
           }
         }
         else
@@ -301,27 +588,23 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue )
           levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
           if ( val < levelOff )
           {
-            alarm->status = ALARM_STATUS_IDLE;
-            if ( alarm->relax.enb > 0U )
-            {
-              xQueueSend( queue, &alarm->relax.event, portMAX_DELAY );
-            }
+            vERRORrelax( &alarm->error );
           }
         }
         break;
+      /*-----------------------------------------------------------------------------------*/
+      /*-----------------------------------------------------------------------------------*/
+      /*-----------------------------------------------------------------------------------*/
       default:
-        alarm->status = ALARM_STATUS_IDLE;
+        alarm->error.status = ALARM_STATUS_IDLE;
         break;
     }
   }
   return;
 }
-
-void vRELAYproces ( RELAY_AUTO_DEVICE* device, fix16_t value )
+/*-----------------------------------------------------------------------------------------*/
+void vRELAYautoProces ( RELAY_AUTO_DEVICE* device, fix16_t value )
 {
-  float fVal = fix16_to_float( value );
-  float fOff = fix16_to_float( device->offLevel );
-  float fOn  = fix16_to_float( device->onLevel );
   if ( device->relay.enb > 0U )
   {
     if ( device->onLevel < device->offLevel )
@@ -366,6 +649,47 @@ void vRELAYproces ( RELAY_AUTO_DEVICE* device, fix16_t value )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device )
+{
+  if ( device->triger == 0U )
+  {
+    device->triger = 1U;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device )
+{
+  if ( device->relay.enb > 0U )
+  {
+    switch ( device->status )
+    {
+      case RELAY_DELAY_IDLE:
+        if ( device->triger > 0U )
+        {
+          vLOGICstartTimer( &device->timer );
+          device->relay.set( RELAY_ON );
+          device->relay.status = RELAY_ON;
+          device->status       = RELAY_DELAY_WORK;
+        }
+        break;
+      case RELAY_DELAY_WORK:
+        if ( uLOGICisTimer( device->timer ) > 0U )
+        {
+          device->relay.set( RELAY_OFF );
+          device->relay.status = RELAY_OFF;
+          device->status       = RELAY_DELAY_IDLE;
+          device->triger       = 0U;
+        }
+        break;
+      default:
+        device->status = RELAY_DELAY_IDLE;
+        break;
+    }
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device )
 {
   device->relay.set( RELAY_OFF );
@@ -378,7 +702,7 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
 {
   if ( device->active > 0U )
   {
-    if ( ( device->relay.enb > 0U ) && ( device->status != RELAY_DELAY_DONE ) )
+    if ( ( device->relay.enb > 0U ) && ( device->status != RELAY_IMPULSE_DONE ) )
     {
       if ( ( device->level >= val ) && ( device->relay.status != RELAY_ON ) )
       {
@@ -390,14 +714,14 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
         device->relay.set( RELAY_OFF );
         device->relay.status = RELAY_OFF;
       }
-      if ( ( device->relay.status == RELAY_ON ) && ( device->status != RELAY_DELAY_START ) )
+      if ( ( device->relay.status == RELAY_ON ) && ( device->status != RELAY_IMPULSE_START ) )
       {
-        device->status = RELAY_DELAY_START;
-        vLOGICstartTimer( device->delay, &device->timerID );
+        device->status = RELAY_IMPULSE_START;
+        vLOGICstartTimer( &device->timer );
       }
-      if ( ( device->status == RELAY_DELAY_START ) && ( uLOGICisTimer( device->timerID ) > 0U ) )
+      if ( ( device->status == RELAY_IMPULSE_START ) && ( uLOGICisTimer( device->timer ) > 0U ) )
       {
-        device->status = RELAY_DELAY_DONE;
+        device->status = RELAY_IMPULSE_DONE;
       }
     }
   }

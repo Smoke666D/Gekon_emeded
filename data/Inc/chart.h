@@ -62,14 +62,14 @@ typedef struct __packed
   //eChartFunction  func[CHART_DOTS_SIZE - 1U];
 } eChartData;
 /*------------------------ Extern --------------------------------------*/
-extern SemaphoreHandle_t xCHARTSemaphore;
 extern eChartData        oilSensorChart;
 extern eChartData        coolantSensorChart;
 extern eChartData        fuelSensorChart;
 extern eChartData* const charts[CHART_NUMBER];
 /*----------------------- Function -------------------------------------*/
-void           vCHARTinitCharts ( void );
-void           vCHARTcalcFunction ( const eChartData* chart, uint16_t n, eChartFunction* func );  /* Calculate line functions between dots of chart */
-eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y );                     /* Get value of chart functions */
+void              vCHARTinitCharts ( void );
+void              vCHARTcalcFunction ( const eChartData* chart, uint16_t n, eChartFunction* func );  /* Calculate line functions between dots of chart */
+eFunctionError    eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y );                     /* Get value of chart functions */
+SemaphoreHandle_t xCHARTgetSemophore ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CHART_H_ */

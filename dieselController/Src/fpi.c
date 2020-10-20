@@ -122,11 +122,11 @@ uint8_t vFPIgetTrig ( FPI* fpi )
  */
 void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* delayReg )
 {
-  fpi->delay    = getUintValue( delayReg );
-  fpi->function = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
-  fpi->polarity = getBitMap( setupReg, 1U );
-  fpi->action   = getBitMap( setupReg, 2U );
-  fpi->arming   = getBitMap( setupReg, 3U );
+  fpi->timer.delay = getUintValue( delayReg );
+  fpi->function    = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
+  fpi->polarity    = getBitMap( setupReg, 1U );
+  fpi->action      = getBitMap( setupReg, 2U );
+  fpi->arming      = getBitMap( setupReg, 3U );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ void vFPIcheckReset ( FPI* fpi )
 {
   if ( vFPIgetTrig( fpi ) == 0U )
   {
-    vLOGICresetTimer( fpi->timerID );
+    vLOGICresetTimer( fpi->timer );
     fpi->state = FPI_IDLE;
   }
   return;
@@ -183,10 +183,10 @@ void vFPIinit ( const FPI_INIT* init )
   /* Logic part */
   for ( i=0U; i<FPI_NUMBER; i++ )
   {
-    fpis[i].timerID = 0U;                    /* Reset timer ID */
-    fpis[i].state   = FPI_BLOCK;             /* Toogle fpi to the start state */
-    fpis[i].level   = FPI_LEVEL_LOW;         /* Reset current level */
-    if ( fpis[i].function != FPI_FUN_USER )  /* Reset arming for non user functions */
+    fpis[i].timer.id = 0U;                    /* Reset timer ID */
+    fpis[i].state    = FPI_BLOCK;             /* Toogle fpi to the start state */
+    fpis[i].level    = FPI_LEVEL_LOW;         /* Reset current level */
+    if ( fpis[i].function != FPI_FUN_USER )   /* Reset arming for non user functions */
     {
       fpis[i].arming = FRI_ARM_ALWAYS;
       fpis[i].action = FPI_ACT_NONE;
@@ -212,7 +212,8 @@ void vFPIinit ( const FPI_INIT* init )
     }
   }
   /* Queue init */
-  pFPIQueue  = xQueueCreateStatic( 16U, sizeof( FPI_EVENT ), eventBuffer, &xFPIQueue );
+  xFPIsemaphore = xSemaphoreCreateMutex();
+  pFPIQueue     = xQueueCreateStatic( 16U, sizeof( FPI_EVENT ), eventBuffer, &xFPIQueue );
   const osThreadAttr_t fpiTask_attributes = {
     .name       = "fpiTask",
     .priority   = ( osPriority_t ) FPI_TASK_PRIORITY,
@@ -250,7 +251,7 @@ FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
 void vFPIsetBlock ( void )
 {
   uint8_t i = 0U;
-  while ( xSemaphoreTake( xCHARTSemaphore, FPI_TASK_DELAY ) != pdTRUE )
+  while ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) != pdTRUE )
   {
     osDelay( 10U );
   }
@@ -258,7 +259,7 @@ void vFPIsetBlock ( void )
   {
     fpis[i].state = FPI_BLOCK;
   }
-  xSemaphoreGive( xCHARTSemaphore );
+  xSemaphoreGive( xFPIsemaphore );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -277,7 +278,7 @@ void vFPITask ( void const* argument )
         vFPIdataInit();
       }
     }
-    if ( xSemaphoreTake( xCHARTSemaphore, FPI_TASK_DELAY ) == pdTRUE )
+    if ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) == pdTRUE )
     {
       for ( i=0U; i<FPI_NUMBER; i++ )
       {
@@ -295,11 +296,11 @@ void vFPITask ( void const* argument )
               if ( vFPIgetTrig( &fpis[i] ) > 0U )
               {
                 fpis[i].state = FPI_TRIGGERED;
-                vLOGICstartTimer( fpis[i].delay, &fpis[i].timerID );
+                vLOGICstartTimer( &fpis[i].timer );
               }
               break;
             case FPI_TRIGGERED:
-              if ( uLOGICisTimer( fpis[i].timerID ) > 0U )
+              if ( uLOGICisTimer( fpis[i].timer ) > 0U )
               {
                 event.level    = fpis[i].level;
                 event.function = fpis[i].function;
@@ -315,7 +316,7 @@ void vFPITask ( void const* argument )
           }
         }
       }
-      xSemaphoreGive( xCHARTSemaphore );
+      xSemaphoreGive( xFPIsemaphore );
     }
     osDelay( FPI_TASK_DELAY );
   }

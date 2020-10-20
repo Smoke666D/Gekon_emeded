@@ -113,8 +113,7 @@ typedef struct __packed
   ELECTRO_SCHEME          scheme;
   ELECTRO_PROCESS_STATUS  state;
   ELECTRO_COMMAND         cmd;
-  timerID_t               timerID;
-  fix16_t                 switchDelay;
+  SYSTEM_TIMER            timer;
 } ELECTRO_SYSTEM_TYPE;
 
 typedef struct __packed
@@ -159,7 +158,7 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
-void           vELECTROinit ( /*TIM_HandleTypeDef* currentTIM*/ void );
+void           vELECTROinit ( void );
 ELECTRO_STATUS eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS eELECTROgetMainsStatus ( void );
 QueueHandle_t  pELECTROgetCommandQueue ( void );

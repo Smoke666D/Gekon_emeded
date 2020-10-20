@@ -39,6 +39,7 @@
 /*---------------------- Functions -------------------------------------*/
 LOG_STATUS vLOGinit ( void );
 LOG_STATUS vLOGclear ( void );
-LOG_STATUS vLOGaddRecord ( SYSTEM_EVENT event );
+LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
+LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record );
 /*----------------------------------------------------------------------*/
 #endif /* INC_JOURNAL_H_ */

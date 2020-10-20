@@ -394,7 +394,7 @@ EEPROM_STATUS eSTORAGEloadPassword ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEreadFreeData ( DATA_ADR n )
+EEPROM_STATUS eSTORAGEreadFreeData ( FREE_DATA_ADR n )
 {
   EEPROM_STATUS res      = EEPROM_OK;
   uint8_t       data[2U] = { 0U };
@@ -406,12 +406,12 @@ EEPROM_STATUS eSTORAGEreadFreeData ( DATA_ADR n )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEsaveFreeData ( DATA_ADR n )
+EEPROM_STATUS eSTORAGEsaveFreeData ( FREE_DATA_ADR n )
 {
   return eEEPROMwriteMemory( ( STORAGE_FREE_DATA_ADR + 2 * n ), ( uint8_t* )freeDataArray[n], 2U );
 }
 /*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEsetFreeData ( DATA_ADR n, const uint16_t* data )
+EEPROM_STATUS eSTORAGEsetFreeData ( FREE_DATA_ADR n, const uint16_t* data )
 {
   *freeDataArray[n] = *data;
   return eSTORAGEsaveFreeData( ( STORAGE_FREE_DATA_ADR + 2 * n ) );

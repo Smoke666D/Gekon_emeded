@@ -302,7 +302,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
 
   if ( adr < CHART_NUMBER )
   {
-    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) && ( xCHARTSemaphore != NULL) )
+    if ( ( xSemaphore != NULL ) && ( initDone > 0U ) && ( xCHARTgetSemophore() != NULL) )
     {
       switch ( cmd )
       {
@@ -310,11 +310,11 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
           *chart = *charts[adr];
           break;
         case DATA_API_CMD_WRITE:
-          if ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
             flTakeSource = 1U;
             *charts[adr] = *chart;
-            xSemaphoreGive( xCHARTSemaphore );
+            xSemaphoreGive( xCHARTgetSemophore() );
           }
           else
           {
@@ -343,14 +343,14 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            if ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+            if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) == pdTRUE )
             {
               flTakeSource = 3U;
               if ( eSTORAGEreadCharts() != EEPROM_OK )
               {
                 res = DATA_API_STAT_EEPROM_ERROR;
               }
-              xSemaphoreGive( xCHARTSemaphore );
+              xSemaphoreGive( xCHARTgetSemophore() );
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -634,14 +634,14 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
  * available commands:
  * 1. DATA_API_CMD_READ  - read free data value from the locale storage
  * 2. DATA_API_CMD_WRITE - write free data value to the locale storage
- * 3. DATA_API_CMD_INC   - none
+ * 3. DATA_API_CMD_INC   - Increment value
  * 4. DATA_API_CMD_DEC   - none
  * 5. DATA_API_CMD_SAVE  - save all free data to the EEPROM from the locale storage
  * 6. DATA_API_CMD_LOAD  - load all free data to the local storage from the EEPROM
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
-DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data )
+DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint16_t        i   = 0U;
@@ -665,6 +665,13 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t*
           else
           {
             res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_INC:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            *freeDataArray[adr] += 1;
+            xSemaphoreGive( xSemaphore );
           }
           break;
         case DATA_API_CMD_SAVE:
@@ -829,7 +836,57 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
- * API for Embedded Web Application
+ * API for Log pointer
+ * input:  cmd     - command
+ *         pointer - pointer for last record in the log
+ * output: status of operation
+ * available commands:
+ * 1. DATA_API_CMD_READ  - read pointer
+ * 2. DATA_API_CMD_WRITE - none
+ * 3. DATA_API_CMD_INC   - none
+ * 4. DATA_API_CMD_DEC   - none
+ * 5. DATA_API_CMD_SAVE  - none
+ * 6. DATA_API_CMD_LOAD  - none
+ * 7. DATA_API_CMD_ERASE - none
+ * 8. DATA_API_CMD_ADD   - none
+ */
+DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer )
+{
+  DATA_API_STATUS res = DATA_API_STAT_OK;
+  if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
+  {
+    switch ( cmd )
+    {
+      case DATA_API_CMD_READ:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          if ( eSTORAGEreadLogPointer( pointer ) != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          xSemaphoreGive( xSemaphore );
+        }
+        else
+        {
+          res = DATA_API_STAT_BUSY;
+        }
+        break;
+      default:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+    }
+  }
+  else
+  {
+    res = DATA_API_STAT_INIT_ERROR;
+  }
+  return res;
+}
+
+
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * API for log
  * input:  cmd    - command
  *         adr    - address of log record
  *         record - log record structure
@@ -890,6 +947,10 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
             }
             xSemaphoreGive( xSemaphore );
           }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
           break;
         case DATA_API_CMD_LOAD:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
@@ -913,6 +974,10 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
             }
             xSemaphoreGive( xSemaphore );
           }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
+          }
           break;
         case DATA_API_CMD_ERASE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
@@ -934,6 +999,10 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
               }
             }
             xSemaphoreGive( xSemaphore );
+          }
+          else
+          {
+            res = DATA_API_STAT_BUSY;
           }
           break;
         default:

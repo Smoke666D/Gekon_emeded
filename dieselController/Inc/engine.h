@@ -18,6 +18,7 @@
 #define  ENGINE_EVENT_QUEUE_LENGTH      16U
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
 #define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
+#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE ) )
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -85,21 +86,21 @@ typedef enum
   STOP_FAIL,
   STOP_OK,
 } PLAN_STOP_STATUS;
+
+typedef enum
+{
+  MAINTENCE_STATUS_STOP,
+  MAINTENCE_STATUS_RUN,
+} MAINTENCE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  uint8_t       enb;
-  SYSTEM_EVENT  event;
-} CUTOUT_TYPE;
-
-typedef struct __packed
-{
   SENSOR_TYPE       type;
   eChartData*       chart;
   getValueCallBack  get;
-  CUTOUT_TYPE       cutout;
+  ALARM_TYPE        cutout;
   SENSOR_STATUS     status;
 } SENSOR;
 
@@ -167,14 +168,18 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  ALARM_TYPE  oil;
-  ALARM_TYPE  air;
-  ALARM_TYPE  fuel;
+  MAINTENCE_STATUS status;
+  SYSTEM_TIMER     timer;
+  ALARM_TYPE       oil;
+  ALARM_TYPE       air;
+  ALARM_TYPE       fuel;
 } MAINTENCE_TYPE;
 
 typedef struct __packed
 {
+  /* Callback */
   setRelayCallBack       set;
+  /* Delays */
   fix16_t                startDelay;      /* sec */
   fix16_t                crankingDelay;   /* sec */
   fix16_t                crankDelay;      /* sec */
@@ -182,9 +187,12 @@ typedef struct __packed
   fix16_t                idlingDelay;     /* sec */
   fix16_t                nominalDelay;    /* sec */
   fix16_t                warmingDelay;    /* sec */
+  /* Counters */
   uint8_t                startAttempts;
   uint8_t                startIteration;
+  /* Structures */
   START_CRITERIONS_TYPE  startCrit;
+  /* Status */
   STARTER_STATUS         status;
 } STARTER_TYPE;
 
@@ -201,6 +209,8 @@ typedef struct __packed
   ENGINE_COMMAND  cmd;
   uint8_t         startCheckOil;
   ENGINE_STATUS   status;
+  ERROR_TYPE      stopError;
+  ERROR_TYPE      startError;
 } ENGINE_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t engineHandle;
@@ -211,6 +221,5 @@ QueueHandle_t pENGINEgetCommandQueue ( void );
 uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
-void          vENGINEmaintenanceReset ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

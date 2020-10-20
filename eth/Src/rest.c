@@ -325,7 +325,7 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
   REST_ERROR res    = REST_OK;
   char*      pchSt  = NULL;
 
-  while ( xSemaphoreTake( xCHARTSemaphore, SEMAPHORE_TAKE_DELAY ) != pdTRUE )
+  while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
   {
 
   }
@@ -369,7 +369,7 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
   {
     res = REST_MESSAGE_FORMAT_ERROR;
   }
-  xSemaphoreGive( xCHARTSemaphore );
+  xSemaphoreGive( xCHARTgetSemophore() );
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

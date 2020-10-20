@@ -1,4 +1,4 @@
-/*
+  /*
  *
  * controller.c
  *
@@ -28,22 +28,14 @@
 #include "journal.h"
 /*-------------------------------- Structures --------------------------------*/
 CONTROLLER_INIT controllerGPIO = { 0U };
-CONTROLLER_TYPE controller =
-{
-  .mode            = CONTROLLER_MODE_MANUAL,
-  .banAutoStart    = 0U,
-  .banAutoShutdown = 0U,
-  .banGenLoad      = 0U,
-  .stopDelay       = 0U,
-  .timerID         = 0U,
-};
+CONTROLLER_TYPE controller     = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 #define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, 0U ) )
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
-static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
-static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
+static CONTROLLER_TURNING stopState       = CONTROLLER_TURNING_IDLE;
+static CONTROLLER_TURNING startState      = CONTROLLER_TURNING_IDLE;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -96,18 +88,17 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
   return;
 }
 
-void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
+void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 {
-  vLOGICprintEvent( event );
-  switch ( event.action )
+  vLOGICprintEvent( record.event );
+  switch ( record.event.action )
   {
     case ACTION_WARNING:
       vFPOsetWarning( RELAY_ON );
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGaddRecord( event );
+        eLOGaddRecord( &record );
       }
-      // >>Send warning to LCD
       break;
 
     case ACTION_EMERGENCY_STOP:
@@ -117,13 +108,13 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
       vFPOsetReadyToStart( RELAY_OFF );
-      vLOGaddRecord( event );
+      eLOGaddRecord( &record );
       break;
 
     case ACTION_LOAD_GENERATOR:
       if ( LOG_WARNINGS_ENABLE > 0U )
       {
-        vLOGaddRecord( event );
+        eLOGaddRecord( &record );
       }
       // >>Send warning to LCD
       controller.state = CONTROLLER_STATUS_START;
@@ -143,7 +134,7 @@ void vCONTROLLEReventProcess ( SYSTEM_EVENT event )
       break;
 
     case ACTION_LOAD_SHUTDOWN:
-      vLOGaddRecord( event );
+      eLOGaddRecord( &record );
       controller.state = CONTROLLER_STATUS_SHUTDOWN;
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
@@ -172,18 +163,20 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_IDLE:
       if ( delayStop >0U )
       {
-        vLOGICstartTimer( controller.stopDelay, &controller.timerID );
+        controller.timer.delay = controller.stopDelay;
+        vLOGICstartTimer( &controller.timer );
         stopState = CONTROLLER_TURNING_DELAY;
       }
       else
       {
-        vLOGICstartTimer( 0U, &controller.timerID );
+        controller.timer.delay = 0U;
+        vLOGICstartTimer( &controller.timer );
         stopState = CONTROLLER_TURNING_RELOAD;
       }
       break;
 
     case CONTROLLER_TURNING_DELAY:
-      if ( uLOGICisTimer( controller.timerID ) > 0U )
+      if ( uLOGICisTimer( controller.timer ) > 0U )
       {
         stopState = CONTROLLER_TURNING_ENGINE;
       }
@@ -212,7 +205,8 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
     case CONTROLLER_TURNING_FINISH:
       if ( engineState == ENGINE_STATUS_IDLE )
       {
-        vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_OFF );
+        vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
+        vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON   );
         controller.state = CONTROLLER_STATUS_IDLE;
         stopState        = CONTROLLER_TURNING_IDLE;
       }
@@ -229,7 +223,6 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
 {
   ENGINE_COMMAND  engineCmd  = ENGINE_CMD_NONE;
   ELECTRO_COMMAND electroCmd = ELECTRO_CMD_NONE;
-
   /*------------------------ REMOTE START ------------------------*/
   if ( ( controller.state        == CONTROLLER_STATUS_START ) &&
        ( controller.banAutoStart == 0U ) )
@@ -237,6 +230,8 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
     switch ( startState )
     {
       case CONTROLLER_TURNING_IDLE:
+        vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+        vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
         vFPIsetBlock();
         if ( ( POWER_OFF_IMMEDIATELY > 0U  ) &&
              ( controller.banGenLoad == 0U ) )
@@ -246,7 +241,6 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
         }
         startState = CONTROLLER_TURNING_ENGINE;
         break;
-
       case CONTROLLER_TURNING_ENGINE:
         engineCmd = ENGINE_CMD_START;
         xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
@@ -328,6 +322,7 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   };
   controllerHandle = osThreadNew( vCONTROLLERtask, NULL, &controllerTask_attributes );
   vMenuMessageInit( controllerHandle );
+  vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -338,12 +333,11 @@ void vCONTROLLERtask ( void const* argument )
   ELECTRO_STATUS  mainsState           = ELECTRO_STATUS_IDLE;
   ENGINE_COMMAND  engineCmd            = ENGINE_CMD_NONE;
   ELECTRO_COMMAND electroCmd           = ELECTRO_CMD_NONE;
-  SYSTEM_EVENT    interiorEvent        = { .type = EVENT_NONE, .action = ACTION_NONE };
-  SYSTEM_EVENT    inputEvent           = { .type = EVENT_NONE, .action = ACTION_NONE };
-  FPI_EVENT       inputFpiEvent        = { .level = FPI_LEVEL_LOW, .function = FPI_FUN_NONE, .action = FPI_ACT_NONE, .message = NULL };
+  SYSTEM_EVENT    interiorEvent        = { 0U };
+  LOG_RECORD_TYPE inputEvent           = { 0U };
+  FPI_EVENT       inputFpiEvent        = { 0U };
   uint32_t        inputNotifi          = 0U;
   uint8_t         inputKeyboardCommand = HMI_CMD_NONE;
-
 
   for (;;)
   {
@@ -401,13 +395,37 @@ void vCONTROLLERtask ( void const* argument )
           }
           break;
         case HMI_CMD_STOP :
-          if ( ( controller.mode  == CONTROLLER_MODE_MANUAL  ) &&
-               ( ( controller.state == CONTROLLER_STATUS_WORK  ) ||
-                 ( controller.state == CONTROLLER_STATUS_START ) ) )
+          if ( controller.mode  == CONTROLLER_MODE_MANUAL  )
           {
-            vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
-            vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON  );
-            controller.state = CONTROLLER_STATUS_PLAN_STOP;
+            switch ( controller.state )
+            {
+              case CONTROLLER_STATUS_WORK:
+                controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              case CONTROLLER_STATUS_START:
+                controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              case CONTROLLER_STATUS_PLAN_STOP:
+                vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
+                interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                interiorEvent.action = ACTION_EMERGENCY_STOP;
+                vSYSeventSend( interiorEvent, NULL );
+                controller.state = CONTROLLER_STATUS_ALARM;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              case CONTROLLER_STATUS_PLAN_STOP_DELAY:
+                vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
+                interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                interiorEvent.action = ACTION_EMERGENCY_STOP;
+                vSYSeventSend( interiorEvent, NULL );
+                controller.state = CONTROLLER_STATUS_ALARM;
+                stopState        = CONTROLLER_TURNING_IDLE;
+                break;
+              default:
+                break;
+            }
           }
           break;
         case HMI_CMD_AUTO:
@@ -461,13 +479,15 @@ void vCONTROLLERtask ( void const* argument )
           break;
         /*------------------------- Сброс аварийного сигнала -------------------------*/
         case FPI_FUN_ALARM_RESET:
-          if ( ( controller.state    == CONTROLLER_STATUS_ALARM ) &&
+          if ( ( ( controller.state  == CONTROLLER_STATUS_ALARM ) ||
+                 ( controller.state  == CONTROLLER_STATUS_IDLE  ) ) &&
                ( inputFpiEvent.level == FPI_LEVEL_HIGH ) )
           {
             controller.state = CONTROLLER_STATUS_IDLE;
             engineCmd        = ENGINE_CMD_RESET_TO_IDLE;
             vFPOsetAlarm( RELAY_OFF );
             vFPOsetNetFault( RELAY_OFF );
+            eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
             xQueueSend( pENGINEgetCommandQueue(), &engineCmd, portMAX_DELAY );
           }
           break;
@@ -527,7 +547,7 @@ void vCONTROLLERtask ( void const* argument )
           {
             interiorEvent.type   = EVENT_ENGINE_HIGHT_TEMP;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+            vSYSeventSend( interiorEvent, NULL );
           }
           break;
         /*----------------------- Сигнал низкого уровня топлива ----------------------*/
@@ -536,7 +556,7 @@ void vCONTROLLERtask ( void const* argument )
           {
             interiorEvent.type   = EVENT_FUEL_LOW_LEVEL;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+            vSYSeventSend( interiorEvent, NULL );
           }
           break;
         /*-------------------------- Датчик давления масла ---------------------------*/
@@ -545,7 +565,7 @@ void vCONTROLLERtask ( void const* argument )
           {
             interiorEvent.type   = EVENT_OIL_LOW_PRESSURE;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            xQueueSend( pLOGICgetEventQueue(), &interiorEvent, portMAX_DELAY );
+            vSYSeventSend( interiorEvent, NULL );
           }
           break;
         /*-------------------------- Работа на холостом ходу -------------------------*/

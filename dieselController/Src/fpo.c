@@ -345,8 +345,6 @@ void vFPOdataInit ( void )
   vFPOanaliz( &mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( &mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( &mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
-  /* Start system condition */
-  vFPOsetStopSolenoid( RELAY_ON );
   /* Debug data */
   vFPOprintSetup();
   return;

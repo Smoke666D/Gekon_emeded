@@ -21,13 +21,17 @@
 #define  LOG_RECORD_SIZE            6U
 #define  LOGIC_TIMER_STEP           100U  /* ms */
 #define  LOGIC_COUNTERS_SIZE        10U
+#define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
 #define  LOG_TYPES_SIZE             34U
 #define  LOG_ACTION_SIZE            7U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
+#define  SYS_TIMER_SEMAPHORE_DELAY  200U
 #define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
 #define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
+#define  ACTIV_ERROR_LIST_SIZE      20U
+#define  SEMAPHORE_AEL_TAKE_DELAY   200U
 /*------------------------ Tasks ---------------------------------------*/
 #define  FPI_TASK_PRIORITY          osPriorityLow
 #define  ENGINE_TASK_PRIORITY       osPriorityLow
@@ -101,6 +105,18 @@ typedef enum
 
 typedef enum
 {
+  PERMISSION_DISABLE = 0U,
+  PERMISSION_ENABLE  = 1U,
+} PERMISSION;
+
+typedef enum
+{
+  TRIGGER_IDLE = 0U,
+  TRIGGER_SET  = 1U,
+} TRIGGER_STATE;
+
+typedef enum
+{
   HMI_CMD_NONE   = 0x00U,
   HMI_CMD_START  = 0x01U,
   HMI_CMD_STOP   = 0x02U,
@@ -113,6 +129,7 @@ typedef enum
 {
   TIMER_OK,
   TIMER_NO_SPACE,
+  TIMER_ACCESS,
 } TIMER_ERROR;
 
 typedef enum
@@ -121,6 +138,7 @@ typedef enum
   ALARM_STATUS_WAIT_DELAY,
   ALARM_STATUS_TRIG,
   ALARM_STATUS_RELAX,
+  ALARM_STATUS_HOLD,
 } ALARM_STATUS;
 
 typedef enum
@@ -138,8 +156,14 @@ typedef enum
 typedef enum
 {
   RELAY_DELAY_IDLE,
-  RELAY_DELAY_START,
-  RELAY_DELAY_DONE,
+  RELAY_DELAY_WORK,
+} RELAY_DELAY_STATUS;
+
+typedef enum
+{
+  RELAY_IMPULSE_IDLE,
+  RELAY_IMPULSE_START,
+  RELAY_IMPULSE_DONE,
 } RELAY_IMPULSE_STATUS;
 
 typedef enum
@@ -147,6 +171,22 @@ typedef enum
   LOG_STATUS_OK,
   LOG_STATUS_ERROR,
 } LOG_STATUS;
+
+typedef enum
+{
+  ERROR_LIST_STATUS_EMPTY,
+  ERROR_LIST_STATUS_NOT_EMPTY,
+  ERROR_LIST_STATUS_OVER,
+} ERROR_LIST_STATUS;
+
+typedef enum
+{
+  ERROR_LIST_CMD_ERASE,
+  ERROR_LIST_CMD_ADD,
+  ERROR_LIST_CMD_READ,
+  ERROR_LIST_CMD_ACK,
+  ERROR_LIST_CMD_COUNTER,
+} ERROR_LIST_CMD;
 /*----------------------- Callbacks ------------------------------------*/
 typedef fix16_t ( *getValueCallBack )( void );          /* Callback to get sensor value */
 typedef void    ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */
@@ -159,46 +199,64 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t       enb;
-  SYSTEM_EVENT  event;
+  PERMISSION   enb;   /* Relaxation functions on/off */
+  SYSTEM_EVENT event; /* Event after relaxation */
 } ALARM_RELAX_TYPE;
 
 typedef struct __packed
 {
-  uint8_t           enb;      /* Enable alarm at initialization */
-  uint8_t           active;   /* On/Off alarm check in work flow */
-  ALARM_LEVEL       type;     /* Type of alarm above or below set point  */
-  fix16_t           level;    /* Set point */
-  fix16_t           delay;    /* Delay to active event after triggered, seconds */
-  timerID_t         timerID;  /* Number of system timer */
-  SYSTEM_EVENT      event;    /* Event of event */
-  ALARM_RELAX_TYPE  relax;    /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
-  ALARM_STATUS      status;   /* Status of the alarm */
-  uint8_t           trig;     /* Alarm triggered flag. Reset from outside */
+  fix16_t   delay; /* Delay to active event after triggered, seconds */
+  timerID_t id;    /* Number of system timer */
+} SYSTEM_TIMER;
+
+typedef struct __packed
+{
+  PERMISSION        enb;       /* Enable alarm at initialization         - 1 byte */
+  PERMISSION        active;    /* On/Off alarm check in work flow        - 1 byte */
+  ALARM_STATUS      status;    /* Status of the alarm                    - 1 byte */
+  SYSTEM_EVENT      event;     /* Event data of alarm */
+  ALARM_RELAX_TYPE  relax;     /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
+  TRIGGER_STATE     trig;      /* Alarm triggered flag. Reset from outside */
+  PERMISSION        ack;       /* Auto acknowledgment on/off */
+  uint8_t           id;        /* ID in active error list */
+} ERROR_TYPE;
+
+typedef struct __packed
+{
+  ERROR_TYPE        error;     /* Error of the alarm */
+  ALARM_LEVEL       type;      /* Type of alarm above or below set point - 1 byte */
+  fix16_t           level;     /* Set point                              - 4 byte */
+  SYSTEM_TIMER      timer;     /* Timer for triggering delay             - 6 byte */
 } ALARM_TYPE;
 
 typedef struct __packed
 {
-  uint8_t           enb;
-  RELAY_STATUS      status;
-  setRelayCallBack  set;
-} RELAY_DEVICE;
+  PERMISSION        enb;       /* Enable flag of relay */
+  RELAY_STATUS      status;    /* Current status of relay */
+  setRelayCallBack  set;       /* Callback for relay control */
+} RELAY_DEVICE;                /* Simple on/off relay device */
 
 typedef struct __packed
 {
-  //uint8_t       active;
-  fix16_t       onLevel;
-  fix16_t       offLevel;
-  RELAY_DEVICE  relay;
-} RELAY_AUTO_DEVICE;
+  fix16_t           onLevel;   /* Level to relay turn on */
+  fix16_t           offLevel;  /* Level to relay turn off */
+  RELAY_DEVICE      relay;     /* Relay device */
+} RELAY_AUTO_DEVICE;           /* Auto on/off relay: On at onLevel and Off at offLevel. offLevel van be less, than offLevel  */
 
 typedef struct __packed
 {
-  uint8_t               active;
+  RELAY_DEVICE       relay;    /* Relay device */
+  uint8_t            triger;   /* Input to start relay processing */
+  SYSTEM_TIMER       timer;
+  RELAY_DELAY_STATUS status;   /* Current status of device */
+} RELAY_DELAY_DEVICE;          /* Relay with auto turn off after delay */
+
+typedef struct __packed
+{
+  PERMISSION            active;
   RELAY_DEVICE          relay;
   fix16_t               level;
-  fix16_t               delay;
-  timerID_t             timerID;
+  SYSTEM_TIMER          timer;
   RELAY_IMPULSE_STATUS  status;
 } RELAY_IMPULSE_DEVICE;
 
@@ -207,20 +265,32 @@ typedef struct __packed
   uint32_t      time;   /* 4 bytes */
   SYSTEM_EVENT  event;  /* 2 bytes */
 } LOG_RECORD_TYPE;
+
+typedef struct __packed
+{
+  ERROR_LIST_STATUS status;
+  LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
+  uint8_t           counter;
+} ACTIVE_ERROR_LIST;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void          vLOGICinit ( TIM_HandleTypeDef* tim );
-QueueHandle_t pLOGICgetEventQueue ( void );
-void          vALARMcheck ( ALARM_TYPE* alarm, fix16_t val, QueueHandle_t queue );
-void          vRELAYproces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
-void          vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val );
-void          vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
-void          vLOGICtimerHandler ( void );
-TIMER_ERROR   vLOGICstartTimer ( fix16_t delay, timerID_t* id );
-uint8_t       uLOGICisTimer ( timerID_t id );
-void          vLOGICresetTimer ( timerID_t id );
-void          vLOGICtimerCallback ( void );
-void          vLOGICtoogle ( uint8_t* input );
-void          vLOGICprintEvent ( SYSTEM_EVENT event );
+void              vLOGICinit ( TIM_HandleTypeDef* tim );
+QueueHandle_t     pLOGICgetEventQueue ( void );
+void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
+void              vERRORreset ( ERROR_TYPE* error );
+void              vERRORcheck ( ERROR_TYPE* error, uint8_t flag );
+void              vRELAYautoProces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
+void              vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device );
+void              vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );
+void              vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val );
+void              vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
+void              vLOGICtimerHandler ( void );
+TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer );
+uint8_t           uLOGICisTimer ( SYSTEM_TIMER timer );
+TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER timer );
+void              vLOGICtimerCallback ( void );
+void              vLOGICprintEvent ( SYSTEM_EVENT event );
+ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr );
+void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOGICTYPES_H_ */

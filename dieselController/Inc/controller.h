@@ -62,11 +62,11 @@ typedef struct __packed
   uint8_t           banAutoStart;
   uint8_t           banGenLoad;
   fix16_t           stopDelay;
-  timerID_t         timerID;
+  SYSTEM_TIMER      timer;
 } CONTROLLER_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t controllerHandle;
 /*----------------------- Functions ------------------------------------*/
-void vCONTROLLERinit ( const CONTROLLER_INIT* init );
+void     vCONTROLLERinit ( const CONTROLLER_INIT* init );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

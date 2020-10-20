@@ -111,7 +111,7 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
 
   *value = sensor->get();
   vALARMcheck( &sensor->cutout, *value );
-  if ( sensor->cutout.status != ALARM_STATUS_IDLE )
+  if ( sensor->cutout.error.status != ALARM_STATUS_IDLE )
   {
     sensor->status = SENSOR_STATUS_LINE_ERROR;
   }
@@ -154,7 +154,7 @@ fix16_t fOILprocess ( void )
   if ( oil.pressure.status == SENSOR_STATUS_NORMAL )
   {
     vALARMcheck( &oil.alarm, value );
-    if ( oil.alarm.status == ALARM_STATUS_IDLE )
+    if ( oil.alarm.error.status == ALARM_STATUS_IDLE )
     {
       vALARMcheck( &oil.preAlarm, value );
     }
@@ -169,7 +169,7 @@ fix16_t fCOOLANTprocess ( void )
   if ( coolant.temp.status == SENSOR_STATUS_NORMAL )
   {
     vALARMcheck( &coolant.alarm, value );
-    if ( coolant.alarm.status == ALARM_STATUS_IDLE )
+    if ( coolant.alarm.error.status == ALARM_STATUS_IDLE )
     {
       vALARMcheck( &coolant.preAlarm, value );
     }
@@ -187,12 +187,12 @@ fix16_t fFUELprocess ( void )
   if ( fuel.level.status == SENSOR_STATUS_NORMAL )
   {
     vALARMcheck( &fuel.lowAlarm, value );
-    if ( fuel.lowAlarm.status == ALARM_STATUS_IDLE )
+    if ( fuel.lowAlarm.error.status == ALARM_STATUS_IDLE )
     {
       vALARMcheck( &fuel.lowPreAlarm, value );
     }
     vALARMcheck( &fuel.hightAlarm, value );
-    if ( fuel.hightPreAlarm.status == ALARM_STATUS_IDLE )
+    if ( fuel.hightPreAlarm.error.status == ALARM_STATUS_IDLE )
     {
       vALARMcheck( &fuel.hightPreAlarm, value );
     }
@@ -208,7 +208,7 @@ fix16_t fSPEEDprocess ( void )
   {
     value = speed.get();
     vALARMcheck( &speed.hightAlarm, value );
-    if ( speed.hightAlarm.status == ALARM_STATUS_IDLE )
+    if ( speed.hightAlarm.error.status == ALARM_STATUS_IDLE )
     {
       vALARMcheck( &speed.lowAlarm, value );
     }
@@ -220,7 +220,7 @@ fix16_t fBATTERYprocess ( void )
 {
   fix16_t value = battery.get();
   vALARMcheck( &battery.hightAlarm, value );
-  if ( battery.hightAlarm.status == ALARM_STATUS_IDLE )
+  if ( battery.hightAlarm.error.status == ALARM_STATUS_IDLE )
   {
     vALARMcheck( &battery.lowAlarm, value );
   }
@@ -231,7 +231,7 @@ fix16_t fCHARGERprocess ( void )
 {
   fix16_t value = charger.get();
   vALARMcheck( &charger.hightPreAlarm, value );
-  if ( charger.hightAlarm.status == ALARM_STATUS_IDLE )
+  if ( charger.hightAlarm.error.status == ALARM_STATUS_IDLE )
   {
     vALARMcheck( &charger.hightPreAlarm, value );
   }
@@ -255,21 +255,21 @@ void vENGINEmileageProcess ( void )
       case MAINTENCE_STATUS_RUN:
         if ( uLOGICisTimer( maintence.timer ) > 0U )
         {
-          if ( ( maintence.oil.enb > 0U ) && ( maintence.oil.active > 0U ) )
+          if ( ( maintence.oil.error.enb > 0U ) && ( maintence.oil.error.active > 0U ) )
           {
             eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
             eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
             vALARMcheck( &maintence.oil,  fix16_div( F16( data ),  F16( 60U ) ) );
             flSave = 1U;
           }
-          if ( ( maintence.air.enb > 0U ) && ( maintence.air.active > 0U ) )
+          if ( ( maintence.air.error.enb > 0U ) && ( maintence.air.error.active > 0U ) )
           {
             eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
             eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
             vALARMcheck( &maintence.air,  fix16_div( F16( data ),  F16( 60U ) ) );
             flSave = 1U;
           }
-          if ( ( maintence.fuel.enb > 0U ) && ( maintence.fuel.active > 0U ) )
+          if ( ( maintence.fuel.error.enb > 0U ) && ( maintence.fuel.error.active > 0U ) )
           {
             eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
             eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
@@ -394,11 +394,11 @@ void vENGINEprintSetup ( void )
     vSYSSerial( cSensorTypes[oil.pressure.type] );
     vSYSSerial( "\n\r" );
     vSYSSerial( "    Alarm          : ");
-    vENGINEenbToStr( oil.alarm.enb, buf );
+    vENGINEenbToStr( oil.alarm.error.enb, buf );
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
     vSYSSerial( "    Prealarm       : ");
-    vENGINEenbToStr( oil.alarm.enb, buf );
+    vENGINEenbToStr( oil.alarm.error.enb, buf );
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
 
@@ -407,19 +407,19 @@ void vENGINEprintSetup ( void )
     vSYSSerial( cSensorTypes[fuel.level.type] );
     vSYSSerial( "\n\r" );
     vSYSSerial( "    Low alarm      : ");
-    vENGINEenbToStr( fuel.lowAlarm.enb, buf );
+    vENGINEenbToStr( fuel.lowAlarm.error.enb, buf );
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
     vSYSSerial( "    Low prealarm   : ");
-    vENGINEenbToStr( fuel.lowPreAlarm.enb, buf );
+    vENGINEenbToStr( fuel.lowPreAlarm.error.enb, buf );
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
     vSYSSerial( "    Hight alarm    : ");
-    vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
+    vENGINEenbToStr( fuel.hightPreAlarm.error.enb, buf );
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
     vSYSSerial( "    Hight prealarm : ");
-    vENGINEenbToStr( fuel.hightPreAlarm.enb, buf );
+    vENGINEenbToStr( fuel.hightPreAlarm.error.enb, buf );
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
 
@@ -437,7 +437,7 @@ void vENGINEprintSetup ( void )
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
     vSYSSerial( "    Low alarm      : ");
-    vENGINEenbToStr( speed.lowAlarm.enb, buf );
+    vENGINEenbToStr( speed.lowAlarm.error.enb, buf );
     vSYSSerial( buf );
     vSYSSerial( "\r\n" );
 
@@ -491,130 +491,130 @@ void vENGINEdataInit ( void )
   oil.pressure.type                            = getBitMap( &oilPressureSetup, 0U );
   oil.pressure.chart                           = &oilSensorChart;
   oil.pressure.get                             = xADCGetSOP;
-  oil.pressure.cutout.enb                      = getBitMap( &oilPressureSetup, 1U );
-  oil.pressure.cutout.active                   = PERMISSION_ENABLE;
+  oil.pressure.cutout.error.enb                      = getBitMap( &oilPressureSetup, 1U );
+  oil.pressure.cutout.error.active                   = PERMISSION_ENABLE;
   oil.pressure.cutout.level                    = SENSOR_CUTOUT_LEVEL;
-  oil.pressure.cutout.status                   = ALARM_STATUS_IDLE;
+  oil.pressure.cutout.error.status                   = ALARM_STATUS_IDLE;
   oil.pressure.cutout.timer.delay              = 0U;
   oil.pressure.cutout.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  oil.pressure.cutout.track.ack                = PERMISSION_DISABLE;
-  oil.pressure.cutout.track.event.action       = ACTION_EMERGENCY_STOP;
-  oil.pressure.cutout.track.event.type         = EVENT_OIL_SENSOR_ERROR;
-  oil.pressure.cutout.track.id                 = 0U;
-  oil.pressure.cutout.track.relax.enb          = PERMISSION_DISABLE;
-  oil.pressure.cutout.track.relax.event.action = ACTION_NONE;
-  oil.pressure.cutout.track.relax.event.type   = EVENT_NONE;
-  oil.pressure.cutout.track.trig               = TRIGGER_IDLE;
+  oil.pressure.cutout.error.ack                = PERMISSION_DISABLE;
+  oil.pressure.cutout.error.event.action       = ACTION_EMERGENCY_STOP;
+  oil.pressure.cutout.error.event.type         = EVENT_OIL_SENSOR_ERROR;
+  oil.pressure.cutout.error.id                 = 0U;
+  oil.pressure.cutout.error.relax.enb          = PERMISSION_DISABLE;
+  oil.pressure.cutout.error.relax.event.action = ACTION_NONE;
+  oil.pressure.cutout.error.relax.event.type   = EVENT_NONE;
+  oil.pressure.cutout.error.trig               = TRIGGER_IDLE;
   oil.pressure.cutout.type                     = ALARM_LEVEL_HIGHT;
   oil.pressure.status                          = SENSOR_STATUS_NORMAL;
   if ( ( oil.pressure.type == SENSOR_TYPE_RESISTIVE ) || ( oil.pressure.type == SENSOR_TYPE_CURRENT ) )
   {
-    oil.alarm.enb   = getBitMap( &oilPressureSetup, 2U );
+    oil.alarm.error.enb   = getBitMap( &oilPressureSetup, 2U );
     oil.alarm.level = getValue( &oilPressureAlarmLevel );
     oil.alarm.type  = ALARM_LEVEL_HIGHT;
   }
   else
   {
-    oil.alarm.enb   = 1U;
+    oil.alarm.error.enb   = 1U;
     oil.alarm.level = dryContactTrigLevel;
     oil.alarm.type  = ALARM_LEVEL_LOW;
   }
   oil.alarm.timer.delay              = 0U;
   oil.alarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  oil.alarm.track.event.type         = EVENT_OIL_LOW_PRESSURE;
-  oil.alarm.track.event.action       = ACTION_EMERGENCY_STOP;
-  oil.alarm.track.relax.enb          = PERMISSION_DISABLE;
-  oil.alarm.track.relax.event.action = ACTION_NONE;
-  oil.alarm.track.relax.event.type   = ACTION_NONE;
-  oil.alarm.track.ack                = PERMISSION_DISABLE;
-  oil.alarm.track.id                 = 0U;
-  oil.alarm.track.trig               = TRIGGER_IDLE;
-  oil.alarm.active                   = PERMISSION_DISABLE;
-  oil.alarm.status                   = ALARM_STATUS_IDLE;
+  oil.alarm.error.event.type         = EVENT_OIL_LOW_PRESSURE;
+  oil.alarm.error.event.action       = ACTION_EMERGENCY_STOP;
+  oil.alarm.error.relax.enb          = PERMISSION_DISABLE;
+  oil.alarm.error.relax.event.action = ACTION_NONE;
+  oil.alarm.error.relax.event.type   = ACTION_NONE;
+  oil.alarm.error.ack                = PERMISSION_DISABLE;
+  oil.alarm.error.id                 = 0U;
+  oil.alarm.error.trig               = TRIGGER_IDLE;
+  oil.alarm.error.active                   = PERMISSION_DISABLE;
+  oil.alarm.error.status                   = ALARM_STATUS_IDLE;
 
   if ( ( oil.pressure.type == SENSOR_TYPE_RESISTIVE ) || ( oil.pressure.type == SENSOR_TYPE_CURRENT ) )
   {
-    oil.preAlarm.enb                      = getBitMap( &oilPressureSetup, 3U );
-    oil.preAlarm.active                   = 0U;
+    oil.preAlarm.error.enb                      = getBitMap( &oilPressureSetup, 3U );
+    oil.preAlarm.error.active                   = 0U;
     oil.preAlarm.type                     = ALARM_LEVEL_HIGHT;
     oil.preAlarm.level                    = getValue( &oilPressurePreAlarmLevel );
     oil.preAlarm.timer.delay              = 0U;
     oil.preAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-    oil.preAlarm.track.event.type         = EVENT_OIL_LOW_PRESSURE;
-    oil.preAlarm.track.event.action       = ACTION_WARNING;
-    oil.preAlarm.track.relax.enb          = 0U;
-    oil.preAlarm.track.relax.event.action = ACTION_NONE;
-    oil.preAlarm.track.relax.event.type   = EVENT_NONE;
-    oil.preAlarm.track.ack                = PERMISSION_ENABLE;
-    oil.preAlarm.track.id                 = 0U;
-    oil.preAlarm.track.trig               = TRIGGER_IDLE;
-    oil.preAlarm.status                   = ALARM_STATUS_IDLE;
+    oil.preAlarm.error.event.type         = EVENT_OIL_LOW_PRESSURE;
+    oil.preAlarm.error.event.action       = ACTION_WARNING;
+    oil.preAlarm.error.relax.enb          = 0U;
+    oil.preAlarm.error.relax.event.action = ACTION_NONE;
+    oil.preAlarm.error.relax.event.type   = EVENT_NONE;
+    oil.preAlarm.error.ack                = PERMISSION_ENABLE;
+    oil.preAlarm.error.id                 = 0U;
+    oil.preAlarm.error.trig               = TRIGGER_IDLE;
+    oil.preAlarm.error.status                   = ALARM_STATUS_IDLE;
   }
   else
   {
-    oil.preAlarm.enb = 0U;
+    oil.preAlarm.error.enb = 0U;
   }
   /*--------------------------------------------------------------*/
   coolant.temp.type                            = getBitMap( &coolantTempSetup, 0U );
   coolant.temp.chart                           = &coolantSensorChart;
   coolant.temp.get                             = xADCGetSCT;
-  coolant.temp.cutout.enb                      = getBitMap( &coolantTempSetup, 1U );
-  coolant.temp.cutout.active                   = PERMISSION_ENABLE;
+  coolant.temp.cutout.error.enb                      = getBitMap( &coolantTempSetup, 1U );
+  coolant.temp.cutout.error.active                   = PERMISSION_ENABLE;
   coolant.temp.cutout.level                    = SENSOR_CUTOUT_LEVEL;
   coolant.temp.cutout.timer.delay              = 0U;
   coolant.temp.cutout.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  coolant.temp.cutout.track.ack                = PERMISSION_DISABLE;
-  coolant.temp.cutout.track.event.action       = ACTION_EMERGENCY_STOP;
-  coolant.temp.cutout.track.event.type         = EVENT_ENGINE_TEMP_SENSOR_ERROR;
-  coolant.temp.cutout.track.id                 = 0U;
-  coolant.temp.cutout.track.relax.enb          = PERMISSION_DISABLE;
-  coolant.temp.cutout.track.relax.event.action = ACTION_NONE;
-  coolant.temp.cutout.track.relax.event.type   = EVENT_NONE;
-  coolant.temp.cutout.track.trig               = TRIGGER_IDLE;
+  coolant.temp.cutout.error.ack                = PERMISSION_DISABLE;
+  coolant.temp.cutout.error.event.action       = ACTION_EMERGENCY_STOP;
+  coolant.temp.cutout.error.event.type         = EVENT_ENGINE_TEMP_SENSOR_ERROR;
+  coolant.temp.cutout.error.id                 = 0U;
+  coolant.temp.cutout.error.relax.enb          = PERMISSION_DISABLE;
+  coolant.temp.cutout.error.relax.event.action = ACTION_NONE;
+  coolant.temp.cutout.error.relax.event.type   = EVENT_NONE;
+  coolant.temp.cutout.error.trig               = TRIGGER_IDLE;
   coolant.temp.cutout.type                     = ALARM_LEVEL_HIGHT;
-  coolant.temp.cutout.status                   = ALARM_STATUS_IDLE;
+  coolant.temp.cutout.error.status                   = ALARM_STATUS_IDLE;
   coolant.temp.status                          = SENSOR_STATUS_NORMAL;
   if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
   {
-    coolant.alarm.enb   = getBitMap( &coolantTempSetup, 2U );
+    coolant.alarm.error.enb   = getBitMap( &coolantTempSetup, 2U );
     coolant.alarm.type  = ALARM_LEVEL_HIGHT;
     coolant.alarm.level = getValue( &coolantHightTempAlarmLevel );
   }
   else
   {
-    coolant.alarm.enb   = PERMISSION_ENABLE;
+    coolant.alarm.error.enb   = PERMISSION_ENABLE;
     coolant.alarm.type  = ALARM_LEVEL_LOW;
     coolant.alarm.level = dryContactTrigLevel;
   }
-  coolant.alarm.active                   = PERMISSION_ENABLE;
+  coolant.alarm.error.active                   = PERMISSION_ENABLE;
   coolant.alarm.timer.delay              = 0U;
   coolant.alarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  coolant.alarm.track.event.type         = EVENT_ENGINE_HIGHT_TEMP;
-  coolant.alarm.track.event.action       = ACTION_EMERGENCY_STOP;
-  coolant.alarm.track.relax.enb          = PERMISSION_DISABLE;
-  coolant.alarm.track.relax.event.action = ACTION_NONE;
-  coolant.alarm.track.relax.event.type   = EVENT_NONE;
-  coolant.alarm.track.ack                = PERMISSION_DISABLE;
-  coolant.alarm.track.id                 = 0U;
-  coolant.alarm.track.trig               = TRIGGER_IDLE;
-  coolant.alarm.status                   = ALARM_STATUS_IDLE;
+  coolant.alarm.error.event.type         = EVENT_ENGINE_HIGHT_TEMP;
+  coolant.alarm.error.event.action       = ACTION_EMERGENCY_STOP;
+  coolant.alarm.error.relax.enb          = PERMISSION_DISABLE;
+  coolant.alarm.error.relax.event.action = ACTION_NONE;
+  coolant.alarm.error.relax.event.type   = EVENT_NONE;
+  coolant.alarm.error.ack                = PERMISSION_DISABLE;
+  coolant.alarm.error.id                 = 0U;
+  coolant.alarm.error.trig               = TRIGGER_IDLE;
+  coolant.alarm.error.status                   = ALARM_STATUS_IDLE;
   if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
   {
-    coolant.preAlarm.enb                      = getBitMap( &coolantTempSetup, 3U );
-    coolant.preAlarm.active                   = PERMISSION_ENABLE;
+    coolant.preAlarm.error.enb                      = getBitMap( &coolantTempSetup, 3U );
+    coolant.preAlarm.error.active                   = PERMISSION_ENABLE;
     coolant.preAlarm.type                     = ALARM_LEVEL_HIGHT;
     coolant.preAlarm.level                    = getValue( &coolantHightTempPreAlarmLevel );
     coolant.preAlarm.timer.delay              = 0U;
     coolant.preAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-    coolant.preAlarm.track.ack                = PERMISSION_ENABLE;
-    coolant.preAlarm.track.event.type         = EVENT_ENGINE_HIGHT_TEMP;
-    coolant.preAlarm.track.event.action       = ACTION_WARNING;
-    coolant.preAlarm.track.id                 = 0U;
-    coolant.preAlarm.track.relax.enb          = PERMISSION_DISABLE;
-    coolant.preAlarm.track.relax.event.action = ACTION_NONE;
-    coolant.preAlarm.track.relax.event.type   = EVENT_NONE;
-    coolant.preAlarm.track.trig               = TRIGGER_IDLE;
-    coolant.preAlarm.status                   = ALARM_STATUS_IDLE;
+    coolant.preAlarm.error.ack                = PERMISSION_ENABLE;
+    coolant.preAlarm.error.event.type         = EVENT_ENGINE_HIGHT_TEMP;
+    coolant.preAlarm.error.event.action       = ACTION_WARNING;
+    coolant.preAlarm.error.id                 = 0U;
+    coolant.preAlarm.error.relax.enb          = PERMISSION_DISABLE;
+    coolant.preAlarm.error.relax.event.action = ACTION_NONE;
+    coolant.preAlarm.error.relax.event.type   = EVENT_NONE;
+    coolant.preAlarm.error.trig               = TRIGGER_IDLE;
+    coolant.preAlarm.error.status                   = ALARM_STATUS_IDLE;
   }
   coolant.heater.relay.enb    = getBitMap( &coolantTempSetup, 4U );
   coolant.heater.onLevel      = getValue( &coolantTempHeaterOnLevel );
@@ -638,102 +638,102 @@ void vENGINEdataInit ( void )
   fuel.level.type                            = getBitMap( &fuelLevelSetup, 0U );
   fuel.level.chart                           = &fuelSensorChart;
   fuel.level.get                             = xADCGetSFL;
-  fuel.level.cutout.enb                      = getBitMap( &fuelLevelSetup, 1U );
-  fuel.level.cutout.active                   = PERMISSION_ENABLE;
+  fuel.level.cutout.error.enb                      = getBitMap( &fuelLevelSetup, 1U );
+  fuel.level.cutout.error.active                   = PERMISSION_ENABLE;
   fuel.level.cutout.level                    = SENSOR_CUTOUT_LEVEL;
-  fuel.level.cutout.status                   = ALARM_STATUS_IDLE;
+  fuel.level.cutout.error.status                   = ALARM_STATUS_IDLE;
   fuel.level.cutout.timer.delay              = 0U;
   fuel.level.cutout.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  fuel.level.cutout.track.ack                = PERMISSION_ENABLE;
-  fuel.level.cutout.track.event.action       = ACTION_EMERGENCY_STOP;
-  fuel.level.cutout.track.event.type         = EVENT_FUEL_LEVEL_SENSOR_ERROR;
-  fuel.level.cutout.track.id                 = 0U;
-  fuel.level.cutout.track.relax.enb          = PERMISSION_DISABLE;
-  fuel.level.cutout.track.relax.event.action = ACTION_NONE;
-  fuel.level.cutout.track.relax.event.type   = EVENT_NONE;
-  fuel.level.cutout.track.trig               = TRIGGER_IDLE;
+  fuel.level.cutout.error.ack                = PERMISSION_ENABLE;
+  fuel.level.cutout.error.event.action       = ACTION_EMERGENCY_STOP;
+  fuel.level.cutout.error.event.type         = EVENT_FUEL_LEVEL_SENSOR_ERROR;
+  fuel.level.cutout.error.id                 = 0U;
+  fuel.level.cutout.error.relax.enb          = PERMISSION_DISABLE;
+  fuel.level.cutout.error.relax.event.action = ACTION_NONE;
+  fuel.level.cutout.error.relax.event.type   = EVENT_NONE;
+  fuel.level.cutout.error.trig               = TRIGGER_IDLE;
   fuel.level.cutout.type                     = ALARM_LEVEL_HIGHT;
   fuel.level.status                          = SENSOR_STATUS_NORMAL;
 
-  fuel.lowAlarm.enb              = getBitMap( &fuelLevelSetup, 2U );
-  fuel.lowAlarm.active           = PERMISSION_ENABLE;
+  fuel.lowAlarm.error.enb              = getBitMap( &fuelLevelSetup, 2U );
+  fuel.lowAlarm.error.active           = PERMISSION_ENABLE;
   fuel.lowAlarm.type             = ALARM_LEVEL_LOW;
   fuel.lowAlarm.level            = getValue( &fuelLevelLowAlarmLevel );
   fuel.lowAlarm.timer.delay      = getValue( &fuelLevelLowAlarmDelay );
   fuel.lowAlarm.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  fuel.lowAlarm.track.event.type = EVENT_FUEL_LOW_LEVEL;
+  fuel.lowAlarm.error.event.type = EVENT_FUEL_LOW_LEVEL;
   if ( getBitMap( &fuelLevelSetup, 3U ) == 0U )
   {
-    fuel.lowAlarm.track.event.action = ACTION_EMERGENCY_STOP;
-    fuel.lowAlarm.track.ack          = PERMISSION_DISABLE;
+    fuel.lowAlarm.error.event.action = ACTION_EMERGENCY_STOP;
+    fuel.lowAlarm.error.ack          = PERMISSION_DISABLE;
   }
   else
   {
-    fuel.lowAlarm.track.event.action = ACTION_LOAD_SHUTDOWN;
-    fuel.lowAlarm.track.ack          = PERMISSION_ENABLE;
+    fuel.lowAlarm.error.event.action = ACTION_LOAD_SHUTDOWN;
+    fuel.lowAlarm.error.ack          = PERMISSION_ENABLE;
   }
-  fuel.lowAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  fuel.lowAlarm.track.relax.event.action = ACTION_NONE;
-  fuel.lowAlarm.track.relax.event.type   = EVENT_NONE;
-  fuel.lowAlarm.track.id                 = 0U;
-  fuel.lowAlarm.track.trig               = TRIGGER_IDLE;
-  fuel.lowAlarm.status                   = ALARM_STATUS_IDLE;
+  fuel.lowAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  fuel.lowAlarm.error.relax.event.action = ACTION_NONE;
+  fuel.lowAlarm.error.relax.event.type   = EVENT_NONE;
+  fuel.lowAlarm.error.id                 = 0U;
+  fuel.lowAlarm.error.trig               = TRIGGER_IDLE;
+  fuel.lowAlarm.error.status                   = ALARM_STATUS_IDLE;
 
-  fuel.lowPreAlarm.enb                      = getBitMap( &fuelLevelSetup, 4U );
-  fuel.lowPreAlarm.active                   = PERMISSION_ENABLE;
+  fuel.lowPreAlarm.error.enb                      = getBitMap( &fuelLevelSetup, 4U );
+  fuel.lowPreAlarm.error.active                   = PERMISSION_ENABLE;
   fuel.lowPreAlarm.type                     = ALARM_LEVEL_LOW;
   fuel.lowPreAlarm.level                    = getValue( &fuelLevelLowPreAlarmLevel );
   fuel.lowPreAlarm.timer.delay              = getValue( &fuelLevelLowPreAlarmDelay );
   fuel.lowPreAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  fuel.lowPreAlarm.track.ack                = PERMISSION_ENABLE;
-  fuel.lowPreAlarm.track.event.type         = EVENT_FUEL_LOW_LEVEL;
-  fuel.lowPreAlarm.track.event.action       = ACTION_WARNING;
-  fuel.lowPreAlarm.track.id                 = 0U;
-  fuel.lowPreAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  fuel.lowPreAlarm.track.relax.event.action = ACTION_NONE;
-  fuel.lowPreAlarm.track.relax.event.type   = EVENT_NONE;
-  fuel.lowPreAlarm.track.trig               = TRIGGER_IDLE;
-  fuel.lowPreAlarm.status                   = ALARM_STATUS_IDLE;
+  fuel.lowPreAlarm.error.ack                = PERMISSION_ENABLE;
+  fuel.lowPreAlarm.error.event.type         = EVENT_FUEL_LOW_LEVEL;
+  fuel.lowPreAlarm.error.event.action       = ACTION_WARNING;
+  fuel.lowPreAlarm.error.id                 = 0U;
+  fuel.lowPreAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  fuel.lowPreAlarm.error.relax.event.action = ACTION_NONE;
+  fuel.lowPreAlarm.error.relax.event.type   = EVENT_NONE;
+  fuel.lowPreAlarm.error.trig               = TRIGGER_IDLE;
+  fuel.lowPreAlarm.error.status                   = ALARM_STATUS_IDLE;
 
-  fuel.hightPreAlarm.enb                      = getBitMap( &fuelLevelSetup, 5U );
-  fuel.hightPreAlarm.active                   = PERMISSION_ENABLE;
+  fuel.hightPreAlarm.error.enb                      = getBitMap( &fuelLevelSetup, 5U );
+  fuel.hightPreAlarm.error.active                   = PERMISSION_ENABLE;
   fuel.hightPreAlarm.type                     = ALARM_LEVEL_HIGHT;
   fuel.hightPreAlarm.level                    = getValue( &fuelLevelHightPreAlarmLevel );
   fuel.hightPreAlarm.timer.delay              = getValue( &fuelLevelHightPreAlarmDelay );
   fuel.hightPreAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  fuel.hightPreAlarm.track.ack                = PERMISSION_ENABLE;
-  fuel.hightPreAlarm.track.event.type         = EVENT_FUEL_HIGHT_LEVEL;
-  fuel.hightPreAlarm.track.event.action       = ACTION_WARNING;
-  fuel.hightPreAlarm.track.id                 = 0U;
-  fuel.hightPreAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  fuel.hightPreAlarm.track.relax.event.action = ACTION_NONE;
-  fuel.hightPreAlarm.track.relax.event.type   = EVENT_NONE;
-  fuel.hightPreAlarm.track.trig               = TRIGGER_IDLE;
-  fuel.hightPreAlarm.status                   = ALARM_STATUS_IDLE;
+  fuel.hightPreAlarm.error.ack                = PERMISSION_ENABLE;
+  fuel.hightPreAlarm.error.event.type         = EVENT_FUEL_HIGHT_LEVEL;
+  fuel.hightPreAlarm.error.event.action       = ACTION_WARNING;
+  fuel.hightPreAlarm.error.id                 = 0U;
+  fuel.hightPreAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  fuel.hightPreAlarm.error.relax.event.action = ACTION_NONE;
+  fuel.hightPreAlarm.error.relax.event.type   = EVENT_NONE;
+  fuel.hightPreAlarm.error.trig               = TRIGGER_IDLE;
+  fuel.hightPreAlarm.error.status                   = ALARM_STATUS_IDLE;
 
-  fuel.hightAlarm.enb         = getBitMap( &fuelLevelSetup, 6U );
-  fuel.hightAlarm.active      = PERMISSION_ENABLE;
+  fuel.hightAlarm.error.enb         = getBitMap( &fuelLevelSetup, 6U );
+  fuel.hightAlarm.error.active      = PERMISSION_ENABLE;
   fuel.hightAlarm.type        = ALARM_LEVEL_HIGHT;
   fuel.hightAlarm.level       = getValue( &fuelLevelHightAlarmLevel );
   fuel.hightAlarm.timer.delay = getValue( &fuelLevelHightAlarmDelay );
   fuel.hightAlarm.timer.id    = LOGIC_DEFAULT_TIMER_ID;
-  fuel.hightAlarm.track.event.type = EVENT_FUEL_HIGHT_LEVEL;
+  fuel.hightAlarm.error.event.type = EVENT_FUEL_HIGHT_LEVEL;
   if ( getBitMap( &fuelLevelSetup, 7U ) == 0U )
   {
-    fuel.hightAlarm.track.event.action = ACTION_EMERGENCY_STOP;
-    fuel.hightAlarm.track.ack          = PERMISSION_DISABLE;
+    fuel.hightAlarm.error.event.action = ACTION_EMERGENCY_STOP;
+    fuel.hightAlarm.error.ack          = PERMISSION_DISABLE;
   }
   else
   {
-    fuel.hightAlarm.track.event.action = ACTION_LOAD_SHUTDOWN;
-    fuel.hightAlarm.track.ack          = PERMISSION_ENABLE;
+    fuel.hightAlarm.error.event.action = ACTION_LOAD_SHUTDOWN;
+    fuel.hightAlarm.error.ack          = PERMISSION_ENABLE;
   }
-  fuel.hightAlarm.track.id                 = 0U;
-  fuel.hightAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  fuel.hightAlarm.track.relax.event.action = ACTION_NONE;
-  fuel.hightAlarm.track.relax.event.type   = EVENT_NONE;
-  fuel.hightAlarm.track.trig               = TRIGGER_IDLE;
-  fuel.hightAlarm.status                   = ALARM_STATUS_IDLE;
+  fuel.hightAlarm.error.id                 = 0U;
+  fuel.hightAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  fuel.hightAlarm.error.relax.event.action = ACTION_NONE;
+  fuel.hightAlarm.error.relax.event.type   = EVENT_NONE;
+  fuel.hightAlarm.error.trig               = TRIGGER_IDLE;
+  fuel.hightAlarm.error.status                   = ALARM_STATUS_IDLE;
 
   fuel.booster.relay.enb    = getBitMap( &fuelLevelSetup, 8U );
   fuel.booster.onLevel      = getValue( &fuelPumpOnLevel );
@@ -746,70 +746,70 @@ void vENGINEdataInit ( void )
   fuel.pump.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
   battery.get                               = xADCGetVDD;
-  battery.lowAlarm.enb                      = getBitMap( &batteryAlarms, 0U );
-  battery.lowAlarm.active                   = PERMISSION_DISABLE;
+  battery.lowAlarm.error.enb                      = getBitMap( &batteryAlarms, 0U );
+  battery.lowAlarm.error.active                   = PERMISSION_DISABLE;
   battery.lowAlarm.type                     = ALARM_LEVEL_LOW;
   battery.lowAlarm.level                    = getValue( &batteryUnderVoltageLevel );
   battery.lowAlarm.timer.delay              = getValue( &batteryUnderVoltageDelay );
   battery.lowAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  battery.lowAlarm.track.ack                = PERMISSION_ENABLE;
-  battery.lowAlarm.track.event.type         = EVENT_BATTERY_LOW;
-  battery.lowAlarm.track.event.action       = ACTION_WARNING;
-  battery.lowAlarm.track.id                 = 0U;
-  battery.lowAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  battery.lowAlarm.track.relax.event.action = ACTION_NONE;
-  battery.lowAlarm.track.relax.event.type   = EVENT_NONE;
-  battery.lowAlarm.track.trig               = TRIGGER_IDLE;
-  battery.lowAlarm.status                   = ALARM_STATUS_IDLE;
+  battery.lowAlarm.error.ack                = PERMISSION_ENABLE;
+  battery.lowAlarm.error.event.type         = EVENT_BATTERY_LOW;
+  battery.lowAlarm.error.event.action       = ACTION_WARNING;
+  battery.lowAlarm.error.id                 = 0U;
+  battery.lowAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  battery.lowAlarm.error.relax.event.action = ACTION_NONE;
+  battery.lowAlarm.error.relax.event.type   = EVENT_NONE;
+  battery.lowAlarm.error.trig               = TRIGGER_IDLE;
+  battery.lowAlarm.error.status                   = ALARM_STATUS_IDLE;
 
-  battery.hightAlarm.enb                      = getBitMap( &batteryAlarms, 1U );
-  battery.hightAlarm.active                   = PERMISSION_DISABLE;
+  battery.hightAlarm.error.enb                      = getBitMap( &batteryAlarms, 1U );
+  battery.hightAlarm.error.active                   = PERMISSION_DISABLE;
   battery.hightAlarm.type                     = ALARM_LEVEL_HIGHT;
   battery.hightAlarm.level                    = getValue( &batteryOverVoltageLevel );
   battery.hightAlarm.timer.delay              = getValue( &batteryOverVoltageDelay );
   battery.hightAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  battery.hightAlarm.track.ack                = PERMISSION_ENABLE;
-  battery.hightAlarm.track.event.type         = EVENT_BATTERY_HIGHT;
-  battery.hightAlarm.track.event.action       = ACTION_WARNING;
-  battery.hightAlarm.track.id                 = 0U;
-  battery.hightAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  battery.hightAlarm.track.relax.event.action = ACTION_NONE;
-  battery.hightAlarm.track.relax.event.type   = EVENT_NONE;
-  battery.hightAlarm.track.trig               = TRIGGER_IDLE;
-  battery.hightAlarm.status                   = ALARM_STATUS_IDLE;
+  battery.hightAlarm.error.ack                = PERMISSION_ENABLE;
+  battery.hightAlarm.error.event.type         = EVENT_BATTERY_HIGHT;
+  battery.hightAlarm.error.event.action       = ACTION_WARNING;
+  battery.hightAlarm.error.id                 = 0U;
+  battery.hightAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  battery.hightAlarm.error.relax.event.action = ACTION_NONE;
+  battery.hightAlarm.error.relax.event.type   = EVENT_NONE;
+  battery.hightAlarm.error.trig               = TRIGGER_IDLE;
+  battery.hightAlarm.error.status                   = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
   charger.get                                 = getChargerVoltage;
-  charger.hightAlarm.enb                      = getBitMap( &batteryAlarms, 2U );
-  charger.hightAlarm.active                   = PERMISSION_DISABLE;
+  charger.hightAlarm.error.enb                      = getBitMap( &batteryAlarms, 2U );
+  charger.hightAlarm.error.active                   = PERMISSION_DISABLE;
   charger.hightAlarm.type                     = ALARM_LEVEL_HIGHT;
   charger.hightAlarm.level                    = getValue( &batteryChargeShutdownLevel );
   charger.hightAlarm.timer.delay              = getValue( &batteryChargeShutdownDelay );
   charger.hightAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  charger.hightAlarm.track.ack                = PERMISSION_DISABLE;
-  charger.hightAlarm.track.event.type         = EVENT_CHARGER_FAIL;
-  charger.hightAlarm.track.event.action       = ACTION_EMERGENCY_STOP;
-  charger.hightAlarm.track.id                 = 0U;
-  charger.hightAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  charger.hightAlarm.track.relax.event.action = ACTION_NONE;
-  charger.hightAlarm.track.relax.event.type   = EVENT_NONE;
-  charger.hightAlarm.track.trig               = TRIGGER_IDLE;
-  charger.hightAlarm.status                   = ALARM_STATUS_IDLE;
+  charger.hightAlarm.error.ack                = PERMISSION_DISABLE;
+  charger.hightAlarm.error.event.type         = EVENT_CHARGER_FAIL;
+  charger.hightAlarm.error.event.action       = ACTION_EMERGENCY_STOP;
+  charger.hightAlarm.error.id                 = 0U;
+  charger.hightAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  charger.hightAlarm.error.relax.event.action = ACTION_NONE;
+  charger.hightAlarm.error.relax.event.type   = EVENT_NONE;
+  charger.hightAlarm.error.trig               = TRIGGER_IDLE;
+  charger.hightAlarm.error.status                   = ALARM_STATUS_IDLE;
 
-  charger.hightPreAlarm.enb                      = getBitMap( &batteryAlarms, 3U );
-  charger.hightPreAlarm.active                   = PERMISSION_DISABLE;
+  charger.hightPreAlarm.error.enb                      = getBitMap( &batteryAlarms, 3U );
+  charger.hightPreAlarm.error.active                   = PERMISSION_DISABLE;
   charger.hightPreAlarm.type                     = ALARM_LEVEL_HIGHT;
   charger.hightPreAlarm.level                    = getValue( &batteryChargeWarningLevel );
   charger.hightPreAlarm.timer.delay              = getValue( &batteryChargeWarningDelay );
   charger.hightPreAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  charger.hightPreAlarm.track.ack                = PERMISSION_ENABLE;
-  charger.hightPreAlarm.track.event.type         = EVENT_CHARGER_FAIL;
-  charger.hightPreAlarm.track.event.action       = ACTION_WARNING;
-  charger.hightPreAlarm.track.id                 = 0U;
-  charger.hightPreAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  charger.hightPreAlarm.track.relax.event.action = ACTION_NONE;
-  charger.hightPreAlarm.track.relax.event.type   = EVENT_NONE;
-  charger.hightPreAlarm.track.trig               = TRIGGER_IDLE;
-  charger.hightPreAlarm.status                   = ALARM_STATUS_IDLE;
+  charger.hightPreAlarm.error.ack                = PERMISSION_ENABLE;
+  charger.hightPreAlarm.error.event.type         = EVENT_CHARGER_FAIL;
+  charger.hightPreAlarm.error.event.action       = ACTION_WARNING;
+  charger.hightPreAlarm.error.id                 = 0U;
+  charger.hightPreAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  charger.hightPreAlarm.error.relax.event.action = ACTION_NONE;
+  charger.hightPreAlarm.error.relax.event.type   = EVENT_NONE;
+  charger.hightPreAlarm.error.trig               = TRIGGER_IDLE;
+  charger.hightPreAlarm.error.status                   = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
   starter.set            = vFPOsetStarter;
   starter.startAttempts  = getBitMap( &engineSetup, 0U );
@@ -837,44 +837,67 @@ void vENGINEdataInit ( void )
   planStop.coolingIdleDelay = getValue( &timerCoolingIdle );
   planStop.processDelay     = getValue( &timerSolenoidHold );
   /*--------------------------------------------------------------*/
-  engine.startCheckOil = getBitMap( &starterStopSetup, 0U );
-  engine.status        = ENGINE_STATUS_IDLE;
+  engine.startCheckOil                = getBitMap( &starterStopSetup, 0U );
+  engine.status                       = ENGINE_STATUS_IDLE;
+  engine.stopError.enb                = PERMISSION_ENABLE;
+  engine.stopError.active             = PERMISSION_ENABLE;
+  engine.stopError.ack                = PERMISSION_DISABLE;
+  engine.stopError.event.action       = ACTION_EMERGENCY_STOP;
+  engine.stopError.event.type         = EVENT_STOP_FAIL;
+  engine.stopError.id                 = 0U;
+  engine.stopError.relax.enb          = PERMISSION_DISABLE;
+  engine.stopError.relax.event.action = ACTION_NONE;
+  engine.stopError.relax.event.type   = EVENT_NONE;
+  engine.stopError.status             = ALARM_STATUS_IDLE;
+  engine.stopError.trig               = TRIGGER_IDLE;
+
+  engine.startError.enb                = PERMISSION_ENABLE;
+  engine.startError.active             = PERMISSION_DISABLE;
+  engine.startError.ack                = PERMISSION_DISABLE;
+  engine.startError.event.action       = ACTION_EMERGENCY_STOP;
+  engine.startError.event.type         = EVENT_START_FAIL;
+  engine.startError.id                 = 0U;
+  engine.startError.relax.enb          = PERMISSION_DISABLE;
+  engine.startError.relax.event.action = ACTION_NONE;
+  engine.startError.relax.event.type   = EVENT_NONE;
+  engine.startError.status             = ALARM_STATUS_IDLE;
+  engine.startError.trig               = TRIGGER_IDLE;
   /*--------------------------------------------------------------*/
   speed.enb    = getBitMap( &speedSetup, 0U );
   speed.status = SENSOR_STATUS_NORMAL;
   speed.get    = fVRgetSpeed;
 
-  speed.lowAlarm.enb                      = getBitMap( &speedSetup, 1U );
-  speed.lowAlarm.active                   = PERMISSION_DISABLE;
+  speed.lowAlarm.error.enb                      = getBitMap( &speedSetup, 1U );
+  speed.lowAlarm.error.active                   = PERMISSION_DISABLE;
   speed.lowAlarm.type                     = ALARM_LEVEL_LOW;
   speed.lowAlarm.level                    = getValue( &speedLowAlarmLevel );
   speed.lowAlarm.timer.delay              = 0U;
   speed.lowAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  speed.lowAlarm.track.ack                = PERMISSION_DISABLE;
-  speed.lowAlarm.track.event.type         = EVENT_SPEED_LOW;
-  speed.lowAlarm.track.event.action       = ACTION_EMERGENCY_STOP;
-  speed.lowAlarm.track.id                 = 0U;
-  speed.lowAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  speed.lowAlarm.track.relax.event.action = ACTION_NONE;
-  speed.lowAlarm.track.relax.event.type   = EVENT_NONE;
-  speed.lowAlarm.track.trig               = TRIGGER_IDLE;
-  speed.lowAlarm.status                   = ALARM_STATUS_IDLE;
+  speed.lowAlarm.error.ack                = PERMISSION_DISABLE;
+  speed.lowAlarm.error.event.type         = EVENT_SPEED_LOW;
+  speed.lowAlarm.error.event.action       = ACTION_EMERGENCY_STOP;
+  speed.lowAlarm.error.id                 = 0U;
+  speed.lowAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  speed.lowAlarm.error.relax.event.action = ACTION_NONE;
+  speed.lowAlarm.error.relax.event.type   = EVENT_NONE;
+  speed.lowAlarm.error.trig               = TRIGGER_IDLE;
+  speed.lowAlarm.error.status                   = ALARM_STATUS_IDLE;
 
-  speed.hightAlarm.enb                      = PERMISSION_ENABLE;
-  speed.hightAlarm.active                   = PERMISSION_ENABLE;
+  speed.hightAlarm.error.enb                      = PERMISSION_ENABLE;
+  speed.hightAlarm.error.active                   = PERMISSION_ENABLE;
   speed.hightAlarm.type                     = ALARM_LEVEL_HIGHT;
   speed.hightAlarm.level                    = getValue( &speedHightAlarmLevel );
   speed.hightAlarm.timer.delay              = 0U;
   speed.hightAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
-  speed.hightAlarm.track.ack                = PERMISSION_DISABLE;
-  speed.hightAlarm.track.event.type         = EVENT_SPEED_HIGHT;
-  speed.hightAlarm.track.event.action       = ACTION_EMERGENCY_STOP;
-  speed.hightAlarm.track.id                 = 0U;
-  speed.hightAlarm.track.relax.enb          = PERMISSION_DISABLE;
-  speed.hightAlarm.track.relax.event.action = ACTION_NONE;
-  speed.hightAlarm.track.relax.event.type   = EVENT_NONE;
-  speed.hightAlarm.track.trig               = TRIGGER_IDLE;
-  speed.hightAlarm.status                   = ALARM_STATUS_IDLE;
+  speed.hightAlarm.error.ack                = PERMISSION_DISABLE;
+  speed.hightAlarm.error.event.type         = EVENT_SPEED_HIGHT;
+  speed.hightAlarm.error.event.action       = ACTION_EMERGENCY_STOP;
+  speed.hightAlarm.error.id                 = 0U;
+  speed.hightAlarm.error.relax.enb          = PERMISSION_DISABLE;
+  speed.hightAlarm.error.relax.event.action = ACTION_NONE;
+  speed.hightAlarm.error.relax.event.type   = EVENT_NONE;
+  speed.hightAlarm.error.trig               = TRIGGER_IDLE;
+  speed.hightAlarm.error.status                   = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
   stopSolenoid.relay.enb    = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
   stopSolenoid.relay.set    = vFPOsetStopSolenoid;
@@ -888,96 +911,98 @@ void vENGINEdataInit ( void )
   idleRelay.set    = vFPOsetIdle;
   idleRelay.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
-  maintence.oil.enb              = getBitMap( &maintenanceAlarms, 0U );
-  maintence.oil.active           = PERMISSION_DISABLE;
+  maintence.oil.error.enb              = getBitMap( &maintenanceAlarms, 0U );
+  maintence.oil.error.active           = PERMISSION_DISABLE;
   maintence.oil.type             = ALARM_LEVEL_HIGHT;
   maintence.oil.level            = getValue( &maintenanceAlarmOilTime );
   maintence.oil.timer.delay      = 0U;
   maintence.oil.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.oil.track.event.type = EVENT_MAINTENANCE_OIL;
-  maintence.oil.track.id         = 0U;
+  maintence.oil.error.event.type = EVENT_MAINTENANCE_OIL;
+  maintence.oil.error.id         = 0U;
   if ( getBitMap( &maintenanceAlarms, 1U ) == 0U )
   {
-    maintence.oil.track.event.action = ACTION_PLAN_STOP;
-    maintence.oil.track.ack          = PERMISSION_DISABLE;
+    maintence.oil.error.event.action = ACTION_PLAN_STOP;
+    maintence.oil.error.ack          = PERMISSION_DISABLE;
   }
   else
   {
-    maintence.oil.track.event.action = ACTION_WARNING;
-    maintence.oil.track.ack          = PERMISSION_ENABLE;
+    maintence.oil.error.event.action = ACTION_WARNING;
+    maintence.oil.error.ack          = PERMISSION_ENABLE;
   }
-  maintence.oil.track.relax.enb          = PERMISSION_DISABLE;
-  maintence.oil.track.relax.event.action = ACTION_NONE;
-  maintence.oil.track.relax.event.type   = EVENT_NONE;
-  maintence.oil.track.trig               = TRIGGER_IDLE;
-  maintence.oil.status                   = ALARM_STATUS_IDLE;
+  maintence.oil.error.relax.enb          = PERMISSION_DISABLE;
+  maintence.oil.error.relax.event.action = ACTION_NONE;
+  maintence.oil.error.relax.event.type   = EVENT_NONE;
+  maintence.oil.error.trig               = TRIGGER_IDLE;
+  maintence.oil.error.status                   = ALARM_STATUS_IDLE;
 
-  maintence.air.enb              = getBitMap( &maintenanceAlarms, 2U );
-  maintence.air.active           = PERMISSION_DISABLE;
+  maintence.air.error.enb              = getBitMap( &maintenanceAlarms, 2U );
+  maintence.air.error.active           = PERMISSION_DISABLE;
   maintence.air.type             = ALARM_LEVEL_HIGHT;
   maintence.air.level            = getValue( &maintenanceAlarmAirTime );
   maintence.air.timer.delay      = 0U;
   maintence.air.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.air.track.event.type = EVENT_MAINTENANCE_AIR;
-  maintence.air.track.id         = 0U;
+  maintence.air.error.event.type = EVENT_MAINTENANCE_AIR;
+  maintence.air.error.id         = 0U;
   if ( getBitMap( &maintenanceAlarms, 3U ) == 0U )
   {
-    maintence.air.track.event.action = ACTION_PLAN_STOP;
-    maintence.air.track.ack          = PERMISSION_DISABLE;
+    maintence.air.error.event.action = ACTION_PLAN_STOP;
+    maintence.air.error.ack          = PERMISSION_DISABLE;
   }
   else
   {
-    maintence.air.track.event.action = ACTION_WARNING;
-    maintence.air.track.ack          = PERMISSION_ENABLE;
+    maintence.air.error.event.action = ACTION_WARNING;
+    maintence.air.error.ack          = PERMISSION_ENABLE;
   }
-  maintence.air.track.relax.enb          = PERMISSION_DISABLE;
-  maintence.air.track.relax.event.action = ACTION_NONE;
-  maintence.air.track.relax.event.type   = EVENT_NONE;
-  maintence.air.track.trig               = TRIGGER_IDLE;
-  maintence.air.status                   = ALARM_STATUS_IDLE;
+  maintence.air.error.relax.enb          = PERMISSION_DISABLE;
+  maintence.air.error.relax.event.action = ACTION_NONE;
+  maintence.air.error.relax.event.type   = EVENT_NONE;
+  maintence.air.error.trig               = TRIGGER_IDLE;
+  maintence.air.error.status                   = ALARM_STATUS_IDLE;
 
-  maintence.fuel.enb              = getBitMap( &maintenanceAlarms, 4U );
-  maintence.fuel.active           = PERMISSION_DISABLE;
+  maintence.fuel.error.enb              = getBitMap( &maintenanceAlarms, 4U );
+  maintence.fuel.error.active           = PERMISSION_DISABLE;
   maintence.fuel.type             = ALARM_LEVEL_HIGHT;
   maintence.fuel.level            = getValue( &maintenanceAlarmFuelTime );
   maintence.fuel.timer.delay      = 0U;
   maintence.fuel.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.fuel.track.event.type = EVENT_MAINTENANCE_FUEL;
+  maintence.fuel.error.event.type = EVENT_MAINTENANCE_FUEL;
   if ( getBitMap( &maintenanceAlarms, 5U ) == 0U )
   {
-    maintence.fuel.track.event.action = ACTION_PLAN_STOP;
-    maintence.fuel.track.ack          = PERMISSION_DISABLE;
+    maintence.fuel.error.event.action = ACTION_PLAN_STOP;
+    maintence.fuel.error.ack          = PERMISSION_DISABLE;
   }
   else
   {
-    maintence.fuel.track.event.action = ACTION_WARNING;
-    maintence.fuel.track.ack          = PERMISSION_ENABLE;
+    maintence.fuel.error.event.action = ACTION_WARNING;
+    maintence.fuel.error.ack          = PERMISSION_ENABLE;
   }
-  maintence.fuel.track.relax.enb          = PERMISSION_DISABLE;
-  maintence.fuel.track.relax.event.action = ACTION_NONE;
-  maintence.fuel.track.relax.event.type   = EVENT_NONE;
-  maintence.fuel.track.trig               = TRIGGER_IDLE;
-  maintence.fuel.status                   = ALARM_STATUS_IDLE;
+  maintence.fuel.error.relax.enb          = PERMISSION_DISABLE;
+  maintence.fuel.error.relax.event.action = ACTION_NONE;
+  maintence.fuel.error.relax.event.type   = EVENT_NONE;
+  maintence.fuel.error.trig               = TRIGGER_IDLE;
+  maintence.fuel.error.status                   = ALARM_STATUS_IDLE;
 
   return;
 }
 /*----------------------------------------------------------------------------*/
 void vENGINEresetAlarms ( void )
 {
-  speed.hightAlarm.track.trig      = TRIGGER_IDLE;
-  speed.lowAlarm.track.trig        = TRIGGER_IDLE;
-  charger.hightAlarm.track.trig    = TRIGGER_IDLE;
-  charger.hightPreAlarm.track.trig = TRIGGER_IDLE;
-  battery.hightAlarm.track.trig    = TRIGGER_IDLE;
-  battery.lowAlarm.track.trig      = TRIGGER_IDLE;
-  fuel.hightAlarm.track.trig       = TRIGGER_IDLE;
-  fuel.hightPreAlarm.track.trig    = TRIGGER_IDLE;
-  fuel.lowAlarm.track.trig         = TRIGGER_IDLE;
-  fuel.lowPreAlarm.track.trig      = TRIGGER_IDLE;
-  coolant.alarm.track.trig         = TRIGGER_IDLE;
-  coolant.preAlarm.track.trig      = TRIGGER_IDLE;
-  oil.alarm.track.trig             = TRIGGER_IDLE;
-  oil.preAlarm.track.trig          = TRIGGER_IDLE;
+  vERRORreset( &speed.hightAlarm.error);
+  vERRORreset( &speed.lowAlarm.error );
+  vERRORreset( &charger.hightAlarm.error );
+  vERRORreset( &charger.hightPreAlarm.error );
+  vERRORreset( &battery.hightAlarm.error );
+  vERRORreset( &battery.lowAlarm.error );
+  vERRORreset( &fuel.hightAlarm.error );
+  vERRORreset( &fuel.hightPreAlarm.error );
+  vERRORreset( &fuel.lowAlarm.error );
+  vERRORreset( &fuel.lowPreAlarm.error );
+  vERRORreset( &coolant.alarm.error );
+  vERRORreset( &coolant.preAlarm.error );
+  vERRORreset( &oil.alarm.error );
+  vERRORreset( &oil.preAlarm.error );
+  vERRORreset( &engine.stopError );
+  vERRORreset( &engine.startError );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -1042,7 +1067,6 @@ void vENGINEtask ( void const* argument )
   ENGINE_COMMAND inputCmd      = ENGINE_CMD_NONE;
   SYSTEM_EVENT   event         = { 0U };
   uint32_t       inputNotifi   = 0U;
-  uint8_t        idleStopError = 0U;
   ENGINE_COMMAND lastCmd       = ENGINE_CMD_NONE;
   for (;;)
   {
@@ -1131,6 +1155,8 @@ void vENGINEtask ( void const* argument )
     speedVal   = fSPEEDprocess();
     batteryVal = fBATTERYprocess();
     chargerVal = fCHARGERprocess();
+    vERRORcheck( &engine.stopError, !( uENGINEisStop( oilVal, speedVal )) );
+    vERRORcheck( &engine.startError, 1U );
     vENGINEmileageProcess();
     /*------------------------- Input commands -------------------------*/
     if ( engine.cmd != lastCmd )
@@ -1140,15 +1166,9 @@ void vENGINEtask ( void const* argument )
     switch ( engine.cmd )
     {
       case ENGINE_CMD_NONE:
-        if ( ( idleStopError == 0U ) && ( engine.status == ENGINE_STATUS_IDLE ) )
+        if ( ( engine.stopError.active != PERMISSION_ENABLE ) && ( engine.status == ENGINE_STATUS_IDLE ) )
         {
-          if ( uENGINEisStop( oilVal, speedVal ) == 0U )
-          {
-            idleStopError   = 1U;
-            event.action    = ACTION_EMERGENCY_STOP;
-            event.type      = EVENT_STOP_FAIL;
-            vSYSeventSend( event, NULL );
-          }
+          engine.stopError.active = PERMISSION_ENABLE;
         }
         break;
       /*----------------------------------------------------------------------------------------*/
@@ -1163,16 +1183,17 @@ void vENGINEtask ( void const* argument )
             case STARTER_IDLE:
               vFPOsetReadyToStart( RELAY_OFF );
               vRELAYimpulseReset( &preHeater );
-              preHeater.active             = 0U;
-              starterFinish                = 0U;
-              speed.lowAlarm.active        = 0U;
-              speed.hightAlarm.active      = 0U;
-              oil.alarm.active             = 0U;
-              oil.preAlarm.active          = 0U;
-              battery.hightAlarm.active    = 0U;
-              battery.lowAlarm.active      = 0U;
-              charger.hightAlarm.active    = 0U;
-              charger.hightPreAlarm.active = 0U;
+              engine.stopError.active            = PERMISSION_DISABLE;
+              preHeater.active                   = 0U;
+              starterFinish                      = 0U;
+              speed.lowAlarm.error.active        = 0U;
+              speed.hightAlarm.error.active      = 0U;
+              oil.alarm.error.active             = 0U;
+              oil.preAlarm.error.active          = 0U;
+              battery.hightAlarm.error.active    = 0U;
+              battery.lowAlarm.error.active      = 0U;
+              charger.hightAlarm.error.active    = 0U;
+              charger.hightPreAlarm.error.active = 0U;
               //vELECTROalarmStartDisable();
               if ( ( engine.startCheckOil > 0U ) && ( oilVal != ENGINE_OIL_PRESSURE_TRESH_HOLD ) )
               {
@@ -1245,15 +1266,15 @@ void vENGINEtask ( void const* argument )
                 idleRelay.set( RELAY_ON );
                 commonTimer.delay = starter.idlingDelay;
                 vLOGICstartTimer( &commonTimer );
-                starter.status               = STARTER_IDLE_WORK;
-                blockTimerFinish             = 1U;
-                speed.hightAlarm.active      = 1U;
-                oil.alarm.active             = 1U;
-                oil.preAlarm.active          = 1U;
-                battery.hightAlarm.active    = 1U;
-                battery.lowAlarm.active      = 1U;
-                charger.hightAlarm.active    = 1U;
-                charger.hightPreAlarm.active = 1U;
+                starter.status                     = STARTER_IDLE_WORK;
+                blockTimerFinish                   = 1U;
+                speed.hightAlarm.error.active      = 1U;
+                oil.alarm.error.active             = 1U;
+                oil.preAlarm.error.active          = 1U;
+                battery.hightAlarm.error.active    = 1U;
+                battery.lowAlarm.error.active      = 1U;
+                charger.hightAlarm.error.active    = 1U;
+                charger.hightPreAlarm.error.active = 1U;
                 //vELECTROalarmStartToIdle();
                 vLOGICprintStarterStatus( starter.status );
               }
@@ -1273,8 +1294,8 @@ void vENGINEtask ( void const* argument )
               {
                 commonTimer.delay = starter.warmingDelay;
                 vLOGICstartTimer( &commonTimer );
-                starter.status        = STARTER_WARMING;
-                speed.lowAlarm.active = 1U;
+                starter.status              = STARTER_WARMING;
+                speed.lowAlarm.error.active = 1U;
                 //vELECTROalarmIdleEnable();
                 vLOGICprintStarterStatus( starter.status );
               }
@@ -1290,14 +1311,12 @@ void vENGINEtask ( void const* argument )
               }
               break;
             case STARTER_FAIL:
-              engine.status          = ENGINE_STATUS_FAIL_STARTING;
-              engine.cmd             = ENGINE_CMD_NONE;
-              starter.status         = STARTER_IDLE;
-              engine.cmd             = ENGINE_CMD_NONE;
-              event.action           = ACTION_EMERGENCY_STOP;
-              event.type             = EVENT_START_FAIL;
-              starter.startIteration = 0U;
-              vSYSeventSend( event, NULL );
+              engine.status            = ENGINE_STATUS_FAIL_STARTING;
+              engine.cmd               = ENGINE_CMD_NONE;
+              starter.status           = STARTER_IDLE;
+              engine.cmd               = ENGINE_CMD_NONE;
+              engine.startError.active = PERMISSION_ENABLE;
+              starter.startIteration   = 0U;
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_OK:
@@ -1307,9 +1326,9 @@ void vENGINEtask ( void const* argument )
               starter.startIteration = 0U;
               eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
               eDATAAPIfreeData( DATA_API_CMD_SAVE, ENGINE_STARTS_NUMBER_ADR, NULL );
-              maintence.oil.active  = 1U;
-              maintence.air.active  = 1U;
-              maintence.fuel.active = 1U;
+              maintence.oil.error.active  = 1U;
+              maintence.air.error.active  = 1U;
+              maintence.fuel.error.active = 1U;
               vLOGICprintStarterStatus( starter.status );
               break;
             default:
@@ -1346,7 +1365,7 @@ void vENGINEtask ( void const* argument )
             case STOP_COOLDOWN:
               if ( uLOGICisTimer( commonTimer ) > 0U )
               {
-                speed.lowAlarm.active = 0U;
+                speed.lowAlarm.error.active = 0U;
                 //vELECTROalarmIdleDisable();
                 idleRelay.set( RELAY_ON );
                 commonTimer.delay = planStop.coolingIdleDelay;
@@ -1358,14 +1377,14 @@ void vENGINEtask ( void const* argument )
             case STOP_IDLE_COOLDOWN:
               if ( uLOGICisTimer( commonTimer ) > 0U )
               {
-                oil.alarm.active    = 0U;
-                oil.preAlarm.active = 0U;
+                oil.alarm.error.active    = 0U;
+                oil.preAlarm.error.active = 0U;
                 idleRelay.set( RELAY_OFF );
                 fuel.pump.set( RELAY_OFF );
                 vRELAYdelayTrig( &stopSolenoid );
                 commonTimer.delay = planStop.processDelay;
+                planStop.status   = STOP_PROCESSING;
                 vLOGICstartTimer( &commonTimer );
-                planStop.status = STOP_PROCESSING;
                 vLOGICprintPlanStopStatus( planStop.status );
               }
               break;
@@ -1392,12 +1411,12 @@ void vENGINEtask ( void const* argument )
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_OK:
-              engine.status         = ENGINE_STATUS_IDLE;
-              engine.cmd            = ENGINE_CMD_NONE;
-              planStop.status       = STOP_IDLE;
-              maintence.oil.active  = 0U;
-              maintence.air.active  = 0U;
-              maintence.fuel.active = 0U;
+              engine.status               = ENGINE_STATUS_IDLE;
+              engine.cmd                  = ENGINE_CMD_NONE;
+              planStop.status             = STOP_IDLE;
+              maintence.oil.error.active  = 0U;
+              maintence.air.error.active  = 0U;
+              maintence.fuel.error.active = 0U;
               vFPOsetReadyToStart( RELAY_ON );
               vLOGICprintPlanStopStatus( planStop.status );
               break;
@@ -1415,7 +1434,7 @@ void vENGINEtask ( void const* argument )
       case ENGINE_CMD_GOTO_IDLE:
         if ( engine.status == ENGINE_STATUS_WORK )
         {
-          speed.lowAlarm.active = 0U;
+          speed.lowAlarm.error.active = 0U;
           //vELECTROalarmIdleDisable();
           idleRelay.set( RELAY_ON );
           vFPOsetGenReady( RELAY_OFF );
@@ -1442,7 +1461,7 @@ void vENGINEtask ( void const* argument )
             {
               engine.status = ENGINE_STATUS_WORK;
               vLOGICprintEngineStatus( engine.status );
-              speed.lowAlarm.active = 1U;
+              speed.lowAlarm.error.active = 1U;
               vFPOsetGenReady( RELAY_ON );
               //vELECTROalarmIdleEnable();
               engine.cmd = ENGINE_CMD_NONE;
@@ -1476,6 +1495,8 @@ void vENGINEtask ( void const* argument )
         vFPOsetReadyToStart( RELAY_OFF );
         engine.status = ENGINE_STATUS_EMERGENCY_STOP;
         engine.cmd = ENGINE_CMD_NONE;
+        engine.startError.active = PERMISSION_DISABLE;
+        engine.stopError.active  = PERMISSION_ENABLE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/
@@ -1485,12 +1506,12 @@ void vENGINEtask ( void const* argument )
         starter.status  = STARTER_IDLE;
         planStop.status = STOP_IDLE;
         engine.status   = ENGINE_STATUS_IDLE;
-        idleStopError   = 0U;
         stopSolenoid.relay.set( RELAY_OFF );
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
-        engine.cmd = ENGINE_CMD_NONE;
-
+        engine.cmd               = ENGINE_CMD_NONE;
+        engine.startError.active = PERMISSION_DISABLE;
+        engine.stopError.active  = PERMISSION_ENABLE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

@@ -99,7 +99,6 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
       {
         eLOGaddRecord( &record );
       }
-      eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, 0U );
       break;
 
     case ACTION_EMERGENCY_STOP:
@@ -480,7 +479,8 @@ void vCONTROLLERtask ( void const* argument )
           break;
         /*------------------------- Сброс аварийного сигнала -------------------------*/
         case FPI_FUN_ALARM_RESET:
-          if ( ( controller.state    == CONTROLLER_STATUS_ALARM ) &&
+          if ( ( ( controller.state  == CONTROLLER_STATUS_ALARM ) ||
+                 ( controller.state  == CONTROLLER_STATUS_IDLE  ) ) &&
                ( inputFpiEvent.level == FPI_LEVEL_HIGH ) )
           {
             controller.state = CONTROLLER_STATUS_IDLE;

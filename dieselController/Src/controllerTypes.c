@@ -403,40 +403,116 @@ void vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-uint8_t uALARMisForList ( ALARM_TYPE* alarm )
+uint8_t uALARMisForList ( SYSTEM_EVENT* event )
 {
   uint8_t res = 0U;
-  if ( ( alarm->track.event.action == ACTION_WARNING ) || ( alarm->track.event.action == ACTION_EMERGENCY_STOP ) )
+  if ( ( event->action == ACTION_WARNING ) || ( event->action == ACTION_EMERGENCY_STOP ) )
   {
     res = 1U;
   }
   return res;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vALARMrelax ( ALARM_TYPE* alarm )
+void vERRORrelax ( ERROR_TYPE* error )
 {
   LOG_RECORD_TYPE record = { 0U };
 
-  if ( alarm->track.relax.enb == PERMISSION_ENABLE )
+  if ( error->relax.enb == PERMISSION_ENABLE )
   {
-    vSYSeventSend( alarm->track.event, &record );
+    vSYSeventSend( error->event, &record );
   }
-  if ( alarm->track.ack == PERMISSION_ENABLE )
+  if ( error->ack == PERMISSION_ENABLE )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &alarm->track.id );
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &error->id );
   }
-  alarm->status = ALARM_STATUS_IDLE;
+  error->status = ALARM_STATUS_IDLE;
+  error->trig   = TRIGGER_IDLE;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORtriggering ( ERROR_TYPE* error )
+{
+  LOG_RECORD_TYPE record   = { 0U };
+  vSYSeventSend( error->event, &record );
+  if ( uALARMisForList( &error->event ) > 0U )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, &error->id );
+  }
+  error->trig = TRIGGER_SET;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORholding ( ERROR_TYPE* error )
+{
+  if ( error->trig == TRIGGER_IDLE )
+  {
+    error->status = ALARM_STATUS_IDLE;
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORreset ( ERROR_TYPE* error )
+{
+  error->trig   = TRIGGER_IDLE;
+  error->status = ALARM_STATUS_IDLE;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vERRORcheck ( ERROR_TYPE* error, uint8_t flag )
+{
+  if ( error->enb == PERMISSION_ENABLE )
+  {
+    if ( error->active == PERMISSION_ENABLE )
+    {
+      switch ( error->status )
+      {
+        case ALARM_STATUS_IDLE:
+          if ( flag > 0U )
+          {
+            vERRORtriggering( error );
+            if ( ( error->relax.enb == PERMISSION_ENABLE ) || ( error->ack == PERMISSION_ENABLE ) )
+            {
+              error->status = ALARM_STATUS_RELAX;
+            }
+            else
+            {
+              error->status = ALARM_STATUS_HOLD;
+            }
+          }
+          break;
+        case ALARM_STATUS_RELAX:
+          if ( flag == 0U )
+          {
+            vERRORrelax( error );
+          }
+          break;
+        case ALARM_STATUS_HOLD:
+          vERRORholding( error );
+          break;
+        default:
+          error->status = ALARM_STATUS_IDLE;
+          break;
+      }
+    }
+    else if ( error->status != ALARM_STATUS_IDLE )
+    {
+      error->status = ALARM_STATUS_IDLE;
+    }
+    else
+    {
+
+    }
+  }
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
 void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
 {
-  fix16_t         levelOff = 0U;
-  LOG_RECORD_TYPE record   = { 0U };
+  fix16_t levelOff = 0U;
 
-  if ( ( alarm->enb == PERMISSION_ENABLE ) && ( alarm->active == PERMISSION_ENABLE ) )
+  if ( ( alarm->error.enb == PERMISSION_ENABLE ) && ( alarm->error.active == PERMISSION_ENABLE ) )
   {
-    switch ( alarm->status )
+    switch ( alarm->error.status )
     {
       /*-----------------------------------------------------------------------------------*/
       /*---------------------------------- Start condition --------------------------------*/
@@ -445,7 +521,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
         if ( ( ( alarm->type == ALARM_LEVEL_LOW   ) && ( val <= alarm->level ) ) ||
              ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val >= alarm->level ) ) )
         {
-          alarm->status = ALARM_STATUS_WAIT_DELAY;
+          alarm->error.status = ALARM_STATUS_WAIT_DELAY;
           vLOGICstartTimer( &alarm->timer );
         }
         break;
@@ -455,19 +531,19 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       case ALARM_STATUS_WAIT_DELAY:
         if ( uLOGICisTimer( alarm->timer ) > 0U )
         {
-          if ( alarm->track.trig == TRIGGER_IDLE )
+          if ( alarm->error.trig == TRIGGER_IDLE )
           {
-            alarm->status = ALARM_STATUS_TRIG;
+            alarm->error.status = ALARM_STATUS_TRIG;
           }
           else
           {
-            alarm->status = ALARM_STATUS_RELAX;
+            alarm->error.status = ALARM_STATUS_RELAX;
           }
         }
         else if ( ( ( alarm->type == ALARM_LEVEL_LOW   ) && ( val > alarm->level ) ) ||
                   ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val < alarm->level ) ) )
         {
-          alarm->status = ALARM_STATUS_IDLE;
+          alarm->error.status = ALARM_STATUS_IDLE;
           vLOGICresetTimer( alarm->timer );
         }
         else
@@ -479,29 +555,21 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       /*---------------------------------- Alarm trigger ----------------------------------*/
       /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_TRIG:
-        vSYSeventSend( alarm->track.event, &record );
-        if ( uALARMisForList( alarm ) > 0U )
+        vERRORtriggering( &alarm->error );
+        if ( ( alarm->error.relax.enb == PERMISSION_ENABLE ) || ( alarm->error.ack == PERMISSION_ENABLE ) )
         {
-          eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, &alarm->track.id );
-        }
-        alarm->track.trig = TRIGGER_SET;
-        if ( ( alarm->track.relax.enb == PERMISSION_ENABLE ) || ( alarm->track.ack == PERMISSION_ENABLE ) )
-        {
-          alarm->status = ALARM_STATUS_RELAX;
+          alarm->error.status = ALARM_STATUS_RELAX;
         }
         else
         {
-          alarm->status = ALARM_STATUS_HOLD;
+          alarm->error.status = ALARM_STATUS_HOLD;
         }
         break;
       /*-----------------------------------------------------------------------------------*/
       /*------------------------------- Holding alarm state -------------------------------*/
       /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_HOLD:
-        if ( alarm->track.trig == TRIGGER_IDLE )
-        {
-          alarm->status = ALARM_STATUS_IDLE;
-        }
+        vERRORholding( &alarm->error );
         break;
       /*-----------------------------------------------------------------------------------*/
       /*----------------------------- Alarm trigger relaxation ----------------------------*/
@@ -512,7 +580,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
           levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
           if ( val > levelOff )
           {
-            vALARMrelax( alarm );
+            vERRORrelax( &alarm->error );
           }
         }
         else
@@ -520,7 +588,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
           levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
           if ( val < levelOff )
           {
-            vALARMrelax( alarm );
+            vERRORrelax( &alarm->error );
           }
         }
         break;
@@ -528,7 +596,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       /*-----------------------------------------------------------------------------------*/
       /*-----------------------------------------------------------------------------------*/
       default:
-        alarm->status = ALARM_STATUS_IDLE;
+        alarm->error.status = ALARM_STATUS_IDLE;
         break;
     }
   }

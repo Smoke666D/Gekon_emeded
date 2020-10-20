@@ -18,7 +18,7 @@
 #define  ENGINE_EVENT_QUEUE_LENGTH      16U
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
 #define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
-#define  SENSOR_CUTOUT_LEVEL            MAX_RESISTANCE
+#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE ) )
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -209,6 +209,8 @@ typedef struct __packed
   ENGINE_COMMAND  cmd;
   uint8_t         startCheckOil;
   ENGINE_STATUS   status;
+  ERROR_TYPE      stopError;
+  ERROR_TYPE      startError;
 } ENGINE_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t engineHandle;

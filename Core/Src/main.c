@@ -1303,6 +1303,7 @@ void StartDefaultTask(void *argument)
   {
     osDelay( 10U );
   }
+  osDelay( 100U );
   vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIdataInit();                         /* Data from EEPROM initialization */
   vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/

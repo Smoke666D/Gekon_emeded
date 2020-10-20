@@ -211,22 +211,22 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  PERMISSION        enb;       /* Enable alarm at initialization         - 1 byte */
+  PERMISSION        active;    /* On/Off alarm check in work flow        - 1 byte */
+  ALARM_STATUS      status;    /* Status of the alarm                    - 1 byte */
   SYSTEM_EVENT      event;     /* Event data of alarm */
   ALARM_RELAX_TYPE  relax;     /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
   TRIGGER_STATE     trig;      /* Alarm triggered flag. Reset from outside */
   PERMISSION        ack;       /* Auto acknowledgment on/off */
   uint8_t           id;        /* ID in active error list */
-} TRACK_EVENT;
+} ERROR_TYPE;
 
 typedef struct __packed
 {
-  PERMISSION        enb;       /* Enable alarm at initialization         - 1 byte */
-  PERMISSION        active;    /* On/Off alarm check in work flow        - 1 byte */
-  ALARM_STATUS      status;    /* Status of the alarm                    - 1 byte */
+  ERROR_TYPE        error;     /* Error of the alarm */
   ALARM_LEVEL       type;      /* Type of alarm above or below set point - 1 byte */
   fix16_t           level;     /* Set point                              - 4 byte */
   SYSTEM_TIMER      timer;     /* Timer for triggering delay             - 6 byte */
-  TRACK_EVENT       track;     /* Tracking event                         - 4 byte */
 } ALARM_TYPE;
 
 typedef struct __packed
@@ -277,6 +277,8 @@ typedef struct __packed
 void              vLOGICinit ( TIM_HandleTypeDef* tim );
 QueueHandle_t     pLOGICgetEventQueue ( void );
 void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
+void              vERRORreset ( ERROR_TYPE* error );
+void              vERRORcheck ( ERROR_TYPE* error, uint8_t flag );
 void              vRELAYautoProces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
 void              vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device );
 void              vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );

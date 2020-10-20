@@ -211,7 +211,7 @@ static xScreenObjet const Generator5Screen[]=
    {0U,FONT_SIZE*11U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,2U},
    {0U,FONT_SIZE*17U,LINE3,0U,0U,TEXT_STRING,LeftText,"кВт",NULL,0U},
    {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"cos f",NULL,0U},
-   {1U,FONT_SIZE*11U,LINE3+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3U}
+   {1U,FONT_SIZE*11U,LINE3+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,COS_FI}
 
 };
 

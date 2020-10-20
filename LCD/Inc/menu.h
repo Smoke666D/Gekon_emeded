@@ -67,7 +67,7 @@
 #define ENGINE_SPEED   32U
 #define ENGINE_SCOUNT  33U
 #define ENGINE_WTIME   34U
-
+#define COS_FI        35U
 
 #define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/

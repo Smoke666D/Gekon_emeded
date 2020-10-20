@@ -115,7 +115,7 @@ fix16_t xADCGetGENL3Cur();
 uint8_t uADCGetValidDataFlag();
 fix16_t xADCGetNETLFreq();
 fix16_t xADCGetGENLFreq();
-
+fix16_t xADCGetCOSFi();
 void    vADC_Ready(uint8_t adc_number);
 void    vDecNetural(int16_t * data);
 void    vADC3R(DMA_HandleTypeDef *_hdma);

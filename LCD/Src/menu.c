@@ -964,7 +964,9 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
            sprintf(Data,"%u",utempdata);
            break;
-
+         case COS_FI:
+           fix16_to_str( xADCGetCOSFi(), Data, 2 );
+           break;
     default:
      break;
 

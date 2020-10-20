@@ -280,6 +280,7 @@ void TIM8_UP_TIM13_IRQHandler(void)
   * @brief This function handles TIM7 global interrupt.
   */
 void TIM7_IRQHandler(void)
+
 {
   /* USER CODE BEGIN TIM7_IRQn 0 */
    __HAL_TIM_CLEAR_IT(&htim7, TIM_IT_UPDATE);

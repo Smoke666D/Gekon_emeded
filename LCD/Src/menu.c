@@ -10,6 +10,10 @@
 #include "keyboard.h"
 #include "menu_data.c"
 #include "controllerTypes.h"
+#include "adc.h"
+#include "stdio.h"
+#include "server.h"
+#include "vrSensor.h"
 /*------------------------ Define -------------------------------------------------------------------*/
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
@@ -404,7 +408,7 @@ void vMenuTask ( void )
 /*---------------------------------------------------------------------------------------------------*/
 void vDrawObject( xScreenObjet * pScreenObjects)
 {
-  uint8_t* TEXT      = NULL;
+  char* TEXT      = NULL;
   uint8_t  Insert    = 0U;
   uint8_t  Text[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
   uint8_t  i         = 0U;
@@ -508,7 +512,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
               {
                 pScreenObjects[i].GetDtaFunction( mREAD, &Text );
               }
-              TEXT = Text;
+              TEXT = (char*)Text;
               break;
             default:
               break;
@@ -836,10 +840,136 @@ void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   switch ( IP_ADRESS )
   {
     case 1:
+
       cSERVERgetStrIP( Data );
       break;
     default:
       break;
+
+  }
+
+
+}
+
+void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  fix16_t temp;
+  uint16_t utempdata;
+  switch (ID)
+  {
+    case FUEL_LEVEL:
+      eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
+      fix16_to_str( temp, Data, 0U );
+     break;
+    case OIL_PRESSURE:
+      eCHARTfunc(&oilSensorChart,  xADCGetSOP() ,   &temp);
+      fix16_to_str( temp, Data, 2U );
+      break;
+    case  COOL_TEMP:
+      eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
+      fix16_to_str( temp, Data, 0U );
+      break;
+    case  IN_VDD:
+      fix16_to_str( xADCGetVDD(), Data, 2U );
+      break;
+    case GEN_F1_VDD:
+       fix16_to_str( xADCGetGENL1(), Data, 0U );
+       break;
+    case GEN_F2_VDD:
+       fix16_to_str(xADCGetGENL2(), Data, 0U );
+       break;
+    case GEN_F3_VDD:
+       fix16_to_str( xADCGetGENL3(), Data, 0U );
+       break;
+    case GEN_FREQ:
+       fix16_to_str( xADCGetGENLFreq(), Data, 1U );
+       break;
+    case GEN_F1_CUR:
+       fix16_to_str(xADCGetGENL1Cur(), Data, 3U );
+       break;
+    case GEN_F2_CUR:
+      fix16_to_str( xADCGetGENL2Cur(), Data, 3U );
+      break;
+    case GEN_F3_CUR:
+      fix16_to_str( xADCGetGENL3Cur(), Data, 3U );
+      break;
+
+    case NET_F1_VDD:
+      fix16_to_str( xADCGetNETL1(), Data, 0U );
+      break;
+    case NET_F2_VDD:
+      fix16_to_str(xADCGetNETL2(), Data, 0U );
+      break;
+   case NET_F3_VDD:
+      fix16_to_str( xADCGetNETL3(), Data, 0U );
+      break;
+   case NET_F1_F_VDD:
+      fix16_to_str(xADCGetNETL1FaseVDD(), Data, 0U );
+      break;
+    case NET_F2_F_VDD:
+     fix16_to_str( xADCGetNETL2FaseVDD(), Data, 0U );
+     break;
+    case NET_F3_F_VDD:
+      fix16_to_str( xADCGetNETL3FaseVDD(), Data, 0U );
+      break;
+    case GEN_F1_F_VDD:
+      fix16_to_str( xADCGetGENL1FaseVDD(), Data, 0U );
+      break;
+    case GEN_F2_F_VDD:
+      fix16_to_str( xADCGetGENL2FaseVDD(), Data, 0U );
+      break;
+   case GEN_F3_F_VDD:
+      fix16_to_str( xADCGetGENL3FaseVDD(), Data, 0U );
+      break;
+    case NET_FREQ:
+     fix16_to_str( xADCGetNETLFreq(), Data, 1U );
+     break;
+    case NET_ROTATION:
+             switch (uADCGetNetFaseRotation())
+             {
+               case B_C_ROTATION:
+                 sprintf(Data,"L1-L2-L3");
+                 break;
+               case C_B_ROTATION:
+                 sprintf(Data,"L1-L3-L2");
+                 break;
+               default:
+                 sprintf(Data,"XX-XX-XX");
+                 break;
+             }
+             break;
+    case GEN_ROTATION:
+         switch (uADCGetGenFaseRotation())
+         {
+            case B_C_ROTATION:
+             sprintf(Data,"L1-L2-L3");
+             break;
+           case C_B_ROTATION:
+             sprintf(Data,"L1-L3-L2");
+             break;
+           default:
+            sprintf(Data,"XX-XX-XX");
+            break;
+         }
+         break;
+         case ENGINE_SPEED:
+           fix16_to_str( fVRgetSpeed(), Data, 0U );
+           break;
+         case  ENGINE_SCOUNT:
+           eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);
+           sprintf(Data,"%u",utempdata);
+           break;
+
+         case ENGINE_WTIME:
+           eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
+           sprintf(Data,"%u",utempdata);
+           break;
+         case COS_FI:
+           fix16_to_str( xADCGetCOSFi(), Data, 2 );
+           break;
+    default:
+     break;
+
 
   }
 
@@ -851,17 +981,7 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   switch ( ID )
   {
-    case 16U:
-      Data[0]='L';
-      Data[1]='1';
-      Data[2]='-';
-      Data[3]='L';
-      Data[4]='2';
-      Data[5]='-';
-      Data[6]='L';
-      Data[7]='3';
-      Data[8]=0;
-      break;
+
     case 15:
       Data[0]='1';
       Data[1]='2';
@@ -870,12 +990,6 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       Data[4]='3';
       Data[5]='0';
       Data[6]=0;
-      break;
-    case 14:
-      Data[0]='2';
-      Data[1]='1';
-      Data[2]='5';
-      Data[3]=0;
       break;
     case 13:
       Data[0]='1';

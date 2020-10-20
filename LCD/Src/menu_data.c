@@ -88,7 +88,7 @@ static xScreenObjet const EngineMainScreen[]=
   { 0U, 67U, ( LINE2 + 2U ), 30U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetDataForMenu, COOL_TEMP},
   { 0U, ( FONT_SIZE * 17U ), LINE3, 0U, 0U, TEXT_STRING, LeftText, "гр.С", NULL, 0U },
   { 0U, LEFT_OFFSET, LINE4, 0U, 0U, TEXT_STRING, LeftText, "Скорость", NULL, 0U },
-  { 0U, 67U, ( LINE3 + 3U ), 30U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetTestData, 3U },
+  { 0U, 67U, ( LINE3 + 3U ), 30U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetDataForMenu, ENGINE_SPEED },
   { 1U, ( FONT_SIZE * 17U ), LINE4, 0U, 0U, TEXT_STRING, LeftText, "об/м", NULL, 0U }
 };
 
@@ -112,13 +112,13 @@ static xScreenObjet const Engine2Screen[]=
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ДВИГАТЕЛЬ",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Наработка",NULL,0U},
-  {0U,FONT_SIZE*14U,(LINE4_HIGTH+2U),30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,15U},
+  {0U,FONT_SIZE*14U,(LINE4_HIGTH+2U),30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, ENGINE_WTIME},
   {0U,FONT_SIZE*20U,LINE2,0U,0U,TEXT_STRING,LeftText,"Ч",NULL,0U},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Кол-во запусков",NULL,0U},
-  {0U,FONT_SIZE*16U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,14U},
-  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"Уровень топлива",NULL,0U},
-  {0U,FONT_SIZE*16U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13U},
-  {1U,FONT_SIZE*20U,LINE4,0U,0U,TEXT_STRING,LeftText,"%",NULL,0U}
+  {1U,FONT_SIZE*16U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,ENGINE_SCOUNT},
+  //{0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"Уровень топлива",NULL,0U},
+  //{0U,FONT_SIZE*16U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13U},
+  //{1U,FONT_SIZE*20U,LINE4,0U,0U,TEXT_STRING,LeftText,"%",NULL,0U}
 };
 
 
@@ -211,7 +211,7 @@ static xScreenObjet const Generator5Screen[]=
    {0U,FONT_SIZE*11U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,2U},
    {0U,FONT_SIZE*17U,LINE3,0U,0U,TEXT_STRING,LeftText,"кВт",NULL,0U},
    {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"cos f",NULL,0U},
-   {1U,FONT_SIZE*11U,LINE3+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,3U}
+   {1U,FONT_SIZE*11U,LINE3+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,COS_FI}
 
 };
 

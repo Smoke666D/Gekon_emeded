@@ -13,6 +13,7 @@
 #include "adc.h"
 #include "stdio.h"
 #include "server.h"
+#include "vrSensor.h"
 /*------------------------ Define -------------------------------------------------------------------*/
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
@@ -853,6 +854,7 @@ void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
+  uint16_t utempdata;
   switch (ID)
   {
     case FUEL_LEVEL:
@@ -861,7 +863,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
      break;
     case OIL_PRESSURE:
       eCHARTfunc(&oilSensorChart,  xADCGetSOP() ,   &temp);
-      fix16_to_str( temp, Data, 0U );
+      fix16_to_str( temp, Data, 2U );
       break;
     case  COOL_TEMP:
       eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
@@ -950,6 +952,21 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
          }
          break;
+         case ENGINE_SPEED:
+           fix16_to_str( fVRgetSpeed(), Data, 0U );
+           break;
+         case  ENGINE_SCOUNT:
+           eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);
+           sprintf(Data,"%u",utempdata);
+           break;
+
+         case ENGINE_WTIME:
+           eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
+           sprintf(Data,"%u",utempdata);
+           break;
+         case COS_FI:
+           fix16_to_str( xADCGetCOSFi(), Data, 2 );
+           break;
     default:
      break;
 
@@ -973,12 +990,6 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       Data[4]='3';
       Data[5]='0';
       Data[6]=0;
-      break;
-    case 14:
-      Data[0]='2';
-      Data[1]='1';
-      Data[2]='5';
-      Data[3]=0;
       break;
     case 13:
       Data[0]='1';

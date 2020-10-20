@@ -95,7 +95,7 @@ static uint8_t        blockTimerFinish                                 = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
-void vENGINEtask ( void const* argument );
+void vENGINEtask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -1055,13 +1055,13 @@ ENGINE_STATUS eENGINEgetEngineStatus ( void )
   return engine.status;
 }
 
-void vENGINEtask ( void const* argument )
+void vENGINEtask ( void* argument )
 {
   fix16_t        oilVal        = 0U;
   fix16_t        coolantVal    = 0U;
-  fix16_t        fuelVal       = 0U;
+  //fix16_t        fuelVal       = 0U;
   fix16_t        speedVal      = 0U;
-  fix16_t        batteryVal    = 0U;
+  //fix16_t        batteryVal    = 0U;
   fix16_t        chargerVal    = 0U;
   SYSTEM_TIMER   commonTimer   = { 0U };
   ENGINE_COMMAND inputCmd      = ENGINE_CMD_NONE;
@@ -1151,9 +1151,11 @@ void vENGINEtask ( void const* argument )
     /*------------------------- Process inputs -------------------------*/
     oilVal     = fOILprocess();
     coolantVal = fCOOLANTprocess();
-    fuelVal    = fFUELprocess();
+    //fuelVal    = fFUELprocess();
+    fFUELprocess();
     speedVal   = fSPEEDprocess();
-    batteryVal = fBATTERYprocess();
+    //batteryVal = fBATTERYprocess();
+    fBATTERYprocess();
     chargerVal = fCHARGERprocess();
     vERRORcheck( &engine.stopError, !( uENGINEisStop( oilVal, speedVal )) );
     vERRORcheck( &engine.startError, 1U );
@@ -1523,9 +1525,7 @@ void vENGINEtask ( void const* argument )
     /* Process outputs */
     vRELAYimpulseProcess( &preHeater, coolantVal );
     vRELAYdelayProcess( &stopSolenoid );
-    /* Send status */
-
-    /*---------------------*/
+    /*------------------------------------------------------------------------------------------*/
   }
   return;
 }

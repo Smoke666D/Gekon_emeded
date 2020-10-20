@@ -68,7 +68,6 @@ typedef struct __packed
 typedef struct __packed
 {
   getValueCallBack  getVoltage;
-  getValueCallBack  getFreq;
   getValueCallBack  getCurrent;
 } ELECTRO_CHANNEL;
 
@@ -122,6 +121,7 @@ typedef struct __packed
   ELECTRO_STATUS        state;
   GENERATOR_RATING      rating;
   ELECTRO_CHANNEL       line[GENERATOR_LINE_NUMBER];
+  getValueCallBack      getFreq;
   /*---------- ALARMS ----------*/
   ALARM_TYPE            lowVoltageAlarm;
   ALARM_TYPE            lowVoltagePreAlarm;
@@ -145,6 +145,7 @@ typedef struct __packed
   uint8_t               enb;
   ELECTRO_STATUS        state;
   ELECTRO_CHANNEL       line[MAINS_LINE_NUMBER];
+  getValueCallBack      getFreq;
   /*---------- ALARMS ----------*/
   ALARM_TYPE            lowVoltageAlarm;
   ALARM_TYPE            hightVoltageAlarm;
@@ -162,7 +163,7 @@ void           vELECTROinit ( void );
 ELECTRO_STATUS eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS eELECTROgetMainsStatus ( void );
 QueueHandle_t  pELECTROgetCommandQueue ( void );
-void           vELECTROtask ( void const* argument );
+void           vELECTROtask ( void* argument );
 void           vELECTROalarmStartDisable ( void );
 void           vELECTROalarmStartToIdle ( void );
 void           vELECTROalarmIdleDisable ( void );

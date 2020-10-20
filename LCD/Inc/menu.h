@@ -40,6 +40,7 @@
 #define MAX_KEY_PRESS
 
 
+
 #define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/
 
@@ -100,5 +101,6 @@ void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vUToStr(uint8_t * str, uint16_t data, signed char scale);
 void vMenuMessageInit( osThreadId_t xmainprocess );
 void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

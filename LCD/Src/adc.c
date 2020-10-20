@@ -8,8 +8,7 @@
 //#define ARM_MATH_CM3
 
 #include "adc.h"
-
-
+#include "math.h"
 #include "fix16.h"
 
 
@@ -25,7 +24,7 @@ static   uint8_t            ADC_VALID_DATA                               =  0;
 uint8_t vADCGetADC3Data();
 uint8_t vADCGetADC12Data();
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc  );
-int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size , uint16_t * delay, uint8_t cc );
+int16_t  xADCMax( int16_t * source, uint8_t off, uint16_t size , uint16_t * delay, uint8_t cc );
 uint16_t GetAverVDD(uint8_t channel,uint8_t size,uint8_t offset,int16_t * source);
 
 extern TIM_HandleTypeDef htim3;
@@ -929,6 +928,7 @@ uint8_t vADCGetADC12Data()
       }
       else
       {
+
         goto CUR;
       }
   }
@@ -976,7 +976,7 @@ uint8_t vADCGetADC12Data()
         //не в конце перидоа. Это может провести к ошибки, поэтому пропускаем это измерение и ждем удачного.
       {
         if (( abs (DF1 - DF2 )> FASE_DETECT_HISTERESIS ) &&  ( abs(DF2 - DF3 )> FASE_DETECT_HISTERESIS ))
-
+        {
           if (DF2 < DF3)
           {
             uGenFaseRotation = B_C_ROTATION;
@@ -985,7 +985,7 @@ uint8_t vADCGetADC12Data()
           {
             uGenFaseRotation = C_B_ROTATION;
           }
-
+        }
       }
 
    }
@@ -1004,12 +1004,10 @@ uint8_t vADCGetADC12Data()
      //
      if (( (uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) || ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ))
      {
-       float temp;
        iMax = abs(DF3-DF1);
        xCosFi =fix16_div(fix16_from_int(uCurPeriod),fix16_from_int(2));
        xCosFi =fix16_div(xCosFi,fix16_pi);
        xCosFi =fix16_mul(fix16_from_int(iMax),xCosFi);
-
        xCosFi = fix16_cos(xCosFi);
 
      }
@@ -1046,7 +1044,7 @@ fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc )
  *  off     -номер канала, скоторым работает функция
  *  size    -размер буфера для обработки
  */
-int16_t  xADCMax(int16_t * source, uint8_t off, uint16_t size, uint16_t * delay, uint8_t cc )
+int16_t  xADCMax( int16_t * source, uint8_t off, uint16_t size, uint16_t * delay, uint8_t cc )
 {
 
   int16_t max =0;

@@ -40,6 +40,34 @@
 #define MAX_KEY_PRESS
 
 
+#define NET_F1_VDD     8U
+#define NET_F2_VDD     9U
+#define NET_F3_VDD     10U
+#define NET_FREQ       11U
+#define ADC_FREQ       12U
+#define ADC_TEMP       13U
+#define GEN_F1_VDD     14U
+#define GEN_F2_VDD     15U
+#define GEN_F3_VDD     16U
+#define GEN_FREQ       17U
+#define NET_ROTATION   18U
+#define GEN_ROTATION   19U
+#define NET_F1_F_VDD   20U
+#define NET_F2_F_VDD   21U
+#define NET_F3_F_VDD   22U
+#define GEN_F1_F_VDD   23U
+#define GEN_F2_F_VDD   24U
+#define GEN_F3_F_VDD   25U
+#define GEN_F1_CUR     26U
+#define GEN_F2_CUR     27U
+#define GEN_F3_CUR     28U
+#define FUEL_LEVEL     29U
+#define OIL_PRESSURE   30U
+#define COOL_TEMP      31U
+#define ENGINE_SPEED   32U
+#define ENGINE_SCOUNT  33U
+#define ENGINE_WTIME   34U
+
 
 #define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/

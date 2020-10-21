@@ -255,6 +255,12 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
   xEventGroupClearBits( xADCEvent, DC_READY );
   switch ( AnalogSwitch )
   {
+    case 3U:
+      //Переключаем обратно аналоговый коммутатор
+       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
+       ADC_VALID_DATA =0;
+       osDelay( 100U );
+       break;
     case 1U:
       //Получем среднение заничение АЦП канала питания
       temp_int = GetAverVDD( 4U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer  );
@@ -312,6 +318,8 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
         }
       }
       ADC_VALID_DATA =1;
+      //Переключаем обратно аналоговый коммутатор
+      HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
       break;
     case 0U:
       //Переводим в наряжние на канале АЦП
@@ -321,6 +329,9 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       uSFL = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
       uSOP = GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
+      //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
+      HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
+      osDelay(10);
       break;
     default:
       break;
@@ -631,6 +642,7 @@ void StartADCTask(void *argument)
    InitADCDMA(&hadc3);
    InitADCDMA(&hadc2);
    InitADCDMA(&hadc1);
+   vADCConvertToVDD(3);
 
    for(;;)
    {
@@ -641,9 +653,6 @@ void StartADCTask(void *argument)
     xEventGroupWaitBits( xADCEvent, ADC3_READY, pdTRUE, pdTRUE, portMAX_DELAY);   /* Ожидаем флага готовонсти о завершении преобразования */
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
     vADCConvertToVDD(0);
-    //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
-    HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
-    osDelay(10);
     //Запускаем новоей преобразование
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,DC_SIZE*9);
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,DC_SIZE*4);
@@ -653,11 +662,8 @@ void StartADCTask(void *argument)
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC1_READY ,pdTRUE,pdTRUE,portMAX_DELAY);
 
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
+
     vADCConvertToVDD(1);
-
-    //Переключаем обратно аналоговый коммутатор
-    HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
-
     //Переключем АЦП в режим имзерения AC каналов
     vADC3DCInit(AC);
     osDelay(1);
@@ -843,7 +849,8 @@ uint8_t vADCGetADC3Data()
           xEventGroupSetBits( xADCEvent, NET_READY );
           return result;
         }
-        xNET_F1_VDD = fix16_mul( xADCRMS((int16_t *)&ADC3_IN_Buffer, 2, uCurPeriod,4 ), fix16_from_float( AC_COOF ) );
+
+        xNET_F1_VDD = fix16_mul( xADCRMS((int16_t *)&ADC3_IN_Buffer, 2, uCurPeriod,4 ), (fix16_t) 21178 );//умонжить на ( 401U * 3.3 / 4095U )
         xEventGroupSetBits( xADCEvent, NET_READY );
  }
  else
@@ -860,7 +867,7 @@ uint8_t vADCGetADC3Data()
  xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax  >= MIN_AMP_VALUE )
  {
-     xNET_F2_VDD = fix16_mul( xADCRMS((int16_t *)&ADC3_IN_Buffer, 1, uCurPeriod,4), fix16_from_float( AC_COOF ) );
+     xNET_F2_VDD = fix16_mul( xADCRMS((int16_t *)&ADC3_IN_Buffer, 1, uCurPeriod,4),(fix16_t) 21178 );//умонжить на ( 401U * 3.3 / 4095U )
  }
  else
  {
@@ -873,7 +880,7 @@ uint8_t vADCGetADC3Data()
  xEventGroupClearBits( xADCEvent, NET_READY );
  if( iMax >= MIN_AMP_VALUE )
  {
-      xNET_F3_VDD = fix16_mul( xADCRMS((int16_t *)&ADC3_IN_Buffer, 0, uCurPeriod,4 ), fix16_from_float( AC_COOF ) );
+      xNET_F3_VDD = fix16_mul( xADCRMS((int16_t *)&ADC3_IN_Buffer, 0, uCurPeriod,4 ), (fix16_t) 21178  );//умонжить на ( 401U * 3.3 / 4095U )
  }
  else
  {
@@ -929,7 +936,7 @@ uint8_t vADCGetADC12Data()
         xGEN_FREQ =  fix16_div(fix16_from_int(ADC2Freq/10),fix16_from_int(uCurPeriod));
         xGEN_FREQ =  fix16_mul(xGEN_FREQ,fix16_from_int(10));
         iMax=xADCMax((int16_t *) &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 ,4);
-        xGEN_F1_VDD= fix16_mul( xADCRMS((int16_t *)&ADC2_IN_Buffer, 2, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
+        xGEN_F1_VDD= fix16_mul( xADCRMS((int16_t *)&ADC2_IN_Buffer, 2, uCurPeriod,4 ), (fix16_t) 21178 );  //умонжить на ( 401U * 3.3 / 4095U )
       }
       else
       {
@@ -953,7 +960,7 @@ uint8_t vADCGetADC12Data()
   xEventGroupClearBits( xADCEvent, GEN_READY );
   if( iMax >= MIN_AMP_VALUE )
   {
-      xGEN_F2_VDD= fix16_mul(xADCRMS((int16_t *)&ADC2_IN_Buffer, 1, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
+      xGEN_F2_VDD= fix16_mul(xADCRMS((int16_t *)&ADC2_IN_Buffer, 1, uCurPeriod,4 ), (fix16_t) 21178 ); //умонжить на ( 401U * 3.3 / 4095U )
   }
   else
   {
@@ -965,7 +972,7 @@ uint8_t vADCGetADC12Data()
   xEventGroupClearBits( xADCEvent, GEN_READY );
   if(iMax >= MIN_AMP_VALUE )
   {
-       xGEN_F3_VDD= fix16_mul(xADCRMS((int16_t *)&ADC2_IN_Buffer, 0, uCurPeriod,4 ), fix16_from_float( AC_COOF ));
+       xGEN_F3_VDD= fix16_mul(xADCRMS((int16_t *)&ADC2_IN_Buffer, 0, uCurPeriod,4 ),(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
   }
   else
   {

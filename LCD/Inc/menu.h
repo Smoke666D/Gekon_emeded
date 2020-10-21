@@ -130,5 +130,6 @@ void vUToStr(uint8_t * str, uint16_t data, signed char scale);
 void vMenuMessageInit( osThreadId_t xmainprocess );
 void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vExitCurObject ( void );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

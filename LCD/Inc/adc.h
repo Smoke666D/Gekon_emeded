@@ -22,7 +22,8 @@
 #define ADC3_READY         0x04U
 #define NET_READY          0x08U
 #define GEN_READY          0x10U
-#define DC_READY           0x20U
+#define CUR_READY          0x20U
+#define DC_READY           0x40U
 
 #define ADC_READY          0x08U
 #define ADC1_CHANNEL       0x01U

@@ -152,17 +152,17 @@ fix16_t xADCGetNETL3FaseVDD()
 
 fix16_t xADCGetGENL1Cur()
 {
-  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
   return xGEN_F1_CUR;
 }
 fix16_t xADCGetGENL2Cur()
 {
-  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
   return xGEN_F2_CUR;
 }
 fix16_t xADCGetGENL3Cur()
 {
-  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
   return xGEN_F3_CUR;
 }
 
@@ -222,6 +222,7 @@ fix16_t xADCGetGENLFreq()
 
 fix16_t xADCGetCOSFi()
 {
+  xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
   return xCosFi;
 
 }
@@ -613,20 +614,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
             hadc->Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
         }
     }
-    if (hadc->Instance == ADC3)
-    {
-      __HAL_TIM_ENABLE(&htim3);
-    }
-    else
-      if (hadc->Instance == ADC2)
-      {
-        __HAL_TIM_ENABLE(&htim8);
-      }
-      else
-        if (hadc->Instance == ADC1)
-        {
-          __HAL_TIM_ENABLE(&htim2);
-        }
+
     /* Return function status */
     return;
 
@@ -649,6 +637,7 @@ void StartADCTask(void *argument)
     osDelay( 100U );
     vADC3DCInit( DC );
     StartADCDMA( &hadc3, ( uint32_t* )&ADC3_IN_Buffer, ( DC_SIZE * 9U ) );         /* Запускаем преобразвоание АЦП */
+    __HAL_TIM_ENABLE(&htim3);
     xEventGroupWaitBits( xADCEvent, ADC3_READY, pdTRUE, pdTRUE, portMAX_DELAY);   /* Ожидаем флага готовонсти о завершении преобразования */
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
     vADCConvertToVDD(0);
@@ -658,6 +647,9 @@ void StartADCTask(void *argument)
     //Запускаем новоей преобразование
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,DC_SIZE*9);
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,DC_SIZE*4);
+     __HAL_TIM_ENABLE(&htim3);
+     __HAL_TIM_ENABLE(&htim2);
+
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC1_READY ,pdTRUE,pdTRUE,portMAX_DELAY);
 
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
@@ -673,6 +665,10 @@ void StartADCTask(void *argument)
     StartADCDMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_FRAME_SIZE*ADC2_CHANNELS);
     StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
+    __HAL_TIM_ENABLE(&htim3);
+    __HAL_TIM_ENABLE(&htim2);
+    __HAL_TIM_ENABLE(&htim8);
+
     xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
   //  adctime = HAL_GetTick();
     //Обработка значений АЦП3.
@@ -909,7 +905,9 @@ uint8_t vADCGetADC3Data()
  return ADC_OK;
 }
 
-
+#define COS_DATA_COUNT  10
+static int16_t CosBuffer[COS_DATA_COUNT];
+static uint8_t uCosCount =0;
 
 
 uint8_t vADCGetADC12Data()
@@ -917,6 +915,7 @@ uint8_t vADCGetADC12Data()
   uint16_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   int16_t iMax =0;
+
   uint16_t DF1,DF2,DF3;
 
   vDecNetural((int16_t *)&ADC2_IN_Buffer);  //Вычитаем из фазы, значение на линии нейтрали
@@ -944,6 +943,7 @@ uint8_t vADCGetADC12Data()
     xGEN_F1_VDD =0;
     xGEN_F2_VDD =0;
     xGEN_F3_VDD =0;
+    xCosFi = 0;
     xEventGroupSetBits( xADCEvent, GEN_READY );
     return LOW_AMP;
   }
@@ -997,36 +997,52 @@ uint8_t vADCGetADC12Data()
    }
    CUR:
    xEventGroupSetBits( xADCEvent, GEN_READY );
-   //Если драйвер смог пересчитать частоту сигнала напряжения генератора, то расчитываем значения через TrueRms, в противном случае считаем действующие значение от максимум
-   vCurConvert((int16_t *)&ADC1_IN_Buffer,(int16_t *)&ADC2_IN_Buffer,4);
-   if (result==ADC_OK)
+  // Расчет значения тока и косинуса фи
+   xEventGroupClearBits( xADCEvent, CUR_READY );    //Ставим симофор
+   vCurConvert((int16_t *)&ADC1_IN_Buffer,(int16_t *)&ADC2_IN_Buffer,4);   //Вычитаем из значений тока значения нейтрали напряжения генератора
+   if (result==ADC_OK)     //Если мы определили значение частоты напряжения генератора, то считаем ток через TrueRMS
    {
-     xGEN_F1_CUR =    fix16_mul(xADCRMS((int16_t *)&ADC1_IN_Buffer, 0, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
-     xGEN_F2_CUR =    fix16_mul(xADCRMS((int16_t *)&ADC1_IN_Buffer, 1, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
-     xGEN_F3_CUR =    fix16_mul(xADCRMS((int16_t *)&ADC1_IN_Buffer, 2, uCurPeriod,3 ), fix16_from_float(3.3 / 4095U ));
+     xGEN_F1_CUR =    fix16_mul(xADCRMS((int16_t *)&ADC1_IN_Buffer, 0, uCurPeriod,3 ), (fix16_t) 53U );
+     xGEN_F2_CUR =    fix16_mul(xADCRMS((int16_t *)&ADC1_IN_Buffer, 1, uCurPeriod,3 ), (fix16_t) 53U );
+     xGEN_F3_CUR =    fix16_mul(xADCRMS((int16_t *)&ADC1_IN_Buffer, 2, uCurPeriod,3 ), (fix16_t) 53U );
      //расчет косинуса фи.
      //находим сдвиг относительно начал отсчета максимальной амплитуды тока
      xADCMax((int16_t *) &ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 );
      //
-     if (( (uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) || ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ))
+     if (
+         ((uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) && ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ) && (DF1 <= DF3)
+        )
      {
-       iMax = DF3-DF1;
-       xCosFi =fix16_div(fix16_from_int(uCurPeriod),fix16_from_int(2));
-       xCosFi =fix16_div(xCosFi,fix16_pi);
-       xCosFi =fix16_mul(fix16_from_int(iMax),xCosFi);
-       xCosFi = fix16_cos(xCosFi);
+       CosBuffer[uCosCount] = DF3-DF1;
+       uCosCount++;
+       if (uCosCount>=COS_DATA_COUNT)
+       {
+         uCosCount=0;
+         iMax =0;
+         for (uint8_t t=0;t<COS_DATA_COUNT;t++)
+         {
+           iMax = iMax+  CosBuffer[t];
+         }
+         iMax =  iMax/COS_DATA_COUNT;
+         xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(uCurPeriod));  // 2Pi/uCurPeriod
+         xCosFi =fix16_mul(fix16_from_int(iMax),xCosFi);
+         xCosFi = fix16_cos(xCosFi);
+         xCosFi =fix16_mul(xCosFi,fix16_from_int(-1));
+       }
 
      }
    }
    else
    {
+     //Если по каким-то причинам мы не можем в текущий момент расчитать значение частоты напрежения генератора, то считаем ток арефмечтический исходя из максимального значения
      xGEN_F1_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 )),  fix16_sqrt(fix16_from_int(2)));
-     xGEN_F1_CUR =    fix16_mul(xGEN_F1_CUR, fix16_from_float(3.3 / 4095U ));
+     xGEN_F1_CUR = fix16_mul(xGEN_F1_CUR, (fix16_t) 53U );
      xGEN_F2_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 1, uCurPeriod, &DF3,3 )),  fix16_sqrt(fix16_from_int(2)));
-     xGEN_F2_CUR =    fix16_mul(xGEN_F2_CUR, fix16_from_float(3.3 / 4095U ));
+     xGEN_F2_CUR = fix16_mul(xGEN_F2_CUR, (fix16_t) 53U );
      xGEN_F3_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 2, uCurPeriod, &DF3,3 )),  fix16_sqrt(fix16_from_int(2)));
-     xGEN_F3_CUR =    fix16_mul(xGEN_F3_CUR, fix16_from_float(3.3 / 4095U ));
+     xGEN_F3_CUR = fix16_mul(xGEN_F3_CUR, (fix16_t) 53U );
    }
+   xEventGroupSetBits( xADCEvent, CUR_READY );
   return result;
 
 }

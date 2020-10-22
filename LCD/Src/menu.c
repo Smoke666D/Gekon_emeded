@@ -26,7 +26,6 @@ static KeyEvent          BufferEvent      = { 0U };
 static uint8_t           temp_counter     = 0U;
 static xScreenSetObject* pCurrMenu        = NULL;
 static xScreenObjet*     pCurObject       = NULL;
- //static uint8_t           CurObjectIndex   = 0U;
 static uint8_t           DownScreen       = 0U;
 static QueueHandle_t     pKeyboard        = NULL;
 static uint8_t           key              = 0U;
@@ -903,23 +902,23 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
    case NET_F3_VDD:
       fix16_to_str( xADCGetNETL3(), Data, 0U );
       break;
-   case NET_F1_F_VDD:
-      fix16_to_str(xADCGetNETL1FaseVDD(), Data, 0U );
+   case NET_F1_L_VDD:
+      fix16_to_str(xADCGetNETL1Lin(), Data, 0U );
       break;
-    case NET_F2_F_VDD:
-     fix16_to_str( xADCGetNETL2FaseVDD(), Data, 0U );
+    case NET_F2_L_VDD:
+     fix16_to_str( xADCGetNETL2Lin(), Data, 0U );
      break;
-    case NET_F3_F_VDD:
-      fix16_to_str( xADCGetNETL3FaseVDD(), Data, 0U );
+    case NET_F3_L_VDD:
+      fix16_to_str( xADCGetNETL3Lin(), Data, 0U );
       break;
-    case GEN_F1_F_VDD:
-      fix16_to_str( xADCGetGENL1FaseVDD(), Data, 0U );
+    case GEN_F1_L_VDD:
+      fix16_to_str( xADCGetGENL1Lin(), Data, 0U );
       break;
-    case GEN_F2_F_VDD:
-      fix16_to_str( xADCGetGENL2FaseVDD(), Data, 0U );
+    case GEN_F2_L_VDD:
+      fix16_to_str( xADCGetGENL2Lin(), Data, 0U );
       break;
-   case GEN_F3_F_VDD:
-      fix16_to_str( xADCGetGENL3FaseVDD(), Data, 0U );
+   case GEN_F3_L_VDD:
+      fix16_to_str( xADCGetGENL3Lin(), Data, 0U );
       break;
     case NET_FREQ:
      fix16_to_str( xADCGetNETLFreq(), Data, 1U );
@@ -967,6 +966,10 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
          case COS_FI:
            fix16_to_str( xADCGetCOSFi(), Data, 2 );
            break;
+         case GEN_POWER:
+           fix16_to_str(  xADCGetPower(), Data, 2 );
+           break;
+
     default:
      break;
 

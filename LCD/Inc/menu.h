@@ -52,12 +52,12 @@
 #define GEN_FREQ       17U
 #define NET_ROTATION   18U
 #define GEN_ROTATION   19U
-#define NET_F1_F_VDD   20U
-#define NET_F2_F_VDD   21U
-#define NET_F3_F_VDD   22U
-#define GEN_F1_F_VDD   23U
-#define GEN_F2_F_VDD   24U
-#define GEN_F3_F_VDD   25U
+#define NET_F1_L_VDD   20U
+#define NET_F2_L_VDD   21U
+#define NET_F3_L_VDD   22U
+#define GEN_F1_L_VDD   23U
+#define GEN_F2_L_VDD   24U
+#define GEN_F3_L_VDD   25U
 #define GEN_F1_CUR     26U
 #define GEN_F2_CUR     27U
 #define GEN_F3_CUR     28U
@@ -67,7 +67,8 @@
 #define ENGINE_SPEED   32U
 #define ENGINE_SCOUNT  33U
 #define ENGINE_WTIME   34U
-#define COS_FI        35U
+#define COS_FI         35U
+#define GEN_POWER      36U
 
 #define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/

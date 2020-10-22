@@ -5,9 +5,9 @@
  *      Author: igor.dymov
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
-#include "menu.h"
-#include "rtc.h"
-#include "data_manager.h"
+
+
+#include "menu_data.h"
 /*------------------------ Extern -------------------------------------------------------------------*/
 extern xScreenSetObject xMainMenu;
 extern xScreenSetObject xGeneratorMenu;
@@ -15,8 +15,7 @@ extern xScreenSetObject xEngineMenu;
 extern xScreenSetObject xNetMenu;
 extern xScreenSetObject xSettingsMenu;
 
-extern void xInfoScreenCallBack( xScreenSetObject * menu, char key );
-extern void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
+
 /*----------------------- Variables -----------------------------------------------------------------*/
 static char EventLog[][44U]=
 {
@@ -38,13 +37,7 @@ static char EventLog[][44U]=
   "Напряж. ген. высок",
   "Напряжение ген.",
 };
-#define MENU_LEVEL1_COUNT      8U
-#define ENGINE_MENU_COUNT      3U
-#define NET_MENU_COUNT         3U
-#define GENERATOR_MENU_COUNT   7U
-#define SETTINGS_MENU_COUNT    1U
-#define YESNO_MENU_COUNT       1U
-#define EVENT_MENU_COUNT       1U
+
 
 
 #define MAX_HEADER_STRING_SIZE 40U
@@ -343,7 +336,7 @@ static xScreenObjet const xYesNoScreen[]=
 };
 
 
-static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
+xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
   {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
@@ -355,14 +348,14 @@ static xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
   {InfoMainScreen,NULL,NULL,0U,0U},
 };
 
-static xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
+xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
 {
   {Engine1Screen,&xMainMenu,NULL,0U,0U},
   {Engine2Screen,&xMainMenu,NULL,0U,0U},
   {EngineMainScreen,(void*)&xMainMenu,NULL,0U,0U},
 };
 
-static xScreenType xGeneratorScreens[GENERATOR_MENU_COUNT]=
+xScreenType xGeneratorScreens[GENERATOR_MENU_COUNT]=
 {
   {Generator1Screen,&xMainMenu,NULL,0U,0U},
   {Generator2Screen,&xMainMenu,NULL,0U,0U},
@@ -373,7 +366,7 @@ static xScreenType xGeneratorScreens[GENERATOR_MENU_COUNT]=
   {GeneratorMainScreen,(void*)&xGeneratorMenu,NULL,0U,0U},
 };
 
-static xScreenType xNetScreens[NET_MENU_COUNT]=
+xScreenType xNetScreens[NET_MENU_COUNT]=
 {
   { Net1Screen, &xMainMenu, NULL,  0U, 0U},
   { Net2Screen, &xMainMenu, NULL,  0U, 0U },
@@ -382,19 +375,72 @@ static xScreenType xNetScreens[NET_MENU_COUNT]=
 
 
 
-static xScreenType   xEventScreens[EVENT_MENU_COUNT]=
+xScreenType   xEventScreens[EVENT_MENU_COUNT]=
 {
   { EventScreen, &xMainMenu, NULL,  0U, 0U},
 };
 
 
-static xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
+xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
 {
   { SettingsScreen, (void*)&xMainMenu, NULL,  0U, 0U},
 };
 
-static xScreenType   xYesNoScreens[SETTINGS_MENU_COUNT]=
+xScreenType   xYesNoScreens[SETTINGS_MENU_COUNT]=
 {
   { xYesNoScreen, &xMainMenu, NULL,  0U, 0U},
+};
+
+
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Обявдение объека-карусели экранов верхнего уровня
+ */
+xScreenSetObject xMainMenu =
+{
+  xScreensLev1,
+  ( MENU_LEVEL1_COUNT - 1U ),
+  0U,
+  ( void* )&xInfoScreenCallBack,
+};
+/*---------------------------------------------------------------------------------------------------*/
+xScreenSetObject xEngineMenu =
+{
+  xEngineScreens,
+  ( ENGINE_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xInfoScreenCallBack,
+};
+/*---------------------------------------------------------------------------------------------------*/
+xScreenSetObject xGeneratorMenu =
+{
+  xGeneratorScreens,
+  ( GENERATOR_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xInfoScreenCallBack,
+};
+/*---------------------------------------------------------------------------------------------------*/
+xScreenSetObject xNetMenu =
+{
+  xNetScreens,
+  ( NET_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xInfoScreenCallBack,
+};
+
+xScreenSetObject xSettingsMenu =
+{
+  xSettingsScreens,
+  ( SETTINGS_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xSettingsScreenKeyCallBack,
+};
+
+xScreenSetObject xEventMenu =
+{
+  xEventScreens,
+  ( EVENT_MENU_COUNT  - 1U ),
+  0U,
+  ( void* )&EventScreenKeyCallBack,
 };
 

@@ -8,7 +8,7 @@
 #include "menu.h"
 #include "lcd.h"
 #include "keyboard.h"
-#include "menu_data.c"
+#include "menu_data.h"
 #include "controllerTypes.h"
 #include "adc.h"
 #include "stdio.h"
@@ -550,57 +550,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
   }
   return;
 }
-/*---------------------------------------------------------------------------------------------------*/
-/*
- * Обявдение объека-карусели экранов верхнего уровня
- */
-xScreenSetObject xMainMenu =
-{
-  xScreensLev1,
-  ( MENU_LEVEL1_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-/*---------------------------------------------------------------------------------------------------*/
-xScreenSetObject xEngineMenu =
-{
-  xEngineScreens,
-  ( ENGINE_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-/*---------------------------------------------------------------------------------------------------*/
-xScreenSetObject xGeneratorMenu =
-{
-  xGeneratorScreens,
-  ( GENERATOR_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-/*---------------------------------------------------------------------------------------------------*/
-xScreenSetObject xNetMenu =
-{
-  xNetScreens,
-  ( NET_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-
-xScreenSetObject xSettingsMenu =
-{
-  xSettingsScreens,
-  ( SETTINGS_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xSettingsScreenKeyCallBack,
-};
-
-xScreenSetObject xEventMenu =
-{
-  xEventScreens,
-  ( EVENT_MENU_COUNT  - 1U ),
-  0U,
-  ( void* )&EventScreenKeyCallBack,
-};
 
 
 void vUCTOSTRING ( uint8_t * str, uint8_t data )
@@ -967,7 +916,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            fix16_to_str( xADCGetCOSFi(), Data, 2 );
            break;
          case GEN_POWER:
-           fix16_to_str(  xADCGetPower(), Data, 2 );
+           fix16_to_str(fix16_div(xADCGetPower(),fix16_from_int(1000)), Data, 2 );
            break;
 
     default:

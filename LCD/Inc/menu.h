@@ -132,5 +132,9 @@ void vMenuMessageInit( osThreadId_t xmainprocess );
 void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
+void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
+void EventScreenKeyCallBack( xScreenSetObject* menu, char key );
+void xInfoScreenCallBack( xScreenSetObject * menu, char key );
+void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

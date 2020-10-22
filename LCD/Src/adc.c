@@ -333,13 +333,14 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
 
   uint16_t temp_int = 0U;
+
   xEventGroupClearBits( xADCEvent, DC_READY );
   switch ( AnalogSwitch )
   {
     case 1U:
       uVDD = GetAverVDD( 4U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer  );   //Получем среднение заничение АЦП канала питания
       uCSA = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );    //Усредняем сырые значения АЦП
-      uCAS = GetAverVDD( 6U, DC_SIZE, 9,(int16_t *)&ADC3_IN_Buffer );   //Усредняем сырые значения АЦП
+      uCAS = GetAverVDD( 6U, DC_SIZE, 9,(int16_t *)&ADC3_IN_Buffer );   //Усредняем сырые значения АЦП канала CommonAnalogSensor
 
       uTemp = GetAverVDD( 3U, DC_SIZE, 4,(int16_t *)&ADC1_IN_Buffer );
       xADC_TEMP = fix16_sub(  fix16_from_float(uTemp*3.3/4095U), fix16_from_float( 0.76 ) );
@@ -989,7 +990,7 @@ uint8_t vADCGetADC3Data()
 }
 
 #define COS_DATA_COUNT  10
-static int16_t CosBuffer[COS_DATA_COUNT];
+static int16_t CosBuffer[COS_DATA_COUNT][2];
 static uint8_t uCosCount =0;
 
 
@@ -997,7 +998,7 @@ uint8_t vADCGetADC12Data()
 {
   uint16_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
-  int16_t iMax =0;
+  int16_t iMax =0,iTemp=0;
   fix16_t fix_temp=0;
   uint16_t DF1,DF2,DF3;
 
@@ -1088,24 +1089,31 @@ uint8_t vADCGetADC12Data()
      xGEN_F1_CUR =   xADCRMS((int16_t *)&ADC1_IN_Buffer, 0, uCurPeriod,3 );
      xGEN_F2_CUR =   xADCRMS((int16_t *)&ADC1_IN_Buffer, 1, uCurPeriod,3 );
      xGEN_F3_CUR =   xADCRMS((int16_t *)&ADC1_IN_Buffer, 2, uCurPeriod,3 );
-     //расчет косинуса фи.
-     //находим сдвиг относительно начал отсчета максимальной амплитуды тока
-     xADCMax((int16_t *) &ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 );
-     //
+     /*
+      * расчет косинуса фи.
+      */
+     xADCMax((int16_t *) &ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 );//находим сдвиг относительно начал отсчета максимальной амплитуды тока
+     //Проверяем, что валидность максимумов тока и напряжения, сравнение FASE_DETECT_HISTERESIS позволяет отсечь систуацию, когда данные зафиксированы
+     //со сдвигом фазы окло 90 градусов. В этом случае в пероид пападают 2 мксимума.
      if ( ((uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) && ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ) && (DF1 <= DF3))
      {
-       CosBuffer[uCosCount] = DF3-DF1;
+       // Делаем усреднение
+       CosBuffer[uCosCount][0] = DF3-DF1;
+       CosBuffer[uCosCount][1] = uCurPeriod;
        uCosCount++;
        if (uCosCount>=COS_DATA_COUNT)
        {
          uCosCount=0;
          iMax =0;
+         iTemp =0;
          for (uint8_t t=0;t<COS_DATA_COUNT;t++)
          {
-           iMax = iMax+  CosBuffer[t];
+           iMax = iMax+  CosBuffer[t][0];
+           iTemp = iTemp +CosBuffer[t][1];
          }
          iMax =  iMax/COS_DATA_COUNT;
-         xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(uCurPeriod));  // 2Pi/uCurPeriod
+         iTemp = iTemp/COS_DATA_COUNT;
+         xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(iTemp));  // 2Pi/uCurPeriod
          xCosFi =fix16_mul(fix16_from_int(iMax),xCosFi);
          xCosFi = fix16_mul(fix16_cos(xCosFi),xMinus1);
        }

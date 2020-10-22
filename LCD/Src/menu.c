@@ -755,6 +755,7 @@ void vGetStatusData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       switch ( cmd )
       {
         case mREAD:
+
 	        eDATAAPIconfigValue( DATA_API_CMD_READ, displayBrightnesLevel.atrib->adr, &buff );
           vUCTOSTRING( ( uint8_t* )Data, (uint8_t) buff );
           break;
@@ -803,8 +804,30 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
   uint16_t utempdata;
+  eConfigReg xtempCONF;
+  uint16_t tt[10];
+  uint16_t adr=0;
+  char t[20];
   switch (ID)
   {
+    case HW_VER:
+    case SW_VER:
+    case SERIAL:
+      if (ID==SERIAL)
+        adr =SERIAL_NUMBER_ADR;
+      if (ID ==SW_VER)
+        adr = VERSION_FIRMWARE_ADR;
+      if (ID ==HW_VER)
+       adr = VERSION_CONTROLLER_ADR;
+      eDATAAPIconfigAtrib(DATA_API_CMD_READ,adr,&xtempCONF);
+      eDATAAPIconfigValue(DATA_API_CMD_READ,adr,&tt);
+      sprintf(Data,"%h",tt[0]);
+      for (uint8_t i=1;i<xtempCONF.atrib->len;i++)
+      {
+        sprintf(t,"%h",tt[i]);
+        strcat(Data,t);
+      }
+      break;
     case FUEL_LEVEL:
       eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
       fix16_to_str( temp, Data, 0U );

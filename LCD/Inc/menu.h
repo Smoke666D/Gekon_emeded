@@ -40,6 +40,9 @@
 #define MAX_KEY_PRESS
 
 
+#define SW_VER         5U
+#define HW_VER         6U
+#define SERIAL         7U
 #define NET_F1_VDD     8U
 #define NET_F2_VDD     9U
 #define NET_F3_VDD     10U
@@ -119,7 +122,7 @@ typedef struct __packed
   void          (* pFunc)(void *,char);  /* Функция обработки нажатий */
 } xScreenSetObject;
 /*----------------------------- Functions ------------------------------------*/
-void vDrawMenu( uint8_t temp, uint8_t* data );
+
 void vMenuInit( u8g2_t* temp );
 void vMenuTask( void );
 void vDrawObject( xScreenObjet* pScreenObjects );

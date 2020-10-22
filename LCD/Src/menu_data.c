@@ -290,18 +290,19 @@ static xScreenObjet const EventScreen[]=
 };
 
 
-
-
-
-
 static xScreenObjet const InfoMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ВЕРСИЯ",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),LINE,Header,NULL,NULL,0U},
-  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"ID",NULL,0U},
-  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Тех.поддержка",NULL,0U},
-  {1U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"www.energan.ru",NULL,0U}
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"S/N",NULL,0U},
+  {0U,FONT_SIZE*10U,LINE1+6U,15U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,SERIAL},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Контроллер",NULL,0U},
+  {0U,FONT_SIZE*8U,LINE2+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,HW_VER},
+  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"ПО",NULL,0U},
+  {1U,FONT_SIZE*8U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,SW_VER},
 };
+
+
 
 static xScreenObjet const StatusMainScreen[]=
 {

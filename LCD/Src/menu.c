@@ -450,7 +450,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
       switch ( pScreenObjects[i].xType )
       {
         //Если текущий объект - строка
-        case LINE:
+        case H_LINE:
           u8g2_SetDrawColor( u8g2, pScreenObjects[i].ObjectParamert[1U] );
           u8g2_DrawLine( u8g2, pScreenObjects[i].x, pScreenObjects[i].y, pScreenObjects[i].Width, pScreenObjects[i].Height );
           break;
@@ -800,34 +800,67 @@ void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 }
 
+
+
+char cHexToChar(uint8_t data)
+{
+  if (data<10)
+     return data+'0';
+  else
+     return data-10 +'A';
+}
+
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
   uint16_t utempdata;
-  eConfigReg xtempCONF;
-  uint16_t tt[10];
+  uint16_t tt[6]={0,0,0,0,0,0};
+  eConfigAttributes ATR;
   uint16_t adr=0;
-  char t[20];
   switch (ID)
   {
     case HW_VER:
-    case SW_VER:
-    case SERIAL:
-      if (ID==SERIAL)
-        adr =SERIAL_NUMBER_ADR;
-      if (ID ==SW_VER)
-        adr = VERSION_FIRMWARE_ADR;
-      if (ID ==HW_VER)
-       adr = VERSION_CONTROLLER_ADR;
-      eDATAAPIconfigAtrib(DATA_API_CMD_READ,adr,&xtempCONF);
-      eDATAAPIconfigValue(DATA_API_CMD_READ,adr,&tt);
-      sprintf(Data,"%h",tt[0]);
-      for (uint8_t i=1;i<xtempCONF.atrib->len;i++)
+      eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&ATR);
+      if (ATR.len ==1 )
       {
-        sprintf(t,"%h",tt[i]);
-        strcat(Data,t);
+             eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&tt);
+             sprintf(Data,"%i",tt[0]);
       }
       break;
+    case SW_VER:
+      eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR,&ATR);
+      if (ATR.len ==1 )
+      {
+        eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR,&tt);
+        sprintf(Data,"%i",tt[0]);
+      }
+      break;
+    case SERIAL_L:
+      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
+      for (uint8_t i=0;i<3;i++)
+               {
+                 Data[i*5]  = cHexToChar((tt[i]>>12)  & 0x0F );
+                 Data[i*5+1]= cHexToChar((tt[i]>>8)   & 0xF);
+                 Data[i*5+2]= cHexToChar((tt[i]>>4)   & 0xF);
+                 Data[i*5+3]= cHexToChar((tt[i])      & 0xF);
+                 Data[i*5+4]=':';
+               }
+      Data[14]=0;
+      break;
+    case SERIAL_H:
+      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
+      for (uint8_t i=0;i<3;i++)
+          {
+            Data[i*5]  = cHexToChar((tt[i+3]>>12) & 0x0F );
+            Data[i*5+1]= cHexToChar((tt[i+3]>>8)   & 0xF);
+            Data[i*5+2]= cHexToChar((tt[i+3]>>4)   & 0xF);
+            Data[i*5+3]= cHexToChar((tt[i+3])   & 0xF);
+            Data[i*5+4]=':';
+          }
+        Data[14]=0;
+
+      break;
+
     case FUEL_LEVEL:
       eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
       fix16_to_str( temp, Data, 0U );

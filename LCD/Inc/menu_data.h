@@ -13,13 +13,14 @@
 #include "data_manager.h"
 
 
-#define MENU_LEVEL1_COUNT      8U
+#define MENU_LEVEL1_COUNT      7U
 #define ENGINE_MENU_COUNT      3U
 #define NET_MENU_COUNT         3U
 #define GENERATOR_MENU_COUNT   7U
 #define SETTINGS_MENU_COUNT    1U
 #define YESNO_MENU_COUNT       1U
 #define EVENT_MENU_COUNT       1U
+#define ABOUT_MENU_COUNT       3U
 
  extern xScreenType   xEventScreens[EVENT_MENU_COUNT];
  extern xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT];
@@ -33,5 +34,6 @@
  extern xScreenType xNetScreens[NET_MENU_COUNT];
  extern xScreenSetObject xSettingsMenu;
  extern xScreenSetObject xMainMenu;
+ extern xScreenSetObject xAboutMenu;
 
 #endif /* INC_MENU_DATA_H_ */

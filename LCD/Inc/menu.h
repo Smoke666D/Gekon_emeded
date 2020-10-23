@@ -40,9 +40,10 @@
 #define MAX_KEY_PRESS
 
 
-#define SW_VER         5U
-#define HW_VER         6U
-#define SERIAL         7U
+#define SW_VER         4U
+#define HW_VER         5U
+#define SERIAL_L       6U
+#define SERIAL_H       7U
 #define NET_F1_VDD     8U
 #define NET_F2_VDD     9U
 #define NET_F3_VDD     10U
@@ -82,7 +83,7 @@ typedef enum
   ICON,
   TEXT_STRING,
   STRING,
-  LINE,
+  H_LINE,
   NEGATIVE_STRING,
   DATA_STRING,
   INPUT_DATA_STRING,

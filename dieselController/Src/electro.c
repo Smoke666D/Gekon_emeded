@@ -238,7 +238,7 @@ void vGENERATORprocess ( void )
   {
     voltage[i] = generator.line[i].getVoltage();
     current[i] = generator.line[i].getCurrent();
-    power[i]   = fix16_mul( fix16_mul( voltage[i], current[i] ), generator.rating.cosFi );
+    //power[i]   = fix16_mul( fix16_mul( voltage[i], current[i] ), generator.rating.cosFi );
   }
   freq = generator.getFreq();
   maxCurrent = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
@@ -438,7 +438,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.relayOff.timer.id     = 0U;
   generator.relayOff.status       = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
-  /*
   generator.getFreq             = xADCGetGENLFreq;
   generator.line[0U].getVoltage = xADCGetGENL1;
   generator.line[0U].getCurrent = xADCGetGENL1Cur;
@@ -446,7 +445,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.line[1U].getCurrent = xADCGetGENL2Cur;
   generator.line[2U].getVoltage = xADCGetGENL3;
   generator.line[2U].getCurrent = xADCGetGENL3Cur;
-  */
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
@@ -524,7 +522,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   mains.relayOff.timer.id     = 0U;
   mains.relayOff.status       = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
-  /*
   mains.getFreq = xADCGetNETLFreq;
   mains.line[0U].getVoltage = xADCGetNETL1;
   mains.line[0U].getCurrent = NULL;
@@ -532,7 +529,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   mains.line[1U].getCurrent = NULL;
   mains.line[2U].getVoltage = xADCGetNETL3;
   mains.line[2U].getCurrent = NULL;
-  */
   /*----------------------------------------------------------------------------*/
   return;
 }

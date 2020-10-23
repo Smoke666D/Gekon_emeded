@@ -485,6 +485,7 @@ void vCONTROLLERtask ( void const* argument )
           {
             controller.state = CONTROLLER_STATUS_IDLE;
             engineCmd        = ENGINE_CMD_RESET_TO_IDLE;
+            vFPIreset();
             vFPOsetAlarm( RELAY_OFF );
             vFPOsetNetFault( RELAY_OFF );
             eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );

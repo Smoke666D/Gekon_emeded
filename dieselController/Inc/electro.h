@@ -13,7 +13,7 @@
 #include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
-#define  GENERATOR_LINE_NUMBER             4U
+#define  GENERATOR_LINE_NUMBER             3U
 #define  MAINS_LINE_NUMBER                 3U
 #define  TEMP_PROTECTION_TIME_MULTIPLIER   ( F16( 36U ) )    /* t */
 #define  CUTOUT_PROTECTION_TRIPPING_CURVE  ( F16( 0.001f ) ) /* K */

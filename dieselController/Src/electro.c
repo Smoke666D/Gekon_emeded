@@ -561,7 +561,8 @@ ELECTRO_STATUS eELECTROgetGeneratorStatus ( void )
 /*---------------------------------------------------------------------------------------------------*/
 ELECTRO_STATUS eELECTROgetMainsStatus ( void )
 {
-  return mains.state;
+  //return mains.state;
+  return ELECTRO_STATUS_LOAD;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROalarmStartDisable ( void )

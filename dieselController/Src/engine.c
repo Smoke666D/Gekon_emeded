@@ -1509,6 +1509,7 @@ void vENGINEtask ( void* argument )
         planStop.status = STOP_IDLE;
         engine.status   = ENGINE_STATUS_IDLE;
         stopSolenoid.relay.set( RELAY_OFF );
+        speed.lowAlarm.error.active = PERMISSION_DISABLE;
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
         engine.cmd               = ENGINE_CMD_NONE;

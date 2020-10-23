@@ -509,6 +509,8 @@ void vERRORcheck ( ERROR_TYPE* error, uint8_t flag )
 void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
 {
   fix16_t levelOff = 0U;
+  float   temp1    = 0;
+  float   temp2    = 0;
 
   if ( ( alarm->error.enb == PERMISSION_ENABLE ) && ( alarm->error.active == PERMISSION_ENABLE ) )
   {

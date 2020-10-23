@@ -1311,7 +1311,7 @@ void StartDefaultTask(void *argument)
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
   vENGINEinit();                              /**/
-  vELECTROinit();                             /**/
+  //vELECTROinit();                             /**/
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
   /* Infinite loop */

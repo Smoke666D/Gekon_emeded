@@ -491,10 +491,10 @@ void vENGINEdataInit ( void )
   oil.pressure.type                            = getBitMap( &oilPressureSetup, 0U );
   oil.pressure.chart                           = &oilSensorChart;
   oil.pressure.get                             = xADCGetSOP;
-  oil.pressure.cutout.error.enb                      = getBitMap( &oilPressureSetup, 1U );
-  oil.pressure.cutout.error.active                   = PERMISSION_ENABLE;
+  oil.pressure.cutout.error.enb                = getBitMap( &oilPressureSetup, 1U );
+  oil.pressure.cutout.error.active             = PERMISSION_ENABLE;
   oil.pressure.cutout.level                    = SENSOR_CUTOUT_LEVEL;
-  oil.pressure.cutout.error.status                   = ALARM_STATUS_IDLE;
+  oil.pressure.cutout.error.status             = ALARM_STATUS_IDLE;
   oil.pressure.cutout.timer.delay              = 0U;
   oil.pressure.cutout.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
   oil.pressure.cutout.error.ack                = PERMISSION_DISABLE;

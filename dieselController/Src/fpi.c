@@ -269,6 +269,16 @@ void vFPIreset ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vFPIprint ( FPI_FUNCTION function, const char* str )
+{
+  vSYSSerial( ">>" );
+  vSYSSerial( cFPIfunctionNames[ ( uint8_t )( function ) ] );
+  vSYSSerial( ": " );
+  vSYSSerial( str );
+  vSYSSerial( "\r\n" );
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vFPIsetBlock ( void )
 {
   uint8_t i = 0U;

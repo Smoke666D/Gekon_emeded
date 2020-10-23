@@ -497,10 +497,12 @@ void vCONTROLLERtask ( void const* argument )
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banAutoShutdown = 1U;
+            vFPIprint( FPI_FUN_BAN_AUTO_SHUTDOWN, "SET" );
           }
           else
           {
             controller.banAutoShutdown = 0U;
+            vFPIprint( FPI_FUN_BAN_AUTO_SHUTDOWN, "RESET" );
           }
           break;
         /*---------------------- Запрет автоматического запуска ----------------------*/
@@ -508,10 +510,12 @@ void vCONTROLLERtask ( void const* argument )
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banAutoStart = 1U;
+            vFPIprint( FPI_FUN_BAN_AUTO_START, "SET" );
           }
           else
           {
             controller.banAutoStart = 0U;
+            vFPIprint( FPI_FUN_BAN_AUTO_START, "RESET" );
           }
           break;
         /*------------------------ Запрет нагрузки генератора ------------------------*/
@@ -519,10 +523,12 @@ void vCONTROLLERtask ( void const* argument )
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banGenLoad = 1U;
+            vFPIprint( FPI_FUN_BAN_GEN_LOAD, "SET" );
           }
           else
           {
             controller.banGenLoad = 0U;
+            vFPIprint( FPI_FUN_BAN_GEN_LOAD, "RESET" );
           }
           break;
         /*----------------------- Дистанционный запуск, останов ----------------------*/

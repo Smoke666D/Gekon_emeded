@@ -39,6 +39,11 @@ typedef enum
   ELECTRO_CMD_NONE,
   ELECTRO_CMD_LOAD_MAINS,
   ELECTRO_CMD_LOAD_GENERATOR,
+  ELECTRO_CMD_DISABLE_START_ALARMS,
+  ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS,
+  ELECTRO_CMD_DISABLE_IDLE_ALARMS,
+  ELECTRO_CMD_ENABLE_IDLE_CMD,
+  ELECTRO_CMD_RESET_TO_IDLE,
 } ELECTRO_COMMAND;
 
 typedef enum
@@ -57,6 +62,15 @@ typedef enum
   ELECTRO_CURRENT_STATUS_CUTOUT_TRIG,
   ELECTRO_CURRENT_STATUS_ALARM,
 } ELECTRO_CURRENT_STATUS;
+
+typedef enum
+{
+  ELECTRO_ALARM_STATUS_STOP,
+  ELECTRO_ALARM_STATUS_START,
+  ELECTRO_ALARM_STATUS_START_ON_IDLE,
+  ELECTRO_ALARM_STATUS_WORK,
+  ELECTRO_ALARM_STATUS_WORK_ON_IDLE,
+} ELECTRO_ALARM_STATUS;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
@@ -113,6 +127,7 @@ typedef struct __packed
   ELECTRO_PROCESS_STATUS  state;
   ELECTRO_COMMAND         cmd;
   SYSTEM_TIMER            timer;
+  ELECTRO_ALARM_STATUS    alarmState;
 } ELECTRO_SYSTEM_TYPE;
 
 typedef struct __packed
@@ -159,14 +174,10 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
-void           vELECTROinit ( void );
-ELECTRO_STATUS eELECTROgetGeneratorStatus ( void );
-ELECTRO_STATUS eELECTROgetMainsStatus ( void );
-QueueHandle_t  pELECTROgetCommandQueue ( void );
-void           vELECTROtask ( void* argument );
-void           vELECTROalarmStartDisable ( void );
-void           vELECTROalarmStartToIdle ( void );
-void           vELECTROalarmIdleDisable ( void );
-void           vELECTROalarmIdleEnable ( void );
+void                 vELECTROinit ( void );
+ELECTRO_STATUS       eELECTROgetGeneratorStatus ( void );
+ELECTRO_STATUS       eELECTROgetMainsStatus ( void );
+ELECTRO_ALARM_STATUS eELECTROgetAlarmStatus ( void );
+QueueHandle_t        pELECTROgetCommandQueue ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

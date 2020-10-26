@@ -120,6 +120,8 @@ typedef struct __packed
 extern osThreadId_t fpiHandle;
 /*----------------------- Functions ------------------------------------*/
 void          vFPIinit ( const FPI_INIT* init );
+void          vFPIreset ( void );
+void          vFPIprint ( FPI_FUNCTION function, const char* str );
 QueueHandle_t pFPIgetQueue ( void );
 void          vFPIsetBlock ( void );
 FPI_LEVEL     eFPIcheckLevel ( FPI_FUNCTION function );

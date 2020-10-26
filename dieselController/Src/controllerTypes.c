@@ -304,6 +304,10 @@ TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
   uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, F16( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
   uint8_t     i    = 0U;
 
+  if ( activeNumber > 2 )
+  {
+    i = 0U;
+  }
   if ( activeNumber < LOGIC_COUNTERS_SIZE )
   {
     for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
@@ -509,6 +513,8 @@ void vERRORcheck ( ERROR_TYPE* error, uint8_t flag )
 void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
 {
   fix16_t levelOff = 0U;
+  float   temp1    = 0;
+  float   temp2    = 0;
 
   if ( ( alarm->error.enb == PERMISSION_ENABLE ) && ( alarm->error.active == PERMISSION_ENABLE ) )
   {
@@ -733,6 +739,14 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
   {
 
   }
+  return;
+}
+
+void vLOGICprintDebug ( const char* str )
+{
+  #if ( DEBUG_SERIAL_STATUS > 0U )
+    vSYSSerial( str );
+  #endif
   return;
 }
 /*----------------------------------------------------------------------------*/

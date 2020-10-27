@@ -18,7 +18,7 @@
 #define  ENGINE_EVENT_QUEUE_LENGTH      16U
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
 #define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
-#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE ) )
+#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE - 200U ) )
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {

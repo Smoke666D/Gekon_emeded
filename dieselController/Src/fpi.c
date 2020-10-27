@@ -80,30 +80,30 @@ uint8_t uFPIarmingNever ( void )
  * input:  fpi - Freely Programmable Input structure
  * output: level of fpi
  */
-uint8_t vFPIgetTrig ( FPI* fpi )
+TRIGGER_STATE vFPIgetTrig ( FPI* fpi )
 {
   GPIO_PinState pinState = GPIO_PIN_RESET;
-  uint8_t       res      = 0U;
+  uint8_t       res      = TRIGGER_IDLE;
   if ( fpi->port != NULL )
   {
     pinState = HAL_GPIO_ReadPin ( fpi->port, fpi->pin );
     if ( ( ( fpi->polarity == FPI_POL_NORMAL_OPEN  ) && ( pinState == GPIO_PIN_RESET ) ) ||
          ( ( fpi->polarity == FPI_POL_NORMAL_CLOSE ) && ( pinState == GPIO_PIN_SET   ) ) )
     {
-      res = 1U;
+      res = TRIGGER_SET;
     }
-    if ( ( fpi->level == FPI_LEVEL_LOW ) && ( res > 0U ) )
+    if ( ( fpi->level == FPI_LEVEL_LOW ) && ( res == TRIGGER_SET ) )
     {
       fpi->level = FPI_LEVEL_HIGH;
     }
-    else if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res > 0U ) )
+    else if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res == TRIGGER_SET ) )
     {
-      res = 0U;
+      res = TRIGGER_IDLE;
     }
-    else if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res == 0U ) )
+    else if ( ( fpi->level == FPI_LEVEL_HIGH ) && ( res == TRIGGER_IDLE ) )
     {
       fpi->level = FPI_LEVEL_LOW;
-      res        = 1U;
+      res        = TRIGGER_SET;
     }
     else
     {
@@ -246,6 +246,37 @@ FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
     }
   }
   return level;
+}
+/*----------------------------------------------------------------------------*/
+void vFPIreset ( void )
+{
+  uint8_t i = 0U;
+  if ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) == pdTRUE )
+  {
+    for ( i=0U; i<FPI_NUMBER; i++ )
+    {
+      if ( ( fpis[i].function == FPI_FUN_USER              ) ||
+           ( fpis[i].function == FPI_FUN_OIL_LOW_PRESSURE  ) ||
+           ( fpis[i].function == FPI_FUN_HIGHT_ENGINE_TEMP ) ||
+           ( fpis[i].function == FPI_FUN_LOW_FUEL          ) )
+      {
+        fpis[i].level = FPI_LEVEL_LOW;
+        fpis[i].state = FPI_IDLE;
+      }
+    }
+    xSemaphoreGive( xFPIsemaphore );
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPIprint ( FPI_FUNCTION function, const char* str )
+{
+  vSYSSerial( ">>" );
+  vSYSSerial( cFPIfunctionNames[ ( uint8_t )( function ) ] );
+  vSYSSerial( ": " );
+  vSYSSerial( str );
+  vSYSSerial( "\r\n" );
+  return;
 }
 /*----------------------------------------------------------------------------*/
 void vFPIsetBlock ( void )

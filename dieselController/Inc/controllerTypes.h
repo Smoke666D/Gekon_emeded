@@ -292,5 +292,6 @@ void              vLOGICtimerCallback ( void );
 void              vLOGICprintEvent ( SYSTEM_EVENT event );
 ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr );
 void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
+void              vLOGICprintDebug ( const char* str );
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOGICTYPES_H_ */

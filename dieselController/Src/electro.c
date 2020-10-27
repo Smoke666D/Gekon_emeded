@@ -546,6 +546,8 @@ void vELECTROinit ( void )
   mains.state = ELECTRO_STATUS_LOAD;
   generator.relay.set( RELAY_OFF );
   generator.state = ELECTRO_STATUS_IDLE;
+  vRELAYdelayTrig( &generator.relayOff );
+  vRELAYdelayTrig( &mains.relayOn );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

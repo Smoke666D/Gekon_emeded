@@ -34,8 +34,8 @@
 #define  SEMAPHORE_AEL_TAKE_DELAY   200U
 /*------------------------ Tasks ---------------------------------------*/
 #define  FPI_TASK_PRIORITY          osPriorityLow
-#define  ENGINE_TASK_PRIORITY       osPriorityLow
-#define  ELECTRO_TASK_PRIORITY      osPriorityLow
+#define  ENGINE_TASK_PRIORITY       osPriorityLow     /* Engine and Electro priority need to be equal */
+#define  ELECTRO_TASK_PRIORITY      osPriorityLow     /* Engine and Electro priority need to be equal */
 #define  CONTROLLER_TASK_PRIORITY   osPriorityNormal
 #define  FPI_TASK_STACK_SIZE        1024U
 #define  ENGINE_TASK_STACK_SIZE     1024U

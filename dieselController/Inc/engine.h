@@ -56,6 +56,7 @@ typedef enum
   ENGINE_STATUS_BUSY_STARTING,
   ENGINE_STATUS_BUSY_STOPPING,
   ENGINE_STATUS_WORK,
+  ENGINE_STATUS_WORK_WAIT_ELECTRO,
   ENGINE_STATUS_WORK_ON_IDLE,
   ENGINE_STATUS_WORK_GOTO_NOMINAL,
   ENGINE_STATUS_FAIL_STARTING,
@@ -81,6 +82,7 @@ typedef enum
 {
   STOP_IDLE,
   STOP_COOLDOWN,
+  STOP_WAIT_ELECTRO,
   STOP_IDLE_COOLDOWN,
   STOP_PROCESSING,
   STOP_FAIL,
@@ -207,7 +209,7 @@ typedef struct __packed
 typedef struct __packed
 {
   ENGINE_COMMAND  cmd;
-  uint8_t         startCheckOil;
+  PERMISSION      startCheckOil;
   ENGINE_STATUS   status;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;

@@ -132,44 +132,44 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t               enb;
-  ELECTRO_STATUS        state;
-  GENERATOR_RATING      rating;
-  ELECTRO_CHANNEL       line[GENERATOR_LINE_NUMBER];
-  getValueCallBack      getFreq;
+  uint8_t            enb;
+  ELECTRO_STATUS     state;
+  GENERATOR_RATING   rating;
+  ELECTRO_CHANNEL    line[GENERATOR_LINE_NUMBER];
+  getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
-  ALARM_TYPE            lowVoltageAlarm;
-  ALARM_TYPE            lowVoltagePreAlarm;
-  ALARM_TYPE            hightVoltageAlarm;
-  ALARM_TYPE            hightVoltagePreAlarm;
-  ALARM_TYPE            lowFreqAlarm;
-  ALARM_TYPE            lowFreqPreAlarm;
-  ALARM_TYPE            hightFreqAlarm;
-  ALARM_TYPE            hightFreqPreAlarm;
-  ALARM_TYPE            overloadAlarm;
-  ALARM_TYPE            phaseImbalanceAlarm;
-  CURRENT_ALARM_TYPE    currentAlarm;
+  ALARM_TYPE         lowVoltageAlarm;
+  ALARM_TYPE         lowVoltagePreAlarm;
+  ALARM_TYPE         hightVoltageAlarm;
+  ALARM_TYPE         hightVoltagePreAlarm;
+  ALARM_TYPE         lowFreqAlarm;
+  ALARM_TYPE         lowFreqPreAlarm;
+  ALARM_TYPE         hightFreqAlarm;
+  ALARM_TYPE         hightFreqPreAlarm;
+  ALARM_TYPE         overloadAlarm;
+  ALARM_TYPE         phaseImbalanceAlarm;
+  CURRENT_ALARM_TYPE currentAlarm;
   /*---------- OUTPUT ----------*/
-  RELAY_DEVICE          relay;
-  RELAY_IMPULSE_DEVICE  relayOn;
-  RELAY_IMPULSE_DEVICE  relayOff;
+  RELAY_DEVICE       relay;
+  RELAY_DELAY_DEVICE relayOn;
+  RELAY_DELAY_DEVICE relayOff;
 } GENERATOR_TYPE;
 
 typedef struct __packed
 {
-  uint8_t               enb;
-  ELECTRO_STATUS        state;
-  ELECTRO_CHANNEL       line[MAINS_LINE_NUMBER];
-  getValueCallBack      getFreq;
+  uint8_t            enb;
+  ELECTRO_STATUS     state;
+  ELECTRO_CHANNEL    line[MAINS_LINE_NUMBER];
+  getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
-  ALARM_TYPE            lowVoltageAlarm;
-  ALARM_TYPE            hightVoltageAlarm;
-  ALARM_TYPE            lowFreqAlarm;
-  ALARM_TYPE            hightFreqAlarm;
+  ALARM_TYPE         lowVoltageAlarm;
+  ALARM_TYPE         hightVoltageAlarm;
+  ALARM_TYPE         lowFreqAlarm;
+  ALARM_TYPE         hightFreqAlarm;
   /*---------- OUTPUT ----------*/
-  RELAY_DEVICE          relay;
-  RELAY_IMPULSE_DEVICE  relayOn;
-  RELAY_IMPULSE_DEVICE  relayOff;
+  RELAY_DEVICE       relay;
+  RELAY_DELAY_DEVICE relayOn;
+  RELAY_DELAY_DEVICE relayOff;
 } MAINS_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;

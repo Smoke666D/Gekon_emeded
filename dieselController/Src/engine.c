@@ -78,10 +78,11 @@ static const fix16_t dryContactTrigLevel = F16( 0x7FFFU );
     "FAIL",
     "OK",
   };
-  const char* planStopStatusStr[6U] =
+  const char* planStopStatusStr[7U] =
   {
     "IDLE",
     "COOLDOWN",
+    "WAIT_ELECTRO",
     "IDLE_COOLDOWN",
     "PROCESSING",
     "FAIL",
@@ -837,7 +838,8 @@ void vENGINEdataInit ( void )
   planStop.status           = STOP_IDLE;
   planStop.coolingDelay     = getValue( &timerCooling );
   planStop.coolingIdleDelay = getValue( &timerCoolingIdle );
-  planStop.processDelay     = getValue( &timerSolenoidHold );
+  planStop.processDelay     = getValue( &timerFailStopDelay );
+  vSYSprintFix16(planStop.processDelay);
   /*--------------------------------------------------------------*/
   engine.startCheckOil                = getBitMap( &starterStopSetup, 0U );
   engine.status                       = ENGINE_STATUS_IDLE;
@@ -1303,7 +1305,7 @@ void vENGINEtask ( void* argument )
                 vLOGICstartTimer( &commonTimer );
                 starter.status              = STARTER_WARMING;
                 speed.lowAlarm.error.active = PERMISSION_ENABLE;
-                vELECTROsendCmd( ELECTRO_CMD_DISABLE_IDLE_ALARMS );
+                vELECTROsendCmd( ELECTRO_CMD_ENABLE_IDLE_ALARMS );
                 vLOGICprintStarterStatus( starter.status );
               }
               break;
@@ -1398,6 +1400,7 @@ void vENGINEtask ( void* argument )
                 vRELAYdelayTrig( &stopSolenoid );
                 commonTimer.delay = planStop.processDelay;
                 planStop.status   = STOP_PROCESSING;
+                vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS ); // ????????????
                 vLOGICstartTimer( &commonTimer );
                 vLOGICprintPlanStopStatus( planStop.status );
               }

@@ -8,7 +8,7 @@
 #include "menu.h"
 #include "lcd.h"
 #include "keyboard.h"
-#include "menu_data.c"
+#include "menu_data.h"
 #include "controllerTypes.h"
 #include "adc.h"
 #include "stdio.h"
@@ -26,7 +26,6 @@ static KeyEvent          BufferEvent      = { 0U };
 static uint8_t           temp_counter     = 0U;
 static xScreenSetObject* pCurrMenu        = NULL;
 static xScreenObjet*     pCurObject       = NULL;
-static uint8_t           CurObjectIndex   = 0U;
 static uint8_t           DownScreen       = 0U;
 static QueueHandle_t     pKeyboard        = NULL;
 static uint8_t           key              = 0U;
@@ -451,7 +450,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
       switch ( pScreenObjects[i].xType )
       {
         //Если текущий объект - строка
-        case LINE:
+        case H_LINE:
           u8g2_SetDrawColor( u8g2, pScreenObjects[i].ObjectParamert[1U] );
           u8g2_DrawLine( u8g2, pScreenObjects[i].x, pScreenObjects[i].y, pScreenObjects[i].Width, pScreenObjects[i].Height );
           break;
@@ -551,57 +550,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
   }
   return;
 }
-/*---------------------------------------------------------------------------------------------------*/
-/*
- * Обявдение объека-карусели экранов верхнего уровня
- */
-xScreenSetObject xMainMenu =
-{
-  xScreensLev1,
-  ( MENU_LEVEL1_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-/*---------------------------------------------------------------------------------------------------*/
-xScreenSetObject xEngineMenu =
-{
-  xEngineScreens,
-  ( ENGINE_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-/*---------------------------------------------------------------------------------------------------*/
-xScreenSetObject xGeneratorMenu =
-{
-  xGeneratorScreens,
-  ( GENERATOR_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-/*---------------------------------------------------------------------------------------------------*/
-xScreenSetObject xNetMenu =
-{
-  xNetScreens,
-  ( NET_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xInfoScreenCallBack,
-};
-
-xScreenSetObject xSettingsMenu =
-{
-  xSettingsScreens,
-  ( SETTINGS_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xSettingsScreenKeyCallBack,
-};
-
-xScreenSetObject xEventMenu =
-{
-  xEventScreens,
-  ( EVENT_MENU_COUNT  - 1U ),
-  0U,
-  ( void* )&EventScreenKeyCallBack,
-};
 
 
 void vUCTOSTRING ( uint8_t * str, uint8_t data )
@@ -807,6 +755,7 @@ void vGetStatusData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       switch ( cmd )
       {
         case mREAD:
+
 	        eDATAAPIconfigValue( DATA_API_CMD_READ, displayBrightnesLevel.atrib->adr, &buff );
           vUCTOSTRING( ( uint8_t* )Data, (uint8_t) buff );
           break;
@@ -851,12 +800,67 @@ void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 }
 
+
+
+char cHexToChar(uint8_t data)
+{
+  if (data<10)
+     return data+'0';
+  else
+     return data-10 +'A';
+}
+
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
   uint16_t utempdata;
+  uint16_t tt[6]={0,0,0,0,0,0};
+  eConfigAttributes ATR;
+  uint16_t adr=0;
   switch (ID)
   {
+    case HW_VER:
+      eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&ATR);
+      if (ATR.len ==1 )
+      {
+             eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&tt);
+             sprintf(Data,"%i",tt[0]);
+      }
+      break;
+    case SW_VER:
+      eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR,&ATR);
+      if (ATR.len ==1 )
+      {
+        eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR,&tt);
+        sprintf(Data,"%i",tt[0]);
+      }
+      break;
+    case SERIAL_L:
+      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
+      for (uint8_t i=0;i<3;i++)
+               {
+                 Data[i*5]  = cHexToChar((tt[i]>>12)  & 0x0F );
+                 Data[i*5+1]= cHexToChar((tt[i]>>8)   & 0xF);
+                 Data[i*5+2]= cHexToChar((tt[i]>>4)   & 0xF);
+                 Data[i*5+3]= cHexToChar((tt[i])      & 0xF);
+                 Data[i*5+4]=':';
+               }
+      Data[14]=0;
+      break;
+    case SERIAL_H:
+      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
+      for (uint8_t i=0;i<3;i++)
+          {
+            Data[i*5]  = cHexToChar((tt[i+3]>>12) & 0x0F );
+            Data[i*5+1]= cHexToChar((tt[i+3]>>8)   & 0xF);
+            Data[i*5+2]= cHexToChar((tt[i+3]>>4)   & 0xF);
+            Data[i*5+3]= cHexToChar((tt[i+3])   & 0xF);
+            Data[i*5+4]=':';
+          }
+        Data[14]=0;
+
+      break;
+
     case FUEL_LEVEL:
       eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
       fix16_to_str( temp, Data, 0U );
@@ -872,57 +876,33 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );
       break;
-    case GEN_F1_VDD:
-       fix16_to_str( xADCGetGENL1(), Data, 0U );
-       break;
-    case GEN_F2_VDD:
-       fix16_to_str(xADCGetGENL2(), Data, 0U );
-       break;
-    case GEN_F3_VDD:
-       fix16_to_str( xADCGetGENL3(), Data, 0U );
-       break;
-    case GEN_FREQ:
-       fix16_to_str( xADCGetGENLFreq(), Data, 1U );
-       break;
-    case GEN_F1_CUR:
-       fix16_to_str(xADCGetGENL1Cur(), Data, 3U );
-       break;
-    case GEN_F2_CUR:
-      fix16_to_str( xADCGetGENL2Cur(), Data, 3U );
-      break;
-    case GEN_F3_CUR:
-      fix16_to_str( xADCGetGENL3Cur(), Data, 3U );
-      break;
 
-    case NET_F1_VDD:
-      fix16_to_str( xADCGetNETL1(), Data, 0U );
+    case NET_L1_LINE_V:
+    case NET_L2_LINE_V:
+    case NET_L3_LINE_V:
+    case NET_L1_FASE_V:
+    case NET_L2_FASE_V:
+    case NET_L3_FASE_V:
+    case GEN_L1_LINE_V:
+    case GEN_L2_LINE_V:
+    case GEN_L3_LINE_V:
+    case GEN_L1_FASE_V:
+    case GEN_L2_FASE_V:
+    case GEN_L3_FASE_V:
+      fix16_to_str(  xADCGetREG(ID), Data, 0U );
       break;
-    case NET_F2_VDD:
-      fix16_to_str(xADCGetNETL2(), Data, 0U );
-      break;
-   case NET_F3_VDD:
-      fix16_to_str( xADCGetNETL3(), Data, 0U );
-      break;
-   case NET_F1_F_VDD:
-      fix16_to_str(xADCGetNETL1FaseVDD(), Data, 0U );
-      break;
-    case NET_F2_F_VDD:
-     fix16_to_str( xADCGetNETL2FaseVDD(), Data, 0U );
-     break;
-    case NET_F3_F_VDD:
-      fix16_to_str( xADCGetNETL3FaseVDD(), Data, 0U );
-      break;
-    case GEN_F1_F_VDD:
-      fix16_to_str( xADCGetGENL1FaseVDD(), Data, 0U );
-      break;
-    case GEN_F2_F_VDD:
-      fix16_to_str( xADCGetGENL2FaseVDD(), Data, 0U );
-      break;
-   case GEN_F3_F_VDD:
-      fix16_to_str( xADCGetGENL3FaseVDD(), Data, 0U );
-      break;
-    case NET_FREQ:
-     fix16_to_str( xADCGetNETLFreq(), Data, 1U );
+    case NET_FREQ :
+    case GEN_FREQ :
+    case GEN_L1_CUR:
+    case GEN_L2_CUR:
+    case GEN_L3_CUR:
+       fix16_to_str(  xADCGetREG(ID), Data, 2U );
+       break;
+   case GEN_L1_REAL_POWER:
+   case GEN_L2_REAL_POWER:
+   case GEN_L3_REAL_POWER:
+   case GEN_REAL_POWER:
+     fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
      break;
     case NET_ROTATION:
              switch (uADCGetNetFaseRotation())
@@ -959,7 +939,6 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);
            sprintf(Data,"%u",utempdata);
            break;
-
          case ENGINE_WTIME:
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
            sprintf(Data,"%u",utempdata);
@@ -967,6 +946,8 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
          case COS_FI:
            fix16_to_str( xADCGetCOSFi(), Data, 2 );
            break;
+
+
     default:
      break;
 

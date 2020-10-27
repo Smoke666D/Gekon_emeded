@@ -310,7 +310,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSSerial( ">>Engine started by generator frequency: " );
+      vSYSSerial( ">>Engine          : Started by generator frequency: " );
       fix16_to_str( freq, buffer, 2U );
       vSYSSerial( buffer );
       vSYSSerial( "\r\n" );
@@ -320,7 +320,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSSerial( ">>Engine started by oil pressure: " );
+      vSYSSerial( ">>Engine          : Started by oil pressure: " );
       fix16_to_str( pressure, buffer, 2U );
       vSYSSerial( buffer );
       vSYSSerial( "\r\n" );
@@ -330,7 +330,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSSerial( ">>Engine started by charger voltage: " );
+      vSYSSerial( ">>Engine          : Started by charger voltage: " );
       fix16_to_str( voltage, buffer, 2U );
       vSYSSerial( buffer );
       vSYSSerial( "\r\n" );
@@ -340,7 +340,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSSerial( ">>Engine started by engine speed: " );
+      vSYSSerial( ">>Engine          : Started by engine speed: " );
       fix16_to_str( speed, buffer, 2U );
       vSYSSerial( buffer );
       vSYSSerial( "\r\n" );
@@ -461,7 +461,7 @@ void vLOGICprintEngineStatus ( ENGINE_STATUS status )
 void vLOGICprintEngineCmd ( ENGINE_COMMAND cmd )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
-    vSYSSerial( ">>Engine command: " );
+    vSYSSerial( ">>Engine command  : " );
     vSYSSerial( engineCmdStr[cmd] );
     vSYSSerial( "\r\n" );
   #endif
@@ -471,7 +471,7 @@ void vLOGICprintEngineCmd ( ENGINE_COMMAND cmd )
 void vLOGICprintStarterStatus ( STARTER_STATUS status )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
-    vSYSSerial( ">>Starter status: " );
+    vSYSSerial( ">>Starter status  : " );
     vSYSSerial( starterStatusStr[status] );
     vSYSSerial( "\r\n" );
   #endif

@@ -40,39 +40,22 @@
 #define MAX_KEY_PRESS
 
 
-#define SW_VER         4U
-#define HW_VER         5U
-#define SERIAL_L       6U
-#define SERIAL_H       7U
-#define NET_F1_VDD     8U
-#define NET_F2_VDD     9U
-#define NET_F3_VDD     10U
-#define NET_FREQ       11U
-#define ADC_FREQ       12U
-#define ADC_TEMP       13U
-#define GEN_F1_VDD     14U
-#define GEN_F2_VDD     15U
-#define GEN_F3_VDD     16U
-#define GEN_FREQ       17U
-#define NET_ROTATION   18U
-#define GEN_ROTATION   19U
-#define NET_F1_L_VDD   20U
-#define NET_F2_L_VDD   21U
-#define NET_F3_L_VDD   22U
-#define GEN_F1_L_VDD   23U
-#define GEN_F2_L_VDD   24U
-#define GEN_F3_L_VDD   25U
-#define GEN_F1_CUR     26U
-#define GEN_F2_CUR     27U
-#define GEN_F3_CUR     28U
-#define FUEL_LEVEL     29U
-#define OIL_PRESSURE   30U
-#define COOL_TEMP      31U
-#define ENGINE_SPEED   32U
-#define ENGINE_SCOUNT  33U
-#define ENGINE_WTIME   34U
-#define COS_FI         35U
-#define GEN_POWER      36U
+#define SW_VER         54U
+#define HW_VER         55U
+#define SERIAL_L       56U
+#define SERIAL_H       57U
+#define ADC_FREQ       62U
+#define ADC_TEMP       63U
+#define NET_ROTATION   68U
+#define GEN_ROTATION   69U
+#define FUEL_LEVEL     79U
+#define OIL_PRESSURE   80U
+#define COOL_TEMP      81U
+#define ENGINE_SPEED   82U
+#define ENGINE_SCOUNT  83U
+#define ENGINE_WTIME   84U
+#define COS_FI         85U
+
 
 #define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/

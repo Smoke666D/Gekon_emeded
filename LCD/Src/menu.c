@@ -876,57 +876,33 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );
       break;
-    case GEN_F1_VDD:
-       fix16_to_str( xADCGetGENL1(), Data, 0U );
-       break;
-    case GEN_F2_VDD:
-       fix16_to_str(xADCGetGENL2(), Data, 0U );
-       break;
-    case GEN_F3_VDD:
-       fix16_to_str( xADCGetGENL3(), Data, 0U );
-       break;
-    case GEN_FREQ:
-       fix16_to_str( xADCGetGENLFreq(), Data, 1U );
-       break;
-    case GEN_F1_CUR:
-       fix16_to_str(xADCGetGENL1Cur(), Data, 3U );
-       break;
-    case GEN_F2_CUR:
-      fix16_to_str( xADCGetGENL2Cur(), Data, 3U );
-      break;
-    case GEN_F3_CUR:
-      fix16_to_str( xADCGetGENL3Cur(), Data, 3U );
-      break;
 
-    case NET_F1_VDD:
-      fix16_to_str( xADCGetNETL1(), Data, 0U );
+    case NET_L1_LINE_V:
+    case NET_L2_LINE_V:
+    case NET_L3_LINE_V:
+    case NET_L1_FASE_V:
+    case NET_L2_FASE_V:
+    case NET_L3_FASE_V:
+    case GEN_L1_LINE_V:
+    case GEN_L2_LINE_V:
+    case GEN_L3_LINE_V:
+    case GEN_L1_FASE_V:
+    case GEN_L2_FASE_V:
+    case GEN_L3_FASE_V:
+      fix16_to_str(  xADCGetREG(ID), Data, 0U );
       break;
-    case NET_F2_VDD:
-      fix16_to_str(xADCGetNETL2(), Data, 0U );
-      break;
-   case NET_F3_VDD:
-      fix16_to_str( xADCGetNETL3(), Data, 0U );
-      break;
-   case NET_F1_L_VDD:
-      fix16_to_str(xADCGetNETL1Lin(), Data, 0U );
-      break;
-    case NET_F2_L_VDD:
-     fix16_to_str( xADCGetNETL2Lin(), Data, 0U );
-     break;
-    case NET_F3_L_VDD:
-      fix16_to_str( xADCGetNETL3Lin(), Data, 0U );
-      break;
-    case GEN_F1_L_VDD:
-      fix16_to_str( xADCGetGENL1Lin(), Data, 0U );
-      break;
-    case GEN_F2_L_VDD:
-      fix16_to_str( xADCGetGENL2Lin(), Data, 0U );
-      break;
-   case GEN_F3_L_VDD:
-      fix16_to_str( xADCGetGENL3Lin(), Data, 0U );
-      break;
-    case NET_FREQ:
-     fix16_to_str( xADCGetNETLFreq(), Data, 1U );
+    case NET_FREQ :
+    case GEN_FREQ :
+    case GEN_L1_CUR:
+    case GEN_L2_CUR:
+    case GEN_L3_CUR:
+       fix16_to_str(  xADCGetREG(ID), Data, 2U );
+       break;
+   case GEN_L1_REAL_POWER:
+   case GEN_L2_REAL_POWER:
+   case GEN_L3_REAL_POWER:
+   case GEN_REAL_POWER:
+     fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
      break;
     case NET_ROTATION:
              switch (uADCGetNetFaseRotation())
@@ -963,7 +939,6 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);
            sprintf(Data,"%u",utempdata);
            break;
-
          case ENGINE_WTIME:
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
            sprintf(Data,"%u",utempdata);
@@ -971,9 +946,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
          case COS_FI:
            fix16_to_str( xADCGetCOSFi(), Data, 2 );
            break;
-         case GEN_POWER:
-           fix16_to_str(fix16_div(xADCGetPower(),fix16_from_int(1000)), Data, 2 );
-           break;
+
 
     default:
      break;

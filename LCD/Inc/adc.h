@@ -27,6 +27,8 @@
 #define GEN_READY          0x10U
 #define CUR_READY          0x20U
 #define DC_READY           0x40U
+#define GEN_UPDATE         0x80U
+#define NET_UPDATE         0x100U
 
 #define ADC_READY          0x08U
 #define ADC1_CHANNEL       0x01U
@@ -38,6 +40,46 @@
 #define ADC3_ADD_CHANNEL   5U
 #define ADC_FRAME_SIZE     1024//700U//512U
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
+
+
+
+#define GEN_RMS_CUR         0
+#define GEN_FREQ            1
+#define GEN_FASE_V          2
+#define GEN_LINE_V          3
+#define GEN_L1_CUR          4
+#define GEN_L1_FREQ         5
+#define GEN_L1_FASE_V       6
+#define GEN_L1_LINE_V       7
+#define GEN_L1_REAL_POWER   8
+#define GEN_L1_APER_POWER   9
+#define GEN_L1_REAC_POWER   10
+#define GEN_L2_CUR          11
+#define GEN_L2_FREQ         12
+#define GEN_L2_FASE_V       13
+#define GEN_L2_LINE_V       14
+#define GEN_L2_REAL_POWER   15
+#define GEN_L2_APER_POWER   16
+#define GEN_L2_REAC_POWER   17
+#define GEN_L3_CUR          18
+#define GEN_L3_FREQ         19
+#define GEN_L3_FASE_V       20
+#define GEN_L3_LINE_V       21
+#define GEN_L3_REAL_POWER   22
+#define GEN_L3_APER_POWER   23
+#define GEN_L3_REAC_POWER   24
+#define GEN_APPER_POWER     25
+#define GEN_REAL_POWER      26
+#define GEN_OVERAL_POER_FAC 27
+#define GEN_REACTIVE_POWER  28
+#define NET_FREQ            29
+#define NET_L1_FASE_V       30
+#define NET_L1_LINE_V       31
+#define NET_L2_FASE_V       32
+#define NET_L2_LINE_V       33
+#define NET_L3_FASE_V       34
+#define NET_L3_LINE_V       35
+
 
 /*
  * Номиналы резисторов
@@ -117,17 +159,13 @@ fix16_t xADCGetGENL3Lin();        //Линейное напряжене Uсa г�
 fix16_t xADCGetGENL1Cur();        //Фазный ток Ian генератора
 fix16_t xADCGetGENL2Cur();        //Фазный ток Ibn генератора
 fix16_t xADCGetGENL3Cur();        //Фазный ток Icn генератора
-fix16_t xADCGetGENL1CurLin();     //Линеный ток Iab генератора
-fix16_t xADCGetGENL2CurLin();     //Линеный ток Ibс генератора
-fix16_t xADCGetGENL3CurLin();     //Линеный ток Iсa генератора
 uint8_t uADCGetValidDataFlag();
 fix16_t xADCGetNETLFreq();
 fix16_t xADCGetGENLFreq();
 fix16_t xADCGetCOSFi();
-fix16_t xADCGetPower();
 uint8_t uADCGetGenFaseRotation();
 uint8_t uADCGetNetFaseRotation();
-
+fix16_t xADCGetREG(uint16_t reg);
 void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );

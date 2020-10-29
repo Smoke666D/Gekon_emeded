@@ -30,7 +30,6 @@
 #define  SYS_TIMER_SEMAPHORE_DELAY  200U
 #define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
 #define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
-#define  ACTIV_ERROR_LIST_SIZE      20U
 #define  SEMAPHORE_AEL_TAKE_DELAY   200U
 /*------------------------ Tasks ---------------------------------------*/
 #define  FPI_TASK_PRIORITY          osPriorityLow
@@ -57,9 +56,8 @@ typedef enum
   ACTION_NONE,
   ACTION_WARNING,
   ACTION_EMERGENCY_STOP,
-  ACTION_LOAD_GENERATOR,
-  ACTION_LOAD_MAINS,
   ACTION_PLAN_STOP,
+  ACTION_BAN_START,
 } SYSTEM_ACTION;
 
 typedef enum
@@ -72,8 +70,8 @@ typedef enum
   EVENT_OIL_SENSOR_ERROR,           /* EMERGENCY_STOP */
   EVENT_ENGINE_HIGHT_TEMP,          /* WARNING & EMERGENCY_STOP */
   EVENT_ENGINE_TEMP_SENSOR_ERROR,   /* EMERGENCY_STOP */
-  EVENT_FUEL_LOW_LEVEL,             /* WARNING & EMERGENCY_STOP */
-  EVENT_FUEL_HIGHT_LEVEL,           /* WARNING & EMERGENCY_STOP */
+  EVENT_FUEL_LOW_LEVEL,             /* WARNING & PLAN_STOP */
+  EVENT_FUEL_HIGHT_LEVEL,           /* WARNING & PLAN_STOP */
   EVENT_FUEL_LEVEL_SENSOR_ERROR,    /* EMERGENCY_STOP */
   EVENT_SPEED_HIGHT,                /* EMERGENCY_STOP */
   EVENT_SPEED_LOW,                  /* EMERGENCY_STOP */
@@ -86,7 +84,6 @@ typedef enum
   EVENT_GENERATOR_LOW_FREQUENCY,    /* WARNING & EMERGENCY_STOP */
   EVENT_GENERATOR_HIGHT_FREQUENCY,  /* WARNING & EMERGENCY_STOP */
   EVENT_PHASE_IMBALANCE,            /* EMERGENCY_STOP */
-
   EVENT_OVER_CURRENT,               /* PLAN_STOP */
   EVENT_OVER_POWER,                 /* PLAN_STOP */
   EVENT_SHORT_CIRCUIT,              /* PLAN_STOP */
@@ -94,13 +91,11 @@ typedef enum
   EVENT_MAINS_HIGHT_VOLTAGE,        /* WARNING */
   EVENT_MAINS_LOW_FREQUENCY,        /* WARNING */
   EVENT_MAINS_HIGHT_FREQUENCY,      /* WARNING */
-  EVENT_MAINTENANCE_OIL,            /* WARNING & BAN_START*/
-  EVENT_MAINTENANCE_AIR,            /* WARNING & BAN_START*/
+  EVENT_MAINTENANCE_OIL,            /* WARNING & BAN_START */
+  EVENT_MAINTENANCE_AIR,            /* WARNING & BAN_START */
   EVENT_MAINTENANCE_FUEL,           /* WARNING & BAN_START */
-  EVENT_MAINS_VOLTAGE_RELAX,
-  EVENT_MAINS_FREQUENCY_RELAX,
-  //EVENT_GENERATOR_CIRCUIT_BREAKER_TURN_ON_FAIL,
-  //EVENT_GENERATOR_CIRCUIT_BREAKER_TURN_OFF_FAIL,
+  EVENT_MAINS_VOLTAGE_RELAX,        /**/
+  EVENT_MAINS_FREQUENCY_RELAX,      /**/
 } SYSTEM_EVENT_TYPE;
 
 typedef enum
@@ -174,13 +169,6 @@ typedef enum
 
 typedef enum
 {
-  ERROR_LIST_STATUS_EMPTY,
-  ERROR_LIST_STATUS_NOT_EMPTY,
-  ERROR_LIST_STATUS_OVER,
-} ERROR_LIST_STATUS;
-
-typedef enum
-{
   ERROR_LIST_CMD_ERASE,
   ERROR_LIST_CMD_ADD,
   ERROR_LIST_CMD_READ,
@@ -199,14 +187,14 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION   enb;   /* Relaxation functions on/off */
-  SYSTEM_EVENT event; /* Event after relaxation */
+  PERMISSION    enb;   /* Relaxation functions on/off */
+  SYSTEM_EVENT  event; /* Event after relaxation */
 } ALARM_RELAX_TYPE;
 
 typedef struct __packed
 {
-  fix16_t   delay; /* Delay to active event after triggered, seconds */
-  timerID_t id;    /* Number of system timer */
+  fix16_t    delay; /* Delay to active event after triggered, seconds */
+  timerID_t  id;    /* Number of system timer */
 } SYSTEM_TIMER;
 
 typedef struct __packed
@@ -247,38 +235,28 @@ typedef struct __packed
 {
   RELAY_DEVICE       relay;    /* Relay device */
   uint8_t            triger;   /* Input to start relay processing */
-  SYSTEM_TIMER       timer;
+  SYSTEM_TIMER       timer;    /* Timer for delay */
   RELAY_DELAY_STATUS status;   /* Current status of device */
 } RELAY_DELAY_DEVICE;          /* Relay with auto turn off after delay */
 
 typedef struct __packed
 {
-  PERMISSION            active;
-  RELAY_DEVICE          relay;
-  fix16_t               level;
-  SYSTEM_TIMER          timer;
-  RELAY_IMPULSE_STATUS  status;
-} RELAY_IMPULSE_DEVICE;
+  PERMISSION            active; /* Flag of comparison activation */
+  RELAY_DEVICE          relay;  /* Relay device */
+  fix16_t               level;  /* Level for comparison */
+  SYSTEM_TIMER          timer;  /* Timer for delay */
+  RELAY_IMPULSE_STATUS  status; /* Current status of device */
+} RELAY_IMPULSE_DEVICE;         /* Relay, that work like RELAY_DELAY_DEVICE, but the trigger is comparison with level */
 
 typedef struct __packed
 {
   uint32_t      time;   /* 4 bytes */
   SYSTEM_EVENT  event;  /* 2 bytes */
 } LOG_RECORD_TYPE;
-
-typedef struct __packed
-{
-  ERROR_LIST_STATUS status;
-  LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
-  uint8_t           counter;
-} ACTIVE_ERROR_LIST;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
 void              vLOGICinit ( TIM_HandleTypeDef* tim );
 QueueHandle_t     pLOGICgetEventQueue ( void );
-void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
-void              vERRORreset ( ERROR_TYPE* error );
-void              vERRORcheck ( ERROR_TYPE* error, uint8_t flag );
 void              vRELAYautoProces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
 void              vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device );
 void              vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );
@@ -289,9 +267,10 @@ TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer );
 uint8_t           uLOGICisTimer ( SYSTEM_TIMER timer );
 TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER timer );
 void              vLOGICtimerCallback ( void );
-void              vLOGICprintEvent ( SYSTEM_EVENT event );
-ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr );
 void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
+
+void              vLOGICprintEvent ( SYSTEM_EVENT event );
 void              vLOGICprintDebug ( const char* str );
+void              vLOGICprintLogRecord ( LOG_RECORD_TYPE record );
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOGICTYPES_H_ */

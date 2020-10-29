@@ -47,6 +47,8 @@ typedef enum
   ENGINE_CMD_GOTO_NORMAL,
   ENGINE_CMD_EMEGENCY_STOP,
   ENGINE_CMD_RESET_TO_IDLE,
+  ENGINE_CMD_BAN_START,
+  ENGINE_CMD_ALLOW_START,
 } ENGINE_COMMAND;
 
 typedef enum
@@ -213,12 +215,13 @@ typedef struct __packed
   ENGINE_STATUS   status;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
+  uint8_t         banStart;
 } ENGINE_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t engineHandle;
 /*----------------------- Functions ------------------------------------*/
 void          vENGINEinit ( void );
-void          vENGINEemergencyStop ( void );
+void          vENGINEsendCmd ( ENGINE_COMMAND cmd );
 QueueHandle_t pENGINEgetCommandQueue ( void );
 uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );

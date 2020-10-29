@@ -19,12 +19,11 @@ static FPO_DIS fpos_dis[FPO_DIS_NUMBER] = { 0U };
 const uint8_t eFPOfuctionList[FPO_FUNCTION_NUMBER] =
 {
   FPO_FUN_NONE,
-  FPO_FUN_AUTO_MODE,
-  FPO_FUN_COMMON_NET_FAIL,
+  FPO_FUN_DPS_READY,
   FPO_FUN_READY_TO_START,
   FPO_FUN_GEN_READY,
   FPO_FUN_ALARM,
-  FPO_FUN_DES_FAIL,
+  FPO_FUN_MAINS_FAIL,
   FPO_FUN_WARNING,
   FPO_FUN_TURN_ON_GEN,
   FPO_FUN_TURN_ON_GEN_IMPULSE,
@@ -49,7 +48,7 @@ const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
   "READY_TO_START",
   "GEN_READY",
   "ALARM",
-  "DES_FAIL",
+  "MAINS_FAIL",
   "WARNING",
   "TURN_ON_GEN",
   "TURN_ON_GEN_IMPULSE",
@@ -76,27 +75,26 @@ const char* cFPOnames[FPO_NUMBER] =
   "F"
 };
 /*-------------------------------- Variables ---------------------------------*/
-static FPO* autoModeFPO     = NULL;  /* 1 */
-static FPO* netFaultFPO     = NULL;  /* 2 */
-static FPO* readyToStartFPO = NULL;  /* 3 */
-static FPO* genReadyFPO     = NULL;  /* 4 */
-static FPO* alarmFPO        = NULL;  /* 5 */
-static FPO* desFailFPO      = NULL;  /* 6 */
-static FPO* warningFPO      = NULL;  /* 7 */
-static FPO* genSwFPO        = NULL;  /* 8 */
-static FPO* genImpOnFPO     = NULL;  /* 9 */
-static FPO* genImpOffFPO    = NULL;  /* 10 */
-static FPO* mainsSwFPO      = NULL;  /* 11 */
-static FPO* mainsImpOnFPO   = NULL;  /* 12 */
-static FPO* mainsImpOffFPO  = NULL;  /* 13 */
-static FPO* coolerFPO       = NULL;  /* 14 */
-static FPO* heaterFPO       = NULL;  /* 15 */
-static FPO* stopSolenoidFPO = NULL;  /* 16 */
-static FPO* boosterFPO      = NULL;  /* 17 */
-static FPO* pumpFPO         = NULL;  /* 18 */
-static FPO* starterFPO      = NULL;  /* 19 */
-static FPO* preheaterFPO    = NULL;  /* 20 */
-static FPO* idleFPO         = NULL;  /* 21 */
+static FPO* dpsReadyFPO     = NULL;  /* 1 */
+static FPO* readyToStartFPO = NULL;  /* 2 */
+static FPO* genReadyFPO     = NULL;  /* 3 */
+static FPO* alarmFPO        = NULL;  /* 4 */
+static FPO* mainsFailFPO    = NULL;  /* 5 */
+static FPO* warningFPO      = NULL;  /* 6 */
+static FPO* genSwFPO        = NULL;  /* 7 */
+static FPO* genImpOnFPO     = NULL;  /* 8 */
+static FPO* genImpOffFPO    = NULL;  /* 9  */
+static FPO* mainsSwFPO      = NULL;  /* 10 */
+static FPO* mainsImpOnFPO   = NULL;  /* 11 */
+static FPO* mainsImpOffFPO  = NULL;  /* 12 */
+static FPO* coolerFPO       = NULL;  /* 13 */
+static FPO* heaterFPO       = NULL;  /* 14 */
+static FPO* stopSolenoidFPO = NULL;  /* 15 */
+static FPO* boosterFPO      = NULL;  /* 16 */
+static FPO* pumpFPO         = NULL;  /* 17 */
+static FPO* starterFPO      = NULL;  /* 18 */
+static FPO* preheaterFPO    = NULL;  /* 19 */
+static FPO* idleFPO         = NULL;  /* 20 */
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -165,15 +163,9 @@ uint8_t uFPOisEnable ( FPO_FUNCTION fun )
   return res;
 }
 /*----------------------------------------------------------------------------*/
-void vFPOsetAutoMode ( RELAY_STATUS stat )
+void vFPOsetDpsReady ( RELAY_STATUS stat )
 {
-  vFPOsetRelay( autoModeFPO, stat );
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vFPOsetNetFault ( RELAY_STATUS stat )
-{
-  vFPOsetRelay( netFaultFPO, stat );
+  vFPOsetRelay( dpsReadyFPO, stat );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -195,9 +187,9 @@ void vFPOsetAlarm ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFPOsetDesFail ( RELAY_STATUS stat )
+void vFPOsetMainsFail ( RELAY_STATUS stat )
 {
-  vFPOsetRelay( desFailFPO, stat );
+  vFPOsetRelay( mainsFailFPO, stat );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -324,12 +316,11 @@ void vFPOdataInit ( void )
     }
   }
   /* System part */
-  vFPOanaliz( &autoModeFPO,     FPO_FUN_AUTO_MODE              );
-  vFPOanaliz( &netFaultFPO,     FPO_FUN_COMMON_NET_FAIL        );
+  vFPOanaliz( &dpsReadyFPO,     FPO_FUN_DPS_READY              );
   vFPOanaliz( &readyToStartFPO, FPO_FUN_READY_TO_START         );
   vFPOanaliz( &genReadyFPO,     FPO_FUN_GEN_READY              );
   vFPOanaliz( &alarmFPO,        FPO_FUN_ALARM                  );
-  vFPOanaliz( &desFailFPO,      FPO_FUN_DES_FAIL               );
+  vFPOanaliz( &mainsFailFPO,    FPO_FUN_MAINS_FAIL             );
   vFPOanaliz( &warningFPO,      FPO_FUN_WARNING                );
   vFPOanaliz( &starterFPO,      FPO_FUN_STARTER_RELAY          );
   vFPOanaliz( &heaterFPO,       FPO_FUN_COOLANT_HEATER         );

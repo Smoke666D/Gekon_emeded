@@ -14,6 +14,7 @@
 #include "semphr.h"
 #include "fpo.h"
 #include "adc.h"
+#include "alarm.h"
 /*---------------------------------- Define ----------------------------------*/
 
 /*-------------------------------- Structures --------------------------------*/
@@ -220,7 +221,7 @@ void vMAINSprocess ( void )
   }
   if ( mains.state == ELECTRO_STATUS_ALARM )
   {
-    vFPOsetNetFault( RELAY_ON );
+    vFPOsetMainsFail( RELAY_ON );
   }
   return;
 }
@@ -376,7 +377,7 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.phaseImbalanceAlarm.error.event.type = EVENT_PHASE_IMBALANCE;
   if ( getBitMap( &genAlarms, 11U ) == 0U )
   {
-    generator.phaseImbalanceAlarm.error.event.action = ACTION_LOAD_SHUTDOWN;
+    generator.phaseImbalanceAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   }
   else
   {
@@ -394,7 +395,7 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.overloadAlarm.error.event.type = EVENT_OVER_POWER;
   if ( getBitMap( &genAlarms, 10U ) == 0U )
   {
-    generator.overloadAlarm.error.event.action = ACTION_LOAD_SHUTDOWN;
+    generator.overloadAlarm.error.event.action = ACTION_PLAN_STOP;
   }
   else
   {
@@ -408,12 +409,12 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
                                                           fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), F16( 100U ) ) );
   generator.currentAlarm.over.delay          = 0U;
   generator.currentAlarm.over.event.type     = EVENT_OVER_CURRENT;
-  generator.currentAlarm.over.event.action   = ACTION_EMERGENCY_STOP;
+  generator.currentAlarm.over.event.action   = ACTION_PLAN_STOP;
   generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current.nominal,
                                                           fix16_div( getValue( &genOverCurrentCutoffLevel ), F16( 100U ) ) );
   generator.currentAlarm.cutout.delay        = 0U;
   generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
-  generator.currentAlarm.cutout.event.action = ACTION_LOAD_SHUTDOWN;
+  generator.currentAlarm.cutout.event.action = ACTION_PLAN_STOP;
   //generator.currentAlarm.tim                 = currentTIM;
   /*----------------------------------------------------------------------------*/
   generator.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_GEN );
@@ -453,10 +454,10 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   mains.lowVoltageAlarm.timer.delay              = 0U;
   mains.lowVoltageAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
   mains.lowVoltageAlarm.error.event.type         = EVENT_MAINS_LOW_VOLTAGE;
-  mains.lowVoltageAlarm.error.event.action       = ACTION_LOAD_GENERATOR;
+  mains.lowVoltageAlarm.error.event.action       = ACTION_WARNING;
   mains.lowVoltageAlarm.error.relax.enb          = 1U;
-  mains.lowVoltageAlarm.error.relax.event.type   = EVENT_MAINS_VOLTAGE_RELAX;
-  mains.lowVoltageAlarm.error.relax.event.action = ACTION_LOAD_MAINS;
+  mains.lowVoltageAlarm.error.relax.event.type   = EVENT_NONE;
+  mains.lowVoltageAlarm.error.relax.event.action = ACTION_NONE;
   mains.lowVoltageAlarm.error.status             = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.hightVoltageAlarm.error.enb                = getBitMap( &mainsAlarms, 1U );
@@ -466,10 +467,10 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   mains.hightVoltageAlarm.timer.delay              = 0U;
   mains.hightVoltageAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
   mains.hightVoltageAlarm.error.event.type         = EVENT_MAINS_HIGHT_VOLTAGE;
-  mains.hightVoltageAlarm.error.event.action       = ACTION_LOAD_GENERATOR;
+  mains.hightVoltageAlarm.error.event.action       = ACTION_WARNING;
   mains.hightVoltageAlarm.error.relax.enb          = 1U;
-  mains.hightVoltageAlarm.error.relax.event.type   = EVENT_MAINS_VOLTAGE_RELAX;
-  mains.hightVoltageAlarm.error.relax.event.action = ACTION_LOAD_MAINS;
+  mains.hightVoltageAlarm.error.relax.event.type   = EVENT_NONE;
+  mains.hightVoltageAlarm.error.relax.event.action = ACTION_NONE;
   mains.hightVoltageAlarm.error.status             = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.lowFreqAlarm.error.enb                = getBitMap( &mainsAlarms, 2U );
@@ -479,10 +480,10 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   mains.lowFreqAlarm.timer.delay              = 0U;
   mains.lowFreqAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
   mains.lowFreqAlarm.error.event.type         = EVENT_MAINS_LOW_FREQUENCY;
-  mains.lowFreqAlarm.error.event.action       = ACTION_LOAD_GENERATOR;
+  mains.lowFreqAlarm.error.event.action       = ACTION_WARNING;
   mains.lowFreqAlarm.error.relax.enb          = 1U;
-  mains.lowFreqAlarm.error.relax.event.type   = EVENT_MAINS_FREQUENCY_RELAX;
-  mains.lowFreqAlarm.error.relax.event.action = ACTION_LOAD_MAINS;
+  mains.lowFreqAlarm.error.relax.event.type   = EVENT_NONE;
+  mains.lowFreqAlarm.error.relax.event.action = ACTION_NONE;
   mains.lowFreqAlarm.error.status             = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.hightFreqAlarm.error.enb                = getBitMap( &mainsAlarms, 3U );
@@ -492,10 +493,10 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   mains.hightFreqAlarm.timer.delay              = 0U;
   mains.hightFreqAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
   mains.hightFreqAlarm.error.event.type         = EVENT_MAINS_HIGHT_FREQUENCY;
-  mains.hightFreqAlarm.error.event.action       = ACTION_LOAD_GENERATOR;
+  mains.hightFreqAlarm.error.event.action       = ACTION_WARNING;
   mains.hightFreqAlarm.error.relax.enb          = 1U;
-  mains.hightFreqAlarm.error.relax.event.type   = EVENT_MAINS_FREQUENCY_RELAX;
-  mains.hightFreqAlarm.error.relax.event.action = ACTION_LOAD_MAINS;
+  mains.hightFreqAlarm.error.relax.event.type   = EVENT_NONE;
+  mains.hightFreqAlarm.error.relax.event.action = ACTION_NONE;
   mains.hightFreqAlarm.error.status             = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_MAINS );
@@ -546,8 +547,6 @@ void vELECTROinit ( void )
   mains.state = ELECTRO_STATUS_LOAD;
   generator.relay.set( RELAY_OFF );
   generator.state = ELECTRO_STATUS_IDLE;
-  vRELAYdelayTrig( &generator.relayOff );
-  vRELAYdelayTrig( &mains.relayOn );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

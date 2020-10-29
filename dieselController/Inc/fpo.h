@@ -14,7 +14,7 @@
 /*------------------------ Define --------------------------------------*/
 #define  FPO_NUMBER           6U
 #define  FPO_DIS_NUMBER       3U
-#define  FPO_FUNCTION_NUMBER  22U
+#define  FPO_FUNCTION_NUMBER  21U
 #define  FPO_A                0U
 #define  FPO_B                1U
 #define  FPO_C                2U
@@ -28,12 +28,11 @@
 typedef enum
 {
   FPO_FUN_NONE,                    /* Не использовать */
-  FPO_FUN_AUTO_MODE,               /* Автоматический режим  */
-  FPO_FUN_COMMON_NET_FAIL,         /* Общее нарушение сети */
+  FPO_FUN_DPS_READY,               /* ДЭС готов  */
   FPO_FUN_READY_TO_START,          /* Готов к запуску */
   FPO_FUN_GEN_READY,               /* Готовность генератора */
   FPO_FUN_ALARM,                   /* Общий аварийный сигнал */
-  FPO_FUN_DES_FAIL,                /* Неисправность ДЭС */
+  FPO_FUN_MAINS_FAIL,              /* Общая ошибка сети */
   FPO_FUN_WARNING,                 /* Общее предупреждение */
   FPO_FUN_TURN_ON_GEN,             /* Включить генератор */
   FPO_FUN_TURN_ON_GEN_IMPULSE,     /* Импульс включения генератора */
@@ -115,11 +114,10 @@ void    vFPOsetMainsSw ( RELAY_STATUS stat );
 void    vFPOsetMainsOnImp ( RELAY_STATUS stat );
 void    vFPOsetMainsOffImp ( RELAY_STATUS stat );
 void    vFPOsetWarning ( RELAY_STATUS stat );
-void    vFPOsetDesFail ( RELAY_STATUS stat );  /* Не понятно когда применять */
+void    vFPOsetMainsFail ( RELAY_STATUS stat );
 void    vFPOsetAlarm ( RELAY_STATUS stat );
 void    vFPOsetGenReady ( RELAY_STATUS stat );
 void    vFPOsetReadyToStart ( RELAY_STATUS stat );
-void    vFPOsetNetFault ( RELAY_STATUS stat );
-void    vFPOsetAutoMode ( RELAY_STATUS stat );
+void    vFPOsetDpsReady ( RELAY_STATUS stat );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FPO_H_ */

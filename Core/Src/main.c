@@ -49,6 +49,7 @@
 #include "engine.h"
 #include "electro.h"
 #include "controller.h"
+#include "alarm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1312,6 +1313,7 @@ void StartDefaultTask(void *argument)
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
+  vALARMinit();
   vENGINEinit();                              /**/
   vELECTROinit();                             /**/
   vLOGICinit( &htim5 );                       /**/

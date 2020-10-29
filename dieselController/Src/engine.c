@@ -19,6 +19,7 @@
 #include "dataAPI.h"
 #include "adc.h"
 #include "stdio.h"
+#include "alarm.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE           engine              = { 0U };
 static OIL_TYPE              oil                 = { 0U };
@@ -672,7 +673,7 @@ void vENGINEdataInit ( void )
   }
   else
   {
-    fuel.lowAlarm.error.event.action = ACTION_LOAD_SHUTDOWN;
+    fuel.lowAlarm.error.event.action = ACTION_PLAN_STOP;
     fuel.lowAlarm.error.ack          = PERMISSION_ENABLE;
   }
   fuel.lowAlarm.error.relax.enb          = PERMISSION_DISABLE;
@@ -728,7 +729,7 @@ void vENGINEdataInit ( void )
   }
   else
   {
-    fuel.hightAlarm.error.event.action = ACTION_LOAD_SHUTDOWN;
+    fuel.hightAlarm.error.event.action = ACTION_PLAN_STOP;
     fuel.hightAlarm.error.ack          = PERMISSION_ENABLE;
   }
   fuel.hightAlarm.error.id                 = 0U;
@@ -843,6 +844,7 @@ void vENGINEdataInit ( void )
   /*--------------------------------------------------------------*/
   engine.startCheckOil                = getBitMap( &starterStopSetup, 0U );
   engine.status                       = ENGINE_STATUS_IDLE;
+  engine.banStart                     = 0U;
   engine.stopError.enb                = PERMISSION_ENABLE;
   engine.stopError.active             = PERMISSION_ENABLE;
   engine.stopError.ack                = PERMISSION_DISABLE;
@@ -925,7 +927,7 @@ void vENGINEdataInit ( void )
   maintence.oil.error.id         = 0U;
   if ( getBitMap( &maintenanceAlarms, 1U ) == 0U )
   {
-    maintence.oil.error.event.action = ACTION_PLAN_STOP;
+    maintence.oil.error.event.action = ACTION_BAN_START;
     maintence.oil.error.ack          = PERMISSION_DISABLE;
   }
   else
@@ -949,7 +951,7 @@ void vENGINEdataInit ( void )
   maintence.air.error.id         = 0U;
   if ( getBitMap( &maintenanceAlarms, 3U ) == 0U )
   {
-    maintence.air.error.event.action = ACTION_PLAN_STOP;
+    maintence.air.error.event.action = ACTION_BAN_START;
     maintence.air.error.ack          = PERMISSION_DISABLE;
   }
   else
@@ -972,7 +974,7 @@ void vENGINEdataInit ( void )
   maintence.fuel.error.event.type = EVENT_MAINTENANCE_FUEL;
   if ( getBitMap( &maintenanceAlarms, 5U ) == 0U )
   {
-    maintence.fuel.error.event.action = ACTION_PLAN_STOP;
+    maintence.fuel.error.event.action = ACTION_BAN_START;
     maintence.fuel.error.ack          = PERMISSION_DISABLE;
   }
   else
@@ -1007,6 +1009,7 @@ void vENGINEresetAlarms ( void )
   vERRORreset( &oil.preAlarm.error );
   vERRORreset( &engine.stopError );
   vERRORreset( &engine.startError );
+  engine.banStart = 0U;
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -1032,16 +1035,16 @@ void vENGINEinit ( void )
   return;
 }
 
+void vENGINEsendCmd ( ENGINE_COMMAND cmd )
+{
+  ENGINE_COMMAND engineCmd = cmd;
+  xQueueSend( pEngineCommandQueue, &engineCmd, portMAX_DELAY );
+  return;
+}
+
 QueueHandle_t pENGINEgetCommandQueue ( void )
 {
   return pEngineCommandQueue;
-}
-
-void vENGINEemergencyStop ( void )
-{
-  ENGINE_COMMAND cmd = ENGINE_CMD_EMEGENCY_STOP;
-  xQueueSend( pENGINEgetCommandQueue(), &cmd, portMAX_DELAY );
-  return;
 }
 
 uint8_t uENGINEisStarterScrollFinish ( void )
@@ -1087,68 +1090,81 @@ void vENGINEtask ( void* argument )
     {
       if ( engine.cmd != inputCmd )
       {
-        switch ( engine.status )
+        //-------------------- One action commands ---------------------*/
+        if ( inputCmd == ENGINE_CMD_BAN_START )
         {
-          case ENGINE_STATUS_IDLE:
-            engine.cmd = inputCmd;
-            vLOGICprintEngineCmd( engine.cmd );
-            break;
-          case ENGINE_STATUS_EMERGENCY_STOP:
-            if ( inputCmd == ENGINE_CMD_RESET_TO_IDLE )
-            {
+          engine.banStart = 1U;
+        }
+        else if ( inputCmd == ENGINE_CMD_ALLOW_START )
+        {
+          engine.banStart = 0U;
+        }
+        //------------------- Long actions command ---------------------*/
+        else
+        {
+          switch ( engine.status )
+          {
+            case ENGINE_STATUS_IDLE:
               engine.cmd = inputCmd;
               vLOGICprintEngineCmd( engine.cmd );
-            }
-            break;
-          case ENGINE_STATUS_BUSY_STARTING:
-            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
-            {
+              break;
+            case ENGINE_STATUS_EMERGENCY_STOP:
+              if ( inputCmd == ENGINE_CMD_RESET_TO_IDLE )
+              {
+                engine.cmd = inputCmd;
+                vLOGICprintEngineCmd( engine.cmd );
+              }
+              break;
+            case ENGINE_STATUS_BUSY_STARTING:
+              if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+              {
+                engine.cmd = inputCmd;
+                vLOGICprintEngineCmd( engine.cmd );
+              }
+              break;
+            case ENGINE_STATUS_BUSY_STOPPING:
+              if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+              {
+                engine.cmd = inputCmd;
+                vLOGICprintEngineCmd( engine.cmd );
+              }
+              break;
+            case ENGINE_STATUS_WORK:
               engine.cmd = inputCmd;
               vLOGICprintEngineCmd( engine.cmd );
-            }
-            break;
-          case ENGINE_STATUS_BUSY_STOPPING:
-            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
-            {
+              break;
+            case ENGINE_STATUS_WORK_ON_IDLE:
               engine.cmd = inputCmd;
               vLOGICprintEngineCmd( engine.cmd );
-            }
-            break;
-          case ENGINE_STATUS_WORK:
-            engine.cmd = inputCmd;
-            vLOGICprintEngineCmd( engine.cmd );
-            break;
-          case ENGINE_STATUS_WORK_ON_IDLE:
-            engine.cmd = inputCmd;
-            vLOGICprintEngineCmd( engine.cmd );
-            break;
-          case ENGINE_STATUS_WORK_GOTO_NOMINAL:
-            if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
-            {
+              break;
+            case ENGINE_STATUS_WORK_GOTO_NOMINAL:
+              if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
+              {
+                engine.cmd = inputCmd;
+                vLOGICprintEngineCmd( engine.cmd );
+              }
+              break;
+            case ENGINE_STATUS_FAIL_STARTING:
+              if ( ( inputCmd == ENGINE_CMD_EMEGENCY_STOP ) ||
+                   ( inputCmd == ENGINE_CMD_RESET_TO_IDLE ) )
+              {
+                engine.cmd = inputCmd;
+                vLOGICprintEngineCmd( engine.cmd );
+              }
+              break;
+            case ENGINE_STATUS_FAIL_STOPPING:
+              if ( ( inputCmd == ENGINE_CMD_EMEGENCY_STOP ) ||
+                   ( inputCmd == ENGINE_CMD_RESET_TO_IDLE ) )
+              {
+                engine.cmd = inputCmd;
+                vLOGICprintEngineCmd( engine.cmd );
+              }
+              break;
+            default:
               engine.cmd = inputCmd;
               vLOGICprintEngineCmd( engine.cmd );
-            }
-            break;
-          case ENGINE_STATUS_FAIL_STARTING:
-            if ( ( inputCmd == ENGINE_CMD_EMEGENCY_STOP ) ||
-                 ( inputCmd == ENGINE_CMD_RESET_TO_IDLE ) )
-            {
-              engine.cmd = inputCmd;
-              vLOGICprintEngineCmd( engine.cmd );
-            }
-            break;
-          case ENGINE_STATUS_FAIL_STOPPING:
-            if ( ( inputCmd == ENGINE_CMD_EMEGENCY_STOP ) ||
-                 ( inputCmd == ENGINE_CMD_RESET_TO_IDLE ) )
-            {
-              engine.cmd = inputCmd;
-              vLOGICprintEngineCmd( engine.cmd );
-            }
-            break;
-          default:
-            engine.cmd = inputCmd;
-            vLOGICprintEngineCmd( engine.cmd );
-            break;
+              break;
+          }
         }
       }
     }
@@ -1181,7 +1197,8 @@ void vENGINEtask ( void* argument )
       /*----------------------------------------------------------------------------------------*/
       /*|--startDelay--|--crankingDelay--|--crankDelay--|--...--|--blockDelay--|--idlingDelay--|--nominalDelay--|--warmingDelay--> */
       case ENGINE_CMD_START:
-        if ( ( engine.status == ENGINE_STATUS_IDLE ) || ( engine.status == ENGINE_STATUS_BUSY_STARTING ) )
+        if ( ( ( engine.status == ENGINE_STATUS_IDLE ) || ( engine.status == ENGINE_STATUS_BUSY_STARTING ) ) &&
+             ( engine.banStart == 0U ) )
         {
           switch ( starter.status )
           {
@@ -1541,6 +1558,15 @@ void vENGINEtask ( void* argument )
         engine.cmd               = ENGINE_CMD_NONE;
         engine.startError.active = PERMISSION_DISABLE;
         engine.stopError.active  = PERMISSION_ENABLE;
+        break;
+      /*----------------------------------------------------------------------------------------*/
+      /*--------------------------------- ENGINE BAN START -------------------------------------*/
+      /*----------------------------------------------------------------------------------------*/
+      case ENGINE_CMD_BAN_START:
+        engine.banStart = 1U;
+        break;
+      case ENGINE_CMD_ALLOW_START:
+        engine.banStart = 0U;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

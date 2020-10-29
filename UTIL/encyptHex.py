@@ -138,7 +138,7 @@ class HexFile:
                     line += format( crc, '02X' ) + "\n";
                     out  += line;
         out += ":00000001FF\n";
-        output = open( "encrypt.hex", "w+" );
+        output = open( "firmware.hex", "w+" );
         output.write( out );
         return;
 #-------------------------------------------------------------------------------

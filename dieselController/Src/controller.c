@@ -92,6 +92,18 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 /*----------------------------------------------------------------------------*/
 void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 {
+  if ( ( record.event.type == EVENT_MAINS_LOW_VOLTAGE     ) ||
+       ( record.event.type == EVENT_MAINS_HIGHT_VOLTAGE   ) ||
+       ( record.event.type == EVENT_MAINS_LOW_FREQUENCY   ) ||
+       ( record.event.type == EVENT_MAINS_HIGHT_FREQUENCY ) )
+  {
+    if ( ( controller.mode  == CONTROLLER_MODE_AUTO   ) &&
+         ( controller.state == CONTROLLER_STATUS_IDLE ) )
+    {
+      startState       = CONTROLLER_TURNING_IDLE;
+      controller.state = CONTROLLER_STATUS_START;
+    }
+  }
   vLOGICprintEvent( record.event );
   switch ( record.event.action )
   {
@@ -212,67 +224,87 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
 void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState )
 {
   ELECTRO_COMMAND electroCmd = ELECTRO_CMD_NONE;
-  /*------------------------ REMOTE START ------------------------*/
-  if ( controller.state == CONTROLLER_STATUS_START )
+
+  switch ( controller.state )
   {
-    switch ( startState )
-    {
-      case CONTROLLER_TURNING_IDLE:
-        if ( controller.banAutoStart == 0U )
-        {
-          startState = CONTROLLER_TURNING_READY;
-          vLOGICprintDebug( ">>Autostart       : Not banned\r\n" );
-        }
-        break;
-      case CONTROLLER_TURNING_READY:
-        vLOGICprintDebug( ">>Autostart       : Start\r\n" );
-        vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
-        vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
-        vFPIsetBlock();
-        if ( ( POWER_OFF_IMMEDIATELY > 0U  ) &&
-             ( controller.banGenLoad == 0U ) )
-        {
-          electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
-          xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
-          vLOGICprintDebug( ">>Autostart       : Immediately turn to generator\r\n" );
-        }
-        startState = CONTROLLER_TURNING_ENGINE;
-        break;
-      case CONTROLLER_TURNING_ENGINE:
-        vENGINEsendCmd( ENGINE_CMD_START );
-        startState = CONTROLLER_TURNING_RELOAD;
-        vLOGICprintDebug( ">>Autostart       : Turn on engine\r\n" );
-        break;
-      case CONTROLLER_TURNING_RELOAD:
-        if ( ( engineState           == ENGINE_STATUS_WORK ) &&
-             ( controller.banGenLoad == 0U ) )
-        {
-          electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
-          xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
-          startState = CONTROLLER_TURNING_DELAY;
-          vLOGICprintDebug( ">>Autostart       : Turn to generator\r\n" );
-        }
-        break;
-      case CONTROLLER_TURNING_DELAY:
-        if ( generatorState == ELECTRO_STATUS_LOAD )
-        {
-          controller.state = CONTROLLER_STATUS_WORK;
-          startState       = CONTROLLER_TURNING_IDLE;
-          vLOGICprintDebug( ">>Autostart       : Finish\r\n" );
-        }
-        break;
-      default:
-        startState = CONTROLLER_TURNING_IDLE;
-        vLOGICprintDebug( ">>Autostart       : Error\r\n" );
-        break;
-    }
-  }
-  /*------------------------- REMOTE STOP ------------------------*/
-  if ( ( ( controller.state           == CONTROLLER_STATUS_PLAN_STOP ) &&
-         ( controller.banAutoShutdown == 0U                          ) ) ||
-         ( controller.state           == CONTROLLER_STATUS_SHUTDOWN  ) )
-  {
-    vCONTROLLERplanStop( engineState, generatorState, mainsState, 1U );
+    case CONTROLLER_STATUS_IDLE:
+      break;
+    case CONTROLLER_STATUS_ALARM:
+      break;
+    /*--------------------------------------------------------------*/
+    /*------------------------ REMOTE START ------------------------*/
+    /*--------------------------------------------------------------*/
+    case CONTROLLER_STATUS_START:
+      switch ( startState )
+      {
+        case CONTROLLER_TURNING_IDLE:
+          if ( controller.banAutoStart == 0U )
+          {
+            startState = CONTROLLER_TURNING_READY;
+            vLOGICprintDebug( ">>Autostart       : Not banned\r\n" );
+          }
+          break;
+        case CONTROLLER_TURNING_READY:
+          vLOGICprintDebug( ">>Autostart       : Start\r\n" );
+          vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+          vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
+          vFPIsetBlock();
+          if ( ( POWER_OFF_IMMEDIATELY > 0U  ) &&
+               ( controller.banGenLoad == 0U ) )
+          {
+            electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
+            xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
+            vLOGICprintDebug( ">>Autostart       : Immediately turn to generator\r\n" );
+          }
+          startState = CONTROLLER_TURNING_ENGINE;
+          break;
+        case CONTROLLER_TURNING_ENGINE:
+          vENGINEsendCmd( ENGINE_CMD_START );
+          startState = CONTROLLER_TURNING_RELOAD;
+          vLOGICprintDebug( ">>Autostart       : Turn on engine\r\n" );
+          break;
+        case CONTROLLER_TURNING_RELOAD:
+          if ( ( engineState           == ENGINE_STATUS_WORK ) &&
+               ( controller.banGenLoad == 0U ) )
+          {
+            electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
+            xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
+            startState = CONTROLLER_TURNING_DELAY;
+            vLOGICprintDebug( ">>Autostart       : Turn to generator\r\n" );
+          }
+          break;
+        case CONTROLLER_TURNING_DELAY:
+          if ( generatorState == ELECTRO_STATUS_LOAD )
+          {
+            controller.state = CONTROLLER_STATUS_WORK;
+            startState       = CONTROLLER_TURNING_IDLE;
+            vLOGICprintDebug( ">>Autostart       : Finish\r\n" );
+          }
+          break;
+        default:
+          startState = CONTROLLER_TURNING_IDLE;
+          vLOGICprintDebug( ">>Autostart       : Error\r\n" );
+          break;
+      }
+      break;
+    /*--------------------------------------------------------------*/
+    /*------------------------- REMOTE STOP ------------------------*/
+    /*--------------------------------------------------------------*/
+    case CONTROLLER_STATUS_PLAN_STOP:
+      if ( ( controller.banAutoShutdown == 0U                          ) ||
+           ( controller.state           == CONTROLLER_STATUS_SHUTDOWN  ) )
+      {
+        vCONTROLLERplanStop( engineState, generatorState, mainsState, 1U );
+      }
+      break;
+    case CONTROLLER_STATUS_PLAN_STOP_DELAY:
+      break;
+    case CONTROLLER_STATUS_SHUTDOWN:
+      break;
+    case CONTROLLER_STATUS_WORK:
+      break;
+    default:
+      break;
   }
   /*--------------------------------------------------------------*/
   return;
@@ -351,11 +383,15 @@ void vCONTROLLERtask ( void* argument )
 
   for (;;)
   {
+    /*--------------------------------------------------------------------------------------------*/
     /*------------------------------------ GET BLOCKS STATUS -------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     engineState    = eENGINEgetEngineStatus();
     generatorState = eELECTROgetGeneratorStatus();
     mainsState     = eELECTROgetMainsStatus();
+    /*--------------------------------------------------------------------------------------------*/
     /*--------------------------------- KEYBOARD & SYSTEM INPUT -----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
     {
     /*--------------------------------------- SYSTEM INPUT ----------------------------------------*/
@@ -503,7 +539,9 @@ void vCONTROLLERtask ( void* argument )
           break;
       }
     }
-    /*-------------------------------------- DIGITAL INPUTS -------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    /*-------------------------------------- DIGITAL INPUTS --------------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     if ( xQueueReceive( pFPIgetQueue(), &inputFpiEvent, 0U ) == pdPASS )
     {
       switch ( inputFpiEvent.function )
@@ -642,7 +680,9 @@ void vCONTROLLERtask ( void* argument )
           break;
       }
     }
-    /*---------------------------------- CONTROLLER PROCESSING ----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    /*---------------------------------- CONTROLLER PROCESSING -----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
     if ( controller.state != CONTROLLER_STATUS_ALARM )
     {
       switch( controller.mode )

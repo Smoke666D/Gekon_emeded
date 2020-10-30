@@ -163,6 +163,7 @@ typedef struct __packed
   ELECTRO_CHANNEL    line[MAINS_LINE_NUMBER];
   getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
+  PERMISSION         alarmsIgnor;
   ALARM_TYPE         lowVoltageAlarm;
   ALARM_TYPE         hightVoltageAlarm;
   ALARM_TYPE         lowFreqAlarm;

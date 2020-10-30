@@ -188,7 +188,6 @@ typedef struct __packed
 typedef struct __packed
 {
   PERMISSION    enb;   /* Relaxation functions on/off */
-  SYSTEM_EVENT  event; /* Event after relaxation */
 } ALARM_RELAX_TYPE;
 
 typedef struct __packed
@@ -199,14 +198,15 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION        enb;       /* Enable alarm at initialization         - 1 byte */
-  PERMISSION        active;    /* On/Off alarm check in work flow        - 1 byte */
-  ALARM_STATUS      status;    /* Status of the alarm                    - 1 byte */
-  SYSTEM_EVENT      event;     /* Event data of alarm */
-  ALARM_RELAX_TYPE  relax;     /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
-  TRIGGER_STATE     trig;      /* Alarm triggered flag. Reset from outside */
-  PERMISSION        ack;       /* Auto acknowledgment on/off */
-  uint8_t           id;        /* ID in active error list */
+  PERMISSION     enb;       /* Enable alarm at initialization         - 1 byte */
+  PERMISSION     active;    /* On/Off alarm check in work flow        - 1 byte */
+  PERMISSION     relax;     /* Event on alarm relaxation. Set point for relaxation calculate with level and hysteresis */
+  PERMISSION     ack;       /* Auto acknowledgment on/off */
+  PERMISSION     ignor;     /* Ignoring in active error list */
+  ALARM_STATUS   status;    /* Status of the alarm                    - 1 byte */
+  SYSTEM_EVENT   event;     /* Event data of alarm */
+  TRIGGER_STATE  trig;      /* Alarm triggered flag. Reset from outside */
+  uint8_t        id;        /* ID in active error list */
 } ERROR_TYPE;
 
 typedef struct __packed

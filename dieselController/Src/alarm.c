@@ -80,6 +80,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
         xSemaphoreGive( xAELsemaphore );
         break;
       case ERROR_LIST_CMD_ACK:
+        /*------------------- ACK -------------------*/
         if ( *adr < activeErrorList.counter )
         {
           for ( i=*adr; i<activeErrorList.counter; i++ )
@@ -87,7 +88,9 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
             activeErrorList.array[i] = activeErrorList.array[i + 1U];
           }
           activeErrorList.counter--;
+          *adr = DEFINE_ERROR_LIST_ADR;
         }
+        /*------------- Check warnings --------------*/
         warningCounter = 0U;
         for ( i=0U; i<activeErrorList.counter; i++ )
         {
@@ -96,6 +99,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
             warningCounter++;
           }
         }
+        /*------------- Check status ----------------*/
         if ( activeErrorList.counter > 0U )
         {
           activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
@@ -175,7 +179,7 @@ void vERRORrelax ( ERROR_TYPE* error )
 {
   LOG_RECORD_TYPE record = { 0U };
 
-  if ( error->relax.enb == PERMISSION_ENABLE )
+  if ( error->relax == PERMISSION_ENABLE )
   {
     vSYSeventSend( error->event, &record );
   }
@@ -228,7 +232,7 @@ void vERRORcheck ( ERROR_TYPE* error, uint8_t flag )
           if ( flag > 0U )
           {
             vERRORtriggering( error );
-            if ( ( error->relax.enb == PERMISSION_ENABLE ) || ( error->ack == PERMISSION_ENABLE ) )
+            if ( ( error->relax == PERMISSION_ENABLE ) || ( error->ack == PERMISSION_ENABLE ) )
             {
               error->status = ALARM_STATUS_RELAX;
             }
@@ -314,7 +318,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_TRIG:
         vERRORtriggering( &alarm->error );
-        if ( ( alarm->error.relax.enb == PERMISSION_ENABLE ) || ( alarm->error.ack == PERMISSION_ENABLE ) )
+        if ( ( alarm->error.relax == PERMISSION_ENABLE ) || ( alarm->error.ack == PERMISSION_ENABLE ) )
         {
           alarm->error.status = ALARM_STATUS_RELAX;
         }

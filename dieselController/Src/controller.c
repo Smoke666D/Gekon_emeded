@@ -134,12 +134,6 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
   return;
 }
 /*----------------------------------------------------------------------------*/
-QueueHandle_t pKEYBOARDgetCommandQueue()
-{
-  QueueHandle_t out = NULL;
-  return out;
-}
-/*----------------------------------------------------------------------------*/
 void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState, uint8_t delayStop )
 {
   ELECTRO_COMMAND electroCmd = ELECTRO_CMD_NONE;

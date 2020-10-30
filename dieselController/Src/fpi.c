@@ -61,7 +61,7 @@ static FPI     fpis[FPI_NUMBER]                         = { 0U };
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
-void    vFPITask ( void const* argument );
+void    vFPITask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -294,7 +294,7 @@ void vFPIsetBlock ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFPITask ( void const* argument )
+void vFPITask ( void* argument )
 {
   FPI_EVENT event       = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
   uint8_t   i           = 0U;

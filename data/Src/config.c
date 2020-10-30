@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-10-28 11:09:37
+ * Make time: 2020-10-30 10:41:39
  */
 #include   "config.h"
 
@@ -367,19 +367,17 @@ eConfigReg coolantTempCoolerOnLevel =
    .units      = {'C', ' ', ' ', ' '},
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap fuelLevelSetupBitMap[9U] = 
+const eConfigBitMap fuelLevelSetupBitMap[7U] = 
 {
    { 7U, 0U },     // fuelLevelSensorType
    { 8U, 3U },     // fuelLevelOpenCircuitAlarmEnb
    { 16U, 4U },     // fuelLevelLowAlarmEnb
-   { 32U, 5U },     // fuelLevelLowAlarmAction
-   { 64U, 6U },     // fuelLevelLowPreAlarmEnb
-   { 128U, 7U },     // fuelLevelHightPreAlarmEnb
-   { 256U, 8U },     // fuelLevelHightAlarmEnb
-   { 512U, 9U },     // fuelLevelHightAlarmAction
-   { 1024U, 10U },     // fuelPumpEnb
+   { 32U, 5U },     // fuelLevelLowPreAlarmEnb
+   { 64U, 6U },     // fuelLevelHightPreAlarmEnb
+   { 128U, 7U },     // fuelLevelHightAlarmEnb
+   { 256U, 8U },     // fuelPumpEnb
 };
-uint16_t fuelLevelSetupValue[1U] = { 1339U };
+uint16_t fuelLevelSetupValue[1U] = { 411U };
 const eConfigAttributes fuelLevelSetupAtrib =
 {
    .adr        = 18U,
@@ -387,7 +385,7 @@ const eConfigAttributes fuelLevelSetupAtrib =
    .max        = 1023U,
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 9U,
+   .bitMapSize = 7U,
    .bitMap     = fuelLevelSetupBitMap
 };
 eConfigReg fuelLevelSetup =

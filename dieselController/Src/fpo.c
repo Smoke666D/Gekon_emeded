@@ -287,18 +287,18 @@ void vFPOdataInit ( void )
 {
   uint8_t i = 0U;
   /* Read parameters form memory */
-  fpos[FPO_A].polarity = getBitMap( &doSetup,  0U );
-  fpos[FPO_B].polarity = getBitMap( &doSetup,  1U );
-  fpos[FPO_C].polarity = getBitMap( &doSetup,  2U );
-  fpos[FPO_D].polarity = getBitMap( &doSetup,  3U );
-  fpos[FPO_E].polarity = getBitMap( &doSetup,  4U );
-  fpos[FPO_F].polarity = getBitMap( &doSetup,  5U );
-  fpos[FPO_A].function = eFPOfuctionList[ getBitMap( &doabType, 0U ) ];
-  fpos[FPO_B].function = eFPOfuctionList[ getBitMap( &doabType, 1U ) ];
-  fpos[FPO_C].function = eFPOfuctionList[ getBitMap( &docdType, 0U ) ];
-  fpos[FPO_D].function = eFPOfuctionList[ getBitMap( &docdType, 1U ) ];
-  fpos[FPO_E].function = eFPOfuctionList[ getBitMap( &doefType, 0U ) ];
-  fpos[FPO_F].function = eFPOfuctionList[ getBitMap( &doefType, 1U ) ];
+  fpos[FPO_A].polarity = getBitMap( &doSetup,  DOA_N_O_C_ADR );
+  fpos[FPO_B].polarity = getBitMap( &doSetup,  DOB_N_O_C_ADR );
+  fpos[FPO_C].polarity = getBitMap( &doSetup,  DOC_N_O_C_ADR );
+  fpos[FPO_D].polarity = getBitMap( &doSetup,  DOD_N_O_C_ADR );
+  fpos[FPO_E].polarity = getBitMap( &doSetup,  DOE_N_O_C_ADR );
+  fpos[FPO_F].polarity = getBitMap( &doSetup,  DOF_N_O_C_ADR );
+  fpos[FPO_A].function = eFPOfuctionList[ getBitMap( &doabType, DOA_TYPE_ADR ) ];
+  fpos[FPO_B].function = eFPOfuctionList[ getBitMap( &doabType, DOB_TYPE_ADR ) ];
+  fpos[FPO_C].function = eFPOfuctionList[ getBitMap( &docdType, DOC_TYPE_ADR ) ];
+  fpos[FPO_D].function = eFPOfuctionList[ getBitMap( &docdType, DOD_TYPE_ADR ) ];
+  fpos[FPO_E].function = eFPOfuctionList[ getBitMap( &doefType, DOE_TYPE_ADR ) ];
+  fpos[FPO_F].function = eFPOfuctionList[ getBitMap( &doefType, DOF_TYPE_ADR ) ];
   /* GPIO start conditions */
   for ( i=0U; i<FPO_DIS_NUMBER; i++ )
   {

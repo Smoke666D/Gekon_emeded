@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-10-28 11:09:37
+ * Make time: 2020-10-30 10:41:39
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -78,7 +78,7 @@ typedef struct __packed
   uint16_t*                value;                   // RW
   uint16_t                 units[MAX_UNITS_LENGTH]; // RW
 } eConfigReg;
-/*------------------------ Addresses -----------------------------------*/
+/*---------------------- Register addresses ----------------------------*/
 #define   VERSION_CONTROLLER_ADR                                 0U
 #define   VERSION_FIRMWARE_ADR                                   1U
 #define   SERIAL_NUMBER_ADR                                      2U
@@ -199,6 +199,93 @@ typedef struct __packed
 #define   MAINTENANCE_ALARM_AIR_TIME_ADR                         117U
 #define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        118U
 #define   LOG_SETUP_ADR                                          119U
+/*---------------------- Bitmap addresses ------------------------------*/
+#define   MODULE_TYPE_ADR                              0U
+#define   ALARM_ALL_BLOCK_ADR                          1U
+#define   OIL_PRESSURE_SENSOR_TYPE_ADR                 0U
+#define   OIL_PRESSURE_OPEN_CIRCUIT_ALARM_ENB_ADR      1U
+#define   OIL_PRESSURE_ALARM_ENB_ADR                   2U
+#define   OIL_PRESSURE_PRE_ALARM_ENB_ADR               3U
+#define   COOLANT_TEMP_SENSOR_TYPE_ADR                 0U
+#define   COOLANT_TEMP_OPEN_CIRCUIT_ALARM_ENB_ADR      1U
+#define   COOLANT_HIGHT_TEMP_ALARM_ENB_ADR             2U
+#define   COOLANT_HIGHT_TEMP_PRE_ALARM_ENB_ADR         3U
+#define   COOLANT_TEMP_HEATER_ENB_ADR                  4U
+#define   COOLANT_TEMP_COOLER_ENB_ADR                  5U
+#define   FUEL_LEVEL_SENSOR_TYPE_ADR                   0U
+#define   FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR        1U
+#define   FUEL_LEVEL_LOW_ALARM_ENB_ADR                 2U
+#define   FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR             3U
+#define   FUEL_LEVEL_HIGHT_PRE_ALARM_ENB_ADR           4U
+#define   FUEL_LEVEL_HIGHT_ALARM_ENB_ADR               5U
+#define   FUEL_PUMP_ENB_ADR                            6U
+#define   SPEED_ENB_ADR                                0U
+#define   SPEED_LOW_ALARM_ENB_ADR                      1U
+#define   DIA_FUNCTION_ADR                             0U
+#define   DIA_POLARITY_ADR                             1U
+#define   DIA_ACTION_ADR                               2U
+#define   DIA_ARMING_ADR                               3U
+#define   DIB_FUNCTION_ADR                             0U
+#define   DIB_POLARITY_ADR                             1U
+#define   DIB_ACTION_ADR                               2U
+#define   DIB_ARMING_ADR                               3U
+#define   DIC_FUNCTION_ADR                             0U
+#define   DIC_POLARITY_ADR                             1U
+#define   DIC_ACTION_ADR                               2U
+#define   DIC_ARMING_ADR                               3U
+#define   DID_FUNCTION_ADR                             0U
+#define   DID_POLARITY_ADR                             1U
+#define   DID_ACTION_ADR                               2U
+#define   DID_ARMING_ADR                               3U
+#define   DOA_N_O_C_ADR                                0U
+#define   DOB_N_O_C_ADR                                1U
+#define   DOC_N_O_C_ADR                                2U
+#define   DOD_N_O_C_ADR                                3U
+#define   DOE_N_O_C_ADR                                4U
+#define   DOF_N_O_C_ADR                                5U
+#define   DOA_TYPE_ADR                                 0U
+#define   DOB_TYPE_ADR                                 1U
+#define   DOC_TYPE_ADR                                 0U
+#define   DOD_TYPE_ADR                                 1U
+#define   DOE_TYPE_ADR                                 0U
+#define   DOF_TYPE_ADR                                 1U
+#define   GEN_POWER_GENERATOR_CONTROL_ENB_ADR          0U
+#define   GEN_AC_SYS_ADR                               1U
+#define   GEN_UNDER_VOLTAGE_ALARM_ENB_ADR              0U
+#define   GEN_UNDER_VOLTAGE_PRE_ALARM_ENB_ADR          1U
+#define   GEN_OVER_VOLTAGE_PRE_ALARM_ENB_ADR           2U
+#define   GEN_UNDER_FREQUENCY_ALARM_ENB_ADR            3U
+#define   GEN_UNDER_FREQUENCY_PRE_ALARM_ENB_ADR        4U
+#define   GEN_OVER_FREQUENCY_PRE_ALARM_ENB_ADR         5U
+#define   GEN_OVER_FREQUENCY_ALARM_ENB_ADR             6U
+#define   GEN_CURRENT_OVERLOAD_PROTECTION_ENB_ADR      7U
+#define   GEN_CURRENT_OVER_PHASE_IMBALANCE_ENB_ADR     8U
+#define   GEN_CURRENT_OVER_ALARM_ACTION_ADR            9U
+#define   GEN_CURRENT_OVERLOAD_PROTECTION_ACTION_ADR   10U
+#define   GEN_CURRENT_OVER_PHASE_IMBALANCE_ACTION_ADR  11U
+#define   MAINS_CONTROL_ENB_ADR                        0U
+#define   MAINS_POWER_OFF_IMMEDIATELY_ENB_ADR          1U
+#define   MAINS_UNDER_VOLTAGE_ALARM_ENB_ADR            0U
+#define   MAINS_OVER_VOLTAGE_ALARM_ENB_ADR             1U
+#define   MAINS_UNDER_FREQUENCY_ALARM_ENB_ADR          2U
+#define   MAINS_OVER_FREQUENCY_ALARM_ENB_ADR           3U
+#define   ENGINE_START_ATTEMPTS_ADR                    0U
+#define   ENGINE_PRE_HEAT_ENB_ADR                      1U
+#define   STARTER_OIL_PRESSURE_CHECK_ON_START_ENB_ADR  0U
+#define   STARTER_STOP_OIL_PRESSURE_ENB_ADR            1U
+#define   STARTER_STOP_CHARGE_ALTERNATOR_ENB_ADR       2U
+#define   STARTER_STOP_SPEED_ENB_ADR                   3U
+#define   BATTERY_UNDER_VOLTAGE_ENB_ADR                0U
+#define   BATTERY_OVER_VOLTAGE_ENB_ADR                 1U
+#define   BATTERY_CHARGE_SHUTDOWN_ENB_ADR              2U
+#define   BATTERY_CHARGE_WARNING_ENB_ADR               3U
+#define   MAINTENANCE_ALARM_OIL_ENB_ADR                0U
+#define   MAINTENANCE_ALARM_OIL_ACTION_ADR             1U
+#define   MAINTENANCE_ALARM_AIR_ENB_ADR                2U
+#define   MAINTENANCE_ALARM_AIR_ACTION_ADR             3U
+#define   MAINTENANCE_ALARM_FUEL_ENB_ADR               4U
+#define   MAINTENANCE_ALARM_FUEL_ACTION_ADR            5U
+#define   LOG_SAVE_WARNING_EVENTS_ENB_ADR              0U
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg versionController;
 extern eConfigReg versionFirmware;

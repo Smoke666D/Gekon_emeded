@@ -39,6 +39,7 @@ typedef enum
   ELECTRO_CMD_NONE,
   ELECTRO_CMD_LOAD_MAINS,
   ELECTRO_CMD_LOAD_GENERATOR,
+  ELECTRO_CMD_ENABLE_STOP_ALARMS,
   ELECTRO_CMD_DISABLE_START_ALARMS,
   ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS,
   ELECTRO_CMD_DISABLE_IDLE_ALARMS,
@@ -178,7 +179,8 @@ void                 vELECTROinit ( void );
 ELECTRO_STATUS       eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS       eELECTROgetMainsStatus ( void );
 ELECTRO_ALARM_STATUS eELECTROgetAlarmStatus ( void );
-void                 vELECTROsendCmd ( ELECTRO_COMMAND cmd );
 QueueHandle_t        pELECTROgetCommandQueue ( void );
+void                 vELECTROsendCmd ( ELECTRO_COMMAND cmd );
+fix16_t              fELECTROgetMaxGenVoltage ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

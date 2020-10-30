@@ -32,8 +32,8 @@
 CONTROLLER_INIT controllerGPIO = { 0U };
 CONTROLLER_TYPE controller     = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
-#define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, 0U ) )
-#define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, 1U ) )
+#define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, LOG_SAVE_WARNING_EVENTS_ENB_ADR ) )
+#define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, MAINS_POWER_OFF_IMMEDIATELY_ENB_ADR ) )
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;

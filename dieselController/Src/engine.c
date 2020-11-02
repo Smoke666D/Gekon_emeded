@@ -1308,6 +1308,9 @@ void vENGINEtask ( void* argument )
               maintence.air.error.active  = PERMISSION_ENABLE;
               maintence.fuel.error.active = PERMISSION_ENABLE;
               vLOGICprintStarterStatus( starter.status );
+              event.action = ACTION_NONE;
+              event.type   = EVENT_ENGINE_START;
+              vSYSeventSend( event, NULL );
               break;
             default:
               vLOGICresetTimer( commonTimer );
@@ -1407,6 +1410,9 @@ void vENGINEtask ( void* argument )
               maintence.fuel.error.active = 0U;
               vFPOsetReadyToStart( RELAY_ON );
               vLOGICprintPlanStopStatus( planStop.status );
+              event.action = ACTION_NONE;
+              event.type   = EVENT_ENGINE_STOP;
+              vSYSeventSend( event, NULL );
               break;
             default:
               vLOGICresetTimer( commonTimer );

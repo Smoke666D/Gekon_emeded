@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-10-30 10:41:39
+ * Make time: 2020-11-02 08:23:47
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -286,6 +286,7 @@ typedef struct __packed
 #define   MAINTENANCE_ALARM_FUEL_ENB_ADR               4U
 #define   MAINTENANCE_ALARM_FUEL_ACTION_ADR            5U
 #define   LOG_SAVE_WARNING_EVENTS_ENB_ADR              0U
+#define   LOG_POSITIVE_EVENTS_ENB_ADR                  1U
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg versionController;
 extern eConfigReg versionFirmware;

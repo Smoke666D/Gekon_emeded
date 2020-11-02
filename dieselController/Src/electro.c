@@ -201,9 +201,10 @@ fix16_t fELECTROcalcPhaseImbalance ( fix16_t* value )
 /*---------------------------------------------------------------------------------------------------*/
 void vMAINSprocess ( void )
 {
-  fix16_t voltage[MAINS_LINE_NUMBER] = { 0U };
-  fix16_t freq                       = 0U;
-  uint8_t i                          = 0U;
+  fix16_t      voltage[MAINS_LINE_NUMBER] = { 0U };
+  fix16_t      freq                       = 0U;
+  uint8_t      i                          = 0U;
+  uint8_t      mainsFlag                  = 0U;
   /*--------------------------- Read inputs ---------------------------*/
   for ( i=0U; i<MAINS_LINE_NUMBER; i++ )
   {
@@ -241,11 +242,24 @@ void vMAINSprocess ( void )
   {
     vALARMcheck( &mains.hightFreqAlarm, freq );
   }
-  /*--------------------------- Outputs --------------------------------*/
-  if ( mains.state == ELECTRO_STATUS_ALARM )
+  /*--------------------------- Events ---------------------------------*/
+  if ( ( eALARMisActive( &mains.lowVoltageAlarm   ) == TRIGGER_IDLE ) &&
+       ( eALARMisActive( &mains.hightVoltageAlarm ) == TRIGGER_IDLE ) &&
+       ( eALARMisActive( &mains.lowFreqAlarm      ) == TRIGGER_IDLE ) &&
+       ( eALARMisActive( &mains.hightFreqAlarm    ) == TRIGGER_IDLE ) )
   {
+    // Сеть востноволена, логировать позитивное событие, событие возврата сети
+    mainsFlag = 1U;
+    vFPOsetMainsFail( RELAY_OFF );
+  }
+  else
+  {
+    // Ошибка сети, не логировать (избыточно), событие переключения на генератор
+    mainsFlag   = 0U;
     vFPOsetMainsFail( RELAY_ON );
   }
+  vERRORcheck( &mains.autoStart, !mainsFlag );
+  vERRORcheck( &mains.autoStop,  mainsFlag );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -483,7 +497,29 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
   mains.enb = getBitMap( &mainsSetup, MAINS_CONTROL_ENB_ADR );
-
+  /*----------------------------------------------------------------------------*/
+  mains.autoStart.ack          = PERMISSION_ENABLE;
+  mains.autoStart.active       = PERMISSION_DISABLE;
+  mains.autoStart.enb          = PERMISSION_ENABLE;
+  mains.autoStart.event.action = ACTION_AUTO_START;
+  mains.autoStart.event.type   = EVENT_MAINS_FAIL;
+  mains.autoStart.id           = DEFINE_ERROR_LIST_ADR;
+  mains.autoStart.ignor        = PERMISSION_DISABLE;
+  mains.autoStart.relax        = PERMISSION_ENABLE;
+  mains.autoStart.status       = ALARM_STATUS_IDLE;
+  mains.autoStart.trig         = TRIGGER_IDLE;
+  /*----------------------------------------------------------------------------*/
+  mains.autoStop.ack          = PERMISSION_ENABLE;
+  mains.autoStop.active       = PERMISSION_DISABLE;
+  mains.autoStop.enb          = PERMISSION_ENABLE;
+  mains.autoStop.event.action = ACTION_AUTO_STOP;
+  mains.autoStop.event.type   = EVENT_MAINS_FAIL;
+  mains.autoStop.id           = DEFINE_ERROR_LIST_ADR;
+  mains.autoStop.ignor        = PERMISSION_DISABLE;
+  mains.autoStop.relax        = PERMISSION_ENABLE;
+  mains.autoStop.status       = ALARM_STATUS_IDLE;
+  mains.autoStop.trig         = TRIGGER_IDLE;
+  /*----------------------------------------------------------------------------*/
   mains.lowVoltageAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_UNDER_VOLTAGE_ALARM_ENB_ADR );
   mains.lowVoltageAlarm.error.active       = 0U;
   mains.lowVoltageAlarm.type               = ALARM_LEVEL_LOW;

@@ -31,7 +31,6 @@ typedef enum
 {
   ELECTRO_STATUS_IDLE,
   ELECTRO_STATUS_LOAD,
-  ELECTRO_STATUS_ALARM,
 } ELECTRO_STATUS;
 
 typedef enum
@@ -168,6 +167,9 @@ typedef struct __packed
   ALARM_TYPE         hightVoltageAlarm;
   ALARM_TYPE         lowFreqAlarm;
   ALARM_TYPE         hightFreqAlarm;
+  /*---------- EVENTS ----------*/
+  ERROR_TYPE         autoStart;
+  ERROR_TYPE         autoStop;
   /*---------- OUTPUT ----------*/
   RELAY_DEVICE       relay;
   RELAY_DELAY_DEVICE relayOn;

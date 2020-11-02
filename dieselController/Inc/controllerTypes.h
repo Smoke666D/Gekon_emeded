@@ -58,6 +58,8 @@ typedef enum
   ACTION_EMERGENCY_STOP,
   ACTION_PLAN_STOP,
   ACTION_BAN_START,
+  ACTION_AUTO_START,
+  ACTION_AUTO_STOP,
 } SYSTEM_ACTION;
 
 typedef enum
@@ -94,8 +96,10 @@ typedef enum
   EVENT_MAINTENANCE_OIL,            /* WARNING & BAN_START */
   EVENT_MAINTENANCE_AIR,            /* WARNING & BAN_START */
   EVENT_MAINTENANCE_FUEL,           /* WARNING & BAN_START */
-  EVENT_MAINS_VOLTAGE_RELAX,        /**/
-  EVENT_MAINS_FREQUENCY_RELAX,      /**/
+  EVENT_ENGINE_START,               /* NONE */
+  EVENT_ENGINE_STOP,                /* NONE */
+  EVENT_MAINS_OK,                   /* AUTO_STOP */
+  EVENT_MAINS_FAIL,                 /* AUTO_START*/
 } SYSTEM_EVENT_TYPE;
 
 typedef enum
@@ -268,7 +272,6 @@ uint8_t           uLOGICisTimer ( SYSTEM_TIMER timer );
 TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER timer );
 void              vLOGICtimerCallback ( void );
 void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
-
 void              vLOGICprintEvent ( SYSTEM_EVENT event );
 void              vLOGICprintDebug ( const char* str );
 void              vLOGICprintLogRecord ( LOG_RECORD_TYPE record );

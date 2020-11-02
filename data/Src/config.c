@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-10-30 10:41:39
+ * Make time: 2020-11-02 08:23:47
  */
 #include   "config.h"
 
@@ -2413,11 +2413,12 @@ eConfigReg maintenanceAlarmFuelTime =
    .units      = {'ч', 'а', 'с', ' '},
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap logSetupBitMap[1U] = 
+const eConfigBitMap logSetupBitMap[2U] = 
 {
    { 1U, 0U },     // logSaveWarningEventsEnb
+   { 2U, 1U },     // logPositiveEventsEnb
 };
-uint16_t logSetupValue[1U] = { 1U };
+uint16_t logSetupValue[1U] = { 3U };
 const eConfigAttributes logSetupAtrib =
 {
    .adr        = 119U,
@@ -2425,7 +2426,7 @@ const eConfigAttributes logSetupAtrib =
    .max        = 65535U,
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 1U,
+   .bitMapSize = 2U,
    .bitMap     = logSetupBitMap
 };
 eConfigReg logSetup =

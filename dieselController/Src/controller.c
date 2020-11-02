@@ -33,6 +33,7 @@ CONTROLLER_INIT controllerGPIO = { 0U };
 CONTROLLER_TYPE controller     = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 #define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, LOG_SAVE_WARNING_EVENTS_ENB_ADR ) )
+#define  LOG_POSITIVE_ENABLE    ( getBitMap( &logSetup, LOG_POSITIVE_EVENTS_ENB_ADR ) )
 #define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, MAINS_POWER_OFF_IMMEDIATELY_ENB_ADR ) )
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
@@ -90,24 +91,44 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vCONTROLLERstartAutoStart ( void )
+{
+  if ( ( controller.mode  == CONTROLLER_MODE_AUTO ) &&
+       ( controller.state != CONTROLLER_STATUS_ALARM ) &&
+       ( controller.banAutoStart == 0U                     ) &&
+       ( controller.state        == CONTROLLER_STATUS_IDLE ) )
+  {
+    controller.state = CONTROLLER_STATUS_START;
+    stopState        = CONTROLLER_TURNING_IDLE;
+    startState       = CONTROLLER_TURNING_IDLE;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERstartAutoStop ( void )
+{
+  if ( ( controller.mode  == CONTROLLER_MODE_AUTO ) &&
+       ( controller.state != CONTROLLER_STATUS_ALARM ) &&
+       ( controller.banAutoShutdown == 0U                     ) &&
+       ( controller.state           == CONTROLLER_STATUS_WORK ) )
+  {
+    controller.state = CONTROLLER_STATUS_PLAN_STOP;
+    stopState        = CONTROLLER_TURNING_IDLE;
+    startState       = CONTROLLER_TURNING_IDLE;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 {
-  if ( ( record.event.type == EVENT_MAINS_LOW_VOLTAGE     ) ||
-       ( record.event.type == EVENT_MAINS_HIGHT_VOLTAGE   ) ||
-       ( record.event.type == EVENT_MAINS_LOW_FREQUENCY   ) ||
-       ( record.event.type == EVENT_MAINS_HIGHT_FREQUENCY ) )
-  {
-    if ( ( controller.mode  == CONTROLLER_MODE_AUTO   ) &&
-         ( controller.state == CONTROLLER_STATUS_IDLE ) )
-    {
-      startState       = CONTROLLER_TURNING_IDLE;
-      controller.state = CONTROLLER_STATUS_START;
-    }
-  }
   vLOGICprintEvent( record.event );
   switch ( record.event.action )
   {
     case ACTION_NONE:
+      if ( LOG_POSITIVE_ENABLE > 0U )
+      {
+        eLOGaddRecord( &record );
+      }
       break;
 
     case ACTION_WARNING:
@@ -133,11 +154,22 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 
     case ACTION_PLAN_STOP:
       vENGINEsendCmd( ENGINE_CMD_PLAN_STOP );
-
       break;
 
     case ACTION_BAN_START:
       vENGINEsendCmd( ENGINE_CMD_BAN_START );
+      break;
+
+    case ACTION_AUTO_START:
+      vCONTROLLERstartAutoStart();
+      break;
+
+    case ACTION_AUTO_STOP:
+      if ( LOG_POSITIVE_ENABLE > 0U )
+      {
+        eLOGaddRecord( &record );
+      }
+      vCONTROLLERstartAutoStop();
       break;
 
     default:
@@ -608,32 +640,13 @@ void vCONTROLLERtask ( void* argument )
           break;
         /*----------------------- Дистанционный запуск, останов ----------------------*/
         case FPI_FUN_REMOTE_START:
-          if ( ( controller.mode  == CONTROLLER_MODE_AUTO ) &&
-               ( controller.state != CONTROLLER_STATUS_ALARM ) )
+          if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
-            if ( ( controller.banAutoStart == 0U                     ) &&
-                 ( inputFpiEvent.level     == FPI_LEVEL_HIGH         ) &&
-                 ( controller.state        == CONTROLLER_STATUS_IDLE ) )
-            {
-              controller.state = CONTROLLER_STATUS_START;
-              stopState        = CONTROLLER_TURNING_IDLE;
-              startState       = CONTROLLER_TURNING_IDLE;
-            }
-            if ( ( controller.banAutoShutdown == 0U                     ) &&
-                 ( inputFpiEvent.level        == FPI_LEVEL_LOW          ) &&
-                 ( controller.state           == CONTROLLER_STATUS_WORK ) )
-            {
-              controller.state = CONTROLLER_STATUS_PLAN_STOP;
-              stopState        = CONTROLLER_TURNING_IDLE;
-              startState       = CONTROLLER_TURNING_IDLE;
-            }
-            if ( ( inputFpiEvent.level == FPI_LEVEL_LOW           ) &&
-                 ( controller.state    == CONTROLLER_STATUS_START ) )
-            {
-              interiorEvent.type   = EVENT_START_FAIL;
-              interiorEvent.action = ACTION_EMERGENCY_STOP;
-              vSYSeventSend( interiorEvent, NULL );
-            }
+            vCONTROLLERstartAutoStart();
+          }
+          else
+          {
+            vCONTROLLERstartAutoStop();
           }
           break;
         /*---------------------- Высокая температура двигателя -----------------------*/

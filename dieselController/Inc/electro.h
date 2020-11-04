@@ -15,10 +15,12 @@
 /*------------------------ Define --------------------------------------*/
 #define  GENERATOR_LINE_NUMBER             3U
 #define  MAINS_LINE_NUMBER                 3U
-#define  TEMP_PROTECTION_TIME_MULTIPLIER   ( F16( 36U ) )    /* t */
-#define  CUTOUT_PROTECTION_TRIPPING_CURVE  ( F16( 0.001f ) ) /* K */
-#define  CUTOUT_POWER                      ( F16( 0.02f ) )
 #define  ELECTRO_COMMAND_QUEUE_LENGTH      10U
+
+#define  TEMP_PROTECTION_TIME_MULTIPLIER   36U    /* t */
+#define  CUTOUT_PROTECTION_TRIPPING_CURVE  0.001f /* K */
+#define  SHORT_CIRCUIT_CONSTANT            0.14f
+#define  CUTOUT_POWER                      0.02f
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -123,11 +125,11 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  ELECTRO_COMMAND         cmd;
   ELECTRO_SCHEME          scheme;
   ELECTRO_PROCESS_STATUS  state;
-  ELECTRO_COMMAND         cmd;
-  SYSTEM_TIMER            timer;
   ELECTRO_ALARM_STATUS    alarmState;
+  SYSTEM_TIMER            timer;
 } ELECTRO_SYSTEM_TYPE;
 
 typedef struct __packed
@@ -185,5 +187,6 @@ ELECTRO_ALARM_STATUS eELECTROgetAlarmStatus ( void );
 QueueHandle_t        pELECTROgetCommandQueue ( void );
 void                 vELECTROsendCmd ( ELECTRO_COMMAND cmd );
 fix16_t              fELECTROgetMaxGenVoltage ( void );
+TRIGGER_STATE        eELECTROgetMainsErrorFlag ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

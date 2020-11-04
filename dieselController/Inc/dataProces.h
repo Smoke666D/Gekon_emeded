@@ -11,6 +11,9 @@
 #include "stm32f2xx_hal.h"
 #include "fix16.h"
 #include "config.h"
+/*------------------------ Define --------------------------------------*/
+#define SERIES_SIZE    5U
+#define SERIES_LN_SIZE 15U
 /*----------------------- Functions ------------------------------------*/
 uint8_t  getBitMap( const eConfigReg* reg, uint8_t bit );
 uint16_t getUintValue ( const eConfigReg* reg );

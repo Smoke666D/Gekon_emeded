@@ -102,10 +102,10 @@ typedef enum
 typedef struct __packed
 {
   SENSOR_TYPE       type;
+  SENSOR_STATUS     status;
   eChartData*       chart;
   getValueCallBack  get;
   ALARM_TYPE        cutout;
-  SENSOR_STATUS     status;
 } SENSOR;
 
 typedef struct __packed
@@ -137,11 +137,11 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t           enb;
+  PERMISSION        enb;
+  SENSOR_STATUS     status;
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
-  SENSOR_STATUS     status;
 } SPEED_TYPE;
 
 typedef struct __packed
@@ -160,14 +160,14 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t  critGenFreqEnb;
-  fix16_t  critGenFreqLevel;
-  uint8_t  critOilPressEnb;
-  fix16_t  critOilPressLevel;
-  uint8_t  critChargeEnb;
-  fix16_t  critChargeLevel;
-  uint8_t  critSpeedEnb;
-  fix16_t  critSpeedLevel;
+  PERMISSION  critGenFreqEnb;
+  fix16_t     critGenFreqLevel;
+  PERMISSION  critOilPressEnb;
+  fix16_t     critOilPressLevel;
+  PERMISSION  critChargeEnb;
+  fix16_t     critChargeLevel;
+  PERMISSION  critSpeedEnb;
+  fix16_t     critSpeedLevel;
 } START_CRITERIONS_TYPE;
 
 typedef struct __packed
@@ -212,10 +212,10 @@ typedef struct __packed
 {
   ENGINE_COMMAND  cmd;
   PERMISSION      startCheckOil;
+  PERMISSION      banStart;
   ENGINE_STATUS   status;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
-  uint8_t         banStart;
 } ENGINE_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t engineHandle;

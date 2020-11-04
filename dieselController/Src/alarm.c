@@ -177,12 +177,6 @@ uint8_t uALARMisForList ( SYSTEM_EVENT* event )
 /*-----------------------------------------------------------------------------------------*/
 void vERRORrelax ( ERROR_TYPE* error )
 {
-  LOG_RECORD_TYPE record = { 0U };
-
-  if ( error->relax == PERMISSION_ENABLE )
-  {
-    vSYSeventSend( error->event, &record );
-  }
   if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( &error->event ) > 0U ) )
   {
     eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &error->id );
@@ -232,7 +226,7 @@ void vERRORcheck ( ERROR_TYPE* error, uint8_t flag )
           if ( flag > 0U )
           {
             vERRORtriggering( error );
-            if ( ( error->relax == PERMISSION_ENABLE ) || ( error->ack == PERMISSION_ENABLE ) )
+            if ( error->ack == PERMISSION_ENABLE )
             {
               error->status = ALARM_STATUS_RELAX;
             }
@@ -268,11 +262,11 @@ void vERRORcheck ( ERROR_TYPE* error, uint8_t flag )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-TRIGGER_STATE eALARMisActive ( ALARM_TYPE* alarm )
+TRIGGER_STATE eERRORisActive ( ERROR_TYPE* error )
 {
   TRIGGER_STATE res = TRIGGER_IDLE;
-  if ( ( alarm->error.status != ALARM_STATUS_IDLE ) &&
-       ( alarm->error.status != ALARM_STATUS_WAIT_DELAY ) )
+  if ( ( error->status != ALARM_STATUS_IDLE ) &&
+       ( error->status != ALARM_STATUS_WAIT_DELAY ) )
   {
     res = TRIGGER_SET;
   }
@@ -329,7 +323,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_TRIG:
         vERRORtriggering( &alarm->error );
-        if ( ( alarm->error.relax == PERMISSION_ENABLE ) || ( alarm->error.ack == PERMISSION_ENABLE ) )
+        if ( alarm->error.ack == PERMISSION_ENABLE )
         {
           alarm->error.status = ALARM_STATUS_RELAX;
         }

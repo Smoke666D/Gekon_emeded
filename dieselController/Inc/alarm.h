@@ -37,6 +37,6 @@ void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
 void              vERRORreset ( ERROR_TYPE* error );
 void              vERRORcheck ( ERROR_TYPE* error, uint8_t flag );
 ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr );
-TRIGGER_STATE     eALARMisActive ( ALARM_TYPE* alarm );
+TRIGGER_STATE     eERRORisActive ( ERROR_TYPE* error );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ALARM_H_ */

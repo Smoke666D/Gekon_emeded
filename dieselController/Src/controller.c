@@ -121,6 +121,7 @@ void vCONTROLLERstartAutoStop ( void )
 /*----------------------------------------------------------------------------*/
 void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 {
+  LOG_RECORD_TYPE buffer = record;
   vLOGICprintEvent( record.event );
   switch ( record.event.action )
   {
@@ -167,7 +168,11 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
     case ACTION_AUTO_STOP:
       if ( LOG_POSITIVE_ENABLE > 0U )
       {
-        eLOGaddRecord( &record );
+        if ( controller.mode == CONTROLLER_MODE_MANUAL )
+        {
+          buffer.event.action = ACTION_NONE;
+        }
+        eLOGaddRecord( &buffer );
       }
       vCONTROLLERstartAutoStop();
       break;
@@ -379,6 +384,26 @@ void vCONTROLLERprintStatus ( void )
 
   return;
 }
+
+void vCONTROLLERcheckAutoOn ( ENGINE_STATUS engineState )
+{
+  if ( controller.state != CONTROLLER_STATUS_ALARM )
+  {
+    vFPOsetDpsReady( RELAY_ON );
+    if ( ( eELECTROgetMainsErrorFlag()            == TRIGGER_SET    ) ||
+         ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) == FPI_LEVEL_HIGH ) )
+    {
+      vCONTROLLERstartAutoStart();
+    }
+    if ( ( eELECTROgetMainsErrorFlag()            == TRIGGER_IDLE       ) &&
+         ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) != FPI_LEVEL_HIGH     ) &&
+         ( engineState                            != ENGINE_STATUS_IDLE ) )
+    {
+      controller.state = CONTROLLER_STATUS_PLAN_STOP;
+    }
+  }
+  return;
+}
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -439,17 +464,8 @@ void vCONTROLLERtask ( void* argument )
         case HMI_CMD_START:
           if ( ( controller.state != CONTROLLER_STATUS_ALARM ) && ( controller.mode  == CONTROLLER_MODE_MANUAL ) )
           {
-            /* LOAD */
-            if ( ( CONTROLLER_LOAD_BTN_EXIST == 0U                      ) &&
-                 ( controller.state          == CONTROLLER_STATUS_START ) &&
-                 ( controller.banGenLoad     == 0U                      ) &&
-                 ( engineState               == ENGINE_STATUS_WORK      ) )
-            {
-              vCONTROLLERsetLED( HMI_CMD_LOAD, RELAY_ON );
-              vELECTROsendCmd( ELECTRO_CMD_LOAD_GENERATOR );
-            }
             /* START */
-            else if ( engineState == ENGINE_STATUS_IDLE )
+            if ( engineState == ENGINE_STATUS_IDLE )
             {
               vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
               vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
@@ -457,9 +473,17 @@ void vCONTROLLERtask ( void* argument )
               controller.state = CONTROLLER_STATUS_START;
               vENGINEsendCmd( ENGINE_CMD_START );
             }
+            /* LOAD */
             else
             {
-
+              if ( ( CONTROLLER_LOAD_BTN_EXIST == 0U                     ) &&
+                   ( controller.state          != CONTROLLER_STATUS_IDLE ) &&
+                   ( controller.banGenLoad     == 0U                     ) &&
+                   ( engineState               == ENGINE_STATUS_WORK     ) )
+              {
+                vCONTROLLERsetLED( HMI_CMD_LOAD, RELAY_ON );
+                vELECTROsendCmd( ELECTRO_CMD_LOAD_GENERATOR );
+              }
             }
           }
           break;
@@ -538,19 +562,10 @@ void vCONTROLLERtask ( void* argument )
           /* AUTO */
           else if ( controller.mode  == CONTROLLER_MODE_MANUAL )
           {
+            controller.mode = CONTROLLER_MODE_AUTO;
             vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_ON  );
             vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_OFF );
-            if ( controller.state != CONTROLLER_STATUS_ALARM )
-            {
-              vFPOsetDpsReady( RELAY_OFF );
-            }
-            controller.mode = CONTROLLER_MODE_AUTO;
-            if ( ( ( controller.state == CONTROLLER_STATUS_START ) ||
-                   ( controller.state == CONTROLLER_STATUS_WORK  ) ) &&
-                 ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) != FPI_LEVEL_HIGH ) )
-            {
-              controller.state = CONTROLLER_STATUS_PLAN_STOP;
-            }
+            vCONTROLLERcheckAutoOn ( engineState );
           }
           else
           {
@@ -593,10 +608,10 @@ void vCONTROLLERtask ( void* argument )
             vFPOsetAlarm( RELAY_OFF );
             vFPOsetMainsFail( RELAY_OFF );
             eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
-            if ( controller.mode == CONTROLLER_MODE_AUTO )
-            {
-              vFPOsetDpsReady( RELAY_ON );
-            }
+            controller.mode = CONTROLLER_MODE_MANUAL;
+            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
+            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
+            vCONTROLLERprintStatus();
           }
           break;
         /*---- Запрет автоматического останова при восстановлении параметров сети ----*/

@@ -20,10 +20,10 @@ const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",
     "Предупреждение",
     "Аварийная остановка",
-    "Переключение на генератор",
-    "Переключение на сеть",
     "Плановая остановка",
-    "Отключение нагрузки"
+    "Запрет следующего старта",
+    "Автостарт",
+    "Автостоп"
 };
 const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Нет",
@@ -58,8 +58,10 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "ТО масло",
     "ТО воздух",
     "ТО топливо",
-    "???",
-    "???"
+    "Двигатель запущен",
+    "Двигатель остановлен",
+    "Сеть востановлена",
+    "Ошибка сети"
 };
 #if ( DEBUG_SERIAL_ALARM > 0U )
   const char* eventTypesStr[] =
@@ -96,18 +98,20 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "MAINTENANCE_OIL",            /* WARNING */
     "MAINTENANCE_AIR",            /* WARNING */
     "MAINTENANCE_FUEL",           /* WARNING */
-    "MAINS_VOLTAGE_RELAX",
-    "MAINS_FREQUENCY_RELAX",
+    "MAINS_ENGINE_START",
+    "MAINS_ENGINE_STOP",
+    "MAINS_OK",
+    "MAINS_FAIL"
   };
   const char* alarmActionStr[] =
   {
     "NONE",
     "WARNING",
     "EMERGENCY_STOP",
-    "LOAD_GENERATOR",
-    "LOAD_MAINS",
     "PLAN_STOP",
-    "LOAD_SHUTDOWN",
+    "BAN_START",
+    "AUTO_START",
+    "AUTO_STOP"
   };
 #endif
 /*-------------------------------- Variables ---------------------------------*/

@@ -24,9 +24,14 @@ static ELECTRO_SYSTEM_TYPE electro              = { 0U };
 static StaticQueue_t       xElectroCommandQueue = { 0U };
 static QueueHandle_t       pElectroCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
+static const fix16_t tempProtectionTimeMult    = F16( TEMP_PROTECTION_TIME_MULTIPLIER ); /* Temperature protection constant */
+static const fix16_t shortCircuitTrippingCurve = F16( CUTOUT_PROTECTION_TRIPPING_CURVE );
+static const fix16_t shortCircuitConstant      = F16( SHORT_CIRCUIT_CONSTANT );          /* Short circuit protection constant */
+static const fix16_t shortCircuitCutoutPower   = F16( CUTOUT_POWER );
 /*-------------------------------- Variables ---------------------------------*/
 static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U };
 static fix16_t         maxGeneratorVolage                                 = 0U;
+static fix16_t         shortCircuitDividend                               = 0U;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t electroHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -34,11 +39,6 @@ void vELECTROtask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-fix16_t getCallback( void )
-{
-  return 0;
-}
-/*---------------------------------------------------------------------------------------------------*/
 /* Calculation of disconnection time in temperature protection
  * input:  input   - input current from most loaded line
  *         setting - current of disconnection
@@ -46,18 +46,17 @@ fix16_t getCallback( void )
  */
 fix16_t fIDMTcalcTemp ( fix16_t input, fix16_t setting )
 {
-  return fix16_div( TEMP_PROTECTION_TIME_MULTIPLIER, fix16_sq( fix16_sub( fix16_div( input, setting ), F16( 1U ) ) ) );
+  return fix16_div( tempProtectionTimeMult, fix16_sq( fix16_sub( fix16_div( input, setting ), fix16_one ) ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
-/* Calculation of disconnection time in short sircit protection
+/* Calculation of disconnection time in short circuit protection
  * input:  input   - input current from most loaded line
  *         setting - current of disconnection
  * output: Time of disconnection
  */
 fix16_t fIDMTcalcCutout ( fix16_t input, fix16_t setting )
 {
-  //return fix16_div( fix16_mul( CUTOUT_PROTECTION_TRIPPING_CURVE, F16( 0.14f ) ), fix16_sub( fix16_pow( fix16_div( input, setting ), CUTOUT_POWER ), F16( 1U ) ) );
-  return 0;
+  return fix16_div( shortCircuitDividend, fix16_sub( fix16_pow( fix16_div( input, setting ), shortCircuitCutoutPower ), fix16_one ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 fix16_t fELECTROgetMin ( fix16_t* value, uint8_t length )
@@ -117,14 +116,14 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
     case ELECTRO_CURRENT_STATUS_IDLE:
       if ( current >= alarm->cutout.current )
       {
-        //alarm->cutout.delay       = fIDMTcalcCutout( current, alarm->cutout.current );
+        alarm->cutout.delay       = fIDMTcalcCutout( current, alarm->cutout.current );
         alarm->state              = ELECTRO_CURRENT_STATUS_CUTOUT_TRIG;
         alarm->tim->Instance->CNT = 0U;
         HAL_TIM_Base_Start( alarm->tim );
       }
       else if ( current >= alarm->over.current )
       {
-        //alarm->over.delay         = fIDMTcalcTemp( current, alarm->over.current );
+        alarm->over.delay         = fIDMTcalcTemp( current, alarm->over.current );
         alarm->state              = ELECTRO_CURRENT_STATUS_OVER_TRIG;
         alarm->tim->Instance->CNT = 0U;
         HAL_TIM_Base_Start( alarm->tim );
@@ -243,10 +242,10 @@ void vMAINSprocess ( void )
     vALARMcheck( &mains.hightFreqAlarm, freq );
   }
   /*--------------------------- Events ---------------------------------*/
-  if ( ( eALARMisActive( &mains.lowVoltageAlarm   ) == TRIGGER_IDLE ) &&
-       ( eALARMisActive( &mains.hightVoltageAlarm ) == TRIGGER_IDLE ) &&
-       ( eALARMisActive( &mains.lowFreqAlarm      ) == TRIGGER_IDLE ) &&
-       ( eALARMisActive( &mains.hightFreqAlarm    ) == TRIGGER_IDLE ) )
+  if ( ( eERRORisActive( &mains.lowVoltageAlarm.error   ) == TRIGGER_IDLE ) &&
+       ( eERRORisActive( &mains.hightVoltageAlarm.error ) == TRIGGER_IDLE ) &&
+       ( eERRORisActive( &mains.lowFreqAlarm.error      ) == TRIGGER_IDLE ) &&
+       ( eERRORisActive( &mains.hightFreqAlarm.error    ) == TRIGGER_IDLE ) )
   {
     // Сеть востноволена, логировать позитивное событие, событие возврата сети
     mainsFlag = 1U;
@@ -306,6 +305,8 @@ fix16_t fGENERATORprocess ( void )
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
 {
+  shortCircuitDividend = fix16_mul( shortCircuitTrippingCurve, shortCircuitConstant );
+
   electro.scheme      = getBitMap( &genSetup, GEN_AC_SYS_ADR );
   electro.state       = ELECTRO_PROC_STATUS_IDLE;
   electro.cmd         = ELECTRO_CMD_NONE;
@@ -329,7 +330,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.lowVoltageAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.lowVoltageAlarm.error.event.type   = EVENT_GENERATOR_LOW_VOLTAGE;
   generator.lowVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.lowVoltageAlarm.error.relax        = PERMISSION_DISABLE;
   generator.lowVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.lowVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -341,7 +341,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.lowVoltagePreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.lowVoltagePreAlarm.error.event.type   = EVENT_GENERATOR_LOW_VOLTAGE;
   generator.lowVoltagePreAlarm.error.event.action = ACTION_WARNING;
-  generator.lowVoltagePreAlarm.error.relax        = PERMISSION_DISABLE;
   generator.lowVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.lowVoltagePreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -353,7 +352,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.hightVoltagePreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.hightVoltagePreAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_VOLTAGE;
   generator.hightVoltagePreAlarm.error.event.action = ACTION_WARNING;
-  generator.hightVoltagePreAlarm.error.relax        = PERMISSION_DISABLE;
   generator.hightVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.hightVoltagePreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -365,7 +363,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.hightVoltageAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.hightVoltageAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_VOLTAGE;
   generator.hightVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.hightVoltageAlarm.error.relax        = PERMISSION_DISABLE;
   generator.hightVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.hightVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -377,7 +374,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.lowFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.lowFreqAlarm.error.event.type   = EVENT_GENERATOR_LOW_FREQUENCY;
   generator.lowFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.lowFreqAlarm.error.relax        = PERMISSION_DISABLE;
   generator.lowFreqAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.lowFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -389,7 +385,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.lowFreqPreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.lowFreqPreAlarm.error.event.type   = EVENT_GENERATOR_LOW_FREQUENCY;
   generator.lowFreqPreAlarm.error.event.action = ACTION_WARNING;
-  generator.lowFreqPreAlarm.error.relax        = PERMISSION_DISABLE;
   generator.lowFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.lowFreqPreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -401,7 +396,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.hightFreqPreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.hightFreqPreAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_FREQUENCY;
   generator.hightFreqPreAlarm.error.event.action = ACTION_WARNING;
-  generator.hightFreqPreAlarm.error.relax        = PERMISSION_DISABLE;
   generator.hightFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.hightFreqPreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -413,7 +407,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.hightFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.hightFreqAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_FREQUENCY;;
   generator.hightFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.hightFreqAlarm.error.relax        = PERMISSION_DISABLE;
   generator.hightFreqAlarm.error.status       = ALARM_STATUS_IDLE;
   generator.hightFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -432,7 +425,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   {
     generator.phaseImbalanceAlarm.error.event.action = ACTION_WARNING;
   }
-  generator.phaseImbalanceAlarm.error.relax  = PERMISSION_DISABLE;
   generator.phaseImbalanceAlarm.error.status = ALARM_STATUS_IDLE;
   generator.phaseImbalanceAlarm.error.id     = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -451,7 +443,6 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   {
     generator.overloadAlarm.error.event.action = ACTION_WARNING;
   }
-  generator.overloadAlarm.error.relax  = PERMISSION_DISABLE;
   generator.overloadAlarm.error.status = ALARM_STATUS_IDLE;
   generator.overloadAlarm.error.id     = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -499,72 +490,70 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   mains.enb = getBitMap( &mainsSetup, MAINS_CONTROL_ENB_ADR );
   /*----------------------------------------------------------------------------*/
   mains.autoStart.ack          = PERMISSION_ENABLE;
-  mains.autoStart.active       = PERMISSION_DISABLE;
+  mains.autoStart.active       = PERMISSION_ENABLE;
   mains.autoStart.enb          = PERMISSION_ENABLE;
   mains.autoStart.event.action = ACTION_AUTO_START;
   mains.autoStart.event.type   = EVENT_MAINS_FAIL;
   mains.autoStart.id           = DEFINE_ERROR_LIST_ADR;
   mains.autoStart.ignor        = PERMISSION_DISABLE;
-  mains.autoStart.relax        = PERMISSION_ENABLE;
   mains.autoStart.status       = ALARM_STATUS_IDLE;
   mains.autoStart.trig         = TRIGGER_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.autoStop.ack          = PERMISSION_ENABLE;
-  mains.autoStop.active       = PERMISSION_DISABLE;
+  mains.autoStop.active       = PERMISSION_ENABLE;
   mains.autoStop.enb          = PERMISSION_ENABLE;
   mains.autoStop.event.action = ACTION_AUTO_STOP;
-  mains.autoStop.event.type   = EVENT_MAINS_FAIL;
+  mains.autoStop.event.type   = EVENT_MAINS_OK;
   mains.autoStop.id           = DEFINE_ERROR_LIST_ADR;
   mains.autoStop.ignor        = PERMISSION_DISABLE;
-  mains.autoStop.relax        = PERMISSION_ENABLE;
   mains.autoStop.status       = ALARM_STATUS_IDLE;
   mains.autoStop.trig         = TRIGGER_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.lowVoltageAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_UNDER_VOLTAGE_ALARM_ENB_ADR );
-  mains.lowVoltageAlarm.error.active       = 0U;
+  mains.lowVoltageAlarm.error.active       = PERMISSION_ENABLE;
   mains.lowVoltageAlarm.type               = ALARM_LEVEL_LOW;
   mains.lowVoltageAlarm.level              = getValue( &mainsUnderVoltageAlarmLevel );
   mains.lowVoltageAlarm.timer.delay        = 0U;
   mains.lowVoltageAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   mains.lowVoltageAlarm.error.event.type   = EVENT_MAINS_LOW_VOLTAGE;
   mains.lowVoltageAlarm.error.event.action = ACTION_WARNING;
-  mains.lowVoltageAlarm.error.relax        = PERMISSION_ENABLE;
+  mains.lowVoltageAlarm.error.ack          = PERMISSION_ENABLE;
   mains.lowVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
   mains.lowVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   mains.hightVoltageAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_OVER_VOLTAGE_ALARM_ENB_ADR );
-  mains.hightVoltageAlarm.error.active       = 0U;
+  mains.hightVoltageAlarm.error.active       = PERMISSION_ENABLE;
   mains.hightVoltageAlarm.type               = ALARM_LEVEL_HIGHT;
   mains.hightVoltageAlarm.level              = getValue( &mainsOverVoltageAlarmLevel );
   mains.hightVoltageAlarm.timer.delay        = 0U;
   mains.hightVoltageAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   mains.hightVoltageAlarm.error.event.type   = EVENT_MAINS_HIGHT_VOLTAGE;
   mains.hightVoltageAlarm.error.event.action = ACTION_WARNING;
-  mains.hightVoltageAlarm.error.relax        = PERMISSION_ENABLE;
+  mains.hightVoltageAlarm.error.ack          = PERMISSION_ENABLE;
   mains.hightVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
   mains.hightVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   mains.lowFreqAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_UNDER_FREQUENCY_ALARM_ENB_ADR );
-  mains.lowFreqAlarm.error.active       = 0U;
+  mains.lowFreqAlarm.error.active       = PERMISSION_ENABLE;
   mains.lowFreqAlarm.type               = ALARM_LEVEL_LOW;
   mains.lowFreqAlarm.level              = getValue( &mainsUnderFrequencyAlarmLevel );
   mains.lowFreqAlarm.timer.delay        = 0U;
   mains.lowFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   mains.lowFreqAlarm.error.event.type   = EVENT_MAINS_LOW_FREQUENCY;
   mains.lowFreqAlarm.error.event.action = ACTION_WARNING;
-  mains.lowFreqAlarm.error.relax        = PERMISSION_ENABLE;
+  mains.lowFreqAlarm.error.ack          = PERMISSION_ENABLE;
   mains.lowFreqAlarm.error.status       = ALARM_STATUS_IDLE;
   mains.lowFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   mains.hightFreqAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_OVER_FREQUENCY_ALARM_ENB_ADR );
-  mains.hightFreqAlarm.error.active       = 0U;
+  mains.hightFreqAlarm.error.active       = PERMISSION_ENABLE;
   mains.hightFreqAlarm.type               = ALARM_LEVEL_HIGHT;
   mains.hightFreqAlarm.level              = getValue( &mainsOverFrequencyAlarmLevel );
   mains.hightFreqAlarm.timer.delay        = 0U;
   mains.hightFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   mains.hightFreqAlarm.error.event.type   = EVENT_MAINS_HIGHT_FREQUENCY;
   mains.hightFreqAlarm.error.event.action = ACTION_WARNING;
-  mains.hightFreqAlarm.error.relax        = PERMISSION_ENABLE;
+  mains.hightFreqAlarm.error.ack          = PERMISSION_ENABLE;
   mains.hightFreqAlarm.error.status       = ALARM_STATUS_IDLE;
   mains.hightFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
@@ -649,6 +638,11 @@ void vELECTROsendCmd ( ELECTRO_COMMAND cmd )
 fix16_t fELECTROgetMaxGenVoltage ( void )
 {
   return maxGeneratorVolage;
+}
+/*---------------------------------------------------------------------------------------------------*/
+TRIGGER_STATE eELECTROgetMainsErrorFlag ( void )
+{
+  return eERRORisActive( &mains.autoStart );
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROtask ( void* argument )
@@ -850,6 +844,10 @@ void vELECTROtask ( void* argument )
         vERRORreset( &generator.lowVoltagePreAlarm.error );
         vERRORreset( &generator.overloadAlarm.error );
         vERRORreset( &generator.phaseImbalanceAlarm.error );
+        mains.lowVoltageAlarm.error.active          = PERMISSION_ENABLE;
+        mains.hightVoltageAlarm.error.active        = PERMISSION_ENABLE;
+        mains.lowFreqAlarm.error.active             = PERMISSION_ENABLE;
+        mains.hightFreqAlarm.error.active           = PERMISSION_ENABLE;
         vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
         break;
       default:

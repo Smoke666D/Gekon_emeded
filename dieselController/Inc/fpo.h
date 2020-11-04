@@ -27,27 +27,27 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  FPO_FUN_NONE,                    /* Не использовать */
-  FPO_FUN_DPS_READY,               /* ДЭС готов  */
-  FPO_FUN_READY_TO_START,          /* Готов к запуску */
-  FPO_FUN_GEN_READY,               /* Готовность генератора */
-  FPO_FUN_ALARM,                   /* Общий аварийный сигнал */
-  FPO_FUN_MAINS_FAIL,              /* Общая ошибка сети */
-  FPO_FUN_WARNING,                 /* Общее предупреждение */
-  FPO_FUN_TURN_ON_GEN,             /* Включить генератор */
-  FPO_FUN_TURN_ON_GEN_IMPULSE,     /* Импульс включения генератора */
-  FPO_FUN_TURN_OFF_GEN_IMPULSE,    /* Импульс выключения генератора */
-  FPO_FUN_TURN_ON_MAINS,           /* Включить сеть */
-  FPO_FUN_TURN_ON_MAINS_IMPULSE,   /* Импульс включения сети */
-  FPO_FUN_TURN_OFF_MAINS_IMPULSE,  /* Импульс включения сети */
-  FPO_FUN_COOLANT_COOLER,          /* Управление охладителем охлаждающей жидкости */
-  FPO_FUN_COOLANT_HEATER,          /* Управление подогревателем охлаждающей  жидкости */
-  FPO_FUN_STOP_SOLENOID,           /* Стоповый соленоид */
-  FPO_FUN_FUEL_BOOST,              /* Подкачка топлива */
-  FPO_FUN_FUEL_RELAY,              /* Топливное реле */
-  FPO_FUN_STARTER_RELAY,           /* Реле стартера */
-  FPO_FUN_PREHEAT,                 /* Выход предпрогрева */
-  FPO_FUN_IDLING,                  /* Работа на холостом ходу */
+  FPO_FUN_NONE,                    /* 0  Не использовать */
+  FPO_FUN_DPS_READY,               /* 1  ДЭС готов  */
+  FPO_FUN_READY_TO_START,          /* 2  Готов к запуску */
+  FPO_FUN_GEN_READY,               /* 3  Готовность генератора */
+  FPO_FUN_ALARM,                   /* 4  Общий аварийный сигнал */
+  FPO_FUN_MAINS_FAIL,              /* 5  Общая ошибка сети */
+  FPO_FUN_WARNING,                 /* 6  Общее предупреждение */
+  FPO_FUN_TURN_ON_GEN,             /* 7  Включить генератор */
+  FPO_FUN_TURN_ON_GEN_IMPULSE,     /* 8  Импульс включения генератора */
+  FPO_FUN_TURN_OFF_GEN_IMPULSE,    /* 9  Импульс выключения генератора */
+  FPO_FUN_TURN_ON_MAINS,           /* 10 Включить сеть */
+  FPO_FUN_TURN_ON_MAINS_IMPULSE,   /* 11 Импульс включения сети */
+  FPO_FUN_TURN_OFF_MAINS_IMPULSE,  /* 12 Импульс включения сети */
+  FPO_FUN_COOLANT_COOLER,          /* 13 Управление охладителем охлаждающей жидкости */
+  FPO_FUN_COOLANT_HEATER,          /* 14 Управление подогревателем охлаждающей  жидкости */
+  FPO_FUN_STOP_SOLENOID,           /* 15 Стоповый соленоид */
+  FPO_FUN_FUEL_BOOST,              /* 16 Подкачка топлива */
+  FPO_FUN_FUEL_RELAY,              /* 17 Топливное реле */
+  FPO_FUN_STARTER_RELAY,           /* 18 Реле стартера */
+  FPO_FUN_PREHEAT,                 /* 19 Выход предпрогрева */
+  FPO_FUN_IDLING,                  /* 20 Работа на холостом ходу */
 } FPO_FUNCTION;
 
 typedef enum

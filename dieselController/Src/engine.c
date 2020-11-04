@@ -195,7 +195,7 @@ fix16_t fFUELprocess ( void )
       vALARMcheck( &fuel.lowPreAlarm, value );
     }
     vALARMcheck( &fuel.hightAlarm, value );
-    if ( fuel.hightPreAlarm.error.status == ALARM_STATUS_IDLE )
+    if ( fuel.hightAlarm.error.status == ALARM_STATUS_IDLE )
     {
       vALARMcheck( &fuel.hightPreAlarm, value );
     }
@@ -507,7 +507,6 @@ void vENGINEdataInit ( void )
   oil.pressure.cutout.error.event.action = ACTION_EMERGENCY_STOP;
   oil.pressure.cutout.error.event.type   = EVENT_OIL_SENSOR_ERROR;
   oil.pressure.cutout.error.id           = DEFINE_ERROR_LIST_ADR;
-  oil.pressure.cutout.error.relax        = PERMISSION_DISABLE;
   oil.pressure.cutout.error.trig         = TRIGGER_IDLE;
   oil.pressure.cutout.type               = ALARM_LEVEL_HIGHT;
   oil.pressure.status                    = SENSOR_STATUS_NORMAL;
@@ -527,7 +526,6 @@ void vENGINEdataInit ( void )
   oil.alarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   oil.alarm.error.event.type   = EVENT_OIL_LOW_PRESSURE;
   oil.alarm.error.event.action = ACTION_EMERGENCY_STOP;
-  oil.alarm.error.relax        = PERMISSION_DISABLE;
   oil.alarm.error.ack          = PERMISSION_DISABLE;
   oil.alarm.error.id           = DEFINE_ERROR_LIST_ADR;
   oil.alarm.error.trig         = TRIGGER_IDLE;
@@ -544,7 +542,6 @@ void vENGINEdataInit ( void )
     oil.preAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
     oil.preAlarm.error.event.type        = EVENT_OIL_LOW_PRESSURE;
     oil.preAlarm.error.event.action      = ACTION_WARNING;
-    oil.preAlarm.error.relax             = PERMISSION_DISABLE;
     oil.preAlarm.error.ack               = PERMISSION_ENABLE;
     oil.preAlarm.error.id                = DEFINE_ERROR_LIST_ADR;
     oil.preAlarm.error.trig              = TRIGGER_IDLE;
@@ -567,7 +564,6 @@ void vENGINEdataInit ( void )
   coolant.temp.cutout.error.event.action = ACTION_EMERGENCY_STOP;
   coolant.temp.cutout.error.event.type   = EVENT_ENGINE_TEMP_SENSOR_ERROR;
   coolant.temp.cutout.error.id           = DEFINE_ERROR_LIST_ADR;
-  coolant.temp.cutout.error.relax        = PERMISSION_DISABLE;
   coolant.temp.cutout.error.trig         = TRIGGER_IDLE;
   coolant.temp.cutout.type               = ALARM_LEVEL_HIGHT;
   coolant.temp.cutout.error.status       = ALARM_STATUS_IDLE;
@@ -589,7 +585,6 @@ void vENGINEdataInit ( void )
   coolant.alarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
   coolant.alarm.error.event.type        = EVENT_ENGINE_HIGHT_TEMP;
   coolant.alarm.error.event.action      = ACTION_EMERGENCY_STOP;
-  coolant.alarm.error.relax             = PERMISSION_DISABLE;
   coolant.alarm.error.ack               = PERMISSION_DISABLE;
   coolant.alarm.error.id                = DEFINE_ERROR_LIST_ADR;
   coolant.alarm.error.trig              = TRIGGER_IDLE;
@@ -606,7 +601,6 @@ void vENGINEdataInit ( void )
     coolant.preAlarm.error.event.type   = EVENT_ENGINE_HIGHT_TEMP;
     coolant.preAlarm.error.event.action = ACTION_WARNING;
     coolant.preAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
-    coolant.preAlarm.error.relax        = PERMISSION_DISABLE;
     coolant.preAlarm.error.trig         = TRIGGER_IDLE;
     coolant.preAlarm.error.status       = ALARM_STATUS_IDLE;
   }
@@ -642,7 +636,6 @@ void vENGINEdataInit ( void )
   fuel.level.cutout.error.event.action  = ACTION_EMERGENCY_STOP;
   fuel.level.cutout.error.event.type    = EVENT_FUEL_LEVEL_SENSOR_ERROR;
   fuel.level.cutout.error.id            = DEFINE_ERROR_LIST_ADR;
-  fuel.level.cutout.error.relax         = PERMISSION_DISABLE;
   fuel.level.cutout.error.trig          = TRIGGER_IDLE;
   fuel.level.cutout.type                = ALARM_LEVEL_HIGHT;
   fuel.level.status                     = SENSOR_STATUS_NORMAL;
@@ -656,7 +649,6 @@ void vENGINEdataInit ( void )
   fuel.lowAlarm.error.event.type        = EVENT_FUEL_LOW_LEVEL;
   fuel.lowAlarm.error.event.action      = ACTION_PLAN_STOP;
   fuel.lowAlarm.error.ack               = PERMISSION_ENABLE;
-  fuel.lowAlarm.error.relax             = PERMISSION_DISABLE;
   fuel.lowAlarm.error.id                = DEFINE_ERROR_LIST_ADR;
   fuel.lowAlarm.error.trig              = TRIGGER_IDLE;
   fuel.lowAlarm.error.status            = ALARM_STATUS_IDLE;
@@ -671,7 +663,6 @@ void vENGINEdataInit ( void )
   fuel.lowPreAlarm.error.event.type     = EVENT_FUEL_LOW_LEVEL;
   fuel.lowPreAlarm.error.event.action   = ACTION_WARNING;
   fuel.lowPreAlarm.error.id             = DEFINE_ERROR_LIST_ADR;
-  fuel.lowPreAlarm.error.relax          = PERMISSION_DISABLE;
   fuel.lowPreAlarm.error.trig           = TRIGGER_IDLE;
   fuel.lowPreAlarm.error.status         = ALARM_STATUS_IDLE;
 
@@ -685,7 +676,6 @@ void vENGINEdataInit ( void )
   fuel.hightPreAlarm.error.event.type   = EVENT_FUEL_HIGHT_LEVEL;
   fuel.hightPreAlarm.error.event.action = ACTION_WARNING;
   fuel.hightPreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
-  fuel.hightPreAlarm.error.relax        = PERMISSION_DISABLE;
   fuel.hightPreAlarm.error.trig         = TRIGGER_IDLE;
   fuel.hightPreAlarm.error.status       = ALARM_STATUS_IDLE;
 
@@ -699,7 +689,6 @@ void vENGINEdataInit ( void )
   fuel.hightAlarm.error.event.action    = ACTION_PLAN_STOP;
   fuel.hightAlarm.error.ack             = PERMISSION_ENABLE;
   fuel.hightAlarm.error.id              = DEFINE_ERROR_LIST_ADR;
-  fuel.hightAlarm.error.relax           = PERMISSION_DISABLE;
   fuel.hightAlarm.error.trig            = TRIGGER_IDLE;
   fuel.hightAlarm.error.status          = ALARM_STATUS_IDLE;
 
@@ -724,7 +713,6 @@ void vENGINEdataInit ( void )
   battery.lowAlarm.error.event.type     = EVENT_BATTERY_LOW;
   battery.lowAlarm.error.event.action   = ACTION_WARNING;
   battery.lowAlarm.error.id             = DEFINE_ERROR_LIST_ADR;
-  battery.lowAlarm.error.relax          = PERMISSION_DISABLE;
   battery.lowAlarm.error.trig           = TRIGGER_IDLE;
   battery.lowAlarm.error.status         = ALARM_STATUS_IDLE;
 
@@ -738,7 +726,6 @@ void vENGINEdataInit ( void )
   battery.hightAlarm.error.event.type   = EVENT_BATTERY_HIGHT;
   battery.hightAlarm.error.event.action = ACTION_WARNING;
   battery.hightAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
-  battery.hightAlarm.error.relax        = PERMISSION_DISABLE;
   battery.hightAlarm.error.trig         = TRIGGER_IDLE;
   battery.hightAlarm.error.status       = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
@@ -753,7 +740,6 @@ void vENGINEdataInit ( void )
   charger.hightAlarm.error.event.type      = EVENT_CHARGER_FAIL;
   charger.hightAlarm.error.event.action    = ACTION_EMERGENCY_STOP;
   charger.hightAlarm.error.id              = DEFINE_ERROR_LIST_ADR;
-  charger.hightAlarm.error.relax           = PERMISSION_DISABLE;
   charger.hightAlarm.error.trig            = TRIGGER_IDLE;
   charger.hightAlarm.error.status          = ALARM_STATUS_IDLE;
 
@@ -767,7 +753,6 @@ void vENGINEdataInit ( void )
   charger.hightPreAlarm.error.event.type   = EVENT_CHARGER_FAIL;
   charger.hightPreAlarm.error.event.action = ACTION_WARNING;
   charger.hightPreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
-  charger.hightPreAlarm.error.relax        = PERMISSION_DISABLE;
   charger.hightPreAlarm.error.trig         = TRIGGER_IDLE;
   charger.hightPreAlarm.error.status       = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
@@ -800,14 +785,13 @@ void vENGINEdataInit ( void )
   /*--------------------------------------------------------------*/
   engine.startCheckOil           = getBitMap( &starterStopSetup, STARTER_OIL_PRESSURE_CHECK_ON_START_ENB_ADR );
   engine.status                  = ENGINE_STATUS_IDLE;
-  engine.banStart                = 0U;
+  engine.banStart                = PERMISSION_DISABLE;
   engine.stopError.enb           = PERMISSION_ENABLE;
   engine.stopError.active        = PERMISSION_ENABLE;
   engine.stopError.ack           = PERMISSION_DISABLE;
   engine.stopError.event.action  = ACTION_EMERGENCY_STOP;
   engine.stopError.event.type    = EVENT_STOP_FAIL;
   engine.stopError.id            = DEFINE_ERROR_LIST_ADR;
-  engine.stopError.relax         = PERMISSION_DISABLE;
   engine.stopError.status        = ALARM_STATUS_IDLE;
   engine.stopError.trig          = TRIGGER_IDLE;
 
@@ -817,7 +801,6 @@ void vENGINEdataInit ( void )
   engine.startError.event.action = ACTION_EMERGENCY_STOP;
   engine.startError.event.type   = EVENT_START_FAIL;
   engine.startError.id           = DEFINE_ERROR_LIST_ADR;
-  engine.startError.relax        = PERMISSION_DISABLE;
   engine.startError.status       = ALARM_STATUS_IDLE;
   engine.startError.trig         = TRIGGER_IDLE;
   /*--------------------------------------------------------------*/
@@ -835,7 +818,6 @@ void vENGINEdataInit ( void )
   speed.lowAlarm.error.event.type     = EVENT_SPEED_LOW;
   speed.lowAlarm.error.event.action   = ACTION_EMERGENCY_STOP;
   speed.lowAlarm.error.id             = DEFINE_ERROR_LIST_ADR;
-  speed.lowAlarm.error.relax          = PERMISSION_DISABLE;
   speed.lowAlarm.error.trig           = TRIGGER_IDLE;
   speed.lowAlarm.error.status         = ALARM_STATUS_IDLE;
 
@@ -849,7 +831,6 @@ void vENGINEdataInit ( void )
   speed.hightAlarm.error.event.type   = EVENT_SPEED_HIGHT;
   speed.hightAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   speed.hightAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
-  speed.hightAlarm.error.relax        = PERMISSION_DISABLE;
   speed.hightAlarm.error.trig         = TRIGGER_IDLE;
   speed.hightAlarm.error.status       = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
@@ -883,7 +864,6 @@ void vENGINEdataInit ( void )
     maintence.oil.error.event.action = ACTION_WARNING;
     maintence.oil.error.ack          = PERMISSION_ENABLE;
   }
-  maintence.oil.error.relax  = PERMISSION_DISABLE;
   maintence.oil.error.trig   = TRIGGER_IDLE;
   maintence.oil.error.status = ALARM_STATUS_IDLE;
 
@@ -905,7 +885,6 @@ void vENGINEdataInit ( void )
     maintence.air.error.event.action = ACTION_WARNING;
     maintence.air.error.ack          = PERMISSION_ENABLE;
   }
-  maintence.air.error.relax  = PERMISSION_DISABLE;
   maintence.air.error.trig   = TRIGGER_IDLE;
   maintence.air.error.status = ALARM_STATUS_IDLE;
 
@@ -926,7 +905,6 @@ void vENGINEdataInit ( void )
     maintence.fuel.error.event.action = ACTION_WARNING;
     maintence.fuel.error.ack          = PERMISSION_ENABLE;
   }
-  maintence.fuel.error.relax  = PERMISSION_DISABLE;
   maintence.fuel.error.trig   = TRIGGER_IDLE;
   maintence.fuel.error.status = ALARM_STATUS_IDLE;
 
@@ -951,7 +929,7 @@ void vENGINEresetAlarms ( void )
   vERRORreset( &oil.preAlarm.error );
   vERRORreset( &engine.stopError );
   vERRORreset( &engine.startError );
-  engine.banStart = 0U;
+  engine.banStart = PERMISSION_DISABLE;
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -1011,8 +989,6 @@ void vENGINEtask ( void* argument )
   fix16_t         oilVal      = 0U;
   fix16_t         coolantVal  = 0U;
   fix16_t         speedVal    = 0U;
-  fix16_t         fuelVal     = 0U;
-  fix16_t         batteryVal  = 0U;
   fix16_t         chargerVal  = 0U;
   SYSTEM_TIMER    commonTimer = { 0U };
   ENGINE_COMMAND  inputCmd    = ENGINE_CMD_NONE;
@@ -1040,11 +1016,11 @@ void vENGINEtask ( void* argument )
         //-------------------- One action commands ---------------------*/
         if ( inputCmd == ENGINE_CMD_BAN_START )
         {
-          engine.banStart = 1U;
+          engine.banStart = PERMISSION_ENABLE;
         }
         else if ( inputCmd == ENGINE_CMD_ALLOW_START )
         {
-          engine.banStart = 0U;
+          engine.banStart = PERMISSION_DISABLE;
         }
         //------------------- Long actions command ---------------------*/
         else
@@ -1120,9 +1096,9 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     oilVal     = fOILprocess();
     coolantVal = fCOOLANTprocess();
-    fuelVal    = fFUELprocess();
+    fFUELprocess();
     speedVal   = fSPEEDprocess();
-    batteryVal = fBATTERYprocess();
+    fBATTERYprocess();
     chargerVal = fCHARGERprocess();
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/
@@ -1150,7 +1126,7 @@ void vENGINEtask ( void* argument )
       /*|--startDelay--|--crankingDelay--|--crankDelay--|--...--|--blockDelay--|--idlingDelay--|--nominalDelay--|--warmingDelay--> */
       case ENGINE_CMD_START:
         if ( ( ( engine.status == ENGINE_STATUS_IDLE ) || ( engine.status == ENGINE_STATUS_BUSY_STARTING ) ) &&
-             ( engine.banStart == 0U ) )
+             ( engine.banStart == PERMISSION_DISABLE ) )
         {
           switch ( starter.status )
           {
@@ -1523,10 +1499,10 @@ void vENGINEtask ( void* argument )
       /*--------------------------------- ENGINE BAN START -------------------------------------*/
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_BAN_START:
-        engine.banStart = 1U;
+        engine.banStart = PERMISSION_ENABLE;
         break;
       case ENGINE_CMD_ALLOW_START:
-        engine.banStart = 0U;
+        engine.banStart = PERMISSION_DISABLE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

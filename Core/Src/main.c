@@ -249,7 +249,7 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick.
    *
    */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -1165,14 +1165,15 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
-                          |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
+                          |EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
                           |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED3_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, LED2_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, RTC_INT_Pin|RTC_RST_Pin, GPIO_PIN_RESET);
@@ -1300,20 +1301,25 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
+
+  fix16_t test = fix16_ln( fix16_from_float( 0.2 ) );
+  float   out  = fix16_to_float( test );
+
+
   //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   while ( uADCGetValidDataFlag() == 0U )
   {
     osDelay( 10U );
   }
-  osDelay( 100U );
   vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIdataInit();                         /* Data from EEPROM initialization */
   vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
-  vALARMinit();
+  osDelay( 1200U );                           /* Delay ADC valid data ready*/
+  vALARMinit();                               /* Activ error list initialization */
   vENGINEinit();                              /**/
   vELECTROinit();                             /**/
   vLOGICinit( &htim5 );                       /**/

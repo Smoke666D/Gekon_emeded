@@ -243,62 +243,65 @@ fix16_t fCHARGERprocess ( void )
 /*----------------------------------------------------------------------------*/
 void vENGINEmileageProcess ( void )
 {
-  uint16_t data   = 0U;
-  uint8_t  flSave = 0U;
+  uint16_t data     = 0U;
+  uint16_t setPoint = 0U;
 
   if ( engine.status == ENGINE_STATUS_WORK )
   {
     switch ( maintence.status )
     {
       case MAINTENCE_STATUS_STOP:
-        maintence.timer.delay = fix60;
         vLOGICstartTimer( &maintence.timer );
         maintence.status = MAINTENCE_STATUS_RUN;
         break;
       case MAINTENCE_STATUS_RUN:
         if ( uLOGICisTimer( maintence.timer ) > 0U )
         {
-          if ( ( maintence.oil.error.enb > 0U ) && ( maintence.oil.error.active > 0U ) )
+          eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_WORK_MINUTES_ADR, &data );
+          if ( data >= 60U )
           {
-            eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
-            eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
-            vALARMcheck( &maintence.oil,  fix16_div( F16( data ),  F16( 60U ) ) );
-            flSave = 1U;
+            eDATAAPIfreeData( DATA_API_CMD_ERASE, ENGINE_WORK_MINUTES_ADR, NULL );
+            eDATAAPIfreeData( DATA_API_CMD_INC,   ENGINE_WORK_TIME_ADR,    &data );
+            maintence.status = MAINTENCE_STATUS_CHECK;
           }
-          if ( ( maintence.air.error.enb > 0U ) && ( maintence.air.error.active > 0U ) )
+          else
           {
-            eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
-            eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
-            vALARMcheck( &maintence.air,  fix16_div( F16( data ),  F16( 60U ) ) );
-            flSave = 1U;
+            vLOGICstartTimer( &maintence.timer );
           }
-          if ( ( maintence.fuel.error.enb > 0U ) && ( maintence.fuel.error.active > 0U ) )
-          {
-            eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
-            eDATAAPIfreeData( DATA_API_CMD_READ, MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
-            vALARMcheck( &maintence.fuel, fix16_div( F16( data ), F16( 60U ) ) );
-            flSave = 1U;
-          }
-          if ( flSave > 0U )
-          {
-            eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-          }
-          vLOGICstartTimer( &maintence.timer );
+          eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
         }
+        break;
+      case MAINTENCE_STATUS_CHECK:
+        eDATAAPIfreeData( DATA_API_CMD_READ, ENGINE_WORK_TIME_ADR, &setPoint );
+        if ( ( maintence.oil.error.enb > 0U ) && ( maintence.oil.error.active > 0U ) )
+        {
+          eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
+          vALARMcheck( &maintence.oil,  fix16_from_int( setPoint ) );
+        }
+        if ( ( maintence.air.error.enb > 0U ) && ( maintence.air.error.active > 0U ) )
+        {
+          eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
+          vALARMcheck( &maintence.air,  fix16_from_int( setPoint ) );
+        }
+        if ( ( maintence.fuel.error.enb > 0U ) && ( maintence.fuel.error.active > 0U ) )
+        {
+          eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
+          vALARMcheck( &maintence.fuel, fix16_from_int( setPoint ) );
+        }
+        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+        vLOGICstartTimer( &maintence.timer );
+        maintence.status = MAINTENCE_STATUS_RUN;
         break;
       default:
         maintence.status = MAINTENCE_STATUS_STOP;
+        vLOGICresetTimer( maintence.timer );
         break;
     }
   }
-  else if ( maintence.status == MAINTENCE_STATUS_RUN )
+  else
   {
     maintence.status = MAINTENCE_STATUS_STOP;
     vLOGICresetTimer( maintence.timer );
-  }
-  else
-  {
-
   }
   return;
 }
@@ -846,6 +849,8 @@ void vENGINEdataInit ( void )
   idleRelay.set    = vFPOsetIdle;
   idleRelay.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
+  maintence.timer.delay          = fix60;
+  maintence.timer.id             = LOGIC_DEFAULT_TIMER_ID;
   maintence.oil.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
   maintence.oil.error.active     = PERMISSION_DISABLE;
   maintence.oil.type             = ALARM_LEVEL_HIGHT;

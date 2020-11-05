@@ -1301,11 +1301,6 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-
-  fix16_t test = fix16_ln( fix16_from_float( 0.2 ) );
-  float   out  = fix16_to_float( test );
-
-
   //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
   while ( uADCGetValidDataFlag() == 0U )

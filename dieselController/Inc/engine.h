@@ -95,6 +95,7 @@ typedef enum
 {
   MAINTENCE_STATUS_STOP,
   MAINTENCE_STATUS_RUN,
+  MAINTENCE_STATUS_CHECK,
 } MAINTENCE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 

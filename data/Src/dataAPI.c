@@ -634,11 +634,11 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
  * available commands:
  * 1. DATA_API_CMD_READ  - read free data value from the locale storage
  * 2. DATA_API_CMD_WRITE - write free data value to the locale storage
- * 3. DATA_API_CMD_INC   - Increment value
+ * 3. DATA_API_CMD_INC   - Increment value and read result to data
  * 4. DATA_API_CMD_DEC   - none
  * 5. DATA_API_CMD_SAVE  - save all free data to the EEPROM from the locale storage
  * 6. DATA_API_CMD_LOAD  - load all free data to the local storage from the EEPROM
- * 7. DATA_API_CMD_ERASE - none
+ * 7. DATA_API_CMD_ERASE - set 0 to free data by address in local storage
  * 8. DATA_API_CMD_ADD   - none
  */
 DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data )
@@ -670,7 +670,8 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
         case DATA_API_CMD_INC:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            *freeDataArray[adr] += 1;
+            *freeDataArray[adr] += 1U;
+            *data = *freeDataArray[adr];
             xSemaphoreGive( xSemaphore );
           }
           break;
@@ -710,6 +711,13 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
           else
           {
             res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_ERASE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            *freeDataArray[adr] = 0U;
+            xSemaphoreGive( xSemaphore );
           }
           break;
         default:

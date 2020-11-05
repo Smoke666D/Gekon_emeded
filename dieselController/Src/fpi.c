@@ -61,7 +61,7 @@ static FPI     fpis[FPI_NUMBER]                         = { 0U };
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
-void    vFPITask ( void const* argument );
+void    vFPITask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -123,10 +123,10 @@ TRIGGER_STATE vFPIgetTrig ( FPI* fpi )
 void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* delayReg )
 {
   fpi->timer.delay = getUintValue( delayReg );
-  fpi->function    = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
-  fpi->polarity    = getBitMap( setupReg, 1U );
-  fpi->action      = getBitMap( setupReg, 2U );
-  fpi->arming      = getBitMap( setupReg, 3U );
+  fpi->function    = eFPIfuncList[ getBitMap( setupReg, DIA_FUNCTION_ADR ) ];
+  fpi->polarity    = getBitMap( setupReg, DIA_POLARITY_ADR );
+  fpi->action      = getBitMap( setupReg, DIA_ACTION_ADR );
+  fpi->arming      = getBitMap( setupReg, DIA_ARMING_ADR );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -294,7 +294,7 @@ void vFPIsetBlock ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFPITask ( void const* argument )
+void vFPITask ( void* argument )
 {
   FPI_EVENT event       = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
   uint8_t   i           = 0U;

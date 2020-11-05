@@ -15,10 +15,12 @@
 /*------------------------ Define --------------------------------------*/
 #define  GENERATOR_LINE_NUMBER             3U
 #define  MAINS_LINE_NUMBER                 3U
-#define  TEMP_PROTECTION_TIME_MULTIPLIER   ( F16( 36U ) )    /* t */
-#define  CUTOUT_PROTECTION_TRIPPING_CURVE  ( F16( 0.001f ) ) /* K */
-#define  CUTOUT_POWER                      ( F16( 0.02f ) )
 #define  ELECTRO_COMMAND_QUEUE_LENGTH      10U
+
+#define  TEMP_PROTECTION_TIME_MULTIPLIER   36U    /* t */
+#define  CUTOUT_PROTECTION_TRIPPING_CURVE  0.001f /* K */
+#define  SHORT_CIRCUIT_CONSTANT            0.14f
+#define  CUTOUT_POWER                      0.02f
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -31,7 +33,6 @@ typedef enum
 {
   ELECTRO_STATUS_IDLE,
   ELECTRO_STATUS_LOAD,
-  ELECTRO_STATUS_ALARM,
 } ELECTRO_STATUS;
 
 typedef enum
@@ -39,10 +40,11 @@ typedef enum
   ELECTRO_CMD_NONE,
   ELECTRO_CMD_LOAD_MAINS,
   ELECTRO_CMD_LOAD_GENERATOR,
+  ELECTRO_CMD_ENABLE_STOP_ALARMS,
   ELECTRO_CMD_DISABLE_START_ALARMS,
   ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS,
   ELECTRO_CMD_DISABLE_IDLE_ALARMS,
-  ELECTRO_CMD_ENABLE_IDLE_CMD,
+  ELECTRO_CMD_ENABLE_IDLE_ALARMS,
   ELECTRO_CMD_RESET_TO_IDLE,
 } ELECTRO_COMMAND;
 
@@ -123,53 +125,57 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  ELECTRO_COMMAND         cmd;
   ELECTRO_SCHEME          scheme;
   ELECTRO_PROCESS_STATUS  state;
-  ELECTRO_COMMAND         cmd;
-  SYSTEM_TIMER            timer;
   ELECTRO_ALARM_STATUS    alarmState;
+  SYSTEM_TIMER            timer;
 } ELECTRO_SYSTEM_TYPE;
 
 typedef struct __packed
 {
-  uint8_t               enb;
-  ELECTRO_STATUS        state;
-  GENERATOR_RATING      rating;
-  ELECTRO_CHANNEL       line[GENERATOR_LINE_NUMBER];
-  getValueCallBack      getFreq;
+  uint8_t            enb;
+  ELECTRO_STATUS     state;
+  GENERATOR_RATING   rating;
+  ELECTRO_CHANNEL    line[GENERATOR_LINE_NUMBER];
+  getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
-  ALARM_TYPE            lowVoltageAlarm;
-  ALARM_TYPE            lowVoltagePreAlarm;
-  ALARM_TYPE            hightVoltageAlarm;
-  ALARM_TYPE            hightVoltagePreAlarm;
-  ALARM_TYPE            lowFreqAlarm;
-  ALARM_TYPE            lowFreqPreAlarm;
-  ALARM_TYPE            hightFreqAlarm;
-  ALARM_TYPE            hightFreqPreAlarm;
-  ALARM_TYPE            overloadAlarm;
-  ALARM_TYPE            phaseImbalanceAlarm;
-  CURRENT_ALARM_TYPE    currentAlarm;
+  ALARM_TYPE         lowVoltageAlarm;
+  ALARM_TYPE         lowVoltagePreAlarm;
+  ALARM_TYPE         hightVoltageAlarm;
+  ALARM_TYPE         hightVoltagePreAlarm;
+  ALARM_TYPE         lowFreqAlarm;
+  ALARM_TYPE         lowFreqPreAlarm;
+  ALARM_TYPE         hightFreqAlarm;
+  ALARM_TYPE         hightFreqPreAlarm;
+  ALARM_TYPE         overloadAlarm;
+  ALARM_TYPE         phaseImbalanceAlarm;
+  CURRENT_ALARM_TYPE currentAlarm;
   /*---------- OUTPUT ----------*/
-  RELAY_DEVICE          relay;
-  RELAY_IMPULSE_DEVICE  relayOn;
-  RELAY_IMPULSE_DEVICE  relayOff;
+  RELAY_DEVICE       relay;
+  RELAY_DELAY_DEVICE relayOn;
+  RELAY_DELAY_DEVICE relayOff;
 } GENERATOR_TYPE;
 
 typedef struct __packed
 {
-  uint8_t               enb;
-  ELECTRO_STATUS        state;
-  ELECTRO_CHANNEL       line[MAINS_LINE_NUMBER];
-  getValueCallBack      getFreq;
+  uint8_t            enb;
+  ELECTRO_STATUS     state;
+  ELECTRO_CHANNEL    line[MAINS_LINE_NUMBER];
+  getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
-  ALARM_TYPE            lowVoltageAlarm;
-  ALARM_TYPE            hightVoltageAlarm;
-  ALARM_TYPE            lowFreqAlarm;
-  ALARM_TYPE            hightFreqAlarm;
+  PERMISSION         alarmsIgnor;
+  ALARM_TYPE         lowVoltageAlarm;
+  ALARM_TYPE         hightVoltageAlarm;
+  ALARM_TYPE         lowFreqAlarm;
+  ALARM_TYPE         hightFreqAlarm;
+  /*---------- EVENTS ----------*/
+  ERROR_TYPE         autoStart;
+  ERROR_TYPE         autoStop;
   /*---------- OUTPUT ----------*/
-  RELAY_DEVICE          relay;
-  RELAY_IMPULSE_DEVICE  relayOn;
-  RELAY_IMPULSE_DEVICE  relayOff;
+  RELAY_DEVICE       relay;
+  RELAY_DELAY_DEVICE relayOn;
+  RELAY_DELAY_DEVICE relayOff;
 } MAINS_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;
@@ -179,5 +185,8 @@ ELECTRO_STATUS       eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS       eELECTROgetMainsStatus ( void );
 ELECTRO_ALARM_STATUS eELECTROgetAlarmStatus ( void );
 QueueHandle_t        pELECTROgetCommandQueue ( void );
+void                 vELECTROsendCmd ( ELECTRO_COMMAND cmd );
+fix16_t              fELECTROgetMaxGenVoltage ( void );
+TRIGGER_STATE        eELECTROgetMainsErrorFlag ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

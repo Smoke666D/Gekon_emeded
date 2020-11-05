@@ -47,6 +47,8 @@ typedef enum
   ENGINE_CMD_GOTO_NORMAL,
   ENGINE_CMD_EMEGENCY_STOP,
   ENGINE_CMD_RESET_TO_IDLE,
+  ENGINE_CMD_BAN_START,
+  ENGINE_CMD_ALLOW_START,
 } ENGINE_COMMAND;
 
 typedef enum
@@ -56,6 +58,7 @@ typedef enum
   ENGINE_STATUS_BUSY_STARTING,
   ENGINE_STATUS_BUSY_STOPPING,
   ENGINE_STATUS_WORK,
+  ENGINE_STATUS_WORK_WAIT_ELECTRO,
   ENGINE_STATUS_WORK_ON_IDLE,
   ENGINE_STATUS_WORK_GOTO_NOMINAL,
   ENGINE_STATUS_FAIL_STARTING,
@@ -81,6 +84,7 @@ typedef enum
 {
   STOP_IDLE,
   STOP_COOLDOWN,
+  STOP_WAIT_ELECTRO,
   STOP_IDLE_COOLDOWN,
   STOP_PROCESSING,
   STOP_FAIL,
@@ -91,6 +95,7 @@ typedef enum
 {
   MAINTENCE_STATUS_STOP,
   MAINTENCE_STATUS_RUN,
+  MAINTENCE_STATUS_CHECK,
 } MAINTENCE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 
@@ -98,10 +103,10 @@ typedef enum
 typedef struct __packed
 {
   SENSOR_TYPE       type;
+  SENSOR_STATUS     status;
   eChartData*       chart;
   getValueCallBack  get;
   ALARM_TYPE        cutout;
-  SENSOR_STATUS     status;
 } SENSOR;
 
 typedef struct __packed
@@ -133,11 +138,11 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t           enb;
+  PERMISSION        enb;
+  SENSOR_STATUS     status;
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
-  SENSOR_STATUS     status;
 } SPEED_TYPE;
 
 typedef struct __packed
@@ -156,14 +161,14 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t  critGenFreqEnb;
-  fix16_t  critGenFreqLevel;
-  uint8_t  critOilPressEnb;
-  fix16_t  critOilPressLevel;
-  uint8_t  critChargeEnb;
-  fix16_t  critChargeLevel;
-  uint8_t  critSpeedEnb;
-  fix16_t  critSpeedLevel;
+  PERMISSION  critGenFreqEnb;
+  fix16_t     critGenFreqLevel;
+  PERMISSION  critOilPressEnb;
+  fix16_t     critOilPressLevel;
+  PERMISSION  critChargeEnb;
+  fix16_t     critChargeLevel;
+  PERMISSION  critSpeedEnb;
+  fix16_t     critSpeedLevel;
 } START_CRITERIONS_TYPE;
 
 typedef struct __packed
@@ -207,7 +212,8 @@ typedef struct __packed
 typedef struct __packed
 {
   ENGINE_COMMAND  cmd;
-  uint8_t         startCheckOil;
+  PERMISSION      startCheckOil;
+  PERMISSION      banStart;
   ENGINE_STATUS   status;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
@@ -216,7 +222,7 @@ typedef struct __packed
 extern osThreadId_t engineHandle;
 /*----------------------- Functions ------------------------------------*/
 void          vENGINEinit ( void );
-void          vENGINEemergencyStop ( void );
+void          vENGINEsendCmd ( ENGINE_COMMAND cmd );
 QueueHandle_t pENGINEgetCommandQueue ( void );
 uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );

@@ -9,7 +9,7 @@
 #define INC_FPI_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
-#include "logicCommon.h"
+#include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 #define  FPI_USER_MESSAGE_LENGTH  16U
@@ -19,6 +19,7 @@
 #define  FPI_B                    1U
 #define  FPI_C                    2U
 #define  FPI_D                    3U
+#define  FPI_TASK_DELAY           200U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -75,7 +76,7 @@ typedef enum
 /*----------------------- Callbacks ------------------------------------*/
 typedef uint8_t ( *armingCallBack )( void ); /* Stream call back type */
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   FPI_LEVEL    level;
   FPI_FUNCTION function;
@@ -83,7 +84,7 @@ typedef struct
   uint16_t*    message;
 } FPI_EVENT;
 
-typedef struct
+typedef struct __packed
 {
   /* Phisical */
   GPIO_TypeDef*   port;                             /* GPIO port*/
@@ -93,17 +94,16 @@ typedef struct
   FPI_FUNCTION    function;                         /* Meaning of the input */
   FPI_ACTION      action;                           /* What to do on trig */
   FPI_ARMING      arming;                           /* Condition of triggering */
-  uint16_t        delay;                            /* Delay after arming in seconds */
   uint16_t        message[FPI_USER_MESSAGE_LENGTH]; /* User string message to the display */
   FPI_LEVEL       level;                            /* Current level */
   /* Callbacks */
   armingCallBack  getArming;                        /* Function check condition of triggering */
   /* System */
+  SYSTEM_TIMER    timer;
   FPI_STATE       state;                            /* Condition of the FPI */
-  timerID_t       timerID;
 } FPI;
 
-typedef struct
+typedef struct __packed
 {
   GPIO_TypeDef*  portA;
   uint16_t       pinA;
@@ -113,10 +113,15 @@ typedef struct
   uint16_t       pinC;
   GPIO_TypeDef*  portD;
   uint16_t       pinD;
+  GPIO_TypeDef*  portCS;
+  uint16_t       pinCS;
 } FPI_INIT;
 /*----------------------- Extern ---------------------------------------*/
+extern osThreadId_t fpiHandle;
 /*----------------------- Functions ------------------------------------*/
-void          vFPIinit ( FPI_INIT* init );
+void          vFPIinit ( const FPI_INIT* init );
+void          vFPIreset ( void );
+void          vFPIprint ( FPI_FUNCTION function, const char* str );
 QueueHandle_t pFPIgetQueue ( void );
 void          vFPIsetBlock ( void );
 FPI_LEVEL     eFPIcheckLevel ( FPI_FUNCTION function );

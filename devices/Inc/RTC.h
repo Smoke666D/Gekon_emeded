@@ -153,7 +153,7 @@ typedef enum
 #define  RTC_YEAR_MIN         0U
 #define  RTC_YEAR_MAX         99U
 /*----------------------- Structures -----------------------------------*/
-typedef struct
+typedef struct __packed
 {
   uint8_t      sec;
   uint8_t      min;
@@ -164,7 +164,7 @@ typedef struct
   uint8_t      year;
 } RTC_TIME; /* 7 byte */
 
-typedef struct
+typedef struct __packed
 {
   uint8_t         sec;
   uint8_t         min;

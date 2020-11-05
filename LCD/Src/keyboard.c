@@ -19,13 +19,13 @@ static StaticQueue_t      xKeyboardQueue;
 static QueueHandle_t      pKeyboardQueue;
 static EventGroupHandle_t pxKeyStatusFLag;
 /*----------------------- Variables -----------------------------------------------------------------*/
-static unsigned char STATUS[KEYBOARD_COUNT]   = { 0U, 0U, 0U, 0U, 0U };
-static unsigned int  COUNTERS[KEYBOARD_COUNT] = { 0U, 0U, 0U, 0U, 0U };
-static unsigned char CODES[KEYBOARD_COUNT]    = { up_key, down_key, stop_key, auto_key, start_key };
-static unsigned long KeyNorPressTimeOut       = 0U;
-static unsigned long KEY_TIME_OUT             = 60000U;
-static char          cKeyDelay                = 0U;
-uint8_t KeyboardBuffer[ 16U * sizeof( KeyEvent ) ];
+static unsigned char STATUS[KEYBOARD_COUNT]                     = { 0U };
+static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
+static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, auto_key, start_key };
+static unsigned long KeyNorPressTimeOut                         = 0U;
+static unsigned long KEY_TIME_OUT                               = 60000U;
+static char          cKeyDelay                                  = 0U;
+uint8_t              KeyboardBuffer[ 16U * sizeof( KeyEvent ) ] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
 void vSetupKeyboard( void )
 {
@@ -39,21 +39,21 @@ QueueHandle_t pGetKeyboardQueue( void )
 {
   return pKeyboardQueue;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void vKeyboardInit(  uint32_t message )
 {
   switch ( message )
   {
     case KEY_ON_MESSAGE:
-      cKeyDelay =0;
-      xQueueReset(pKeyboardQueue);
-      xEventGroupSetBits(pxKeyStatusFLag,KEY_READY);
+      cKeyDelay = 0U;
+      xQueueReset( pKeyboardQueue );
+      xEventGroupSetBits( pxKeyStatusFLag, KEY_READY );
       break;
     case KEY_OFF_MESSAGE:
       break;
     default:
-      xEventGroupClearBits(pxKeyStatusFLag,KEY_READY);
-      xQueueReset(pKeyboardQueue);
+      xEventGroupClearBits( pxKeyStatusFLag, KEY_READY );
+      xQueueReset( pKeyboardQueue );
       break;
   }
   return;

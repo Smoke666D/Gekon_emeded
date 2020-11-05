@@ -1,4 +1,4 @@
-/*
+#/*
  * menu.h
  *
  *  Created on: 21 февр. 2020 г.
@@ -9,7 +9,6 @@
 #define INC_MENU_H_
 /*----------------------- Includes -------------------------------------*/
 #include "u8g2.h"
-#include "main.h"
 #include "config.h"
 #include "data_type.h"
 #include "dataAPI.h"
@@ -24,6 +23,7 @@
 #define KEY_UP              1U
 #define KEY_DOWN            2U
 #define KEY_STOP            3U
+#define KEY_STOP_BREAK      7U
 #define KEY_AUTO            4U
 #define KEY_START           5U
 #define KEY_EXIT            6U
@@ -38,20 +38,35 @@
 #define FONT_X_SIZE4        6U
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
 #define MAX_KEY_PRESS
+
+
+#define SW_VER         54U
+#define HW_VER         55U
+#define SERIAL_L       56U
+#define SERIAL_H       57U
+#define ADC_FREQ       62U
+#define ADC_TEMP       63U
+#define NET_ROTATION   68U
+#define GEN_ROTATION   69U
+#define FUEL_LEVEL     79U
+#define OIL_PRESSURE   80U
+#define COOL_TEMP      81U
+#define ENGINE_SPEED   82U
+#define ENGINE_SCOUNT  83U
+#define ENGINE_WTIME   84U
+#define COS_FI         85U
+
+
+#define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/
-typedef enum
-{
-  ACTIVE,
-  NOT_ACTIVE,
-  PASSIVE,
-} SCREEN_STATUS;
+
 
 typedef enum
 {
   ICON,
   TEXT_STRING,
   STRING,
-  LINE,
+  H_LINE,
   NEGATIVE_STRING,
   DATA_STRING,
   INPUT_DATA_STRING,
@@ -59,7 +74,7 @@ typedef enum
   INPUT_HW_DATA,
 } OBJECT_TYPE;
 /*---------------------------- Structures --------------------------------------*/
-typedef struct
+typedef struct __packed
 {
   uint8_t     last;
   uint8_t     x;
@@ -69,22 +84,21 @@ typedef struct
   OBJECT_TYPE xType;
   uint8_t*    ObjectParamert;
   char*       pStringParametr;
-  void        (*GetDtaFunction)();
+  void        ( *GetDtaFunction )();
   uint16_t    DataID;
 } xScreenObjet;
 
-typedef struct
+typedef struct __packed
 {
-  xScreenObjet* pScreenCurObjets;
-  void*         pUpScreenSet;
-  void*         pDownScreenSet;
-  SCREEN_STATUS xScreenStatus;
+  const xScreenObjet*  pScreenCurObjets;
+   void*         pUpScreenSet;
+   void*         pDownScreenSet;
   uint8_t       pCurrIndex;
   uint8_t       pMaxIndex;
-  void          (*pFunc)(void *,char);
+ // void          ( *pFunc )( void*, char );
 } xScreenType;
 
-typedef struct
+typedef struct __packed
 {
   xScreenType*  pHomeMenu;               /* Указатель на массив экранов верхнего уровня. */
   uint8_t       pMaxIndex;	             /* Индекс домашнего экрана в маасиве экранов верхнего уровня */
@@ -92,7 +106,7 @@ typedef struct
   void          (* pFunc)(void *,char);  /* Функция обработки нажатий */
 } xScreenSetObject;
 /*----------------------------- Functions ------------------------------------*/
-void vDrawMenu( uint8_t temp, uint8_t* data );
+
 void vMenuInit( u8g2_t* temp );
 void vMenuTask( void );
 void vDrawObject( xScreenObjet* pScreenObjects );
@@ -101,5 +115,13 @@ void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vUToStr(uint8_t * str, uint16_t data, signed char scale);
+void vMenuMessageInit( osThreadId_t xmainprocess );
+void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vExitCurObject ( void );
+void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
+void EventScreenKeyCallBack( xScreenSetObject* menu, char key );
+void xInfoScreenCallBack( xScreenSetObject * menu, char key );
+void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

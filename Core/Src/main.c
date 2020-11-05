@@ -43,29 +43,24 @@
 #include "dataAPI.h"
 #include "freeData.h"
 #include "adc.h"
+#include "fpi.h"
+#include "fpo.h"
+#include "vrSensor.h"
+#include "engine.h"
+#include "electro.h"
+#include "controller.h"
+#include "alarm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-extern USBD_HandleTypeDef  hUsbDeviceFS;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
 /* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-/* stack size optim:
- * default   - 496
- * net       - 1792
- * lcd       - 512
- * lcdRedraw - 128
- * key       - 232
- * usb       - 768
- *
- */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -84,25 +79,21 @@ SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_tx;
 
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim5;
+TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024
-};
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
   .name = "netTask",
-  .priority = (osPriority_t) osPriorityBelowNormal,
+  .priority = (osPriority_t) osPriorityLow,
   .stack_size = 1792
 };
 /* Definitions for lcdTask */
@@ -119,13 +110,7 @@ const osThreadAttr_t usbTask_attributes = {
   .priority = (osPriority_t) osPriorityLow,
   .stack_size = 768
 };
-/* Definitions for adcTask */
-osThreadId_t adcTaskHandle;
-const osThreadAttr_t adcTask_attributes = {
-  .name = "adcTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024
-};
+
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
 const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
@@ -139,21 +124,26 @@ const osThreadAttr_t keyboardTask_attributes = {
   .stack_size = 232
 };
 
-
 osThreadId_t ADCTaskHandle;
 const osThreadAttr_t ADCTask_attributes = {
   .name = "ADCTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 512
+  .stack_size = 1612
 };
-/* Optimization of stack sizes:
- * 1. defaultTask   - 496
- * 2. netTask       - 1792
- * 3. lcdTask       - 512
- * 4. lcdRedrawTask - 128
- * 5. usbTask       - 768
- * */
-static TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] = { ( TaskHandle_t* )&lcdTaskHandle };
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 1024
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -161,7 +151,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART3_UART_Init(void);
-static void MX_TIM7_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ADC2_Init(void);
@@ -170,21 +159,79 @@ static void MX_CAN1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM5_Init(void);
+static void MX_TIM6_Init(void);
+static void MX_TIM7_Init(void);
 static void MX_TIM8_Init(void);
-void StartDefaultTask(void *argument);
-void StartNetTask(void *argument);
-void StartLcdTask(void *argument);
-extern void StartUsbTask(void *argument);
-extern void StartADCTask(void *argument);
 
+
+
+
+void StartDefaultTask(void *argument);
 /* USER CODE BEGIN PFP */
+void StartLcdTask(void *argument);
+extern void StartADCTask(void *argument);
 extern void vKeyboardTask(void const * argument);
+extern void vStartNetTask(void *argument);
+extern void vStartUsbTask(void *argument);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
+{
+  ( TaskHandle_t* )&lcdTaskHandle,
+  ( TaskHandle_t* )&engineHandle,
+  ( TaskHandle_t* )&fpiHandle,
+  ( TaskHandle_t* )&controllerHandle,
+  ( TaskHandle_t* )&electroHandle,
+};
+const FPI_INIT fpiInitStruct = {
+  .pinA   = 0U,
+  .pinB   = FPI_B_Pin,
+  .pinC   = FPI_C_Pin,
+  .pinD   = FPI_D_Pin,
+  .pinCS  = DIN_OFFSET_Pin,
+  .portA  = NULL,
+  .portB  = FPI_B_GPIO_Port,
+  .portC  = FPI_C_GPIO_Port,
+  .portD  = FPI_D_GPIO_Port,
+  .portCS = DIN_OFFSET_GPIO_Port
+};
+const FPO_INIT fpoInitStruct = {
+  .outPinA   = POUT_A_Pin,
+  .outPinB   = POUT_B_Pin,
+  .outPinC   = POUT_C_Pin,
+  .outPinD   = POUT_D_Pin,
+  .outPinE   = POUT_E_Pin,
+  .outPinF   = POUT_F_Pin,
+  .outPortA  = POUT_A_GPIO_Port,
+  .outPortB  = POUT_B_GPIO_Port,
+  .outPortC  = POUT_C_GPIO_Port,
+  .outPortD  = POUT_D_GPIO_Port,
+  .outPortE  = POUT_E_GPIO_Port,
+  .outPortF  = POUT_F_GPIO_Port,
+  .disPinAB  = POUT_AB_CS_Pin,
+  .disPinCD  = POUT_CD_CS_Pin,
+  .disPinEF  = POUT_EF_CS_Pin,
+  .disPortAB = POUT_AB_CS_GPIO_Port,
+  .disPortCD = POUT_CD_CS_GPIO_Port,
+  .disPortEF = POUT_EF_CS_GPIO_Port,
+};
+const CONTROLLER_INIT controllerInitStruct = {
+  .autoPIN    = LED2_Pin,
+  .autoGPIO   = LED2_GPIO_Port,
+  .manualPIN  = 0U,
+  .manualGPIO = NULL,
+  .startPIN   = LED3_Pin,
+  .startGPIO  = LED3_GPIO_Port,
+  .loadPIN    = 0U,
+  .loadGPIO   = NULL,
+  .stopPIN    = LED1_Pin,
+  .stopGPIO   = LED1_GPIO_Port,
+};
 /* USER CODE END 0 */
 
 /**
@@ -199,8 +246,10 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
+   *
+   */
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -218,7 +267,6 @@ int main(void)
   MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_LWIP_Init();
-  MX_TIM7_Init();
   MX_SPI1_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
@@ -227,16 +275,21 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI3_Init();
   MX_USART2_UART_Init();
+  MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_TIM5_Init();
+  MX_TIM6_Init();
+  MX_TIM7_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
+  vCHARTinitCharts();                                           /* Charts data initialization */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit( notifyTrg );                                    /* Data API initialization */
+  vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
   /*--------------------------------------------------------------------------*/
-  vSYSSerial("\n\r***********************\n\r");
+  vSYSSerial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */
   /* Init scheduler */
   osKernelInitialize();
@@ -263,23 +316,16 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* creation of netTask */
-  netTaskHandle = osThreadNew(StartNetTask, NULL, &netTask_attributes);
-
-  /* creation of lcdTask */
-  lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
-
-  /* creation of usbTask */
-  usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
-
+  defaultTaskHandle = osThreadNew( StartDefaultTask, NULL, &defaultTask_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
-  ADCTaskHandle =osThreadNew(StartADCTask, NULL, &ADCTask_attributes);
-  keyboardTaskHandle =osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+  netTaskHandle      = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
+  lcdTaskHandle      = osThreadNew( StartLcdTask,  NULL, &lcdTask_attributes );
+  usbTaskHandle      = osThreadNew( vStartUsbTask, NULL, &usbTask_attributes );
+  ADCTaskHandle      = osThreadNew( StartADCTask,  NULL, &ADCTask_attributes );
+  keyboardTaskHandle = osThreadNew( vKeyboardTask, NULL, &keyboardTask_attributes );
   vSetupKeyboard();
+  vMenuMessageInit( ADCTaskHandle);
   vLCDInit( xLCDDelaySemphHandle );
-
   vUSBinit( usbTaskHandle );
   /* USER CODE END RTOS_THREADS */
 
@@ -361,13 +407,13 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ENABLE;
-  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
-  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T8_TRGO;
+  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T2_TRGO;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 3;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -377,7 +423,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -394,6 +440,13 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  sConfig.Channel = ADC_CHANNEL_16;
+  sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -427,13 +480,13 @@ static void MX_ADC2_Init(void)
   hadc2.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc2.Init.Resolution = ADC_RESOLUTION_12B;
   hadc2.Init.ScanConvMode = ENABLE;
-  hadc2.Init.ContinuousConvMode = ENABLE;
+  hadc2.Init.ContinuousConvMode = DISABLE;
   hadc2.Init.DiscontinuousConvMode = DISABLE;
   hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc2.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T8_TRGO;
   hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc2.Init.NbrOfConversion = 4;
-  hadc2.Init.DMAContinuousRequests = DISABLE;
+  hadc2.Init.DMAContinuousRequests = ENABLE;
   hadc2.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc2) != HAL_OK)
   {
@@ -441,17 +494,9 @@ static void MX_ADC2_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_5;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-  */
   sConfig.Channel = ADC_CHANNEL_6;
-  sConfig.Rank = 2;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -459,7 +504,7 @@ static void MX_ADC2_Init(void)
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_8;
-  sConfig.Rank = 3;
+  sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -467,6 +512,14 @@ static void MX_ADC2_Init(void)
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
   {
@@ -501,12 +554,12 @@ static void MX_ADC3_Init(void)
   hadc3.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc3.Init.Resolution = ADC_RESOLUTION_12B;
   hadc3.Init.ScanConvMode = ENABLE;
-  hadc3.Init.ContinuousConvMode = ENABLE;
+  hadc3.Init.ContinuousConvMode = DISABLE;
   hadc3.Init.DiscontinuousConvMode = DISABLE;
   hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T3_TRGO;
   hadc3.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc3.Init.NbrOfConversion = 5;
+  hadc3.Init.NbrOfConversion = 9;
   hadc3.Init.DMAContinuousRequests = ENABLE;
   hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc3) != HAL_OK)
@@ -515,16 +568,16 @@ static void MX_ADC3_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_15;
+  sConfig.Channel = ADC_CHANNEL_5;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_14;
+  sConfig.Channel = ADC_CHANNEL_6;
   sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
@@ -532,7 +585,7 @@ static void MX_ADC3_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_13;
+  sConfig.Channel = ADC_CHANNEL_7;
   sConfig.Rank = 3;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
@@ -540,7 +593,7 @@ static void MX_ADC3_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_12;
+  sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
@@ -548,8 +601,40 @@ static void MX_ADC3_Init(void)
   }
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 5;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_15;
+  sConfig.Rank = 6;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_13;
+  sConfig.Rank = 7;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_12;
+  sConfig.Rank = 8;
+  if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Rank = 9;
   if (HAL_ADC_ConfigChannel(&hadc3, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -708,6 +793,51 @@ static void MX_SPI3_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 1000;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV4;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
@@ -787,6 +917,89 @@ static void MX_TIM7_Init(void)
   /* USER CODE BEGIN TIM7_Init 2 */
 
   /* USER CODE END TIM7_Init 2 */
+
+}
+
+/**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 30001;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 201;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
+
+}
+
+/**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 30001;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 2001;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
 
 }
 
@@ -948,18 +1161,19 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
-                          |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
+                          |EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
                           |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED3_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, LED2_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, RTC_INT_Pin|RTC_RST_Pin, GPIO_PIN_RESET);
@@ -970,8 +1184,14 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LCD_RST_Pin|LCD_LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : BOOT1_Pin FPI_B_Pin FPI_C_Pin FPI_D_Pin */
-  GPIO_InitStruct.Pin = BOOT1_Pin|FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
+  /*Configure GPIO pin : BOOT1_Pin */
+  GPIO_InitStruct.Pin = BOOT1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : FPI_B_Pin FPI_C_Pin FPI_D_Pin */
+  GPIO_InitStruct.Pin = FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -982,8 +1202,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ON_INPOW_Pin ANALOG_SWITCH_Pin */
-  GPIO_InitStruct.Pin = ON_INPOW_Pin|ANALOG_SWITCH_Pin;
+  /*Configure GPIO pin : USER_Btn_Pin */
+  GPIO_InitStruct.Pin = VR_COUNT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(VR_COUNT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : ON_INPOW_Pin ANALOG_SWITCH_Pin DIN_OFFSET_Pin */
+  GPIO_InitStruct.Pin = ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -997,12 +1223,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MIXING_Pin */
-  GPIO_InitStruct.Pin = MIXING_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MIXING_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : POUT_E_Pin POUT_CD_CS_Pin POUT_C_Pin POUT_EF_CS_Pin
                            POUT_D_Pin POUT_F_Pin POUT_AB_CS_Pin */
@@ -1031,12 +1251,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : VR_COUNT_Pin */
-  GPIO_InitStruct.Pin = VR_COUNT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(VR_COUNT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RTC_INT_Pin RTC_RST_Pin */
   GPIO_InitStruct.Pin = RTC_INT_Pin|RTC_RST_Pin;
@@ -1087,94 +1301,24 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  char      buf[36];
-  uint8_t   i         = 0U;
-  uint8_t   j         = 0U;
-  uint8_t   temp      = 0U;
   //uint32_t  waterMark = 0U;
-
-  vDATAAPIdataInit();
   vSYSSerial( ">>Start Default Task!\n\r" );
-  vSYSSerial( ">>Serial number: " );
-  for ( i=0U; i<6U; i++ )
+  while ( uADCGetValidDataFlag() == 0U )
   {
-    for ( j=0U; j<2U; j++ )
-    {
-      temp = ( uint8_t )( serialNumber.value[i] << j*8U );
-      sprintf( &buf[6U*i + 3U*j], "%02X:", temp );
-    }
+    osDelay( 10U );
   }
-  buf[35] = 0U;
-  vSYSSerial( buf );
-  vSYSSerial( "\n\r" );
-  vSYSSerial("------------- EEPROM map: -------------\n\r");
-  vSYSSerial("System register: ");
-  sprintf( buf, "0x%06X", STORAGE_SR_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_SR_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("EWA            : ");
-  sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_WEB_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Reserve        : ");
-  sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Configurations : ");
-  sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", CONFIG_TOTAL_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Charts         : ");
-  sprintf( buf, "0x%06X", STORAGE_CHART_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_CHART_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Free data      : ");
-  sprintf( buf, "0x%06X", STORAGE_DATA_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Log            : ");
-  sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
-  sprintf( buf, "%d", STORAGE_LOG_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-
-  vSYSSerial("Free           : ");
-  sprintf( buf, "%d", ( ( EEPROM_SIZE * 1024U ) - STORAGE_REQUIRED_SIZE ) );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes \n\r" );
-
-  vSYSSerial("End            : ");
-  sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
-  vSYSSerial( buf );
-  vSYSSerial( "\n\r" );
-
-  vSYSSerial("---------------------------------------\n\r");
+  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
+  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
+  vVRinit( &htim6 );                          /* Speed sensor initialization */
+  vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
+  vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
+  osDelay( 1200U );                           /* Delay ADC valid data ready*/
+  vALARMinit();                               /* Activ error list initialization */
+  vENGINEinit();                              /**/
+  vELECTROinit();                             /**/
+  vLOGICinit( &htim5 );                       /**/
+  vCONTROLLERinit( &controllerInitStruct );   /**/
   /* Infinite loop */
   for(;;)
   {
@@ -1189,60 +1333,15 @@ void StartDefaultTask(void *argument)
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_StartNetTask */
-/**
-* @brief Function implementing the neyTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartNetTask */
-void StartNetTask(void *argument)
-{
-  /* USER CODE BEGIN StartNetTask */
-  char ipaddr[16];
-  vSYSSerial( ">>DHCP: ");
-  vSERVERinit();
-  vSYSSerial( "done!\n\r");
-  cSERVERgetStrIP( ipaddr );
-  vSYSSerial( ">>IP address: ");
-  vSYSSerial( ipaddr );
-  vSYSSerial("\n\r");
-  vSYSSerial( ">>TCP: " );
-  if ( eSERVERstart() != SERVER_OK )
-  {
-    vSYSSerial( "fail!\n\r" );
-    while( 1U ) osDelay( 1U );
-  }
-  vSYSSerial( "done!\n\r" );
-  vSYSSerial( ">>Server ready and listen port 80!\n\r" );
-  HAL_GPIO_WritePin( GPIOB, LD3_Pin, GPIO_PIN_SET );
-  /* Infinite loop */
-  for(;;)
-  {
-    eSERVERlistenRoutine();
-    osDelay( 10U );
-  }
-  /* USER CODE END StartNetTask */
-}
-
-/* USER CODE BEGIN Header_StartLcdTask */
-/**
-* @brief Function implementing the lcdTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartLcdTask */
 void StartLcdTask(void *argument)
 {
-  /* USER CODE BEGIN StartLcdTask */
   vLCD_Init();
-  /* Infinite loop */
   for(;;)
   {
     vMenuTask();
   }
-  /* USER CODE END StartLcdTask */
 }
+
 
 /**
   * @brief  Period elapsed callback in non blocking mode

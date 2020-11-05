@@ -11,12 +11,14 @@
 #include "stm32f2xx_hal.h"
 #include "chart.h"
 #include "fix16.h"
-#include "logicCommon.h"
+#include "controllerTypes.h"
 #include "fpo.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
-#define  ENGINE_EVENT_QUEUE_LENGTH    16U
-#define  ENGINE_COMMAND_QUEUE_LENGTH  8U
+#define  ENGINE_EVENT_QUEUE_LENGTH      16U
+#define  ENGINE_COMMAND_QUEUE_LENGTH    8U
+#define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
+#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE - 200U ) )
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -31,7 +33,8 @@ typedef enum
 {
   SENSOR_STATUS_NORMAL,
   SENSOR_STATUS_ERROR,
-  SENSOR_STATUS_OPEN_CIRCUIT_ERROR,
+  SENSOR_STATUS_LINE_ERROR,
+  SENSOR_STATUS_COMMON_ERROR,
 } SENSOR_STATUS;
 
 typedef enum
@@ -44,14 +47,18 @@ typedef enum
   ENGINE_CMD_GOTO_NORMAL,
   ENGINE_CMD_EMEGENCY_STOP,
   ENGINE_CMD_RESET_TO_IDLE,
+  ENGINE_CMD_BAN_START,
+  ENGINE_CMD_ALLOW_START,
 } ENGINE_COMMAND;
 
 typedef enum
 {
   ENGINE_STATUS_IDLE,
+  ENGINE_STATUS_EMERGENCY_STOP,
   ENGINE_STATUS_BUSY_STARTING,
   ENGINE_STATUS_BUSY_STOPPING,
   ENGINE_STATUS_WORK,
+  ENGINE_STATUS_WORK_WAIT_ELECTRO,
   ENGINE_STATUS_WORK_ON_IDLE,
   ENGINE_STATUS_WORK_GOTO_NOMINAL,
   ENGINE_STATUS_FAIL_STARTING,
@@ -77,37 +84,39 @@ typedef enum
 {
   STOP_IDLE,
   STOP_COOLDOWN,
+  STOP_WAIT_ELECTRO,
   STOP_IDLE_COOLDOWN,
   STOP_PROCESSING,
   STOP_FAIL,
   STOP_OK,
 } PLAN_STOP_STATUS;
+
+typedef enum
+{
+  MAINTENCE_STATUS_STOP,
+  MAINTENCE_STATUS_RUN,
+  MAINTENCE_STATUS_CHECK,
+} MAINTENCE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
-typedef struct
-{
-  uint8_t       enb;
-  SYSTEM_EVENT  event;
-} CUTOUT_TYPE;
-
-typedef struct
+typedef struct __packed
 {
   SENSOR_TYPE       type;
+  SENSOR_STATUS     status;
   eChartData*       chart;
   getValueCallBack  get;
-  CUTOUT_TYPE       cutout;
-  SENSOR_STATUS     status;
+  ALARM_TYPE        cutout;
 } SENSOR;
 
-typedef struct
+typedef struct __packed
 {
   SENSOR      pressure;
   ALARM_TYPE  alarm;
   ALARM_TYPE  preAlarm;
 } OIL_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   SENSOR             temp;
   ALARM_TYPE         alarm;
@@ -116,7 +125,7 @@ typedef struct
   RELAY_AUTO_DEVICE  heater;
 } COOLANT_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   SENSOR             level;
   ALARM_TYPE         lowAlarm;
@@ -127,49 +136,55 @@ typedef struct
   RELAY_DEVICE       pump;
 } FUEL_TYPE;
 
-typedef struct
+typedef struct __packed
 {
+  PERMISSION        enb;
+  SENSOR_STATUS     status;
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
-  SENSOR_STATUS     status;
 } SPEED_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
 } BATTERY_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   getValueCallBack  get;
   ALARM_TYPE        hightAlarm;
   ALARM_TYPE        hightPreAlarm;
 } CHARGER_TYPE;
 
-typedef struct
+typedef struct __packed
 {
-  uint8_t  critGenFreqEnb;
-  fix16_t  critGenFreqLevel;
-  uint8_t  critOilPressEnb;
-  fix16_t  critOilPressLevel;
-  uint8_t  critChargeEnb;
-  fix16_t  critChargeLevel;
-  uint8_t  critSpeedEnb;
-  fix16_t  critSpeedLevel;
+  PERMISSION  critGenFreqEnb;
+  fix16_t     critGenFreqLevel;
+  PERMISSION  critOilPressEnb;
+  fix16_t     critOilPressLevel;
+  PERMISSION  critChargeEnb;
+  fix16_t     critChargeLevel;
+  PERMISSION  critSpeedEnb;
+  fix16_t     critSpeedLevel;
 } START_CRITERIONS_TYPE;
 
-typedef struct
+typedef struct __packed
 {
-  ALARM_TYPE  oil;
-  ALARM_TYPE  air;
-  ALARM_TYPE  fuel;
+  MAINTENCE_STATUS status;
+  SYSTEM_TIMER     timer;
+  ALARM_TYPE       oil;
+  ALARM_TYPE       air;
+  ALARM_TYPE       fuel;
 } MAINTENCE_TYPE;
-typedef struct
+
+typedef struct __packed
 {
+  /* Callback */
   setRelayCallBack       set;
+  /* Delays */
   fix16_t                startDelay;      /* sec */
   fix16_t                crankingDelay;   /* sec */
   fix16_t                crankDelay;      /* sec */
@@ -177,13 +192,16 @@ typedef struct
   fix16_t                idlingDelay;     /* sec */
   fix16_t                nominalDelay;    /* sec */
   fix16_t                warmingDelay;    /* sec */
+  /* Counters */
   uint8_t                startAttempts;
   uint8_t                startIteration;
+  /* Structures */
   START_CRITERIONS_TYPE  startCrit;
+  /* Status */
   STARTER_STATUS         status;
 } STARTER_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   fix16_t           coolingDelay;      /* sec */
   fix16_t           coolingIdleDelay;  /* sec */
@@ -191,21 +209,23 @@ typedef struct
   PLAN_STOP_STATUS  status;
 } PLAN_STOP_TYPE;
 
-typedef struct
+typedef struct __packed
 {
   ENGINE_COMMAND  cmd;
-  uint8_t         startCheckOil;
+  PERMISSION      startCheckOil;
+  PERMISSION      banStart;
   ENGINE_STATUS   status;
+  ERROR_TYPE      stopError;
+  ERROR_TYPE      startError;
 } ENGINE_TYPE;
 /*----------------------- Extern ---------------------------------------*/
+extern osThreadId_t engineHandle;
 /*----------------------- Functions ------------------------------------*/
 void          vENGINEinit ( void );
-void          vENGINEemergencyStop ( void );
+void          vENGINEsendCmd ( ENGINE_COMMAND cmd );
 QueueHandle_t pENGINEgetCommandQueue ( void );
 uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
-void          vENGINEmaintenanceReset ( void );
 /*----------------------------------------------------------------------*/
-
 #endif /* INC_OIL_H_ */

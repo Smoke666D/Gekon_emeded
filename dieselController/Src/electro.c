@@ -448,12 +448,12 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   /*----------------------------------------------------------------------------*/
   generator.currentAlarm.state               = ELECTRO_CURRENT_STATUS_IDLE;
   generator.currentAlarm.over.current        = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), F16( 100U ) ) );
+                                                          fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
   generator.currentAlarm.over.delay          = 0U;
   generator.currentAlarm.over.event.type     = EVENT_OVER_CURRENT;
   generator.currentAlarm.over.event.action   = ACTION_PLAN_STOP;
   generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentCutoffLevel ), F16( 100U ) ) );
+                                                          fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
   generator.currentAlarm.cutout.delay        = 0U;
   generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
   generator.currentAlarm.cutout.event.action = ACTION_PLAN_STOP;

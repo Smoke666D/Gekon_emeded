@@ -220,9 +220,6 @@ void vFPIinit ( const FPI_INIT* init )
     .stack_size = FPI_TASK_STACK_SIZE
   };
   fpiHandle = osThreadNew( vFPITask, NULL, &fpiTask_attributes );
-
-  xFPIsemaphore = xSemaphoreCreateMutex();
-
   vFPIprintSetup();
   return;
 }

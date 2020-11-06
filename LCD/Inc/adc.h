@@ -70,7 +70,7 @@
 #define GEN_L3_REAC_POWER   24
 #define GEN_APPER_POWER     25
 #define GEN_REAL_POWER      26
-#define GEN_OVERAL_POER_FAC 27
+#define GEN_ACTIVE_POWER     27
 #define GEN_REACTIVE_POWER  28
 #define NET_FREQ            29
 #define NET_L1_FASE_V       30
@@ -140,6 +140,14 @@ typedef enum
 /*
  * Функции API драйвера
  */
+fix16_t xADCGetGENActivePower();
+fix16_t xADCGetGENReactivePower();
+fix16_t xADCGetGENRealPower();
+fix16_t xADCGetGENL1RealPower();
+fix16_t xADCGetGENL2RealPower();
+fix16_t xADCGetGENL3RealPower();
+
+
 fix16_t xADCGetVDD();              // Функция возращает наряжения АКБ.
 fix16_t xADCGetSOP();
 fix16_t xADCGetSCT();

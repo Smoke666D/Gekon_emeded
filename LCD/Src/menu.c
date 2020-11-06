@@ -839,25 +839,27 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
       for (uint8_t i=0;i<3;i++)
                {
-                 Data[i*5]  = cHexToChar((tt[i]>>12)  & 0x0F );
-                 Data[i*5+1]= cHexToChar((tt[i]>>8)   & 0xF);
-                 Data[i*5+2]= cHexToChar((tt[i]>>4)   & 0xF);
-                 Data[i*5+3]= cHexToChar((tt[i])      & 0xF);
-                 Data[i*5+4]=':';
+                 Data[i*6]  = cHexToChar((tt[i]>>12)  & 0x0F );
+                 Data[i*6+1]= cHexToChar((tt[i]>>8)   & 0xF);
+                 Data[i*6+2]= ':';
+                 Data[i*6+3]= cHexToChar((tt[i]>>4)   & 0xF);
+                 Data[i*6+4]= cHexToChar((tt[i])      & 0xF);
+                 Data[i*6+5]=':';
                }
-      Data[14]=0;
+      Data[17]=0;
       break;
     case SERIAL_H:
       eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
       for (uint8_t i=0;i<3;i++)
           {
-            Data[i*5]  = cHexToChar((tt[i+3]>>12) & 0x0F );
-            Data[i*5+1]= cHexToChar((tt[i+3]>>8)   & 0xF);
-            Data[i*5+2]= cHexToChar((tt[i+3]>>4)   & 0xF);
-            Data[i*5+3]= cHexToChar((tt[i+3])   & 0xF);
-            Data[i*5+4]=':';
+            Data[i*6]  = cHexToChar((tt[i+3]>>12) & 0x0F );
+            Data[i*6+1]= cHexToChar((tt[i+3]>>8)   & 0xF);
+            Data[i*6+2]=':';
+            Data[i*6+3]= cHexToChar((tt[i+3]>>4)   & 0xF);
+            Data[i*6+4]= cHexToChar((tt[i+3])   & 0xF);
+            Data[i*6+5]=':';
           }
-        Data[14]=0;
+        Data[17]=0;
 
       break;
 

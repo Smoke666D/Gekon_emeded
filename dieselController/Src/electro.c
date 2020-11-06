@@ -28,6 +28,8 @@ static const fix16_t tempProtectionTimeMult    = F16( TEMP_PROTECTION_TIME_MULTI
 static const fix16_t shortCircuitTrippingCurve = F16( CUTOUT_PROTECTION_TRIPPING_CURVE );
 static const fix16_t shortCircuitConstant      = F16( SHORT_CIRCUIT_CONSTANT );          /* Short circuit protection constant */
 static const fix16_t shortCircuitCutoutPower   = F16( CUTOUT_POWER );
+static const fix16_t powerUsageCalcTimeout     = F16( POWER_USAGE_CALC_TIMEOUT );
+static const fix16_t powerWsTokWs              = F16( 3600000U );
 /*-------------------------------- Variables ---------------------------------*/
 static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U };
 static fix16_t         maxGeneratorVolage                                 = 0U;
@@ -99,6 +101,38 @@ void vELECTROalarmCheck ( ALARM_TYPE* alarm, fix16_t* value, uint8_t length )
     {
       vALARMcheck( alarm, fELECTROgetMax( value, length ) );
     }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/* Power calculation
+ * input:  power in W
+ *         time  in sec
+ * output: usage in kWh
+ */
+fix16_t fELECTROpowerToKWH ( fix16_t power, fix16_t time )
+{
+  return fix16_div( fix16_mul( power, time ), powerWsTokWs );
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vELECTROpowerUsageProcessing ( void )
+{
+  uint16_t   reactive = 0U; /* W */
+  uint16_t   active   = 0U; /* W */
+  uint16_t   full     = 0U; /* W */
+  if ( uLOGICisTimer( generator.timer ) > 0U )
+  {
+    vLOGICstartTimer( &generator.timer );
+    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
+    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
+    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
+    reactive += fix16_from_int( fELECTROpowerToKWH( xADCGetGENReactivePower(), powerUsageCalcTimeout ) );
+    active   += fix16_from_int( fELECTROpowerToKWH( xADCGetGENActivePower(),   powerUsageCalcTimeout ) );
+    full     += fix16_from_int( fELECTROpowerToKWH( xADCGetGENRealPower(),     powerUsageCalcTimeout ) );
+    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_REACTIVE_USAGE_ADR, &reactive );
+    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_ACTIVE_USAGE_ADR,   &active   );
+    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR,     &full     );
+    eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
   }
   return;
 }
@@ -300,6 +334,8 @@ fix16_t fGENERATORprocess ( void )
   vELECTROalarmCheck( &generator.overloadAlarm, power, MAINS_LINE_NUMBER );
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );
 
+  vELECTROpowerUsageProcessing();
+
   return fELECTROgetMax( voltage, MAINS_LINE_NUMBER );
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -313,11 +349,14 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   electro.timer.id    = 0U;
   electro.timer.delay = getValue( &timerTransferDelay );
 
+  generator.timer.delay = powerUsageCalcTimeout;
+  generator.timer.id    = LOGIC_DEFAULT_TIMER_ID;
+
   generator.enb                    = getBitMap( &genSetup, GEN_POWER_GENERATOR_CONTROL_ENB_ADR );
   generator.rating.power.active    = getValue( &genRatedActivePowerLevel );
   generator.rating.power.reactive  = getValue( &genRatedReactivePowerLevel );
-  generator.rating.power.apparent  = getValue( &genRatedApparentPowerLevel );
-  generator.rating.cosFi           = fix16_div( generator.rating.power.active, generator.rating.power.apparent );
+  generator.rating.power.full      = getValue( &genRatedApparentPowerLevel );
+  generator.rating.cosFi           = fix16_div( generator.rating.power.active, generator.rating.power.full );
   generator.rating.freq            = getValue( &genRatedFrequencyLevel );
   generator.rating.current.primary = getValue( &genCurrentPrimaryLevel );
   generator.rating.current.nominal = getValue( &genCurrentFullLoadRatingLevel );
@@ -448,12 +487,12 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   /*----------------------------------------------------------------------------*/
   generator.currentAlarm.state               = ELECTRO_CURRENT_STATUS_IDLE;
   generator.currentAlarm.over.current        = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), F16( 100U ) ) );
+                                                          fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
   generator.currentAlarm.over.delay          = 0U;
   generator.currentAlarm.over.event.type     = EVENT_OVER_CURRENT;
   generator.currentAlarm.over.event.action   = ACTION_PLAN_STOP;
   generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentCutoffLevel ), F16( 100U ) ) );
+                                                          fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
   generator.currentAlarm.cutout.delay        = 0U;
   generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
   generator.currentAlarm.cutout.event.action = ACTION_PLAN_STOP;

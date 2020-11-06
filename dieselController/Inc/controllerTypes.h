@@ -43,8 +43,9 @@
 typedef  uint8_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/
-extern const char* logTypesDictionary[LOG_TYPES_SIZE];
-extern const char* logActionsDictionary[LOG_ACTION_SIZE];
+extern const char*   logTypesDictionary[LOG_TYPES_SIZE];
+extern const char*   logActionsDictionary[LOG_ACTION_SIZE];
+extern const fix16_t fix100U;
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {

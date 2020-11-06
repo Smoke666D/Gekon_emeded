@@ -17,7 +17,6 @@
 static ACTIVE_ERROR_LIST  activeErrorList = { 0U };
 static SemaphoreHandle_t  xAELsemaphore   = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-
 /*-------------------------------- Variables ---------------------------------*/
 static fix16_t   hysteresis = 0U;
 /*-------------------------------- Functions ---------------------------------*/
@@ -40,10 +39,11 @@ uint8_t vALARMisWarning ( LOG_RECORD_TYPE record )
 /*----------------------------------------------------------------------------*/
 void vALARMinit ( void )
 {
-  hysteresis    = fix16_div( getValue( &hysteresisLevel ), F16( 100U ) );
+  hysteresis    = fix16_div( getValue( &hysteresisLevel ), fix100U );
   xAELsemaphore = xSemaphoreCreateMutex();
   return;
 }
+/*----------------------------------------------------------------------------*/
 /*
  * API for active error list control
  * input:  cmd    - command for the list

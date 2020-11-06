@@ -741,7 +741,7 @@ void vENGINEdataInit ( void )
   charger.hightAlarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
   charger.hightAlarm.error.ack             = PERMISSION_DISABLE;
   charger.hightAlarm.error.event.type      = EVENT_CHARGER_FAIL;
-  charger.hightAlarm.error.event.action    = ACTION_EMERGENCY_STOP;
+  charger.hightAlarm.error.event.action    = ACTION_WARNING;
   charger.hightAlarm.error.id              = DEFINE_ERROR_LIST_ADR;
   charger.hightAlarm.error.trig            = TRIGGER_IDLE;
   charger.hightAlarm.error.status          = ALARM_STATUS_IDLE;

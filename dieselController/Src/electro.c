@@ -313,7 +313,7 @@ fix16_t fGENERATORprocess ( void )
   {
     voltage[i] = generator.line[i].getVoltage();
     current[i] = generator.line[i].getCurrent();
-    //power[i]   = fix16_mul( fix16_mul( voltage[i], current[i] ), generator.rating.cosFi );
+    power[i]   = generator.line[i].getPower();
   }
   freq = generator.getFreq();
   maxCurrent = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
@@ -519,10 +519,13 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.getFreq             = xADCGetGENLFreq;
   generator.line[0U].getVoltage = xADCGetGENL1;
   generator.line[0U].getCurrent = xADCGetGENL1Cur;
+  generator.line[0U].getPower   = xADCGetGENL1RealPower;
   generator.line[1U].getVoltage = xADCGetGENL2;
   generator.line[1U].getCurrent = xADCGetGENL2Cur;
+  generator.line[1U].getPower   = xADCGetGENL2RealPower;
   generator.line[2U].getVoltage = xADCGetGENL3;
   generator.line[2U].getCurrent = xADCGetGENL3Cur;
+  generator.line[2U].getPower   = xADCGetGENL3RealPower;
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/

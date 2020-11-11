@@ -38,8 +38,9 @@ static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
 static StaticQueue_t         xEngineCommandQueue = { 0U };
 static QueueHandle_t         pEngineCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t fix60               = F16( 60U );
-static const fix16_t dryContactTrigLevel = F16( 0x7FFFU );
+static const fix16_t fix60                  = F16( 60U );
+static const fix16_t dryContactTrigLevel    = F16( 0x7FFFU );
+static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION );
 
 #if ( DEBUG_SERIAL_STATUS > 0U )
   static const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTIVE", "CURRENT" };
@@ -102,10 +103,14 @@ void vENGINEtask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-fix16_t getChargerVoltage ( void )
+fix16_t getChargerInput ( void )
 {
   fix16_t res = 0U;
   return res;
+}
+void setChargerOutput ( RELAY_STATUS status )
+{
+  return;
 }
 /*----------------------------------------------------------------------------*/
 void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
@@ -230,13 +235,64 @@ fix16_t fBATTERYprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fCHARGERprocess ( void )
+fix16_t fCHARGERprocess ( PERMISSION startup )
 {
-  fix16_t value = charger.get();
-  vALARMcheck( &charger.hightPreAlarm, value );
-  if ( charger.hightAlarm.error.status == ALARM_STATUS_IDLE )
+  fix16_t value = 0U;
+  if ( charger.enb == PERMISSION_ENABLE )
   {
-    vALARMcheck( &charger.hightPreAlarm, value );
+    if ( ( startup == PERMISSION_ENABLE ) && ( charger.status != CHARGER_STATUS_STARTUP ) )
+    {
+      charger.status    = CHARGER_STATUS_STARTUP;
+      charger.iteration = 0U;
+    }
+    value = charger.get();
+    switch ( charger.status )
+    {
+      case CHARGER_STATUS_IDLE:
+        if ( value < charger.setpoint )
+        {
+          charger.status = CHARGER_STATUS_IMPULSE;
+        }
+        break;
+      case CHARGER_STATUS_STARTUP:
+        if ( startup == PERMISSION_ENABLE )
+        {
+          if ( charger.relay.status == RELAY_OFF )
+          {
+            charger.relay.set( RELAY_ON );
+            charger.relay.status = RELAY_ON;
+          }
+        }
+        else
+        {
+          charger.status = CHARGER_STATUS_IDLE;
+        }
+        break;
+      case CHARGER_STATUS_IMPULSE:
+        if ( charger.iteration < charger.attempts )
+        {
+          charger.relay.set( RELAY_ON );
+          charger.relay.status = RELAY_ON;
+          charger.timer.delay  = chargerImpulseDuration;
+          charger.iteration++;
+          //vLOGICstartTimer( charger.timer );
+          charger.status = CHARGER_STATUS_DELAY;
+        }
+        break;
+      case CHARGER_STATUS_DELAY:
+        if ( uLOGICisTimer( charger.timer ) > 0U )
+        {
+
+        }
+        break;
+      case CHARGER_STATUS_ERROR:
+        break;
+      default:
+        charger.status = CHARGER_STATUS_IDLE;
+        charger.relay.set( RELAY_OFF );
+        charger.relay.status = RELAY_OFF;
+        break;
+    }
   }
   return value;
 }
@@ -732,20 +788,27 @@ void vENGINEdataInit ( void )
   battery.hightAlarm.error.trig         = TRIGGER_IDLE;
   battery.hightAlarm.error.status       = ALARM_STATUS_IDLE;
   /*--------------------------------------------------------------*/
-  charger.get                              = getChargerVoltage;
-  charger.hightAlarm.error.enb             = getBitMap( &batteryAlarms, BATTERY_CHARGE_SHUTDOWN_ENB_ADR );
-  charger.hightAlarm.error.active          = PERMISSION_DISABLE;
-  charger.hightAlarm.type                  = ALARM_LEVEL_HIGHT;
-  charger.hightAlarm.level                 = getValue( &batteryChargeShutdownLevel );
-  charger.hightAlarm.timer.delay           = getValue( &batteryChargeShutdownDelay );
-  charger.hightAlarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
-  charger.hightAlarm.error.ack             = PERMISSION_DISABLE;
-  charger.hightAlarm.error.event.type      = EVENT_CHARGER_FAIL;
-  charger.hightAlarm.error.event.action    = ACTION_WARNING;
-  charger.hightAlarm.error.id              = DEFINE_ERROR_LIST_ADR;
-  charger.hightAlarm.error.trig            = TRIGGER_IDLE;
-  charger.hightAlarm.error.status          = ALARM_STATUS_IDLE;
-
+  charger.enb                              = PERMISSION_ENABLE;
+  charger.status                           = CHARGER_STATUS_IDLE;
+  charger.attempts                         = CHARGER_ATTEMPTS_NUMBER;
+  charger.iteration                        = 0U;
+  charger.get                              = getChargerInput;
+  /*
+  charger.set                              = setChargerOutput;
+  charger.timer.delay                      = chargerImpulseDuration;
+  charger.timer.id                         = LOGIC_DEFAULT_TIMER_ID;
+  charger.error.enb             = getBitMap( &batteryAlarms, BATTERY_CHARGE_SHUTDOWN_ENB_ADR );
+  charger.error.active          = PERMISSION_DISABLE;
+  charger.error.type                  = ALARM_LEVEL_HIGHT;
+  charger.error.level                 = getValue( &batteryChargeShutdownLevel );
+  charger.error.timer.delay           = getValue( &batteryChargeShutdownDelay );
+  charger.error.timer.id              = LOGIC_DEFAULT_TIMER_ID;
+  charger.error.error.ack             = PERMISSION_DISABLE;
+  charger.error.error.event.type      = EVENT_CHARGER_FAIL;
+  charger.error.error.event.action    = ACTION_WARNING;
+  charger.error.error.id              = DEFINE_ERROR_LIST_ADR;
+  charger.error.error.trig            = TRIGGER_IDLE;
+  charger.error.error.status          = ALARM_STATUS_IDLE;
   charger.hightPreAlarm.error.enb          = getBitMap( &batteryAlarms, BATTERY_CHARGE_WARNING_ENB_ADR );
   charger.hightPreAlarm.error.active       = PERMISSION_DISABLE;
   charger.hightPreAlarm.type               = ALARM_LEVEL_HIGHT;
@@ -758,9 +821,10 @@ void vENGINEdataInit ( void )
   charger.hightPreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   charger.hightPreAlarm.error.trig         = TRIGGER_IDLE;
   charger.hightPreAlarm.error.status       = ALARM_STATUS_IDLE;
+  */
   /*--------------------------------------------------------------*/
   starter.set            = vFPOsetStarter;
-  starter.startAttempts  = getBitMap( &engineSetup, ENGINE_START_ATTEMPTS_ADR );
+  starter.attempts  = getBitMap( &engineSetup, ENGINE_START_ATTEMPTS_ADR );
   starter.startDelay     = getValue( &timerStartDelay );
   starter.crankingDelay  = getValue( &timerCranking );
   starter.crankDelay     = getValue( &timerCrankDelay );
@@ -768,7 +832,7 @@ void vENGINEdataInit ( void )
   starter.idlingDelay    = getValue( &timerStartupIdleTime );
   starter.nominalDelay   = getValue( &timerNominalRPMDelay );
   starter.warmingDelay   = getValue( &timerWarming );
-  starter.startIteration = 0U;
+  starter.iteration = 0U;
   starter.status         = STARTER_IDLE;
 
   starter.startCrit.critGenFreqEnb    = getBitMap( &genSetup, GEN_POWER_GENERATOR_CONTROL_ENB_ADR );
@@ -920,8 +984,8 @@ void vENGINEresetAlarms ( void )
 {
   vERRORreset( &speed.hightAlarm.error);
   vERRORreset( &speed.lowAlarm.error );
-  vERRORreset( &charger.hightAlarm.error );
-  vERRORreset( &charger.hightPreAlarm.error );
+  //vERRORreset( &charger.error.error );
+  //vERRORreset( &charger.hightPreAlarm.error );
   vERRORreset( &battery.hightAlarm.error );
   vERRORreset( &battery.lowAlarm.error );
   vERRORreset( &fuel.hightAlarm.error );
@@ -1104,7 +1168,7 @@ void vENGINEtask ( void* argument )
     fFUELprocess();
     speedVal   = fSPEEDprocess();
     fBATTERYprocess();
-    chargerVal = fCHARGERprocess();
+    //chargerVal = fCHARGERprocess( PERMISSION_DISABLE );
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/
     /*------------------------------------------------------------------*/
@@ -1154,8 +1218,8 @@ void vENGINEtask ( void* argument )
                 oil.preAlarm.error.active          = PERMISSION_DISABLE;
                 battery.hightAlarm.error.active    = PERMISSION_DISABLE;
                 battery.lowAlarm.error.active      = PERMISSION_DISABLE;
-                charger.hightAlarm.error.active    = PERMISSION_DISABLE;
-                charger.hightPreAlarm.error.active = PERMISSION_DISABLE;
+                //charger.error.error.active    = PERMISSION_DISABLE;
+                //charger.hightPreAlarm.error.active = PERMISSION_DISABLE;
                 engine.status                      = ENGINE_STATUS_BUSY_STARTING;
                 commonTimer.delay                  = starter.startDelay;
                 starter.status                     = STARTER_START_DELAY;
@@ -1174,7 +1238,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_READY:
-              starter.startIteration++;
+              starter.iteration++;
               starter.status = STARTER_CRANKING;
               starter.set( RELAY_ON );
               commonTimer.delay = starter.crankingDelay;
@@ -1195,7 +1259,7 @@ void vENGINEtask ( void* argument )
               if ( uLOGICisTimer( commonTimer ) > 0U )
               {
                 starter.set( RELAY_OFF );
-                if ( starter.startIteration < starter.startAttempts )
+                if ( starter.iteration < starter.attempts )
                 {
                   starter.status = STARTER_CRANK_DELAY;
                   commonTimer.delay = starter.crankDelay;
@@ -1232,8 +1296,8 @@ void vENGINEtask ( void* argument )
                 oil.preAlarm.error.active          = PERMISSION_ENABLE;
                 battery.hightAlarm.error.active    = PERMISSION_ENABLE;
                 battery.lowAlarm.error.active      = PERMISSION_ENABLE;
-                charger.hightAlarm.error.active    = PERMISSION_ENABLE;
-                charger.hightPreAlarm.error.active = PERMISSION_ENABLE;
+                //charger.error.error.active    = PERMISSION_ENABLE;
+                //charger.hightPreAlarm.error.active = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS );
                 vLOGICprintStarterStatus( starter.status );
               }
@@ -1275,14 +1339,14 @@ void vENGINEtask ( void* argument )
               starter.status           = STARTER_IDLE;
               engine.cmd               = ENGINE_CMD_NONE;
               engine.startError.active = PERMISSION_ENABLE;
-              starter.startIteration   = 0U;
+              starter.iteration   = 0U;
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_OK:
               engine.status          = ENGINE_STATUS_WORK;
               engine.cmd             = ENGINE_CMD_NONE;
               starter.status         = STARTER_IDLE;
-              starter.startIteration = 0U;
+              starter.iteration = 0U;
               eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
               eDATAAPIfreeData( DATA_API_CMD_SAVE, ENGINE_STARTS_NUMBER_ADR, NULL );
               maintence.oil.error.active  = PERMISSION_ENABLE;

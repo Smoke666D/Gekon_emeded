@@ -784,7 +784,7 @@ USB_STATUS vUSBsaveConfigs ( const USB_REPORT* report )
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
   while ( status == DATA_API_STAT_BUSY )
   {
-    eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL );
+    status = eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL );
   }
   if ( status != DATA_API_STAT_OK )
   {

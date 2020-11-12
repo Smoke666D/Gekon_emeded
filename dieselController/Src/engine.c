@@ -573,14 +573,13 @@ void vENGINEdataInit ( void )
   {
     oil.alarm.error.enb = getBitMap( &oilPressureSetup, OIL_PRESSURE_ALARM_ENB_ADR );
     oil.alarm.level     = getValue( &oilPressureAlarmLevel );
-    oil.alarm.type      = ALARM_LEVEL_HIGHT;
   }
   else
   {
     oil.alarm.error.enb = PERMISSION_ENABLE;
     oil.alarm.level     = dryContactTrigLevel;
-    oil.alarm.type      = ALARM_LEVEL_LOW;
   }
+  oil.alarm.type               = ALARM_LEVEL_LOW;
   oil.alarm.timer.delay        = 0U;
   oil.alarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   oil.alarm.error.event.type   = EVENT_OIL_LOW_PRESSURE;
@@ -595,7 +594,7 @@ void vENGINEdataInit ( void )
   {
     oil.preAlarm.error.enb               = getBitMap( &oilPressureSetup, OIL_PRESSURE_PRE_ALARM_ENB_ADR );
     oil.preAlarm.error.active            = PERMISSION_DISABLE;
-    oil.preAlarm.type                    = ALARM_LEVEL_HIGHT;
+    oil.preAlarm.type                    = ALARM_LEVEL_LOW;
     oil.preAlarm.level                   = getValue( &oilPressurePreAlarmLevel );
     oil.preAlarm.timer.delay             = 0U;
     oil.preAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;

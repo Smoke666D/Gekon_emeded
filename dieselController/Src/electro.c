@@ -117,22 +117,45 @@ fix16_t fELECTROpowerToKWH ( fix16_t power, fix16_t time )
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROpowerUsageProcessing ( void )
 {
-  uint16_t   reactive = 0U; /* W */
-  uint16_t   active   = 0U; /* W */
-  uint16_t   full     = 0U; /* W */
-  if ( uLOGICisTimer( generator.timer ) > 0U )
+  uint16_t   reactive = 0U;  /* kWh */
+  uint16_t   active   = 0U;  /* kWh */
+  uint16_t   full     = 0U;  /* kWh */
+  uint16_t   add      = 0U;  /* kWh */
+  uint8_t    saveFl   = 0U;
+  if ( generator.state == ELECTRO_STATUS_LOAD )
   {
-    vLOGICstartTimer( &generator.timer );
-    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
-    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
-    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
-    reactive += fix16_from_int( fELECTROpowerToKWH( xADCGetGENReactivePower(), powerUsageCalcTimeout ) );
-    active   += fix16_from_int( fELECTROpowerToKWH( xADCGetGENActivePower(),   powerUsageCalcTimeout ) );
-    full     += fix16_from_int( fELECTROpowerToKWH( xADCGetGENRealPower(),     powerUsageCalcTimeout ) );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_REACTIVE_USAGE_ADR, &reactive );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_ACTIVE_USAGE_ADR,   &active   );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR,     &full     );
-    eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+    if ( uLOGICisTimer( generator.timer ) > 0U )
+    {
+      vLOGICstartTimer( &generator.timer );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENReactivePower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        reactive += add;
+        saveFl    = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_REACTIVE_USAGE_ADR, &reactive );
+      }
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENActivePower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        active += add;
+        saveFl  = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_ACTIVE_USAGE_ADR, &active );
+      }
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENRealPower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        full  += add;
+        saveFl = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR, &full );
+      }
+      if ( saveFl > 0U )
+      {
+        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+      }
+    }
   }
   return;
 }

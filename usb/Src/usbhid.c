@@ -132,10 +132,6 @@ void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
     report->data[4U] = ( uint8_t )( record.event.type   );
     report->data[5U] = ( uint8_t )( record.event.action );
   }
-  else
-  {
-    uint8_t i =0;
-  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

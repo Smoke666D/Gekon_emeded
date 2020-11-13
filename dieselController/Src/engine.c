@@ -1224,6 +1224,7 @@ void vENGINEtask ( void* argument )
                 starter.status                     = STARTER_START_DELAY;
                 vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
                 fuel.pump.set( RELAY_ON );
+                idleRelay.set( RELAY_ON );
                 vLOGICstartTimer( &commonTimer );
                 vLOGICprintStarterStatus( starter.status );
               }
@@ -1285,7 +1286,6 @@ void vENGINEtask ( void* argument )
             case STARTER_CONTROL_BLOCK:
               if ( uLOGICisTimer( commonTimer ) > 0U )
               {
-                idleRelay.set( RELAY_ON );
                 commonTimer.delay = starter.idlingDelay;
                 vLOGICstartTimer( &commonTimer );
                 starter.status                     = STARTER_IDLE_WORK;

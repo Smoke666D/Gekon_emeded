@@ -29,8 +29,14 @@ void vDATAAPInotfyAll ( uint32_t value )
   uint8_t i = 0U;
   for ( i=0U; i<NOTIFY_TARGETS_NUMBER; i++ )
   {
-    xTaskNotify( *notifyTargets[i], value, eSetValueWithOverwrite );
+    /*
+    if ( *notifyTargets[i] != NULL )
+    {
+      xTaskNotify( *notifyTargets[i], value, eSetValueWithOverwrite );
+    }
+    */
   }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/

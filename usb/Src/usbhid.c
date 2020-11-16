@@ -14,6 +14,7 @@
 #include "storage.h"
 #include "RTC.h"
 #include "dataAPI.h"
+#include "controller.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -717,6 +718,16 @@ void vUSBparseReport ( USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vUSBsendReport ( USB_REPORT* report )
+{
+  vUSBmakeReport( report );
+  while ( eUSBwrite( report->buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Send chart data via USB
  * input:  configuration register
@@ -738,11 +749,7 @@ void vUSBsendChart ( const USB_REPORT* request )
     if ( report.adr < CHART_NUMBER )
     {
       vUSBChartToReport( request->adr, &report );
-      vUSBmakeReport( &report );
-      while ( eUSBwrite( report.buf ) == USBD_BUSY )
-      {
-        osDelay( 2U );
-      }
+      vUSBsendReport( &report );
       for ( i=0U; i<USB_REPORT_SIZE; i++ )
       {
         outputBuffer[i]=0U;
@@ -750,11 +757,7 @@ void vUSBsendChart ( const USB_REPORT* request )
       for ( i=0U; i<( ( CHART_DOTS_SIZE / USB_DATA_SIZE ) + 1U ); i++ )
       {
         result =  vUSBChartDotsToReport( request->adr, charts[request->adr], &report ) == USB_DONE;
-        vUSBmakeReport( &report );
-        while ( eUSBwrite( report.buf ) == USBD_BUSY )
-        {
-          osDelay( 2U );
-        }
+        vUSBsendReport( &report );
         if ( result == USB_DONE )
         {
           break;
@@ -769,11 +772,7 @@ void vUSBsendChart ( const USB_REPORT* request )
     {
       outputBuffer[i] = 0U;
     }
-    vUSBmakeReport( &report );
-    while ( eUSBwrite( report.buf ) == USBD_BUSY )
-    {
-      osDelay( 2U );
-    }
+    vUSBsendReport( &report );
   }
   return;
 }
@@ -861,13 +860,8 @@ void vUSBsend ( USB_REPORT* request, void ( *callback )( USB_REPORT*, uint16_t )
     {
       outputBuffer[i] = 0U;
     }
-
   }
-  vUSBmakeReport( &report );
-  while ( eUSBwrite( report.buf ) == USBD_BUSY )
-  {
-    osDelay( 2U );
-  }
+  vUSBsendReport( &report );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -884,6 +878,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
     .buf    = outputBuffer,
     .data   = &outputBuffer[USB_DATA_BYTE],
   };
+
   if ( ( usbAuthorization == AUTH_DONE ) || ( report->cmd == USB_AUTHORIZATION ) )
   {
     res = callback( report );
@@ -891,6 +886,12 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
   else
   {
     res = USB_UNAUTHORIZED_ERROR;
+  }
+  if ( ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_IDLE  ) &&
+       ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_ALARM ) &&
+       ( report->cmd != USB_AUTHORIZATION ) )
+  {
+    res = USB_ENGINE_NON_STOP;
   }
   switch ( res )
   {
@@ -912,6 +913,9 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
     case USB_UNAUTHORIZED_ERROR:
       response.stat = USB_STAT_UNAUTHORIZED;
       break;
+    case USB_ENGINE_NON_STOP:
+      response.stat = USB_FORBIDDEN;
+      break;
     default:
       response.stat = USB_BAD_REQ_STAT;
       break;
@@ -920,11 +924,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
   {
     outputBuffer[i] = 0U;
   }
-  vUSBmakeReport( &response );
-  while ( eUSBwrite( response.buf ) == USBD_BUSY )
-  {
-    osDelay( 2U );
-  }
+  vUSBsendReport( &response );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

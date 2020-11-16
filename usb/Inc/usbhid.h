@@ -31,6 +31,7 @@ typedef enum
   USB_ERROR_ADR,          /* Wrong address */
   USB_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
   USB_UNAUTHORIZED_ERROR, /* Non unauthorized request */
+  USB_ENGINE_NON_STOP,    /* Access forbiden */
 } USB_STATUS;
 
 typedef enum
@@ -41,10 +42,11 @@ typedef enum
 
 typedef enum
 {
-  USB_OK_STAT           = 0x01U,     /* 200 analog - all OK                            */
-  USB_BAD_REQ_STAT      = 0x02U,     /* 400 analog - request is distorted              */
-  USB_NON_CON_STAT      = 0x03U,     /* 404 analog - requesting a nonexistent resource */
-  USB_STAT_UNAUTHORIZED = 0x04U,     /* 401 analog - unauthorized request */
+  USB_OK_STAT           = 0x01U,     /* 200 analog - all OK                             */
+  USB_BAD_REQ_STAT      = 0x02U,     /* 400 analog - request is distorted               */
+  USB_NON_CON_STAT      = 0x03U,     /* 404 analog - requesting a nonexistent resource  */
+  USB_STAT_UNAUTHORIZED = 0x04U,     /* 401 analog - unauthorized request               */
+  USB_FORBIDDEN         = 0x05U,     /* 403 analog - machine not stop, access forbidden */
 } USB_REPORT_STATE;
 
 typedef enum
@@ -65,7 +67,6 @@ typedef enum
   USB_PUT_PASSWORD    = 0x0EU,
   USB_AUTHORIZATION   = 0x0FU,
   USB_ERASE_PASSWORD  = 0x10U,
-  USB_FINISH          = 0x11U,
 } USB_REPORT_CMD;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

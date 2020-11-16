@@ -17,7 +17,6 @@
 static ACTIVE_ERROR_LIST  activeErrorList = { 0U };
 static SemaphoreHandle_t  xAELsemaphore   = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-
 /*-------------------------------- Variables ---------------------------------*/
 static fix16_t   hysteresis = 0U;
 /*-------------------------------- Functions ---------------------------------*/
@@ -40,10 +39,11 @@ uint8_t vALARMisWarning ( LOG_RECORD_TYPE record )
 /*----------------------------------------------------------------------------*/
 void vALARMinit ( void )
 {
-  hysteresis    = fix16_div( getValue( &hysteresisLevel ), F16( 100U ) );
+  hysteresis    = fix16_div( getValue( &hysteresisLevel ), fix100U );
   xAELsemaphore = xSemaphoreCreateMutex();
   return;
 }
+/*----------------------------------------------------------------------------*/
 /*
  * API for active error list control
  * input:  cmd    - command for the list
@@ -344,7 +344,8 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       case ALARM_STATUS_RELAX:
         if ( alarm->type == ALARM_LEVEL_LOW )
         {
-          levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
+          levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
+
           if ( val > levelOff )
           {
             vERRORrelax( &alarm->error );
@@ -352,7 +353,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
         }
         else
         {
-          levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
+          levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
           if ( val < levelOff )
           {
             vERRORrelax( &alarm->error );

@@ -238,6 +238,44 @@ fix16_t xADCGetCOSFi()
 
 }
 
+fix16_t xADCGetGENActivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_ACTIVE_POWER];
+}
+
+fix16_t xADCGetGENReactivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_REACTIVE_POWER];
+}
+
+fix16_t xADCGetGENRealPower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_REAL_POWER];
+}
+
+fix16_t xADCGetGENL1RealPower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L1_REAL_POWER];
+}
+
+fix16_t xADCGetGENL2RealPower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L2_REAL_POWER];
+}
+
+fix16_t xADCGetGENL3RealPower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L3_REAL_POWER];
+}
+
+
+
 fix16_t xADCGetREG(uint16_t reg)
 {
   if (reg < NET_FREQ )
@@ -259,7 +297,9 @@ fix16_t xADCGetREG(uint16_t reg)
 uint8_t uADCGetValidDataFlag()
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
+
   return ADC_VALID_DATA;
+
 }
 
 uint8_t uADCGetGenFaseRotation()
@@ -381,14 +421,29 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_L3_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_L3_REAL_POWER]);
 
     //Расчет полной мощности
-    GENERATOR_DATA[GEN_REAL_POWER]= fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],GENERATOR_DATA[GEN_L2_REAL_POWER]);
-    GENERATOR_DATA[GEN_REAL_POWER]= fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],GENERATOR_DATA[GEN_REAL_POWER]);
+
+    GENERATOR_DATA[GEN_REACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L2_REAC_POWER]);
+    GENERATOR_DATA[GEN_REACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_REACTIVE_POWER]);
+
+    GENERATOR_DATA[GEN_ACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L3_APER_POWER],GENERATOR_DATA[GEN_L2_APER_POWER]);
+    GENERATOR_DATA[GEN_ACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L1_APER_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
+
+
+    GENERATOR_DATA[GEN_REAL_POWER]= fix16_add(GENERATOR_DATA[GEN_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
+    temp = fix16_mul(GENERATOR_DATA[GEN_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
+    GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_REAL_POWER],temp);
+    GENERATOR_DATA[GEN_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_REAL_POWER]);
+
+
+
+
   }
 }
 
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
  */
+static uint8_t adc_count =0;
 void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
 
@@ -446,7 +501,14 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           xSOP = fix16_from_int( temp_int );
         }
       }
-      ADC_VALID_DATA =1;
+      if (adc_count==0)
+      {
+        adc_count=1;
+      }
+      else
+      {
+        ADC_VALID_DATA =1;
+      }
       //Переключаем обратно аналоговый коммутатор
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
       break;

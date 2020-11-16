@@ -16,6 +16,7 @@
 #define  GENERATOR_LINE_NUMBER             3U
 #define  MAINS_LINE_NUMBER                 3U
 #define  ELECTRO_COMMAND_QUEUE_LENGTH      10U
+#define  POWER_USAGE_CALC_TIMEOUT          5U     /* sec */
 
 #define  TEMP_PROTECTION_TIME_MULTIPLIER   36U    /* t */
 #define  CUTOUT_PROTECTION_TRIPPING_CURVE  0.001f /* K */
@@ -85,13 +86,14 @@ typedef struct __packed
 {
   getValueCallBack  getVoltage;
   getValueCallBack  getCurrent;
+  getValueCallBack  getPower;
 } ELECTRO_CHANNEL;
 
 typedef struct __packed
 {
   fix16_t active;
   fix16_t reactive;
-  fix16_t apparent;
+  fix16_t full;
 } POWER_TYPE;
 
 typedef struct __packed
@@ -139,6 +141,8 @@ typedef struct __packed
   GENERATOR_RATING   rating;
   ELECTRO_CHANNEL    line[GENERATOR_LINE_NUMBER];
   getValueCallBack   getFreq;
+
+  SYSTEM_TIMER       timer;
   /*---------- ALARMS ----------*/
   ALARM_TYPE         lowVoltageAlarm;
   ALARM_TYPE         lowVoltagePreAlarm;

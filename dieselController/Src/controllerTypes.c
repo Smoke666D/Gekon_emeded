@@ -16,6 +16,7 @@ static StaticQueue_t      xEventQueue;
 static QueueHandle_t      pEventQueue;
 static SemaphoreHandle_t  xSYSTIMERsemaphore = NULL;
 /*--------------------------------- Constant ---------------------------------*/
+const fix16_t fix100U = F16( 100U );
 const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",
     "Предупреждение",
@@ -203,7 +204,7 @@ void vLOGICtimerHandler ( void )
 TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
 {
   TIMER_ERROR stat = TIMER_OK;
-  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, F16( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
+  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_to_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
   uint8_t     i    = 0U;
 
   if ( activeNumber > 2 )

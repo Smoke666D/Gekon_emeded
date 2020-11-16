@@ -16,7 +16,6 @@
 #include "adc.h"
 #include "alarm.h"
 /*---------------------------------- Define ----------------------------------*/
-
 /*-------------------------------- Structures --------------------------------*/
 static GENERATOR_TYPE      generator            = { 0U };
 static MAINS_TYPE          mains                = { 0U } ;
@@ -28,6 +27,8 @@ static const fix16_t tempProtectionTimeMult    = F16( TEMP_PROTECTION_TIME_MULTI
 static const fix16_t shortCircuitTrippingCurve = F16( CUTOUT_PROTECTION_TRIPPING_CURVE );
 static const fix16_t shortCircuitConstant      = F16( SHORT_CIRCUIT_CONSTANT );          /* Short circuit protection constant */
 static const fix16_t shortCircuitCutoutPower   = F16( CUTOUT_POWER );
+static const fix16_t powerUsageCalcTimeout     = F16( POWER_USAGE_CALC_TIMEOUT );
+static const fix16_t powerWsTokWs              = F16( 3600000U );
 /*-------------------------------- Variables ---------------------------------*/
 static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U };
 static fix16_t         maxGeneratorVolage                                 = 0U;
@@ -98,6 +99,61 @@ void vELECTROalarmCheck ( ALARM_TYPE* alarm, fix16_t* value, uint8_t length )
     else
     {
       vALARMcheck( alarm, fELECTROgetMax( value, length ) );
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/* Power calculation
+ * input:  power in W
+ *         time  in sec
+ * output: usage in kWh
+ */
+fix16_t fELECTROpowerToKWH ( fix16_t power, fix16_t time )
+{
+  return fix16_div( fix16_mul( power, time ), powerWsTokWs );
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vELECTROpowerUsageProcessing ( void )
+{
+  uint16_t   reactive = 0U;  /* kWh */
+  uint16_t   active   = 0U;  /* kWh */
+  uint16_t   full     = 0U;  /* kWh */
+  uint16_t   add      = 0U;  /* kWh */
+  uint8_t    saveFl   = 0U;
+  if ( generator.state == ELECTRO_STATUS_LOAD )
+  {
+    if ( uLOGICisTimer( generator.timer ) > 0U )
+    {
+      vLOGICstartTimer( &generator.timer );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENReactivePower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        reactive += add;
+        saveFl    = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_REACTIVE_USAGE_ADR, &reactive );
+      }
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENActivePower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        active += add;
+        saveFl  = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_ACTIVE_USAGE_ADR, &active );
+      }
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENRealPower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        full  += add;
+        saveFl = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR, &full );
+      }
+      if ( saveFl > 0U )
+      {
+        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+      }
     }
   }
   return;
@@ -279,7 +335,7 @@ fix16_t fGENERATORprocess ( void )
   {
     voltage[i] = generator.line[i].getVoltage();
     current[i] = generator.line[i].getCurrent();
-    //power[i]   = fix16_mul( fix16_mul( voltage[i], current[i] ), generator.rating.cosFi );
+    power[i]   = generator.line[i].getPower();
   }
   freq = generator.getFreq();
   maxCurrent = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
@@ -300,6 +356,8 @@ fix16_t fGENERATORprocess ( void )
   vELECTROalarmCheck( &generator.overloadAlarm, power, MAINS_LINE_NUMBER );
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );
 
+  vELECTROpowerUsageProcessing();
+
   return fELECTROgetMax( voltage, MAINS_LINE_NUMBER );
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -313,11 +371,14 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   electro.timer.id    = 0U;
   electro.timer.delay = getValue( &timerTransferDelay );
 
+  generator.timer.delay = powerUsageCalcTimeout;
+  generator.timer.id    = LOGIC_DEFAULT_TIMER_ID;
+
   generator.enb                    = getBitMap( &genSetup, GEN_POWER_GENERATOR_CONTROL_ENB_ADR );
   generator.rating.power.active    = getValue( &genRatedActivePowerLevel );
   generator.rating.power.reactive  = getValue( &genRatedReactivePowerLevel );
-  generator.rating.power.apparent  = getValue( &genRatedApparentPowerLevel );
-  generator.rating.cosFi           = fix16_div( generator.rating.power.active, generator.rating.power.apparent );
+  generator.rating.power.full      = getValue( &genRatedApparentPowerLevel );
+  generator.rating.cosFi           = fix16_div( generator.rating.power.active, generator.rating.power.full );
   generator.rating.freq            = getValue( &genRatedFrequencyLevel );
   generator.rating.current.primary = getValue( &genCurrentPrimaryLevel );
   generator.rating.current.nominal = getValue( &genCurrentFullLoadRatingLevel );
@@ -448,12 +509,12 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   /*----------------------------------------------------------------------------*/
   generator.currentAlarm.state               = ELECTRO_CURRENT_STATUS_IDLE;
   generator.currentAlarm.over.current        = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), F16( 100U ) ) );
+                                                          fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
   generator.currentAlarm.over.delay          = 0U;
   generator.currentAlarm.over.event.type     = EVENT_OVER_CURRENT;
   generator.currentAlarm.over.event.action   = ACTION_PLAN_STOP;
   generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentCutoffLevel ), F16( 100U ) ) );
+                                                          fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
   generator.currentAlarm.cutout.delay        = 0U;
   generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
   generator.currentAlarm.cutout.event.action = ACTION_PLAN_STOP;
@@ -480,10 +541,13 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.getFreq             = xADCGetGENLFreq;
   generator.line[0U].getVoltage = xADCGetGENL1;
   generator.line[0U].getCurrent = xADCGetGENL1Cur;
+  generator.line[0U].getPower   = xADCGetGENL1RealPower;
   generator.line[1U].getVoltage = xADCGetGENL2;
   generator.line[1U].getCurrent = xADCGetGENL2Cur;
+  generator.line[1U].getPower   = xADCGetGENL2RealPower;
   generator.line[2U].getVoltage = xADCGetGENL3;
   generator.line[2U].getCurrent = xADCGetGENL3Cur;
+  generator.line[2U].getPower   = xADCGetGENL3RealPower;
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
@@ -652,12 +716,10 @@ void vELECTROtask ( void* argument )
   for(;;)
   {
     /*-------------------- Read system notification --------------------*/
-    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT ) > 0U )
     {
-      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
-      {
-        vELECTROdataInit();
-      }
+      vELECTROdataInit();
+      xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT );
     }
     /*---------------------- Data input processing ---------------------*/
     maxGeneratorVolage = fGENERATORprocess();

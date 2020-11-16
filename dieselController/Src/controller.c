@@ -426,6 +426,11 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
   return;
 }
+
+CONTROLLER_STATE eCONTROLLERgetStatus ( void )
+{
+  return controller.state;
+}
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERtask ( void* argument )
 {
@@ -447,17 +452,19 @@ void vCONTROLLERtask ( void* argument )
     generatorState = eELECTROgetGeneratorStatus();
     mainsState     = eELECTROgetMainsStatus();
     /*--------------------------------------------------------------------------------------------*/
-    /*--------------------------------- KEYBOARD & SYSTEM INPUT -----------------------------------*/
+    /*--------------------------------- KEYBOARD & SYSTEM INPUT ----------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
+
+    /*--------------------------------------- SYSTEM INPUT ---------------------------------------*/
+    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT ) > 0U )
+    {
+      vCONTROLLERdataInit();
+      vFPOdataInit();
+      xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT );
+    }
+    /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/
     if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
     {
-    /*--------------------------------------- SYSTEM INPUT ----------------------------------------*/
-      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
-      {
-        vCONTROLLERdataInit();
-        vFPOdataInit();
-      }
-    /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/
       inputKeyboardCommand = ( uint8_t )( inputNotifi & HMI_CMD_MASK );
       switch ( inputKeyboardCommand )
       {

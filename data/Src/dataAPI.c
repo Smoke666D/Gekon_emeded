@@ -13,28 +13,40 @@
 #include "version.h"
 #include "stdio.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static SemaphoreHandle_t xSemaphore = NULL;
+static SemaphoreHandle_t  xSemaphore     = NULL;
+static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static TaskHandle_t* notifyTargets[NOTIFY_TARGETS_NUMBER] = { NULL };
-static uint8_t       initDone                             = 0U;
-static uint8_t       flTakeSource                         = 0U;
+static uint8_t initDone     = 0U;
+static uint8_t flTakeSource = 0U;
+/*------------------------ Define -------------------------------------------------------------------*/
+
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vDATAAPInotfyAll ( uint32_t value )
+void vDATAAPIsendEventAll ( DATA_API_REINIT message )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<NOTIFY_TARGETS_NUMBER; i++ )
+  uint32_t mask = 0U;
+  switch ( message )
   {
-    xTaskNotify( *notifyTargets[i], value, eSetValueWithOverwrite );
+    case DATA_API_REINIT_CONFIG:
+      mask = DATA_API_FLAG_LCD_TASK_CONFIG_REINIT | DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT | DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT | DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT, DATA_API_FLAG_FPI_TASK_CONFIG_REINIT;
+      xEventGroupSetBits( xDataApiEvents, mask );
+      break;
+    default:
+      break;
   }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+EventGroupHandle_t xDATAAPIgetEventGroup ( void )
+{
+  return xDataApiEvents;
+}
 /*
  * All data initialization
  * input:  none
@@ -253,14 +265,10 @@ void vDATAAPIprintMemoryMap ( void )
  * input:  array of task for notifications
  * output: none
  */
-void vDATAAPIinit ( TaskHandle_t* targets )
+void vDATAAPIinit ( void )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<NOTIFY_TARGETS_NUMBER; i++ )
-  {
-    notifyTargets[i] = targets[i];
-  }
-  xSemaphore = xSemaphoreCreateMutex();
+  xSemaphore     = xSemaphoreCreateMutex();
+  xDataApiEvents = xEventGroupCreate();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -331,7 +339,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
             }
             else
             {
-              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -545,7 +553,7 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             }
             else
             {
-              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+              vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -1098,7 +1106,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             }
             else
             {
-              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+              vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
             }
             xSemaphoreGive( xSemaphore );
           }

@@ -16,7 +16,6 @@
 #include "adc.h"
 #include "alarm.h"
 /*---------------------------------- Define ----------------------------------*/
-
 /*-------------------------------- Structures --------------------------------*/
 static GENERATOR_TYPE      generator            = { 0U };
 static MAINS_TYPE          mains                = { 0U } ;
@@ -717,12 +716,10 @@ void vELECTROtask ( void* argument )
   for(;;)
   {
     /*-------------------- Read system notification --------------------*/
-    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT ) > 0U )
     {
-      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
-      {
-        vELECTROdataInit();
-      }
+      vELECTROdataInit();
+      xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT );
     }
     /*---------------------- Data input processing ---------------------*/
     maxGeneratorVolage = fGENERATORprocess();

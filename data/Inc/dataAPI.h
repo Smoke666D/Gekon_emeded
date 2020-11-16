@@ -12,6 +12,7 @@
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "event_groups.h"
 #include "EEPROM.h"
 #include "freeData.h"
 #include "config.h"
@@ -52,19 +53,20 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 
 /*------------------------ Functions -----------------------------------*/
-void            vDATAAPIdataInit ( void );
-void            vDATAAPIinit ( TaskHandle_t* targets );
-DATA_API_STATUS eDATAAPIisInit ( void );
-DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
-DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib );
-DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units );
-DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart );
-DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data );
-DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* password );
-DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length );
-DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record );
-DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer );
-void            vDATAAPIprintMemoryMap ( void );
-void            vDATAprintSerialNumber ( void );
+void               vDATAAPIdataInit ( void );
+void               vDATAAPIinit ( void );
+DATA_API_STATUS    eDATAAPIisInit ( void );
+DATA_API_STATUS    eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
+DATA_API_STATUS    eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib );
+DATA_API_STATUS    eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units );
+DATA_API_STATUS    eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart );
+DATA_API_STATUS    eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data );
+DATA_API_STATUS    eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* password );
+DATA_API_STATUS    eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length );
+DATA_API_STATUS    eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record );
+DATA_API_STATUS    eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer );
+void               vDATAAPIprintMemoryMap ( void );
+void               vDATAprintSerialNumber ( void );
+EventGroupHandle_t xDATAAPIgetEventGroup ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAAPI_H_ */

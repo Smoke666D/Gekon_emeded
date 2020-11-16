@@ -65,6 +65,7 @@ typedef enum
   USB_PUT_PASSWORD    = 0x0EU,
   USB_AUTHORIZATION   = 0x0FU,
   USB_ERASE_PASSWORD  = 0x10U,
+  USB_FINISH          = 0x11U,
 } USB_REPORT_CMD;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

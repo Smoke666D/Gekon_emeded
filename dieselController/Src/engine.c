@@ -1067,12 +1067,10 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     /*-------------------- Read system notification --------------------*/
     /*------------------------------------------------------------------*/
-    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT ) > 0U )
     {
-      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
-      {
-        vENGINEdataInit();
-      }
+      vENGINEdataInit();
+      xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT );
     }
     /*------------------------------------------------------------------*/
     /*----------------------- Read input command -----------------------*/

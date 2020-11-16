@@ -20,7 +20,7 @@ static EventGroupHandle_t xDataApiEvents = NULL;
 static uint8_t initDone     = 0U;
 static uint8_t flTakeSource = 0U;
 /*------------------------ Define -------------------------------------------------------------------*/
-#define DATA_API_FLAG_MASK_CONFIG_REINIT ( ( EventBits_t )( DATA_API_FLAG_LCD_TASK_CONFIG_REINIT | DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT | DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT | DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT, DATA_API_FLAG_FPI_TASK_CONFIG_REINIT ) )
+
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -28,12 +28,12 @@ static uint8_t flTakeSource = 0U;
 /*---------------------------------------------------------------------------------------------------*/
 void vDATAAPIsendEventAll ( DATA_API_REINIT message )
 {
-  EventBits_t mask = DATA_API_FLAG_MASK_CONFIG_REINIT;
+  uint32_t mask = 0U;
   switch ( message )
   {
     case DATA_API_REINIT_CONFIG:
+      mask = DATA_API_FLAG_LCD_TASK_CONFIG_REINIT | DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT | DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT | DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT, DATA_API_FLAG_FPI_TASK_CONFIG_REINIT;
       xEventGroupSetBits( xDataApiEvents, mask );
-      xEventGroupSetBits( xDataApiEvents, ( EventBits_t )DATA_API_FLAG_LCD_TASK_CONFIG_REINIT  );
       break;
     default:
       break;

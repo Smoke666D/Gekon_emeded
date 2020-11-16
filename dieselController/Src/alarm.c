@@ -344,7 +344,8 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       case ALARM_STATUS_RELAX:
         if ( alarm->type == ALARM_LEVEL_LOW )
         {
-          levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
+          levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
+
           if ( val > levelOff )
           {
             vERRORrelax( &alarm->error );
@@ -352,7 +353,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
         }
         else
         {
-          levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
+          levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
           if ( val < levelOff )
           {
             vERRORrelax( &alarm->error );

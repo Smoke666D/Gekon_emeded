@@ -16,7 +16,6 @@
 #include "adc.h"
 #include "alarm.h"
 /*---------------------------------- Define ----------------------------------*/
-
 /*-------------------------------- Structures --------------------------------*/
 static GENERATOR_TYPE      generator            = { 0U };
 static MAINS_TYPE          mains                = { 0U } ;
@@ -117,22 +116,45 @@ fix16_t fELECTROpowerToKWH ( fix16_t power, fix16_t time )
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROpowerUsageProcessing ( void )
 {
-  uint16_t   reactive = 0U; /* W */
-  uint16_t   active   = 0U; /* W */
-  uint16_t   full     = 0U; /* W */
-  if ( uLOGICisTimer( generator.timer ) > 0U )
+  uint16_t   reactive = 0U;  /* kWh */
+  uint16_t   active   = 0U;  /* kWh */
+  uint16_t   full     = 0U;  /* kWh */
+  uint16_t   add      = 0U;  /* kWh */
+  uint8_t    saveFl   = 0U;
+  if ( generator.state == ELECTRO_STATUS_LOAD )
   {
-    vLOGICstartTimer( &generator.timer );
-    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
-    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
-    eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
-    reactive += fix16_from_int( fELECTROpowerToKWH( xADCGetGENReactivePower(), powerUsageCalcTimeout ) );
-    active   += fix16_from_int( fELECTROpowerToKWH( xADCGetGENActivePower(),   powerUsageCalcTimeout ) );
-    full     += fix16_from_int( fELECTROpowerToKWH( xADCGetGENRealPower(),     powerUsageCalcTimeout ) );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_REACTIVE_USAGE_ADR, &reactive );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_ACTIVE_USAGE_ADR,   &active   );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR,     &full     );
-    eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+    if ( uLOGICisTimer( generator.timer ) > 0U )
+    {
+      vLOGICstartTimer( &generator.timer );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
+      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENReactivePower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        reactive += add;
+        saveFl    = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_REACTIVE_USAGE_ADR, &reactive );
+      }
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENActivePower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        active += add;
+        saveFl  = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_ACTIVE_USAGE_ADR, &active );
+      }
+      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENRealPower(), powerUsageCalcTimeout ) );
+      if ( add > 0U )
+      {
+        full  += add;
+        saveFl = 1U;
+        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR, &full );
+      }
+      if ( saveFl > 0U )
+      {
+        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+      }
+    }
   }
   return;
 }
@@ -313,7 +335,7 @@ fix16_t fGENERATORprocess ( void )
   {
     voltage[i] = generator.line[i].getVoltage();
     current[i] = generator.line[i].getCurrent();
-    //power[i]   = fix16_mul( fix16_mul( voltage[i], current[i] ), generator.rating.cosFi );
+    power[i]   = generator.line[i].getPower();
   }
   freq = generator.getFreq();
   maxCurrent = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
@@ -519,10 +541,13 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.getFreq             = xADCGetGENLFreq;
   generator.line[0U].getVoltage = xADCGetGENL1;
   generator.line[0U].getCurrent = xADCGetGENL1Cur;
+  generator.line[0U].getPower   = xADCGetGENL1RealPower;
   generator.line[1U].getVoltage = xADCGetGENL2;
   generator.line[1U].getCurrent = xADCGetGENL2Cur;
+  generator.line[1U].getPower   = xADCGetGENL2RealPower;
   generator.line[2U].getVoltage = xADCGetGENL3;
   generator.line[2U].getCurrent = xADCGetGENL3Cur;
+  generator.line[2U].getPower   = xADCGetGENL3RealPower;
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
@@ -691,12 +716,10 @@ void vELECTROtask ( void* argument )
   for(;;)
   {
     /*-------------------- Read system notification --------------------*/
-    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT ) > 0U )
     {
-      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
-      {
-        vELECTROdataInit();
-      }
+      vELECTROdataInit();
+      xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT );
     }
     /*---------------------- Data input processing ---------------------*/
     maxGeneratorVolage = fGENERATORprocess();

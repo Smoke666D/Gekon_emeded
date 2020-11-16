@@ -287,7 +287,7 @@ int main(void)
   vCHARTinitCharts();                                           /* Charts data initialization */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
+  vDATAAPIinit();                                               /* Data API initialization */
   /*--------------------------------------------------------------------------*/
   vSYSSerial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */

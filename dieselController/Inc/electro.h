@@ -86,6 +86,7 @@ typedef struct __packed
 {
   getValueCallBack  getVoltage;
   getValueCallBack  getCurrent;
+  getValueCallBack  getPower;
 } ELECTRO_CHANNEL;
 
 typedef struct __packed

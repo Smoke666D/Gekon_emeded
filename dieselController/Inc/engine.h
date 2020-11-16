@@ -19,6 +19,8 @@
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
 #define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
 #define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE - 200U ) )
+#define  CHARGER_IMPULSE_DURATION       5U                                          /* sec */
+#define  CHARGER_ATTEMPTS_NUMBER        5U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -97,6 +99,16 @@ typedef enum
   MAINTENCE_STATUS_RUN,
   MAINTENCE_STATUS_CHECK,
 } MAINTENCE_STATUS;
+
+typedef enum
+{
+  CHARGER_STATUS_IDLE,
+  CHARGER_STATUS_STARTUP,
+  CHARGER_STATUS_IMPULSE,
+  CHARGER_STATUS_DELAY,
+  CHARGER_STATUS_MEASURING,
+  CHARGER_STATUS_ERROR,
+} CHARGER_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
@@ -154,9 +166,16 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  PERMISSION        enb;
+  CHARGER_STATUS    status;
+  uint8_t           attempts;
+  uint8_t           iteration;
   getValueCallBack  get;
-  ALARM_TYPE        hightAlarm;
-  ALARM_TYPE        hightPreAlarm;
+  RELAY_DEVICE      relay;
+  SYSTEM_TIMER      timer;
+  fix16_t           setpoint;
+  ERROR_TYPE        error;
+  ALARM_TYPE        warning;
 } CHARGER_TYPE;
 
 typedef struct __packed
@@ -193,8 +212,8 @@ typedef struct __packed
   fix16_t                nominalDelay;    /* sec */
   fix16_t                warmingDelay;    /* sec */
   /* Counters */
-  uint8_t                startAttempts;
-  uint8_t                startIteration;
+  uint8_t                attempts;
+  uint8_t                iteration;
   /* Structures */
   START_CRITERIONS_TYPE  startCrit;
   /* Status */

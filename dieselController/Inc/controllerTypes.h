@@ -49,8 +49,17 @@ extern const fix16_t fix100U;
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  DATA_API_MESSAGE_REINIT = 0x00010000,
-} DATA_API_MESSAGE;
+  DATA_API_REINIT_CONFIG,
+} DATA_API_REINIT;
+
+typedef enum
+{
+  DATA_API_FLAG_LCD_TASK_CONFIG_REINIT        = 0x01,
+  DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT     = 0x02,
+  DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT = 0x04,
+  DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT    = 0x08,
+  DATA_API_FLAG_FPI_TASK_CONFIG_REINIT        = 0x10,
+} DATA_API_EVENT_FLAG;
 
 typedef enum
 {

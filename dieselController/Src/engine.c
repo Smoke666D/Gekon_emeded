@@ -1542,8 +1542,14 @@ void vENGINEtask ( void* argument )
         vFPOsetReadyToStart( RELAY_OFF );
         engine.status = ENGINE_STATUS_EMERGENCY_STOP;
         engine.cmd = ENGINE_CMD_NONE;
-        engine.startError.active = PERMISSION_DISABLE;
-        engine.stopError.active  = PERMISSION_ENABLE;
+        engine.startError.active  = PERMISSION_DISABLE;
+        engine.stopError.active   = PERMISSION_ENABLE;
+        oil.alarm.error.active    = PERMISSION_DISABLE;
+        oil.preAlarm.error.active = PERMISSION_DISABLE;
+
+        vLOGICresetTimer( commonTimer );
+        maintence.timer.id        = LOGIC_DEFAULT_TIMER_ID;
+        commonTimer.id            = LOGIC_DEFAULT_TIMER_ID;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/

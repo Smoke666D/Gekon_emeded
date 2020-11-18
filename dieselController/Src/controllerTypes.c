@@ -207,10 +207,6 @@ TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
   uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_from_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
   uint8_t     i    = 0U;
 
-  if ( activeNumber > 2 )
-  {
-    i = 0U;
-  }
   if ( activeNumber < LOGIC_COUNTERS_SIZE )
   {
     for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )

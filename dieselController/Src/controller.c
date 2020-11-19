@@ -460,6 +460,7 @@ void vCONTROLLERtask ( void* argument )
     {
       vCONTROLLERdataInit();
       vFPOdataInit();
+      vALARMreInit();
       xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT );
     }
     /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/

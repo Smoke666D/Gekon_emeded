@@ -33,6 +33,7 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
 void              vALARMinit ( void );
+void              vALARMreInit ( void );
 void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
 void              vERRORreset ( ERROR_TYPE* error );
 void              vERRORcheck ( ERROR_TYPE* error, uint8_t flag );

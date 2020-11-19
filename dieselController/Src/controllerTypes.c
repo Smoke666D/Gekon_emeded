@@ -352,6 +352,16 @@ void vRELAYautoProces ( RELAY_AUTO_DEVICE* device, fix16_t value )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vRELAYset ( RELAY_DEVICE* relay, RELAY_STATUS status )
+{
+  if ( relay->enb == PERMISSION_ENABLE )
+  {
+    relay->set( status );
+    relay->status = status;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device )
 {
   if ( device->triger == 0U )

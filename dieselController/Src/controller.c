@@ -426,10 +426,15 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 CONTROLLER_STATE eCONTROLLERgetStatus ( void )
 {
   return controller.state;
+}
+/*----------------------------------------------------------------------------*/
+CONTROLLER_MODE eCONTROLLERgetMode ( void )
+{
+  return controller.mode;
 }
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERtask ( void* argument )

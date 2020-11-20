@@ -567,7 +567,7 @@ USB_STATUS eUSBReportToChart ( const USB_REPORT* report )
     }
     else
     {
-      res = USB_ERROR_LENGTH;
+      res = USB_DONE;
     }
   /*-------------------------------------------*/
   }
@@ -887,12 +887,21 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
   {
     res = USB_UNAUTHORIZED_ERROR;
   }
-  if ( ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_IDLE  ) &&
-       ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_ALARM ) &&
-       ( eCONTROLLERgetMode()   != CONTROLLER_MODE_MANUAL  ) &&
-       ( report->cmd != USB_AUTHORIZATION ) )
+
+  if ( report->cmd != USB_AUTHORIZATION )
   {
-    res = USB_ENGINE_NON_STOP;
+    if ( eCONTROLLERgetMode()   == CONTROLLER_MODE_MANUAL )
+    {
+      if ( ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_IDLE  ) &&
+           ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_ALARM ) )
+      {
+        res = USB_ENGINE_NON_STOP;
+      }
+    }
+    else
+    {
+      res = USB_ENGINE_NON_STOP;
+    }
   }
   switch ( res )
   {

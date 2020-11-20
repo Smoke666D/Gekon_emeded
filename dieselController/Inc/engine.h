@@ -17,7 +17,7 @@
 /*------------------------ Define --------------------------------------*/
 #define  ENGINE_EVENT_QUEUE_LENGTH      16U
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
-#define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
+#define  ENGINE_OIL_PRESSURE_TRESH_HOLD 6000U
 #define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE - 200U ) )
 #define  CHARGER_IMPULSE_DURATION       5U                                          /* sec */
 #define  CHARGER_ATTEMPTS_NUMBER        5U
@@ -124,6 +124,7 @@ typedef struct __packed
 typedef struct __packed
 {
   SENSOR      pressure;
+  fix16_t     trashhold;
   ALARM_TYPE  alarm;
   ALARM_TYPE  preAlarm;
 } OIL_TYPE;

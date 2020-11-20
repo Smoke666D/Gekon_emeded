@@ -709,6 +709,11 @@ TRIGGER_STATE eELECTROgetMainsErrorFlag ( void )
   return eERRORisActive( &mains.autoStart );
 }
 /*---------------------------------------------------------------------------------------------------*/
+ELECTRO_PROCESS_STATUS eELECTROgetStatus ( void )
+{
+  return electro.state;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vELECTROtask ( void* argument )
 {
   ELECTRO_COMMAND inputCmd    = ELECTRO_CMD_NONE;

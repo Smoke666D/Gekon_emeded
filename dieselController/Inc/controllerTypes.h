@@ -110,6 +110,8 @@ typedef enum
   EVENT_ENGINE_STOP,                /* 33 NONE */
   EVENT_MAINS_OK,                   /* 34 AUTO_STOP */
   EVENT_MAINS_FAIL,                 /* 35 AUTO_START*/
+  EVENT_INTERRUPTED_START,          /* 36 EMERGENCY_STOP */
+  EVENT_INTERRUPTED_STOP,           /* 37 EMERGENCY_STOP */
 } SYSTEM_EVENT_TYPE;
 
 typedef enum
@@ -132,6 +134,7 @@ typedef enum
   HMI_CMD_AUTO   = 0x04U,
   HMI_CMD_LOAD   = 0x08U,
   HMI_CMD_MANUAL = 0x10U,
+  HMI_CMD_ACK    = 0x20U,
 } HMI_COMMAND;
 
 typedef enum

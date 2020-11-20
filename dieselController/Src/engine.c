@@ -41,6 +41,7 @@ static QueueHandle_t         pEngineCommandQueue = NULL;
 static const fix16_t fix60                  = F16( 60U );
 static const fix16_t dryContactTrigLevel    = F16( 0x7FFFU );
 static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION );
+static const fix16_t oilTrashhold           = F16( 0.015 );
 
 #if ( DEBUG_SERIAL_STATUS > 0U )
   static const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTIVE", "CURRENT" };
@@ -351,10 +352,14 @@ void vENGINEmileageProcess ( void )
         break;
     }
   }
-  else
+  else if ( maintence.status != MAINTENCE_STATUS_STOP )
   {
     maintence.status = MAINTENCE_STATUS_STOP;
     vLOGICresetTimer( maintence.timer );
+  }
+  else
+  {
+
   }
   return;
 }
@@ -411,7 +416,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
 uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, fix16_t speed  )
 {
   uint8_t res = 0U;
-  if ( ( pressure <  ENGINE_OIL_PRESSURE_TRESH_HOLD ) &&
+  if ( ( pressure <  oil.trashhold ) &&
        ( speed    == 0U                             ) &&
        ( freq     == 0U                             ) &&
        ( voltage  == 0U                             ) )
@@ -550,6 +555,7 @@ void vLOGICprintPlanStopStatus ( PLAN_STOP_STATUS status )
 /*----------------------------------------------------------------------------*/
 void vENGINEdataInit ( void )
 {
+  oil.trashhold                          = fix16_mul( getMaxValue( &oilPressureAlarmLevel ), oilTrashhold );
   oil.pressure.type                      = getBitMap( &oilPressureSetup, OIL_PRESSURE_SENSOR_TYPE_ADR );
   oil.pressure.chart                     = &oilSensorChart;
   oil.pressure.get                       = xADCGetSOP;
@@ -905,14 +911,7 @@ void vENGINEdataInit ( void )
   stopSolenoid.triger       = TRIGGER_IDLE;
   stopSolenoid.status       = RELAY_DELAY_IDLE;
   /*--------------------------------------------------------------*/
-  if ( starter.idlingDelay == 0U )
-  {
-    idleRelay.enb = PERMISSION_DISABLE;
-  }
-  else
-  {
-    idleRelay.enb = uFPOisEnable( FPO_FUN_IDLING );
-  }
+  idleRelay.enb    = uFPOisEnable( FPO_FUN_IDLING );
   idleRelay.set    = vFPOsetIdle;
   idleRelay.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
@@ -982,11 +981,6 @@ void vENGINEdataInit ( void )
 
   return;
 }
-
-
-
-
-
 
 void vENGINEdataReInit ( void )
 {
@@ -1092,14 +1086,7 @@ void vENGINEdataReInit ( void )
   stopSolenoid.relay.enb    = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
   stopSolenoid.timer.delay  = getValue( configReg[TIMER_SOLENOID_HOLD_ADR] );
   /*--------------------------------------------------------------*/
-  if ( starter.idlingDelay == 0U )
-  {
-    idleRelay.enb = PERMISSION_DISABLE;
-  }
-  else
-  {
-    idleRelay.enb = uFPOisEnable( FPO_FUN_IDLING );
-  }
+  idleRelay.enb = uFPOisEnable( FPO_FUN_IDLING );
   /*--------------------------------------------------------------*/
   maintence.oil.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
   maintence.oil.level            = getValue( &maintenanceAlarmOilTime );
@@ -1385,7 +1372,10 @@ void vENGINEtask ( void* argument )
                 starter.status                     = STARTER_START_DELAY;
                 vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
                 vRELAYset( &fuel.pump, RELAY_ON );
-                vRELAYset( &idleRelay, RELAY_ON );
+                if ( starter.idlingDelay != 0U )
+                {
+                  vRELAYset( &idleRelay, RELAY_ON );
+                }
                 vLOGICstartTimer( &commonTimer );
                 vLOGICprintStarterStatus( starter.status );
               }
@@ -1559,7 +1549,10 @@ void vENGINEtask ( void* argument )
             case STOP_WAIT_ELECTRO:
               if ( eELECTROgetAlarmStatus() == ELECTRO_ALARM_STATUS_WORK_ON_IDLE )
               {
-                vRELAYset( &idleRelay, RELAY_ON );
+                if ( planStop.coolingIdleDelay != 0U )
+                {
+                  vRELAYset( &idleRelay, RELAY_ON );
+                }
                 commonTimer.delay           = planStop.coolingIdleDelay;
                 speed.lowAlarm.error.active = PERMISSION_DISABLE;
                 planStop.status             = STOP_IDLE_COOLDOWN;

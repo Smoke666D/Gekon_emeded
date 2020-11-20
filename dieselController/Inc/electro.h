@@ -184,13 +184,14 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
-void                 vELECTROinit ( void );
-ELECTRO_STATUS       eELECTROgetGeneratorStatus ( void );
-ELECTRO_STATUS       eELECTROgetMainsStatus ( void );
-ELECTRO_ALARM_STATUS eELECTROgetAlarmStatus ( void );
-QueueHandle_t        pELECTROgetCommandQueue ( void );
-void                 vELECTROsendCmd ( ELECTRO_COMMAND cmd );
-fix16_t              fELECTROgetMaxGenVoltage ( void );
-TRIGGER_STATE        eELECTROgetMainsErrorFlag ( void );
+void                   vELECTROinit ( void );
+ELECTRO_STATUS         eELECTROgetGeneratorStatus ( void );
+ELECTRO_STATUS         eELECTROgetMainsStatus ( void );
+ELECTRO_PROCESS_STATUS eELECTROgetStatus( void );
+ELECTRO_ALARM_STATUS   eELECTROgetAlarmStatus ( void );
+QueueHandle_t          pELECTROgetCommandQueue ( void );
+void                   vELECTROsendCmd ( ELECTRO_COMMAND cmd );
+fix16_t                fELECTROgetMaxGenVoltage ( void );
+TRIGGER_STATE          eELECTROgetMainsErrorFlag ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

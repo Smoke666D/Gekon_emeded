@@ -350,7 +350,6 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
 void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState )
 {
   if ( ( engineState      == ENGINE_STATUS_WORK      ) &&
-       ( generatorState   == ELECTRO_STATUS_LOAD     ) &&
        ( controller.state == CONTROLLER_STATUS_START ) )
   {
     controller.state = CONTROLLER_STATUS_WORK;
@@ -401,6 +400,25 @@ void vCONTROLLERcheckAutoOn ( ENGINE_STATUS engineState )
     {
       controller.state = CONTROLLER_STATUS_PLAN_STOP;
     }
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERresetAlarm ( void )
+{
+  if ( ( controller.state  == CONTROLLER_STATUS_ALARM ) ||
+       ( controller.state  == CONTROLLER_STATUS_IDLE  ) )
+  {
+    controller.state = CONTROLLER_STATUS_IDLE;
+    vENGINEsendCmd( ENGINE_CMD_RESET_TO_IDLE );
+    vFPIreset();
+    vFPOsetAlarm( RELAY_OFF );
+    vFPOsetMainsFail( RELAY_OFF );
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
+    controller.mode = CONTROLLER_MODE_MANUAL;
+    vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
+    vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
+    vCONTROLLERprintStatus();
   }
   return;
 }
@@ -533,17 +551,29 @@ void vCONTROLLERtask ( void* argument )
             {
               switch ( controller.state )
               {
+                case CONTROLLER_STATUS_IDLE:
+                  vCONTROLLERresetAlarm();
+                  break;
+                case CONTROLLER_STATUS_ALARM:
+                  vCONTROLLERresetAlarm();
+                  break;
                 case CONTROLLER_STATUS_WORK:
-                  controller.state = CONTROLLER_STATUS_PLAN_STOP;
-                  stopState        = CONTROLLER_TURNING_IDLE;
+                  if ( eELECTROgetStatus() == ELECTRO_PROC_STATUS_IDLE )
+                  {
+                    controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                    stopState        = CONTROLLER_TURNING_IDLE;
+                  }
                   break;
                 case CONTROLLER_STATUS_START:
-                  controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                  interiorEvent.type   = EVENT_INTERRUPTED_START;
+                  interiorEvent.action = ACTION_EMERGENCY_STOP;
+                  vSYSeventSend( interiorEvent, NULL );
+                  controller.state = CONTROLLER_STATUS_ALARM;
                   stopState        = CONTROLLER_TURNING_IDLE;
                   break;
                 case CONTROLLER_STATUS_PLAN_STOP:
                   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
-                  interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                  interiorEvent.type   = EVENT_INTERRUPTED_STOP;
                   interiorEvent.action = ACTION_EMERGENCY_STOP;
                   vSYSeventSend( interiorEvent, NULL );
                   controller.state = CONTROLLER_STATUS_ALARM;
@@ -551,7 +581,7 @@ void vCONTROLLERtask ( void* argument )
                   break;
                 case CONTROLLER_STATUS_PLAN_STOP_DELAY:
                   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
-                  interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                  interiorEvent.type   = EVENT_INTERRUPTED_STOP;
                   interiorEvent.action = ACTION_EMERGENCY_STOP;
                   vSYSeventSend( interiorEvent, NULL );
                   controller.state = CONTROLLER_STATUS_ALARM;
@@ -561,6 +591,10 @@ void vCONTROLLERtask ( void* argument )
                   break;
               }
             }
+          }
+          else
+          {
+            vCONTROLLERresetAlarm();
           }
           break;
         case HMI_CMD_AUTO:
@@ -595,6 +629,9 @@ void vCONTROLLERtask ( void* argument )
             controller.mode = CONTROLLER_MODE_MANUAL;
           }
           break;
+        case HMI_CMD_ACK:
+          vCONTROLLERresetAlarm();
+          break;
         default:
           break;
       }
@@ -611,20 +648,9 @@ void vCONTROLLERtask ( void* argument )
           break;
         /*------------------------- Сброс аварийного сигнала -------------------------*/
         case FPI_FUN_ALARM_RESET:
-          if ( ( ( controller.state  == CONTROLLER_STATUS_ALARM ) ||
-                 ( controller.state  == CONTROLLER_STATUS_IDLE  ) ) &&
-               ( inputFpiEvent.level == FPI_LEVEL_HIGH ) )
+          if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
-            controller.state = CONTROLLER_STATUS_IDLE;
-            vENGINEsendCmd( ENGINE_CMD_RESET_TO_IDLE );
-            vFPIreset();
-            vFPOsetAlarm( RELAY_OFF );
-            vFPOsetMainsFail( RELAY_OFF );
-            eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
-            controller.mode = CONTROLLER_MODE_MANUAL;
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
-            vCONTROLLERprintStatus();
+            vCONTROLLERresetAlarm();
           }
           break;
         /*---- Запрет автоматического останова при восстановлении параметров сети ----*/

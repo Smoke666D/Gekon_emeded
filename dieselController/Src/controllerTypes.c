@@ -102,7 +102,9 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "MAINS_ENGINE_START",
     "MAINS_ENGINE_STOP",
     "MAINS_OK",
-    "MAINS_FAIL"
+    "MAINS_FAIL",
+    "INTERRUPTED_START",
+    "INTERRUPTED_STOP"
   };
   const char* alarmActionStr[] =
   {
@@ -240,23 +242,27 @@ TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
 TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
 {
   TIMER_ERROR stat = TIMER_OK;
-  if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
+  if ( timer.id <= LOGIC_COUNTERS_SIZE )
   {
-    aciveCounters  &= ~( 1U << timer.id );
-    targetArray[timer.id] = 0U;
-    if ( activeNumber > 0U )
+    if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {
-      activeNumber--;
+      aciveCounters  &= ~( 1U << timer.id );
+      targetArray[timer.id] = 0U;
+      if ( activeNumber > 0U )
+      {
+        activeNumber--;
+      }
+      else
+      {
+        stat = TIMER_NO_SPACE;
+      }
+      timer.id = LOGIC_DEFAULT_TIMER_ID;
+      xSemaphoreGive( xSYSTIMERsemaphore );
     }
     else
     {
-      stat = TIMER_NO_SPACE;
+      stat = TIMER_ACCESS;
     }
-    xSemaphoreGive( xSYSTIMERsemaphore );
-  }
-  else
-  {
-    stat = TIMER_ACCESS;
   }
   return stat;
 }

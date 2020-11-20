@@ -160,13 +160,10 @@ fix16_t fOILprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &oil.pressure, &value );
-  if ( oil.pressure.status == SENSOR_STATUS_NORMAL )
+  vALARMcheck( &oil.alarm, value );
+  if ( oil.alarm.error.status == ALARM_STATUS_IDLE )
   {
-    vALARMcheck( &oil.alarm, value );
-    if ( oil.alarm.error.status == ALARM_STATUS_IDLE )
-    {
-      vALARMcheck( &oil.preAlarm, value );
-    }
+    vALARMcheck( &oil.preAlarm, value );
   }
   return value;
 }
@@ -175,38 +172,31 @@ fix16_t fCOOLANTprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &coolant.temp, &value );
-  if ( coolant.temp.status == SENSOR_STATUS_NORMAL )
+  vALARMcheck( &coolant.alarm, value );
+  if ( coolant.alarm.error.status == ALARM_STATUS_IDLE )
   {
-    vALARMcheck( &coolant.alarm, value );
-    if ( coolant.alarm.error.status == ALARM_STATUS_IDLE )
-    {
-      vALARMcheck( &coolant.preAlarm, value );
-    }
-    vRELAYautoProces( &coolant.heater, value );
-    vRELAYautoProces( &coolant.cooler, value );
+    vALARMcheck( &coolant.preAlarm, value );
   }
+  vRELAYautoProces( &coolant.heater, value );
+  vRELAYautoProces( &coolant.cooler, value );
   return value;
 }
 /*----------------------------------------------------------------------------*/
 fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
-
   vSENSORprocess( &fuel.level, &value );
-  if ( fuel.level.status == SENSOR_STATUS_NORMAL )
+  vALARMcheck( &fuel.lowAlarm, value );
+  if ( fuel.lowAlarm.error.status == ALARM_STATUS_IDLE )
   {
-    vALARMcheck( &fuel.lowAlarm, value );
-    if ( fuel.lowAlarm.error.status == ALARM_STATUS_IDLE )
-    {
-      vALARMcheck( &fuel.lowPreAlarm, value );
-    }
-    vALARMcheck( &fuel.hightAlarm, value );
-    if ( fuel.hightAlarm.error.status == ALARM_STATUS_IDLE )
-    {
-      vALARMcheck( &fuel.hightPreAlarm, value );
-    }
-    vRELAYautoProces( &fuel.booster, value );
+    vALARMcheck( &fuel.lowPreAlarm, value );
   }
+  vALARMcheck( &fuel.hightAlarm, value );
+  if ( fuel.hightAlarm.error.status == ALARM_STATUS_IDLE )
+  {
+    vALARMcheck( &fuel.hightPreAlarm, value );
+  }
+  vRELAYautoProces( &fuel.booster, value );
   return value;
 }
 /*----------------------------------------------------------------------------*/

@@ -70,5 +70,6 @@ extern osThreadId_t controllerHandle;
 /*----------------------- Functions ------------------------------------*/
 void             vCONTROLLERinit ( const CONTROLLER_INIT* init );
 CONTROLLER_STATE eCONTROLLERgetStatus ( void );
+CONTROLLER_MODE  eCONTROLLERgetMode ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

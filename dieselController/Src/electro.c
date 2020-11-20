@@ -878,17 +878,21 @@ void vELECTROtask ( void* argument )
         vLOGICprintDebug( ">>Electro         : Alarms set as start on idle\r\n" );
         break;
       case ELECTRO_CMD_DISABLE_IDLE_ALARMS:
-        generator.lowFreqAlarm.error.active    = PERMISSION_DISABLE;
-        generator.lowFreqPreAlarm.error.active = PERMISSION_DISABLE;
-        electro.alarmState                     = ELECTRO_ALARM_STATUS_WORK_ON_IDLE;
-        electro.cmd                            = ELECTRO_CMD_NONE;
+        generator.lowFreqAlarm.error.active       = PERMISSION_DISABLE;
+        generator.lowFreqPreAlarm.error.active    = PERMISSION_DISABLE;
+        generator.lowVoltageAlarm.error.active    = PERMISSION_DISABLE;
+        generator.lowVoltagePreAlarm.error.active = PERMISSION_DISABLE;
+        electro.alarmState                        = ELECTRO_ALARM_STATUS_WORK_ON_IDLE;
+        electro.cmd                               = ELECTRO_CMD_NONE;
         vLOGICprintDebug( ">>Electro         : Alarms set as work on idle\r\n" );
         break;
       case ELECTRO_CMD_ENABLE_IDLE_ALARMS:
-        generator.lowFreqAlarm.error.active    = PERMISSION_ENABLE;
-        generator.lowFreqPreAlarm.error.active = PERMISSION_ENABLE;
-        electro.alarmState                     = ELECTRO_ALARM_STATUS_WORK;
-        electro.cmd                            = ELECTRO_CMD_NONE;
+        generator.lowFreqAlarm.error.active       = PERMISSION_ENABLE;
+        generator.lowFreqPreAlarm.error.active    = PERMISSION_ENABLE;
+        generator.lowVoltageAlarm.error.active    = PERMISSION_ENABLE;
+        generator.lowVoltagePreAlarm.error.active = PERMISSION_ENABLE;
+        electro.alarmState                        = ELECTRO_ALARM_STATUS_WORK;
+        electro.cmd                               = ELECTRO_CMD_NONE;
         vLOGICprintDebug( ">>Electro         : Alarms set as normal work\r\n" );
         break;
       case ELECTRO_CMD_RESET_TO_IDLE:

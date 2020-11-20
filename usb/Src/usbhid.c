@@ -889,6 +889,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
   }
   if ( ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_IDLE  ) &&
        ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_ALARM ) &&
+       ( eCONTROLLERgetMode()   != CONTROLLER_MODE_MANUAL  ) &&
        ( report->cmd != USB_AUTHORIZATION ) )
   {
     res = USB_ENGINE_NON_STOP;

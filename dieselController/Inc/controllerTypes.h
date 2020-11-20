@@ -265,6 +265,7 @@ typedef struct __packed
 /*----------------------- Functions ------------------------------------*/
 void              vLOGICinit ( TIM_HandleTypeDef* tim );
 QueueHandle_t     pLOGICgetEventQueue ( void );
+void              vRELAYset ( RELAY_DEVICE* relay, RELAY_STATUS status );
 void              vRELAYautoProces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
 void              vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device );
 void              vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );

@@ -204,13 +204,9 @@ void vLOGICtimerHandler ( void )
 TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
 {
   TIMER_ERROR stat = TIMER_OK;
-  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_to_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
+  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_from_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
   uint8_t     i    = 0U;
 
-  if ( activeNumber > 2 )
-  {
-    i = 0U;
-  }
   if ( activeNumber < LOGIC_COUNTERS_SIZE )
   {
     for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
@@ -352,6 +348,16 @@ void vRELAYautoProces ( RELAY_AUTO_DEVICE* device, fix16_t value )
         }
       }
     }
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vRELAYset ( RELAY_DEVICE* relay, RELAY_STATUS status )
+{
+  if ( relay->enb == PERMISSION_ENABLE )
+  {
+    relay->set( status );
+    relay->status = status;
   }
   return;
 }

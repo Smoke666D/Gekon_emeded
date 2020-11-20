@@ -44,6 +44,12 @@ void vALARMinit ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vALARMreInit ( void )
+{
+  hysteresis = fix16_div( getValue( &hysteresisLevel ), fix100U );
+  return;
+}
+/*----------------------------------------------------------------------------*/
 /*
  * API for active error list control
  * input:  cmd    - command for the list

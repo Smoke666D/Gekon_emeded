@@ -17,10 +17,12 @@
 /*------------------------ Define --------------------------------------*/
 #define  ENGINE_EVENT_QUEUE_LENGTH      16U
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
-#define  ENGINE_OIL_PRESSURE_TRESH_HOLD 6000U
-#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE - 200U ) )
+#define  SENSOR_CUTOUT_LEVEL            1U//( MAX_RESISTANCE )
 #define  CHARGER_IMPULSE_DURATION       5U                                          /* sec */
 #define  CHARGER_ATTEMPTS_NUMBER        5U
+#define  OIL_SENSOR_SOURCE              xADCGetSOP
+#define  FUEL_SENSOR_SOURCE             xADCGetSFL
+#define  COOLANT_SENSOR_SOURCE          xADCGetSCT
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -70,7 +72,7 @@ typedef enum
 typedef enum
 {
   STARTER_IDLE,
-  STARTER_START_DELAY,
+  STARTER_START_PREPARATION,
   STARTER_READY,
   STARTER_CRANKING,
   STARTER_CRANK_DELAY,
@@ -118,7 +120,7 @@ typedef struct __packed
   SENSOR_STATUS     status;
   eChartData*       chart;
   getValueCallBack  get;
-  ALARM_TYPE        cutout;
+  ERROR_TYPE        cutout;
 } SENSOR;
 
 typedef struct __packed
@@ -205,7 +207,6 @@ typedef struct __packed
   /* Callback */
   setRelayCallBack       set;
   /* Delays */
-  fix16_t                startDelay;      /* sec */
   fix16_t                crankingDelay;   /* sec */
   fix16_t                crankDelay;      /* sec */
   fix16_t                blockDelay;      /* sec */

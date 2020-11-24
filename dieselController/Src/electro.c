@@ -717,7 +717,7 @@ ELECTRO_PROCESS_STATUS eELECTROgetStatus ( void )
 void vELECTROtask ( void* argument )
 {
   ELECTRO_COMMAND inputCmd    = ELECTRO_CMD_NONE;
-  uint32_t        inputNotifi = 0U;
+
   for(;;)
   {
     /*-------------------- Read system notification --------------------*/
@@ -838,6 +838,12 @@ void vELECTROtask ( void* argument )
         mains.hightVoltageAlarm.error.active        = PERMISSION_ENABLE;
         mains.lowFreqAlarm.error.active             = PERMISSION_ENABLE;
         mains.hightFreqAlarm.error.active           = PERMISSION_ENABLE;
+
+        vERRORreset( &mains.lowVoltageAlarm.error );
+        vERRORreset( &mains.hightVoltageAlarm.error );
+        vERRORreset( &mains.lowFreqAlarm.error );
+        vERRORreset( &mains.hightFreqAlarm.error );
+
         generator.lowVoltageAlarm.error.active      = PERMISSION_DISABLE;
         generator.lowVoltagePreAlarm.error.active   = PERMISSION_DISABLE;
         generator.hightVoltagePreAlarm.error.active = PERMISSION_DISABLE;
@@ -874,10 +880,26 @@ void vELECTROtask ( void* argument )
         mains.hightFreqAlarm.error.active           = PERMISSION_ENABLE;
         generator.lowVoltageAlarm.error.active      = PERMISSION_ENABLE;
         generator.lowVoltagePreAlarm.error.active   = PERMISSION_ENABLE;
+        generator.lowFreqPreAlarm.error.active      = PERMISSION_ENABLE;
+        generator.lowFreqAlarm.error.active         = PERMISSION_ENABLE;
         generator.hightVoltagePreAlarm.error.active = PERMISSION_ENABLE;
         generator.hightVoltageAlarm.error.active    = PERMISSION_ENABLE;
         generator.hightFreqPreAlarm.error.active    = PERMISSION_ENABLE;
         generator.hightFreqAlarm.error.active       = PERMISSION_ENABLE;
+
+        vERRORreset( &mains.lowVoltageAlarm.error );
+        vERRORreset( &mains.hightVoltageAlarm.error );
+        vERRORreset( &mains.lowFreqAlarm.error );
+        vERRORreset( &mains.hightFreqAlarm.error );
+        vERRORreset( &generator.lowVoltageAlarm.error );
+        vERRORreset( &generator.lowVoltagePreAlarm.error );
+        vERRORreset( &generator.lowFreqPreAlarm.error );
+        vERRORreset( &generator.lowFreqAlarm.error );
+        vERRORreset( &generator.hightVoltagePreAlarm.error );
+        vERRORreset( &generator.hightVoltageAlarm.error );
+        vERRORreset( &generator.hightFreqPreAlarm.error );
+        vERRORreset( &generator.hightFreqAlarm.error );
+
         electro.alarmState                          = ELECTRO_ALARM_STATUS_START_ON_IDLE;
         electro.cmd                                 = ELECTRO_CMD_NONE;
         vLOGICprintDebug( ">>Electro         : Alarms set as start on idle\r\n" );
@@ -896,6 +918,12 @@ void vELECTROtask ( void* argument )
         generator.lowFreqPreAlarm.error.active    = PERMISSION_ENABLE;
         generator.lowVoltageAlarm.error.active    = PERMISSION_ENABLE;
         generator.lowVoltagePreAlarm.error.active = PERMISSION_ENABLE;
+
+        vERRORreset( &generator.lowFreqAlarm.error );
+        vERRORreset( &generator.lowFreqPreAlarm.error );
+        vERRORreset( &generator.lowVoltageAlarm.error );
+        vERRORreset( &generator.lowVoltagePreAlarm.error );
+
         electro.alarmState                        = ELECTRO_ALARM_STATUS_WORK;
         electro.cmd                               = ELECTRO_CMD_NONE;
         vLOGICprintDebug( ">>Electro         : Alarms set as normal work\r\n" );

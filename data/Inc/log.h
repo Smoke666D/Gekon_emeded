@@ -28,8 +28,8 @@ typedef enum
 typedef struct __packed
 {
 	uint32_t					id;
-	RECORD_SOURCE			source;
-	RECORD_PRIORITY		priority;
+	RECORD_SOURCE			source   : 1U;
+	RECORD_PRIORITY		priority : 2U;
 	char							message[LOG_RCORD_MESSAGE_LENGTH];
 	uint32_t					value;
 } LOG_RECORD;

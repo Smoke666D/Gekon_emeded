@@ -198,8 +198,8 @@ typedef void    ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup rel
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  SYSTEM_EVENT_TYPE  type;
-  SYSTEM_ACTION      action;
+  SYSTEM_ACTION      action : 3U;
+  SYSTEM_EVENT_TYPE  type   : 6U;
 } SYSTEM_EVENT;
 
 typedef struct __packed
@@ -210,30 +210,30 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION     enb;       /* Enable alarm at initialization         - 1 byte */
-  PERMISSION     active;    /* On/Off alarm check in work flow        - 1 byte */
-  PERMISSION     ack;       /* Auto acknowledgment on/off */
-  PERMISSION     ignor;     /* Ignoring in active error list */
-  ALARM_STATUS   status;    /* Status of the alarm                    - 1 byte */
-  SYSTEM_EVENT   event;     /* Event data of alarm */
-  TRIGGER_STATE  trig;      /* Alarm triggered flag. Reset from outside */
-  uint8_t        id;        /* ID in active error list */
+  PERMISSION     enb    : 1U; /* Enable alarm at initialization */
+  PERMISSION     active : 1U; /* On/Off alarm check in work flow */
+  PERMISSION     ack    : 1U; /* Auto acknowledgment on/off */
+  PERMISSION     ignor  : 1U; /* Ignoring in active error list */
+  ALARM_STATUS   status : 3U; /* Status of the alarm */
+  TRIGGER_STATE  trig   : 1U; /* Alarm triggered flag. Reset from outside */
+  SYSTEM_EVENT   event;       /* Event data of alarm */
+  uint8_t        id;          /* ID in active error list */
 } ERROR_TYPE;
 
 typedef struct __packed
 {
-  ERROR_TYPE     error;     /* Error of the alarm */
-  ALARM_LEVEL    type;      /* Type of alarm above or below set point - 1 byte */
-  fix16_t        level;     /* Set point                              - 4 byte */
-  SYSTEM_TIMER   timer;     /* Timer for triggering delay             - 6 byte */
+  ALARM_LEVEL    type  : 1U; /* Type of alarm above or below set point */
+  ERROR_TYPE     error;      /* Error of the alarm */
+  fix16_t        level;      /* Set point */
+  SYSTEM_TIMER   timer;      /* Timer for triggering delay */
 } ALARM_TYPE;
 
 typedef struct __packed
 {
-  PERMISSION        enb;       /* Enable flag of relay */
-  RELAY_STATUS      status;    /* Current status of relay */
-  setRelayCallBack  set;       /* Callback for relay control */
-} RELAY_DEVICE;                /* Simple on/off relay device */
+  PERMISSION        enb    : 1U; /* Enable flag of relay */
+  RELAY_STATUS      status : 1U; /* Current status of relay */
+  setRelayCallBack  set;         /* Callback for relay control */
+} RELAY_DEVICE;                  /* Simple on/off relay device */
 
 typedef struct __packed
 {
@@ -244,20 +244,20 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  RELAY_DEVICE       relay;    /* Relay device */
-  RELAY_DELAY_STATUS status;   /* Current status of device */
-  uint8_t            triger;   /* Input to start relay processing */
-  SYSTEM_TIMER       timer;    /* Timer for delay */
-} RELAY_DELAY_DEVICE;          /* Relay with auto turn off after delay */
+  RELAY_DELAY_STATUS status : 1U; /* Current status of device */
+  TRIGGER_STATE      triger : 1U; /* Input to start relay processing */
+  RELAY_DEVICE       relay;       /* Relay device */
+  SYSTEM_TIMER       timer;       /* Timer for delay */
+} RELAY_DELAY_DEVICE;             /* Relay with auto turn off after delay */
 
 typedef struct __packed
 {
-  PERMISSION            active; /* Flag of comparison activation */
-  RELAY_IMPULSE_STATUS  status; /* Current status of device */
-  RELAY_DEVICE          relay;  /* Relay device */
-  fix16_t               level;  /* Level for comparison */
-  SYSTEM_TIMER          timer;  /* Timer for delay */
-} RELAY_IMPULSE_DEVICE;         /* Relay, that work like RELAY_DELAY_DEVICE, but the trigger is comparison with level */
+  PERMISSION            active : 1U; /* Flag of comparison activation */
+  RELAY_IMPULSE_STATUS  status : 2U; /* Current status of device */
+  RELAY_DEVICE          relay;       /* Relay device */
+  fix16_t               level;       /* Level for comparison */
+  SYSTEM_TIMER          timer;       /* Timer for delay */
+} RELAY_IMPULSE_DEVICE;              /* Relay, that work like RELAY_DELAY_DEVICE, but the trigger is comparison with level */
 
 typedef struct __packed
 {

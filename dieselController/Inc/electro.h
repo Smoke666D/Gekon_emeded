@@ -119,7 +119,7 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  ELECTRO_CURRENT_STATUS state;
+  ELECTRO_CURRENT_STATUS state  : 3U;
   CURRENT_SETTING_TYPE   over;
   CURRENT_SETTING_TYPE   cutout;
   TIM_HandleTypeDef*     tim;
@@ -127,21 +127,20 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  ELECTRO_COMMAND         cmd;
-  ELECTRO_SCHEME          scheme;
-  ELECTRO_PROCESS_STATUS  state;
-  ELECTRO_ALARM_STATUS    alarmState;
+  ELECTRO_COMMAND         cmd        : 4U;
+  ELECTRO_SCHEME          scheme     : 2U;
+  ELECTRO_PROCESS_STATUS  state      : 2U;
+  ELECTRO_ALARM_STATUS    alarmState : 3U;
   SYSTEM_TIMER            timer;
 } ELECTRO_SYSTEM_TYPE;
 
 typedef struct __packed
 {
-  uint8_t            enb;
-  ELECTRO_STATUS     state;
+  PERMISSION         enb    : 1U;
+  ELECTRO_STATUS     state  : 1U;
   GENERATOR_RATING   rating;
   ELECTRO_CHANNEL    line[GENERATOR_LINE_NUMBER];
   getValueCallBack   getFreq;
-
   SYSTEM_TIMER       timer;
   /*---------- ALARMS ----------*/
   ALARM_TYPE         lowVoltageAlarm;
@@ -163,12 +162,12 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t            enb;
-  ELECTRO_STATUS     state;
+  PERMISSION         enb   : 1U;
+  ELECTRO_STATUS     state : 1U;
   ELECTRO_CHANNEL    line[MAINS_LINE_NUMBER];
   getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
-  PERMISSION         alarmsIgnor;
+  PERMISSION         alarmsIgnor : 1U;
   ALARM_TYPE         lowVoltageAlarm;
   ALARM_TYPE         hightVoltageAlarm;
   ALARM_TYPE         lowFreqAlarm;

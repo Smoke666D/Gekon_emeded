@@ -43,16 +43,16 @@ typedef enum
 
 typedef enum
 {
-  ENGINE_CMD_NONE,
-  ENGINE_CMD_START,          /* Ignition */
-  ENGINE_CMD_PLAN_STOP,
-  ENGINE_CMD_PLAN_STOP_WITH_DELAY,
-  ENGINE_CMD_GOTO_IDLE,
-  ENGINE_CMD_GOTO_NORMAL,
-  ENGINE_CMD_EMEGENCY_STOP,
-  ENGINE_CMD_RESET_TO_IDLE,
-  ENGINE_CMD_BAN_START,
-  ENGINE_CMD_ALLOW_START,
+  ENGINE_CMD_NONE,                 /* 0 */
+  ENGINE_CMD_START,                /* 1 Ignition */
+  ENGINE_CMD_PLAN_STOP,            /* 2 */
+  ENGINE_CMD_PLAN_STOP_WITH_DELAY, /* 3 */
+  ENGINE_CMD_GOTO_IDLE,            /* 4 */
+  ENGINE_CMD_GOTO_NORMAL,          /* 5 */
+  ENGINE_CMD_EMEGENCY_STOP,        /* 6 */
+  ENGINE_CMD_RESET_TO_IDLE,        /* 7 */
+  ENGINE_CMD_BAN_START,            /* 8 */
+  ENGINE_CMD_ALLOW_START,          /* 9 */
 } ENGINE_COMMAND;
 
 typedef enum
@@ -116,8 +116,8 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  SENSOR_TYPE       type;
-  SENSOR_STATUS     status;
+  SENSOR_TYPE       type   : 3U;
+  SENSOR_STATUS     status : 2U;
   eChartData*       chart;
   getValueCallBack  get;
   ERROR_TYPE        cutout;
@@ -153,8 +153,8 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION        enb;
-  SENSOR_STATUS     status;
+  PERMISSION        enb         : 1U;
+  SENSOR_STATUS     status      : 2U;
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
@@ -169,8 +169,8 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION        enb;
-  CHARGER_STATUS    status;
+  PERMISSION        enb       : 1U;
+  CHARGER_STATUS    status    : 3U;
   uint8_t           attempts;
   uint8_t           iteration;
   getValueCallBack  get;
@@ -183,13 +183,13 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION  critGenFreqEnb;
+  PERMISSION  critGenFreqEnb    : 1U;
+  PERMISSION  critOilPressEnb   : 1U;
+  PERMISSION  critChargeEnb     : 1U;
+  PERMISSION  critSpeedEnb      : 1U;
   fix16_t     critGenFreqLevel;
-  PERMISSION  critOilPressEnb;
   fix16_t     critOilPressLevel;
-  PERMISSION  critChargeEnb;
   fix16_t     critChargeLevel;
-  PERMISSION  critSpeedEnb;
   fix16_t     critSpeedLevel;
 } START_CRITERIONS_TYPE;
 
@@ -219,23 +219,23 @@ typedef struct __packed
   /* Structures */
   START_CRITERIONS_TYPE  startCrit;
   /* Status */
-  STARTER_STATUS         status;
+  STARTER_STATUS         status       : 4U;
 } STARTER_TYPE;
 
 typedef struct __packed
 {
-  fix16_t           coolingDelay;      /* sec */
-  fix16_t           coolingIdleDelay;  /* sec */
-  fix16_t           processDelay;      /* sec */
-  PLAN_STOP_STATUS  status;
+  fix16_t           coolingDelay;          /* sec */
+  fix16_t           coolingIdleDelay;      /* sec */
+  fix16_t           processDelay;          /* sec */
+  PLAN_STOP_STATUS  status           : 4U;
 } PLAN_STOP_TYPE;
 
 typedef struct __packed
 {
   ENGINE_COMMAND  cmd           : 4U;
+  ENGINE_STATUS   status        : 4U;
   PERMISSION      startCheckOil : 1U;
   PERMISSION      banStart      : 1U;
-  ENGINE_STATUS   status        : 4U;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
 } ENGINE_TYPE;

@@ -172,7 +172,6 @@ fix16_t fOILprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &oil.pressure, &value );
-  if ( value != 0 )
   if ( ( oil.pressure.type == SENSOR_TYPE_RESISTIVE ) || ( oil.pressure.type == SENSOR_TYPE_CURRENT ) )
   {
     vALARMcheck( &oil.alarm, value );

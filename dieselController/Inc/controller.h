@@ -56,13 +56,14 @@ typedef struct __packed
   uint16_t      stopPIN;
   GPIO_TypeDef* stopGPIO;
 } CONTROLLER_INIT;
+
 typedef struct __packed
 {
-  CONTROLLER_MODE   mode;
-  CONTROLLER_STATE  state;
-  uint8_t           banAutoShutdown;
-  uint8_t           banAutoStart;
-  uint8_t           banGenLoad;
+  CONTROLLER_MODE   mode            : 1U;
+  CONTROLLER_STATE  state           : 3U;
+  PERMISSION        banAutoShutdown : 1U;
+  PERMISSION        banAutoStart    : 1U;
+  PERMISSION        banGenLoad      : 1U;
   fix16_t           stopDelay;
   fix16_t           startDelay;
   SYSTEM_TIMER      timer;

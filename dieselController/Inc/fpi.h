@@ -23,17 +23,17 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  FPI_FUN_NONE,               /* Не использовать */
-  FPI_FUN_USER,               /* Пользовательская */
-  FPI_FUN_ALARM_RESET,        /* Сброс аварийного сигнала */
-  FPI_FUN_OIL_LOW_PRESSURE,   /* Датчик давления масла */
-  FPI_FUN_HIGHT_ENGINE_TEMP,  /* Высокая температура двигателя */
-  FPI_FUN_LOW_FUEL,           /* Сигнал низкого уровня топлива */
-  FPI_FUN_REMOTE_START,       /* Дистанционный запуск без нагрузки */
-  FPI_FUN_IDLING,             /* Работа на холостом ходу */
-  FPI_FUN_BAN_AUTO_START,     /* Запрет автоматического запуска */
-  FPI_FUN_BAN_GEN_LOAD,       /* Запрет нагрузки генератора */
-  FPI_FUN_BAN_AUTO_SHUTDOWN,  /* Запрет автоматического останова при восстановлении параметров сети */
+  FPI_FUN_NONE,               /* 0  Не использовать */
+  FPI_FUN_USER,               /* 1  Пользовательская */
+  FPI_FUN_ALARM_RESET,        /* 2  Сброс аварийного сигнала */
+  FPI_FUN_OIL_LOW_PRESSURE,   /* 3  Датчик давления масла */
+  FPI_FUN_HIGHT_ENGINE_TEMP,  /* 4  Высокая температура двигателя */
+  FPI_FUN_LOW_FUEL,           /* 5  Сигнал низкого уровня топлива */
+  FPI_FUN_REMOTE_START,       /* 6  Дистанционный запуск без нагрузки */
+  FPI_FUN_IDLING,             /* 7  Работа на холостом ходу */
+  FPI_FUN_BAN_AUTO_START,     /* 8  Запрет автоматического запуска */
+  FPI_FUN_BAN_GEN_LOAD,       /* 9  Запрет нагрузки генератора */
+  FPI_FUN_BAN_AUTO_SHUTDOWN,  /* 10 Запрет автоматического останова при восстановлении параметров сети */
 } FPI_FUNCTION;
 
 typedef enum
@@ -50,19 +50,19 @@ typedef enum
 
 typedef enum
 {
-  FPI_ACT_EMERGENCY_STOP,      /* Аварийный останов */
-  FPI_ACT_LOAD_SHUTDOWN,       /* Отключение нагрузки */
-  FPI_ACT_WARNING,             /* Предупреждение */
-  FPI_ACT_MESSAGE,             /* Индикация */
-  FPI_ACT_NONE,                /* Действие в соответсвии с основной программой*/
+  FPI_ACT_EMERGENCY_STOP,      /* 0 Аварийный останов */
+  FPI_ACT_LOAD_SHUTDOWN,       /* 1 Отключение нагрузки */
+  FPI_ACT_WARNING,             /* 2 Предупреждение */
+  FPI_ACT_MESSAGE,             /* 3 Индикация */
+  FPI_ACT_NONE,                /* 4 Действие в соответсвии с основной программой*/
 } FPI_ACTION;
 
 typedef enum
 {
-  FRI_ARM_ALWAYS,              /* Всегда */
-  FPI_ARM_TIMER_STOP,          /* Оканчания таймера блокировки контроля ДГУ */
-  FPI_ARM_STARTER_SCROLL_END,  /* Окончания прокрутки стартера */
-  FRI_ARM_NEVER,               /* Никогда */
+  FRI_ARM_ALWAYS,              /* 0 Всегда */
+  FPI_ARM_TIMER_STOP,          /* 1 Оканчания таймера блокировки контроля ДГУ */
+  FPI_ARM_STARTER_SCROLL_END,  /* 2 Окончания прокрутки стартера */
+  FRI_ARM_NEVER,               /* 3 Никогда */
 } FPI_ARMING;
 
 typedef enum
@@ -78,9 +78,9 @@ typedef uint8_t ( *armingCallBack )( void ); /* Stream call back type */
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  FPI_LEVEL    level;
-  FPI_FUNCTION function;
-  FPI_ACTION   action;
+  FPI_LEVEL    level    : 1U;
+  FPI_FUNCTION function : 4U;
+  FPI_ACTION   action   : 3U;
   uint16_t*    message;
 } FPI_EVENT;
 
@@ -90,17 +90,17 @@ typedef struct __packed
   GPIO_TypeDef*   port;                             /* GPIO port*/
   uint16_t        pin;                              /* Pin number */
   /* Logic */
-  FPI_POLARITY    polarity;                         /* Polarity of triggering */
-  FPI_FUNCTION    function;                         /* Meaning of the input */
-  FPI_ACTION      action;                           /* What to do on trig */
-  FPI_ARMING      arming;                           /* Condition of triggering */
+  FPI_POLARITY    polarity : 1U;                    /* Polarity of triggering */
+  FPI_FUNCTION    function : 4U;                    /* Meaning of the input */
+  FPI_ACTION      action   : 3U;                    /* What to do on trig */
+  FPI_ARMING      arming   : 2U;                    /* Condition of triggering */
+  FPI_LEVEL       level    : 1U;                    /* Current level */
+  FPI_STATE       state    : 3U;                    /* Condition of the FPI */
   uint16_t        message[FPI_USER_MESSAGE_LENGTH]; /* User string message to the display */
-  FPI_LEVEL       level;                            /* Current level */
   /* Callbacks */
   armingCallBack  getArming;                        /* Function check condition of triggering */
   /* System */
   SYSTEM_TIMER    timer;
-  FPI_STATE       state;                            /* Condition of the FPI */
 } FPI;
 
 typedef struct __packed

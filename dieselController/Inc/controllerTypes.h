@@ -109,7 +109,7 @@ typedef enum
   EVENT_ENGINE_START,               /* 32 NONE */
   EVENT_ENGINE_STOP,                /* 33 NONE */
   EVENT_MAINS_OK,                   /* 34 AUTO_STOP */
-  EVENT_MAINS_FAIL,                 /* 35 AUTO_START*/
+  EVENT_MAINS_FAIL,                 /* 35 AUTO_START */
   EVENT_INTERRUPTED_START,          /* 36 EMERGENCY_STOP */
   EVENT_INTERRUPTED_STOP,           /* 37 EMERGENCY_STOP */
 } SYSTEM_EVENT_TYPE;

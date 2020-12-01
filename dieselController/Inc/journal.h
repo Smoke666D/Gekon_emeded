@@ -35,6 +35,24 @@
 #define  GET_LOG_SEC( d )                                 ( ( d & LOG_SEC_MASK   ) >> LOG_SEC_SHIFT )
 #define  SET_LOG_DATE( day, month, year, hour, min, sec)  ( ( ( uint32_t )day << LOG_DAY_SHIFT ) | ( ( uint32_t )month << LOG_MONTH_SHIFT ) | ( ( uint32_t )year << LOG_YEAR_SHIFT ) | ( ( uint32_t )hour << LOG_HOUR_SHIFT ) | ( ( uint32_t )min << LOG_MIN_SHIFT ) | ( ( uint32_t )sec << LOG_SEC_SHIFT ) )
 /*------------------------- Enum ---------------------------------------*/
+typedef enum
+{
+  JOURNAL_MEASUR_ENB_TIME,
+  JOURNAL_MEASUR_ENB_DATE,
+  JOURNAL_MEASUR_ENB_OIL_PRESSURE,
+  JOURNAL_MEASUR_ENB_COOLANT_TEMP,
+  JOURNAL_MEASUR_ENB_FUEL_LEVEL,
+  JOURNAL_MEASUR_ENB_SPEED,
+  JOURNAL_MEASUR_ENB_DIN_A,
+  JOURNAL_MEASUR_ENB_DIN_B,
+  JOURNAL_MEASUR_ENB_DIN_C,
+  JOURNAL_MEASUR_ENB_DIN_D,
+  JOURNAL_MEASUR_ENB_GENERATOR_VOLTAGE,
+  JOURNAL_MEASUR_ENB_GENERATOR_FREQ,
+  JOURNAL_MEASUR_ENB_MAINS_VOLTAGE,
+  JOURNAL_MEASUR_ENB_MAINS_FREQ,
+  JOURNAL_MEASUR_ENB_BATTERY_VOLTAGE
+} JOURNAL_MEASUR_ENB;
 /*----------------------- Structures -----------------------------------*/
 /*---------------------- Functions -------------------------------------*/
 LOG_STATUS vLOGinit ( void );

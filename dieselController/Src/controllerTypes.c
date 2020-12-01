@@ -62,7 +62,9 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Двигатель запущен",
     "Двигатель остановлен",
     "Сеть востановлена",
-    "Ошибка сети"
+    "Ошибка сети",
+    "Прерванный старт",
+    "Прерванная остановка"
 };
 #if ( DEBUG_SERIAL_ALARM > 0U )
   const char* eventTypesStr[] =

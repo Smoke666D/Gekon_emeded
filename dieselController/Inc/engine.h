@@ -232,10 +232,10 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  ENGINE_COMMAND  cmd;
-  PERMISSION      startCheckOil;
-  PERMISSION      banStart;
-  ENGINE_STATUS   status;
+  ENGINE_COMMAND  cmd           : 4U;
+  PERMISSION      startCheckOil : 1U;
+  PERMISSION      banStart      : 1U;
+  ENGINE_STATUS   status        : 4U;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
 } ENGINE_TYPE;

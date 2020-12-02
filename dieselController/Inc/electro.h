@@ -183,7 +183,7 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
-void                   vELECTROinit ( void );
+void                   vELECTROinit ( TIM_HandleTypeDef* tim );
 ELECTRO_STATUS         eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS         eELECTROgetMainsStatus ( void );
 ELECTRO_PROCESS_STATUS eELECTROgetStatus( void );

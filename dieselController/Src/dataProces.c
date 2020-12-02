@@ -128,9 +128,19 @@ uint16_t getUintValue ( const eConfigReg* reg )
   return reg->value[0U];
 }
 /*----------------------------------------------------------------------------*/
+fix16_t getScale ( const eConfigReg* reg )
+{
+  return scaleMulArray[(uint8_t)(reg->scale - MIN_CONFIG_SCALE)];
+}
+/*----------------------------------------------------------------------------*/
+uint16_t setValue ( const eConfigReg* reg, fix16_t data )
+{
+  return ( uint16_t )( fix16_to_int( fix16_div( data, getScale( reg ) ) ) );
+}
+/*----------------------------------------------------------------------------*/
 fix16_t getValue ( const eConfigReg* reg )
 {
-  return fix16_mul( scaleMulArray[(uint8_t)(reg->scale - MIN_CONFIG_SCALE)], fix16_from_int( reg->value[0U] ) );
+  return fix16_mul( getScale( reg ), fix16_from_int( reg->value[0U] ) );
 }
 /*----------------------------------------------------------------------------*/
 fix16_t getMaxValue ( const eConfigReg* reg)

@@ -20,9 +20,6 @@
 #define  SENSOR_CUTOUT_LEVEL            1U//( MAX_RESISTANCE )
 #define  CHARGER_IMPULSE_DURATION       5U                                          /* sec */
 #define  CHARGER_ATTEMPTS_NUMBER        5U
-#define  OIL_SENSOR_SOURCE              xADCGetSOP
-#define  FUEL_SENSOR_SOURCE             xADCGetSFL
-#define  COOLANT_SENSOR_SOURCE          xADCGetSCT
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {

@@ -85,6 +85,7 @@ TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
+TIM_HandleTypeDef htim12;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
@@ -165,6 +166,7 @@ static void MX_TIM5_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM8_Init(void);
+static void MX_TIM12_Init ( void );
 
 
 
@@ -281,6 +283,7 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   MX_TIM8_Init();
+  MX_TIM12_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
@@ -1049,6 +1052,36 @@ static void MX_TIM8_Init(void)
 
 }
 
+static void MX_TIM12_Init ( void )
+{
+
+  TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig      = {0};
+
+  htim12.Instance               = TIM12;
+  htim12.Init.Prescaler         = 30001U;
+  htim12.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim12.Init.Period            = 201U;
+  htim12.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim12, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim12, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  return;
+}
+
 /**
   * @brief USART2 Initialization Function
   * @param None
@@ -1316,7 +1349,7 @@ void StartDefaultTask(void *argument)
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
   vALARMinit();                               /* Activ error list initialization */
   vENGINEinit();                              /**/
-  vELECTROinit();                             /**/
+  vELECTROinit( &htim12 );                    /**/
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
   /* Infinite loop */

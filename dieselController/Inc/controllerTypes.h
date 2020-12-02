@@ -40,6 +40,11 @@
 #define  ENGINE_TASK_STACK_SIZE     1024U
 #define  ELECTRO_TASK_STACK_SIZE    1024U
 #define  CONTROLLER_TASK_STACK_SIZE 1024U
+
+#define  OIL_SENSOR_SOURCE          xADCGetSOP
+#define  FUEL_SENSOR_SOURCE         xADCGetSFL
+#define  COOLANT_SENSOR_SOURCE      xADCGetSCT
+/*------------------------ Types ---------------------------------------*/
 typedef  uint8_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/
@@ -193,10 +198,11 @@ typedef enum
   ERROR_LIST_CMD_COUNTER,
 } ERROR_LIST_CMD;
 /*----------------------- Callbacks ------------------------------------*/
-typedef fix16_t ( *getValueCallBack )( void );          /* Callback to get sensor value */
-typedef void    ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */
+typedef uint16_t ( *getDataCallBack )( void );           /* Callback to get 2 byte data */
+typedef fix16_t  ( *getValueCallBack )( void );          /* Callback to get sensor value */
+typedef void     ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */
 /*----------------------- Structures -----------------------------------*/
-typedef struct __packed
+ typedef struct __packed
 {
   SYSTEM_ACTION      action : 3U;
   SYSTEM_EVENT_TYPE  type   : 6U;

@@ -131,7 +131,7 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
 
   *value = sensor->get();
-  vERRORcheck( &sensor->cutout, uENGINEisSensorCutout( *value ) );
+  //vERRORcheck( &sensor->cutout, uENGINEisSensorCutout( *value ) );
   if ( sensor->cutout.status != ALARM_STATUS_IDLE )
   {
     sensor->status = SENSOR_STATUS_LINE_ERROR;
@@ -853,7 +853,7 @@ void vENGINEdataInit ( void )
   /*--------------------------------------------------------------*/
   battery.get                           = xADCGetVDD;
   battery.lowAlarm.error.enb            = getBitMap( &batteryAlarms, BATTERY_UNDER_VOLTAGE_ENB_ADR );
-  battery.lowAlarm.error.active         = PERMISSION_DISABLE;
+  battery.lowAlarm.error.active         = PERMISSION_ENABLE;
   battery.lowAlarm.type                 = ALARM_LEVEL_LOW;
   battery.lowAlarm.level                = getValue( &batteryUnderVoltageLevel );
   battery.lowAlarm.timer.delay          = getValue( &batteryUnderVoltageDelay );
@@ -866,7 +866,7 @@ void vENGINEdataInit ( void )
   battery.lowAlarm.error.status         = ALARM_STATUS_IDLE;
 
   battery.hightAlarm.error.enb          = getBitMap( &batteryAlarms, BATTERY_OVER_VOLTAGE_ENB_ADR );
-  battery.hightAlarm.error.active       = PERMISSION_DISABLE;
+  battery.hightAlarm.error.active       = PERMISSION_ENABLE;
   battery.hightAlarm.type               = ALARM_LEVEL_HIGHT;
   battery.hightAlarm.level              = getValue( &batteryOverVoltageLevel );
   battery.hightAlarm.timer.delay        = getValue( &batteryOverVoltageDelay );
@@ -1449,7 +1449,6 @@ void vENGINEtask ( void* argument )
               //charger.error.error.active         = PERMISSION_DISABLE;
               //charger.hightPreAlarm.error.active = PERMISSION_DISABLE;
               engine.status                      = ENGINE_STATUS_BUSY_STARTING;
-              starter.status                     = STARTER_START_PREPARATION;
               vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
               vRELAYset( &fuel.pump, RELAY_ON );
               if ( starter.idlingDelay != 0U )
@@ -1457,9 +1456,10 @@ void vENGINEtask ( void* argument )
                 vRELAYset( &idleRelay, RELAY_ON );
               }
               vLOGICprintStarterStatus( starter.status );
+              starter.status                     = STARTER_START_PREPARATION;
               break;
             case STARTER_START_PREPARATION:
-              if ( eELECTROgetAlarmStatus() == ELECTRO_CMD_DISABLE_START_ALARMS )
+              if ( eELECTROgetAlarmStatus() == ELECTRO_ALARM_STATUS_START )
               {
                 starter.status   = STARTER_READY;
                 preHeater.active = PERMISSION_ENABLE;

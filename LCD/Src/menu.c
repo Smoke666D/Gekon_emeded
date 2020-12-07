@@ -218,7 +218,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
 {
   uint8_t           index = menu->pCurrIndex;
   xScreenSetObject* pMenu = menu;
-
+  static  uint8_t auto_key_ready =0;
   switch ( key )
   {
     case KEY_UP:
@@ -284,9 +284,17 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       uSettingScreen = 0U;
       break;
     case KEY_AUTO:
-      xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_AUTO, eSetBits );
-      uSettingScreen = 0U;
+      if ( auto_key_ready==0U)
+      {
+        auto_key_ready =1U;
+        xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_AUTO, eSetBits );
+        uSettingScreen = 0U;
+      }
       break;
+    case KEY_AUTO_BREAK:
+      auto_key_ready = 0U;
+      break;
+
     case KEY_START:
       xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_START, eSetBits );
       uSettingScreen = 0U;
@@ -386,6 +394,9 @@ void vMenuTask ( void )
             break;
           case stop_key:
             key = KEY_STOP_BREAK;
+            break;
+          case auto_key:
+            key= KEY_AUTO_BREAK;
             break;
           default:
             break;

@@ -24,6 +24,7 @@
 #define KEY_DOWN            2U
 #define KEY_STOP            3U
 #define KEY_STOP_BREAK      7U
+#define KEY_AUTO_BREAK      8U
 #define KEY_AUTO            4U
 #define KEY_START           5U
 #define KEY_EXIT            6U

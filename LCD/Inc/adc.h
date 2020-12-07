@@ -19,6 +19,7 @@
 #include "math.h"
 #include "fix16.h"
 #include "stdlib.h"
+#include "engine.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U
@@ -41,7 +42,8 @@
 #define ADC_FRAME_SIZE     1024//700U//512U
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
 
-
+#define  OIL_PRESSURE_ANALOG  0x01
+#define  COOLANT_TEMP_ANALOG  0x02
 
 #define GEN_RMS_CUR         0
 #define GEN_FREQ            1

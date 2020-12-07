@@ -13,28 +13,44 @@
 #include "version.h"
 #include "stdio.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static SemaphoreHandle_t xSemaphore = NULL;
+static SemaphoreHandle_t  xSemaphore     = NULL;
+static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static TaskHandle_t* notifyTargets[NOTIFY_TARGETS_NUMBER] = { NULL };
-static uint8_t       initDone                             = 0U;
-static uint8_t       flTakeSource                         = 0U;
+static uint8_t initDone     = 0U;
+static uint8_t flTakeSource = 0U;
+/*------------------------ Define -------------------------------------------------------------------*/
+
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vDATAAPInotfyAll ( uint32_t value )
+void vDATAAPIsendEventAll ( DATA_API_REINIT message )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<NOTIFY_TARGETS_NUMBER; i++ )
+  uint32_t mask = 0U;
+  switch ( message )
   {
-    xTaskNotify( *notifyTargets[i], value, eSetValueWithOverwrite );
+    case DATA_API_REINIT_CONFIG:
+      mask = DATA_API_FLAG_LCD_TASK_CONFIG_REINIT        |
+             DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT     |
+             DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT |
+             DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT    |
+             DATA_API_FLAG_FPI_TASK_CONFIG_REINIT;
+      xEventGroupSetBits( xDataApiEvents, mask );
+      break;
+    default:
+      break;
   }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+EventGroupHandle_t xDATAAPIgetEventGroup ( void )
+{
+  return xDataApiEvents;
+}
 /*
  * All data initialization
  * input:  none
@@ -162,7 +178,7 @@ void vDATAprintSerialNumber ( void )
       sprintf( &buf[6U * i + 3U * j], "%02X:", temp );
     }
   }
-  buf[35] = 0U;
+  buf[35U] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
   return;
@@ -253,14 +269,10 @@ void vDATAAPIprintMemoryMap ( void )
  * input:  array of task for notifications
  * output: none
  */
-void vDATAAPIinit ( TaskHandle_t* targets )
+void vDATAAPIinit ( void )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<NOTIFY_TARGETS_NUMBER; i++ )
-  {
-    notifyTargets[i] = targets[i];
-  }
-  xSemaphore = xSemaphoreCreateMutex();
+  xSemaphore     = xSemaphoreCreateMutex();
+  xDataApiEvents = xEventGroupCreate();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -331,7 +343,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
             }
             else
             {
-              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -545,7 +557,7 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             }
             else
             {
-              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+              vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -634,11 +646,11 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
  * available commands:
  * 1. DATA_API_CMD_READ  - read free data value from the locale storage
  * 2. DATA_API_CMD_WRITE - write free data value to the locale storage
- * 3. DATA_API_CMD_INC   - Increment value
+ * 3. DATA_API_CMD_INC   - Increment value and read result to data
  * 4. DATA_API_CMD_DEC   - none
  * 5. DATA_API_CMD_SAVE  - save all free data to the EEPROM from the locale storage
  * 6. DATA_API_CMD_LOAD  - load all free data to the local storage from the EEPROM
- * 7. DATA_API_CMD_ERASE - none
+ * 7. DATA_API_CMD_ERASE - set 0 to free data by address in local storage
  * 8. DATA_API_CMD_ADD   - none
  */
 DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data )
@@ -670,7 +682,8 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
         case DATA_API_CMD_INC:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            *freeDataArray[adr] += 1;
+            *freeDataArray[adr] += 1U;
+            *data = *freeDataArray[adr];
             xSemaphoreGive( xSemaphore );
           }
           break;
@@ -710,6 +723,13 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
           else
           {
             res = DATA_API_STAT_BUSY;
+          }
+          break;
+        case DATA_API_CMD_ERASE:
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+          {
+            *freeDataArray[adr] = 0U;
+            xSemaphoreGive( xSemaphore );
           }
           break;
         default:
@@ -1090,7 +1110,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             }
             else
             {
-              vDATAAPInotfyAll( DATA_API_MESSAGE_REINIT );
+              vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
             }
             xSemaphoreGive( xSemaphore );
           }

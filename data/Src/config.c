@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-10-02 11:57:08
+ * Make time: 2020-12-02 12:37:25
  */
 #include   "config.h"
 
@@ -367,19 +367,17 @@ eConfigReg coolantTempCoolerOnLevel =
    .units      = {'C', ' ', ' ', ' '},
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap fuelLevelSetupBitMap[9U] = 
+const eConfigBitMap fuelLevelSetupBitMap[7U] = 
 {
    { 7U, 0U },     // fuelLevelSensorType
    { 8U, 3U },     // fuelLevelOpenCircuitAlarmEnb
    { 16U, 4U },     // fuelLevelLowAlarmEnb
-   { 32U, 5U },     // fuelLevelLowAlarmAction
-   { 64U, 6U },     // fuelLevelLowPreAlarmEnb
-   { 128U, 7U },     // fuelLevelHightPreAlarmEnb
-   { 256U, 8U },     // fuelLevelHightAlarmEnb
-   { 512U, 9U },     // fuelLevelHightAlarmAction
-   { 1024U, 10U },     // fuelPumpEnb
+   { 32U, 5U },     // fuelLevelLowPreAlarmEnb
+   { 64U, 6U },     // fuelLevelHightPreAlarmEnb
+   { 128U, 7U },     // fuelLevelHightAlarmEnb
+   { 256U, 8U },     // fuelPumpEnb
 };
-uint16_t fuelLevelSetupValue[1U] = { 1339U };
+uint16_t fuelLevelSetupValue[1U] = { 411U };
 const eConfigAttributes fuelLevelSetupAtrib =
 {
    .adr        = 18U,
@@ -387,7 +385,7 @@ const eConfigAttributes fuelLevelSetupAtrib =
    .max        = 1023U,
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 9U,
+   .bitMapSize = 7U,
    .bitMap     = fuelLevelSetupBitMap
 };
 eConfigReg fuelLevelSetup =
@@ -2415,11 +2413,12 @@ eConfigReg maintenanceAlarmFuelTime =
    .units      = {'ч', 'а', 'с', ' '},
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap logSetupBitMap[1U] = 
+const eConfigBitMap logSetupBitMap[2U] = 
 {
    { 1U, 0U },     // logSaveWarningEventsEnb
+   { 2U, 1U },     // logPositiveEventsEnb
 };
-uint16_t logSetupValue[1U] = { 1U };
+uint16_t logSetupValue[1U] = { 3U };
 const eConfigAttributes logSetupAtrib =
 {
    .adr        = 119U,
@@ -2427,7 +2426,7 @@ const eConfigAttributes logSetupAtrib =
    .max        = 65535U,
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 1U,
+   .bitMapSize = 2U,
    .bitMap     = logSetupBitMap
 };
 eConfigReg logSetup =

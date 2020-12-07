@@ -14,6 +14,7 @@
 #include "storage.h"
 #include "RTC.h"
 #include "dataAPI.h"
+#include "controller.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -112,11 +113,17 @@ void vUSBfreeDataToReport ( USB_REPORT* report, uint16_t adr )
 
 void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
 {
-  LOG_RECORD_TYPE record;
+  LOG_RECORD_TYPE record = { 0U };
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
 
   report->stat   = USB_BAD_REQ_STAT;
   report->length = 6U;
-  if ( eDATAAPIlog( DATA_API_CMD_LOAD, adr, &record ) == DATA_API_STAT_OK )
+
+  while ( status == DATA_API_STAT_BUSY )
+  {
+    status = eDATAAPIlog( DATA_API_CMD_LOAD, adr, &record );
+  }
+  if ( status == DATA_API_STAT_OK )
   {
     report->stat     = USB_OK_STAT;
     report->data[0U] = ( uint8_t )( record.time >> 24U  );
@@ -308,15 +315,25 @@ USB_STATUS eUSBReportToTime ( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_STATUS eUSBReportToPassword ( const USB_REPORT* report )
 {
-  USB_STATUS    res  = USB_DONE;
-  PASSWORD_TYPE pass = { 0U };
+  USB_STATUS      res    = USB_DONE;
+  PASSWORD_TYPE   pass   = { 0U };
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
   if ( report->length >= PASSWORD_SIZE )
   {
     pass.status = report->data[0U];
     pass.data   = ( ( ( uint16_t )report->data[1U] ) << 8U ) | ( uint16_t )report->data[2U];
-    if ( eDATAAPIpassword( DATA_API_CMD_WRITE, &pass ) == DATA_API_STAT_OK )
+    while ( status == DATA_API_STAT_BUSY )
     {
-      if ( eDATAAPIpassword( DATA_API_CMD_SAVE, NULL ) != DATA_API_STAT_OK )
+      status = eDATAAPIpassword( DATA_API_CMD_WRITE, &pass );
+    }
+    if ( status == DATA_API_STAT_OK )
+    {
+      status = DATA_API_STAT_BUSY;
+      while ( status == DATA_API_STAT_BUSY )
+      {
+        status = eDATAAPIpassword( DATA_API_CMD_SAVE, NULL );
+      }
+      if ( status != DATA_API_STAT_OK )
       {
         res = USB_STORAGE_ERROR;
       }
@@ -335,14 +352,18 @@ USB_STATUS eUSBReportToPassword ( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_STATUS eUSBcheckupPassword ( const USB_REPORT* report )
 {
-  USB_STATUS    res   = USB_DONE;
-  uint16_t      input = 0U;
-  PASSWORD_TYPE pass  = { 0U };
-
+  USB_STATUS      res    = USB_DONE;
+  uint16_t        input  = 0U;
+  PASSWORD_TYPE   pass   = { 0U };
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
   if ( report->length >= 2U )
   {
     input = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
-    if ( eDATAAPIpassword( DATA_API_CMD_READ, &pass ) == DATA_API_STAT_OK )
+    while ( status == DATA_API_STAT_BUSY )
+    {
+      status = eDATAAPIpassword( DATA_API_CMD_READ, &pass );
+    }
+    if ( status == DATA_API_STAT_OK )
     {
       if ( ( ( pass.status == PASSWORD_SET ) && ( pass.data == input ) ) || ( pass.status == PASSWORD_RESET ) )
       {
@@ -368,16 +389,26 @@ USB_STATUS eUSBcheckupPassword ( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_STATUS eUSBReportToFreeData ( const USB_REPORT* report )
 {
-  USB_STATUS res   = USB_DONE;
-  uint16_t   value = 0U;
+  USB_STATUS      res    = USB_DONE;
+  uint16_t        value  = 0U;
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
   if ( report->length >= 2U )
   {
     if ( report->adr <= FREE_DATA_SIZE )
     {
       value = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
-      if ( eDATAAPIfreeData( DATA_API_CMD_WRITE, report->adr, &value ) == DATA_API_STAT_OK )
+      while ( status == DATA_API_STAT_BUSY )
       {
-        if ( eDATAAPIfreeData( DATA_API_CMD_SAVE,  report->adr, NULL ) != DATA_API_STAT_OK )
+        status = eDATAAPIfreeData( DATA_API_CMD_WRITE, report->adr, &value );
+      }
+      if ( status == DATA_API_STAT_OK )
+      {
+        status = DATA_API_STAT_BUSY;
+        while ( status == DATA_API_STAT_BUSY )
+        {
+          status = eDATAAPIfreeData( DATA_API_CMD_SAVE,  report->adr, NULL );
+        }
+        if ( status != DATA_API_STAT_OK )
         {
           res = USB_STORAGE_ERROR;
         }
@@ -408,6 +439,7 @@ USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
   uint16_t      valueBuf[MAX_VALUE_LENGTH] = { 0U };
   int8_t        scale                      = 0U;
   uint16_t      units[MAX_UNITS_LENGTH]    = { 0U };
+  DATA_API_STATUS status                   = DATA_API_STAT_BUSY;
   /*------------- Length control --------------*/
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {
@@ -428,7 +460,11 @@ USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
       count++;
     /*----------- Configuration units -----------*/
       vDecodeURI( ( char* )( &report->data[count] ), units, MAX_UNITS_LENGTH );
-      if ( eDATAAPIconfig( DATA_API_CMD_WRITE, report->adr, valueBuf, &scale, units ) != DATA_API_STAT_OK )
+      while ( status == DATA_API_STAT_BUSY )
+      {
+        status = eDATAAPIconfig( DATA_API_CMD_WRITE, report->adr, valueBuf, &scale, units );
+      }
+      if ( status != DATA_API_STAT_OK )
       {
         res = USB_STORAGE_ERROR;
       }
@@ -441,9 +477,9 @@ USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBParsingChart( uint16_t adr, const uint8_t* data )
+void vUSBParsingChart ( uint16_t adr, const uint8_t* data )
 {
-  uint8_t    counter = 0U;
+  uint8_t counter = 0U;
 
   while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
   {
@@ -531,7 +567,7 @@ USB_STATUS eUSBReportToChart ( const USB_REPORT* report )
     }
     else
     {
-      res = USB_ERROR_LENGTH;
+      res = USB_DONE;
     }
   /*-------------------------------------------*/
   }
@@ -547,7 +583,7 @@ USB_STATUS eUSBReportToEWA ( const USB_REPORT* report )
   USB_STATUS      res           = USB_DONE;
   uint8_t         length        = 0U;
   static uint32_t index         = 0U;
-  DATA_API_STATUS status        = DATA_API_STAT_OK;
+  DATA_API_STATUS status        = DATA_API_STAT_BUSY;
   uint16_t        i             = 0;
   uint32_t        checkAdr      = 0U;
   uint8_t         checkData[4U] = { 0U };
@@ -569,13 +605,20 @@ USB_STATUS eUSBReportToEWA ( const USB_REPORT* report )
     }
     if ( length > 0U )
     {
-      status = eDATAAPIewa( DATA_API_CMD_SAVE, ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
+      while ( status == DATA_API_STAT_BUSY )
+      {
+        status = eDATAAPIewa( DATA_API_CMD_SAVE, ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
+      }
       if ( status == DATA_API_STAT_OK )
       {
 	      checkAdr = STORAGE_EWA_DATA_ADR + index;
 	      for ( i=0; i<length; i++ )
 	      {
-	        status = eDATAAPIewa( DATA_API_CMD_LOAD, checkAdr, checkData, 1U );
+	        status = DATA_API_STAT_BUSY;
+	        while ( status == DATA_API_STAT_BUSY )
+	        {
+	          status = eDATAAPIewa( DATA_API_CMD_LOAD, checkAdr, checkData, 1U );
+	        }
 	        if ( ( report->data[i] != checkData[0U] ) || ( status != DATA_API_STAT_OK ) )
 	        {
 	          res = USB_STORAGE_ERROR;
@@ -593,7 +636,11 @@ USB_STATUS eUSBReportToEWA ( const USB_REPORT* report )
           else if ( index == report->length )
           {
             index  = 0U;
-            status = eDATAAPIewa( DATA_API_CMD_SAVE, STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), EEPROM_LENGTH_SIZE );
+            status = DATA_API_STAT_BUSY;
+            while ( status == DATA_API_STAT_BUSY )
+            {
+              status = eDATAAPIewa( DATA_API_CMD_SAVE, STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), EEPROM_LENGTH_SIZE );
+            }
             if ( status == DATA_API_STAT_OK )
             {
               res = USB_DONE;
@@ -671,6 +718,16 @@ void vUSBparseReport ( USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vUSBsendReport ( USB_REPORT* report )
+{
+  vUSBmakeReport( report );
+  while ( eUSBwrite( report->buf ) == USBD_BUSY )
+  {
+    osDelay( 2U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Send chart data via USB
  * input:  configuration register
@@ -692,11 +749,7 @@ void vUSBsendChart ( const USB_REPORT* request )
     if ( report.adr < CHART_NUMBER )
     {
       vUSBChartToReport( request->adr, &report );
-      vUSBmakeReport( &report );
-      while ( eUSBwrite( report.buf ) == USBD_BUSY )
-      {
-        osDelay( 2U );
-      }
+      vUSBsendReport( &report );
       for ( i=0U; i<USB_REPORT_SIZE; i++ )
       {
         outputBuffer[i]=0U;
@@ -704,11 +757,7 @@ void vUSBsendChart ( const USB_REPORT* request )
       for ( i=0U; i<( ( CHART_DOTS_SIZE / USB_DATA_SIZE ) + 1U ); i++ )
       {
         result =  vUSBChartDotsToReport( request->adr, charts[request->adr], &report ) == USB_DONE;
-        vUSBmakeReport( &report );
-        while ( eUSBwrite( report.buf ) == USBD_BUSY )
-        {
-          osDelay( 2U );
-        }
+        vUSBsendReport( &report );
         if ( result == USB_DONE )
         {
           break;
@@ -723,19 +772,20 @@ void vUSBsendChart ( const USB_REPORT* request )
     {
       outputBuffer[i] = 0U;
     }
-    vUSBmakeReport( &report );
-    while ( eUSBwrite( report.buf ) == USBD_BUSY )
-    {
-      osDelay( 2U );
-    }
+    vUSBsendReport( &report );
   }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 USB_STATUS vUSBsaveConfigs ( const USB_REPORT* report )
 {
-  USB_STATUS res = USB_DONE;
-  if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
+  USB_STATUS      res    = USB_DONE;
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  while ( status == DATA_API_STAT_BUSY )
+  {
+    status = eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL );
+  }
+  if ( status != DATA_API_STAT_OK )
   {
     res = USB_STORAGE_ERROR;
   }
@@ -744,17 +794,28 @@ USB_STATUS vUSBsaveConfigs ( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_STATUS vUSBsaveCharts ( const USB_REPORT* report )
 {
-  USB_STATUS res = USB_DONE;
-  if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
+  USB_STATUS      res    = USB_DONE;
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  while ( status == DATA_API_STAT_BUSY )
+  {
+    status = eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL );
+  }
+  if ( status != DATA_API_STAT_OK )
   {
     res = USB_STORAGE_ERROR;
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 USB_STATUS vUSBeraseLOG ( const USB_REPORT* report )
 {
-  USB_STATUS res = USB_DONE;
-  if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) != DATA_API_STAT_OK )
+  USB_STATUS      res    = USB_DONE;
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  while ( status == DATA_API_STAT_BUSY )
+  {
+    status = eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL );
+  }
+  if ( status != DATA_API_STAT_OK )
   {
     res = USB_STORAGE_ERROR;
   }
@@ -763,8 +824,13 @@ USB_STATUS vUSBeraseLOG ( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_STATUS vUSBerasePassword( const USB_REPORT* report )
 {
-  USB_STATUS res = USB_DONE;
-  if ( eDATAAPIpassword( DATA_API_CMD_ERASE, NULL ) != DATA_API_STAT_OK )
+  USB_STATUS      res    = USB_DONE;
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  while ( status == DATA_API_STAT_BUSY )
+  {
+    status = eDATAAPIpassword( DATA_API_CMD_ERASE, NULL );
+  }
+  if ( status != DATA_API_STAT_OK )
   {
     res = USB_STORAGE_ERROR;
   }
@@ -794,13 +860,8 @@ void vUSBsend ( USB_REPORT* request, void ( *callback )( USB_REPORT*, uint16_t )
     {
       outputBuffer[i] = 0U;
     }
-
   }
-  vUSBmakeReport( &report );
-  while ( eUSBwrite( report.buf ) == USBD_BUSY )
-  {
-    osDelay( 2U );
-  }
+  vUSBsendReport( &report );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -817,6 +878,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
     .buf    = outputBuffer,
     .data   = &outputBuffer[USB_DATA_BYTE],
   };
+
   if ( ( usbAuthorization == AUTH_DONE ) || ( report->cmd == USB_AUTHORIZATION ) )
   {
     res = callback( report );
@@ -824,6 +886,22 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
   else
   {
     res = USB_UNAUTHORIZED_ERROR;
+  }
+
+  if ( report->cmd != USB_AUTHORIZATION )
+  {
+    if ( eCONTROLLERgetMode()   == CONTROLLER_MODE_MANUAL )
+    {
+      if ( ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_IDLE  ) &&
+           ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_ALARM ) )
+      {
+        res = USB_ENGINE_NON_STOP;
+      }
+    }
+    else
+    {
+      res = USB_ENGINE_NON_STOP;
+    }
   }
   switch ( res )
   {
@@ -845,6 +923,9 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
     case USB_UNAUTHORIZED_ERROR:
       response.stat = USB_STAT_UNAUTHORIZED;
       break;
+    case USB_ENGINE_NON_STOP:
+      response.stat = USB_FORBIDDEN;
+      break;
     default:
       response.stat = USB_BAD_REQ_STAT;
       break;
@@ -853,11 +934,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
   {
     outputBuffer[i] = 0U;
   }
-  vUSBmakeReport( &response );
-  while ( eUSBwrite( response.buf ) == USBD_BUSY )
-  {
-    osDelay( 2U );
-  }
+  vUSBsendReport( &response );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

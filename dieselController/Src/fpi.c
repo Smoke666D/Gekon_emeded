@@ -8,13 +8,16 @@
 #include "fpi.h"
 #include "common.h"
 #include "stm32f2xx_hal_gpio.h"
-#include "cmsis_os2.h"
+#include "cmsis_os.h"
+#include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "event_groups.h"
 #include "config.h"
 #include "dataProces.h"
 #include "engine.h"
+#include "controllerTypes.h"
 /*-------------------------------- Structures --------------------------------*/
 static QueueHandle_t     pFPIQueue     = NULL;
 static StaticQueue_t     xFPIQueue     = { 0U };
@@ -61,7 +64,7 @@ static FPI     fpis[FPI_NUMBER]                         = { 0U };
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
-void    vFPITask ( void const* argument );
+void    vFPITask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -123,10 +126,10 @@ TRIGGER_STATE vFPIgetTrig ( FPI* fpi )
 void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* delayReg )
 {
   fpi->timer.delay = getUintValue( delayReg );
-  fpi->function    = eFPIfuncList[ getBitMap( setupReg, 0U ) ];
-  fpi->polarity    = getBitMap( setupReg, 1U );
-  fpi->action      = getBitMap( setupReg, 2U );
-  fpi->arming      = getBitMap( setupReg, 3U );
+  fpi->function    = eFPIfuncList[ getBitMap( setupReg, DIA_FUNCTION_ADR ) ];
+  fpi->polarity    = getBitMap( setupReg, DIA_POLARITY_ADR );
+  fpi->action      = getBitMap( setupReg, DIA_ACTION_ADR );
+  fpi->arming      = getBitMap( setupReg, DIA_ARMING_ADR );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -220,9 +223,6 @@ void vFPIinit ( const FPI_INIT* init )
     .stack_size = FPI_TASK_STACK_SIZE
   };
   fpiHandle = osThreadNew( vFPITask, NULL, &fpiTask_attributes );
-
-  xFPIsemaphore = xSemaphoreCreateMutex();
-
   vFPIprintSetup();
   return;
 }
@@ -294,20 +294,17 @@ void vFPIsetBlock ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFPITask ( void const* argument )
+void vFPITask ( void* argument )
 {
-  FPI_EVENT event       = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
-  uint8_t   i           = 0U;
-  uint32_t  inputNotifi = 0U;
+  FPI_EVENT event = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
+  uint8_t   i     = 0U;
   for (;;)
   {
     /*-------------------- Read system notification --------------------*/
-    if ( xTaskNotifyWait( 0U, 0xFFFFFFFFU, &inputNotifi, TASK_NOTIFY_WAIT_DELAY ) == pdPASS )
+    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_FPI_TASK_CONFIG_REINIT ) > 0U )
     {
-      if ( ( inputNotifi & DATA_API_MESSAGE_REINIT ) > 0U )
-      {
-        vFPIdataInit();
-      }
+      vFPIdataInit();
+      xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_FPI_TASK_CONFIG_REINIT );
     }
     if ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) == pdTRUE )
     {

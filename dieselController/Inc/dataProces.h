@@ -11,10 +11,15 @@
 #include "stm32f2xx_hal.h"
 #include "fix16.h"
 #include "config.h"
+/*------------------------ Define --------------------------------------*/
+#define SERIES_SIZE    5U
+#define SERIES_LN_SIZE 15U
 /*----------------------- Functions ------------------------------------*/
 uint8_t  getBitMap( const eConfigReg* reg, uint8_t bit );
 uint16_t getUintValue ( const eConfigReg* reg );
 fix16_t  getValue( const eConfigReg* reg );
+uint16_t setValue ( const eConfigReg* reg, fix16_t data );
+fix16_t  getMaxValue ( const eConfigReg* reg );
 fix16_t  fix16_pow ( fix16_t x, fix16_t y );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAPROCES_H_ */

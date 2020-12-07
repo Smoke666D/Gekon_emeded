@@ -17,8 +17,9 @@
 /*------------------------ Define --------------------------------------*/
 #define  ENGINE_EVENT_QUEUE_LENGTH      16U
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
-#define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
-#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE - 200U ) )
+#define  SENSOR_CUTOUT_LEVEL            1U//( MAX_RESISTANCE )
+#define  CHARGER_IMPULSE_DURATION       5U                                          /* sec */
+#define  CHARGER_ATTEMPTS_NUMBER        5U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -39,14 +40,16 @@ typedef enum
 
 typedef enum
 {
-  ENGINE_CMD_NONE,
-  ENGINE_CMD_START,          /* Ignition */
-  ENGINE_CMD_PLAN_STOP,
-  ENGINE_CMD_PLAN_STOP_WITH_DELAY,
-  ENGINE_CMD_GOTO_IDLE,
-  ENGINE_CMD_GOTO_NORMAL,
-  ENGINE_CMD_EMEGENCY_STOP,
-  ENGINE_CMD_RESET_TO_IDLE,
+  ENGINE_CMD_NONE,                 /* 0 */
+  ENGINE_CMD_START,                /* 1 Ignition */
+  ENGINE_CMD_PLAN_STOP,            /* 2 */
+  ENGINE_CMD_PLAN_STOP_WITH_DELAY, /* 3 */
+  ENGINE_CMD_GOTO_IDLE,            /* 4 */
+  ENGINE_CMD_GOTO_NORMAL,          /* 5 */
+  ENGINE_CMD_EMEGENCY_STOP,        /* 6 */
+  ENGINE_CMD_RESET_TO_IDLE,        /* 7 */
+  ENGINE_CMD_BAN_START,            /* 8 */
+  ENGINE_CMD_ALLOW_START,          /* 9 */
 } ENGINE_COMMAND;
 
 typedef enum
@@ -56,6 +59,7 @@ typedef enum
   ENGINE_STATUS_BUSY_STARTING,
   ENGINE_STATUS_BUSY_STOPPING,
   ENGINE_STATUS_WORK,
+  ENGINE_STATUS_WORK_WAIT_ELECTRO,
   ENGINE_STATUS_WORK_ON_IDLE,
   ENGINE_STATUS_WORK_GOTO_NOMINAL,
   ENGINE_STATUS_FAIL_STARTING,
@@ -65,7 +69,7 @@ typedef enum
 typedef enum
 {
   STARTER_IDLE,
-  STARTER_START_DELAY,
+  STARTER_START_PREPARATION,
   STARTER_READY,
   STARTER_CRANKING,
   STARTER_CRANK_DELAY,
@@ -81,6 +85,7 @@ typedef enum
 {
   STOP_IDLE,
   STOP_COOLDOWN,
+  STOP_WAIT_ELECTRO,
   STOP_IDLE_COOLDOWN,
   STOP_PROCESSING,
   STOP_FAIL,
@@ -91,22 +96,34 @@ typedef enum
 {
   MAINTENCE_STATUS_STOP,
   MAINTENCE_STATUS_RUN,
+  MAINTENCE_STATUS_CHECK,
 } MAINTENCE_STATUS;
+
+typedef enum
+{
+  CHARGER_STATUS_IDLE,
+  CHARGER_STATUS_STARTUP,
+  CHARGER_STATUS_IMPULSE,
+  CHARGER_STATUS_DELAY,
+  CHARGER_STATUS_MEASURING,
+  CHARGER_STATUS_ERROR,
+} CHARGER_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  SENSOR_TYPE       type;
+  SENSOR_TYPE       type   : 3U;
+  SENSOR_STATUS     status : 2U;
   eChartData*       chart;
   getValueCallBack  get;
-  ALARM_TYPE        cutout;
-  SENSOR_STATUS     status;
+  ERROR_TYPE        cutout;
 } SENSOR;
 
 typedef struct __packed
 {
   SENSOR      pressure;
+  fix16_t     trashhold;
   ALARM_TYPE  alarm;
   ALARM_TYPE  preAlarm;
 } OIL_TYPE;
@@ -133,11 +150,11 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t           enb;
+  PERMISSION        enb         : 1U;
+  SENSOR_STATUS     status      : 2U;
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
-  SENSOR_STATUS     status;
 } SPEED_TYPE;
 
 typedef struct __packed
@@ -149,21 +166,28 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  PERMISSION        enb       : 1U;
+  CHARGER_STATUS    status    : 3U;
+  uint8_t           attempts;
+  uint8_t           iteration;
   getValueCallBack  get;
-  ALARM_TYPE        hightAlarm;
-  ALARM_TYPE        hightPreAlarm;
+  RELAY_DEVICE      relay;
+  SYSTEM_TIMER      timer;
+  fix16_t           setpoint;
+  ERROR_TYPE        error;
+  ALARM_TYPE        warning;
 } CHARGER_TYPE;
 
 typedef struct __packed
 {
-  uint8_t  critGenFreqEnb;
-  fix16_t  critGenFreqLevel;
-  uint8_t  critOilPressEnb;
-  fix16_t  critOilPressLevel;
-  uint8_t  critChargeEnb;
-  fix16_t  critChargeLevel;
-  uint8_t  critSpeedEnb;
-  fix16_t  critSpeedLevel;
+  PERMISSION  critGenFreqEnb    : 1U;
+  PERMISSION  critOilPressEnb   : 1U;
+  PERMISSION  critChargeEnb     : 1U;
+  PERMISSION  critSpeedEnb      : 1U;
+  fix16_t     critGenFreqLevel;
+  fix16_t     critOilPressLevel;
+  fix16_t     critChargeLevel;
+  fix16_t     critSpeedLevel;
 } START_CRITERIONS_TYPE;
 
 typedef struct __packed
@@ -180,7 +204,6 @@ typedef struct __packed
   /* Callback */
   setRelayCallBack       set;
   /* Delays */
-  fix16_t                startDelay;      /* sec */
   fix16_t                crankingDelay;   /* sec */
   fix16_t                crankDelay;      /* sec */
   fix16_t                blockDelay;      /* sec */
@@ -188,27 +211,28 @@ typedef struct __packed
   fix16_t                nominalDelay;    /* sec */
   fix16_t                warmingDelay;    /* sec */
   /* Counters */
-  uint8_t                startAttempts;
-  uint8_t                startIteration;
+  uint8_t                attempts;
+  uint8_t                iteration;
   /* Structures */
   START_CRITERIONS_TYPE  startCrit;
   /* Status */
-  STARTER_STATUS         status;
+  STARTER_STATUS         status       : 4U;
 } STARTER_TYPE;
 
 typedef struct __packed
 {
-  fix16_t           coolingDelay;      /* sec */
-  fix16_t           coolingIdleDelay;  /* sec */
-  fix16_t           processDelay;      /* sec */
-  PLAN_STOP_STATUS  status;
+  fix16_t           coolingDelay;          /* sec */
+  fix16_t           coolingIdleDelay;      /* sec */
+  fix16_t           processDelay;          /* sec */
+  PLAN_STOP_STATUS  status           : 4U;
 } PLAN_STOP_TYPE;
 
 typedef struct __packed
 {
-  ENGINE_COMMAND  cmd;
-  uint8_t         startCheckOil;
-  ENGINE_STATUS   status;
+  ENGINE_COMMAND  cmd           : 4U;
+  ENGINE_STATUS   status        : 4U;
+  PERMISSION      startCheckOil : 1U;
+  PERMISSION      banStart      : 1U;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
 } ENGINE_TYPE;
@@ -216,7 +240,7 @@ typedef struct __packed
 extern osThreadId_t engineHandle;
 /*----------------------- Functions ------------------------------------*/
 void          vENGINEinit ( void );
-void          vENGINEemergencyStop ( void );
+void          vENGINEsendCmd ( ENGINE_COMMAND cmd );
 QueueHandle_t pENGINEgetCommandQueue ( void );
 uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );

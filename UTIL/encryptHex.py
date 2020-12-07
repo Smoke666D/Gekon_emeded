@@ -1,15 +1,22 @@
+import subprocess
+import sys
+print("**************************************************************");
+print("Check required packages...")
+required           = { 'pycryptodome' }
+reqs               = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
+for name in required:
+    if name not in installed_packages:
+        print( "You need to install " + name );
 #-------------------------------------------------------------------------------
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
-import binascii
+from   Crypto.Cipher import AES        # pycryptodome
+from   Crypto.Util.Padding import pad  # pycryptodome
 import os
-from base64 import b64encode
-from Crypto.Util.Padding import pad
-from sys import argv
+from   sys import argv
 import math
 #-------------------------------------------------------------------------------
-key = bytes([ 0x83, 0xF7, 0x79, 0x7F, 0x52, 0x1E, 0x37, 0xA2, 0x6B, 0xAF, 0xBB, 0xD0, 0x41, 0x77, 0x9A, 0xB5 ]);
-iv  = bytes([ 0x49, 0x60, 0x7B, 0x42, 0x55, 0xE6, 0xE9, 0x4B, 0x3C, 0xC7, 0x76, 0xFB, 0x06, 0x67, 0xA9, 0xF2 ]);
+key = bytes( [ 0x83, 0xF7, 0x79, 0x7F, 0x52, 0x1E, 0x37, 0xA2, 0x6B, 0xAF, 0xBB, 0xD0, 0x41, 0x77, 0x9A, 0xB5 ] );
+iv  = bytes( [ 0x49, 0x60, 0x7B, 0x42, 0x55, 0xE6, 0xE9, 0x4B, 0x3C, 0xC7, 0x76, 0xFB, 0x06, 0x67, 0xA9, 0xF2 ] );
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -131,7 +138,7 @@ class HexFile:
                     line += format( crc, '02X' ) + "\n";
                     out  += line;
         out += ":00000001FF\n";
-        output = open( "encrypt.hex", "w+" );
+        output = open( "firmware.hex", "w+" );
         output.write( out );
         return;
 #-------------------------------------------------------------------------------
@@ -170,7 +177,6 @@ def encrypt ( line ):
 #-------------------------------------------------------------------------------
 if __name__ == "__main__":
     if ( len( argv ) > 1 ):
-        print("**************************************************************");
         cipher    = AES.new( key, AES.MODE_CBC, iv=iv );
         strInd    = 0;
         lineCount = 0;

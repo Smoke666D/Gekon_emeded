@@ -49,6 +49,7 @@
 #include "engine.h"
 #include "electro.h"
 #include "controller.h"
+#include "alarm.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,6 +85,7 @@ TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
+TIM_HandleTypeDef htim12;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
@@ -164,6 +166,7 @@ static void MX_TIM5_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM8_Init(void);
+static void MX_TIM12_Init ( void );
 
 
 
@@ -248,7 +251,7 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick.
    *
    */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -280,13 +283,14 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   MX_TIM8_Init();
+  MX_TIM12_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
   vCHARTinitCharts();                                           /* Charts data initialization */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit( &notifyTrg );                                   /* Data API initialization */
+  vDATAAPIinit();                                               /* Data API initialization */
   /*--------------------------------------------------------------------------*/
   vSYSSerial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */
@@ -1048,6 +1052,36 @@ static void MX_TIM8_Init(void)
 
 }
 
+static void MX_TIM12_Init ( void )
+{
+
+  TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig      = {0};
+
+  htim12.Instance               = TIM12;
+  htim12.Init.Prescaler         = 30001U;
+  htim12.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim12.Init.Period            = 201U;
+  htim12.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim12, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim12, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  return;
+}
+
 /**
   * @brief USART2 Initialization Function
   * @param None
@@ -1164,14 +1198,15 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
-                          |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
+                          |EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
                           |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED3_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, LED2_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, RTC_INT_Pin|RTC_RST_Pin, GPIO_PIN_RESET);
@@ -1301,19 +1336,20 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
+  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
+  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
   while ( uADCGetValidDataFlag() == 0U )
   {
     osDelay( 10U );
   }
-  osDelay( 100U );
-  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
-  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
-  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
+  osDelay( 2000U );                           /* Delay ADC valid data ready*/
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
+  vALARMinit();                               /* Activ error list initialization */
   vENGINEinit();                              /**/
-  vELECTROinit();                             /**/
+  vELECTROinit( &htim12 );                    /**/
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
   /* Infinite loop */

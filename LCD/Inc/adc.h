@@ -30,6 +30,12 @@
 #define DC_READY           0x40U
 #define GEN_UPDATE         0x80U
 #define NET_UPDATE         0x100U
+#define COMMON_ERROR       0x01U
+#define OP_CHANEL_ERROR    0x02U
+#define CT_CHANEL_ERROR    0x04U
+#define FL_CHANEL_ERROR    0x80U
+
+
 
 #define ADC_READY          0x08U
 #define ADC1_CHANNEL       0x01U
@@ -41,9 +47,6 @@
 #define ADC3_ADD_CHANNEL   5U
 #define ADC_FRAME_SIZE     1024//700U//512U
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
-
-#define  OIL_PRESSURE_ANALOG  0x01
-#define  COOLANT_TEMP_ANALOG  0x02
 
 #define GEN_RMS_CUR         0
 #define GEN_FREQ            1
@@ -179,6 +182,6 @@ fix16_t xADCGetREG(uint16_t reg);
 void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-
+uint8_t uADCGetDCChError();
 
 #endif /* INC_ADC_H_ */

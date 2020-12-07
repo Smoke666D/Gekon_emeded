@@ -9,9 +9,10 @@
 
 #include "adc.h"
 
-static   SENSOR_TYPE        xOPChType =SENSOR_TYPE_RESISTIVE;
-static   SENSOR_TYPE        xCTChType =SENSOR_TYPE_RESISTIVE;
-static   SENSOR_TYPE        xFLChType =SENSOR_TYPE_RESISTIVE;
+static   SENSOR_TYPE        xOPChType =SENSOR_TYPE_NONE;
+static   SENSOR_TYPE        xCTChType =SENSOR_TYPE_NONE;
+static   SENSOR_TYPE        xFLChType =SENSOR_TYPE_NONE;
+static   uint8_t            uADCError = 0U;
 static   EventGroupHandle_t xADCEvent;
 static   StaticEventGroup_t xADCCreatedEventGroup;
 volatile int16_t            ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS] = { 0U };   //ADC1 input data buffer
@@ -293,7 +294,12 @@ fix16_t xADCGetREG(uint16_t reg)
  *  Функция возвращает мговенную мощность переменного тока
  */
 
+uint8_t uADCGetDCChError()
+{
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
+  return uADCError;
 
+}
 
 
 uint8_t uADCGetValidDataFlag()
@@ -464,11 +470,13 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       xADC_TEMP = fix16_div( xADC_TEMP, fix16_from_float(0.0025) );
       xADC_TEMP = fix16_add(xADC_TEMP, fix16_from_int( 25 ) );
       //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
+      uADCError = 0U;
       if ( ( uCSA - uCAS ) <= DELTA )
       {
         xSOP = fix16_from_int( MAX_RESISTANCE );
         xSCT = xSOP;
         xSFL = xSOP;
+        uADCError |= COMMON_ERROR;
       }
       else
       {
@@ -481,6 +489,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
            if ( ( ( uCSD - uSCT ) <= DELTA ) || ( uSCT < uCAS ) )
            {
               xSCT = 0U;
+              uADCError |= CT_CHANEL_ERROR;
            }
            else
            {
@@ -512,6 +521,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           if ( ( ( uCSD - uSFL ) <= DELTA ) || ( uSFL < uCAS ) )
           {
             xSFL = 0U;
+            uADCError |= FL_CHANEL_ERROR;
           }
           else
           {
@@ -541,6 +551,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
              if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP < uCAS ) )
              {
                 xSOP = 0U;
+                uADCError |= OP_CHANEL_ERROR;
              }
             else
             {

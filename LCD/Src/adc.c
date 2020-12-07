@@ -9,7 +9,9 @@
 
 #include "adc.h"
 
-
+static   SENSOR_TYPE        xOPChType =SENSOR_TYPE_RESISTIVE;
+static   SENSOR_TYPE        xCTChType =SENSOR_TYPE_RESISTIVE;
+static   SENSOR_TYPE        xFLChType =SENSOR_TYPE_RESISTIVE;
 static   EventGroupHandle_t xADCEvent;
 static   StaticEventGroup_t xADCCreatedEventGroup;
 volatile int16_t            ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS] = { 0U };   //ADC1 input data buffer
@@ -473,32 +475,94 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
         //Усредняем сырые значения АЦП
         uSCT = GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
 
-        if ( ( ( uCSD - uSCT ) <= DELTA ) || (uSCT <  uCAS) )
+        switch (xCTChType)
         {
-          xSCT = 0U;
-        }
-        else
+           case SENSOR_TYPE_RESISTIVE:
+           if ( ( ( uCSD - uSCT ) <= DELTA ) || ( uSCT < uCAS ) )
+           {
+              xSCT = 0U;
+           }
+           else
+           {
+               temp_int = ( ( uSCT - uCAS ) * R3 ) / ( uCSD - uSCT );
+               xSCT = fix16_from_int( temp_int );
+           }
+           break;
+         case SENSOR_TYPE_NORMAL_OPEN:
+         case SENSOR_TYPE_NORMAL_CLOSE:
+             if (uSCT < (uCSD/2))
+             {
+               xSCT =0U;
+             }
+             else
+             {
+                xSCT =fix16_from_int( MAX_RESISTANCE );
+             }
+             break;
+         case SENSOR_TYPE_CURRENT:
+         default:
+            xSCT = 0U;
+            break;
+         }
+
+
+        switch (xFLChType)
         {
-          temp_int = ( ( uSCT - uCAS ) * R3 ) / ( uCSD - uSCT );
-          xSCT = fix16_from_int( temp_int );
-        }
-        if ( ( ( uCSD - uSFL ) <= DELTA ) || ( uSFL  < uCAS ) )
+          case SENSOR_TYPE_RESISTIVE:
+          if ( ( ( uCSD - uSFL ) <= DELTA ) || ( uSFL < uCAS ) )
+          {
+            xSFL = 0U;
+          }
+          else
+          {
+            temp_int = ( ( uSFL - uCAS ) * R3 ) / ( uCSD - uSFL );
+            xSFL = fix16_from_int( temp_int );
+          }
+          break;
+          case SENSOR_TYPE_NORMAL_OPEN:
+          case SENSOR_TYPE_NORMAL_CLOSE:
+             if (uSFL < (uCSD/2))
+             {
+                 xSFL =0U;
+             }
+            else
+            {
+                xSFL =fix16_from_int( MAX_RESISTANCE );
+            }
+            break;
+         case SENSOR_TYPE_CURRENT:
+         default:
+            xSFL = 0U;
+            break;
+       }
+        switch (xOPChType)
         {
-          xSFL = 0U;
-        }
-        else
-        {
-          temp_int = ( ( uSFL - uCAS ) * R3 ) / ( uCSD - uSFL );
-          xSFL = fix16_from_int( temp_int );
-        }
-        if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP < uCAS ) )
-        {
-          xSOP = 0U;
-        }
-        else
-        {
-          temp_int = ( ( uSOP - uCAS ) * R3 ) / ( uCSD - uSOP );
-          xSOP = fix16_from_int( temp_int );
+          case SENSOR_TYPE_RESISTIVE:
+             if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP < uCAS ) )
+             {
+                xSOP = 0U;
+             }
+            else
+            {
+               temp_int = ( ( uSOP - uCAS ) * R3 ) / ( uCSD - uSOP );
+               xSOP = fix16_from_int( temp_int );
+             }
+             break;
+          case SENSOR_TYPE_NORMAL_OPEN:
+          case SENSOR_TYPE_NORMAL_CLOSE:
+            if (uSOP < (uCSD/2))
+            {
+              xSOP =0U;
+            }
+            else
+            {
+              xSOP =fix16_from_int( MAX_RESISTANCE );
+            }
+           break;
+          case SENSOR_TYPE_CURRENT:
+          default:
+            xSOP = 0U;
+            break;
         }
       }
       if (adc_count==0)
@@ -513,6 +577,10 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
       break;
     case 0U:
+
+
+
+
       //Переводим в наряжние на канале АЦП
       uCSD = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
@@ -811,6 +879,9 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 
 void vADCInit(void)
 {
+
+      eConfigAttributes atrib;
+      uint16_t bitmask;
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
       vADC3DCInit(DC);
@@ -826,7 +897,29 @@ void vADCInit(void)
       hadc2.DMA_Handle->XferErrorCallback = ADC_DMAErro;
       hadc1.DMA_Handle->XferErrorCallback = ADC_DMAErro;
       ADC_VALID_DATA =0;
-      osDelay( 100U );
+
+
+      for (uint8_t i=0;i<20;i++)
+      {
+        osDelay( 100U );
+        if  ( eDATAAPIconfigValue(DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR ,&bitmask) == DATA_API_STAT_OK)
+        {
+           eDATAAPIconfigAtrib (DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR, &atrib );
+           xCTChType = (bitmask  & atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].shift;
+
+           eDATAAPIconfigValue(DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR ,&bitmask);
+           eDATAAPIconfigAtrib (DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR, &atrib );
+           xOPChType = (bitmask  & atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].shift;
+
+           eDATAAPIconfigValue(DATA_API_CMD_READ,FUEL_LEVEL_SETUP_ADR  ,&bitmask);
+           eDATAAPIconfigAtrib (DATA_API_CMD_READ, FUEL_LEVEL_SETUP_ADR , &atrib );
+           xFLChType = (bitmask  & atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].shift;
+          break;
+        }
+
+
+      }
+
 }
 
 

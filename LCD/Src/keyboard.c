@@ -21,7 +21,7 @@ static EventGroupHandle_t pxKeyStatusFLag;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static unsigned char STATUS[KEYBOARD_COUNT]                     = { 0U };
 static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
-static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, auto_key, start_key };
+static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, start_key ,auto_key };
 static unsigned long KeyNorPressTimeOut                         = 0U;
 static unsigned long KEY_TIME_OUT                               = 60000U;
 static char          cKeyDelay                                  = 0U;

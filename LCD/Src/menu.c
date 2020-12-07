@@ -356,10 +356,10 @@ void vMenuTask ( void )
             key = KEY_STOP;
             break;
           case start_key:
-            key = KEY_AUTO;
+            key = KEY_START;
             break;
           case auto_key:
-            key = KEY_START;
+            key = KEY_AUTO;
             break;
           case time_out:
             key = KEY_EXIT;

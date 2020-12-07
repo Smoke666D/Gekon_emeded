@@ -178,7 +178,7 @@ void vDATAprintSerialNumber ( void )
       sprintf( &buf[6U * i + 3U * j], "%02X:", temp );
     }
   }
-  buf[35] = 0U;
+  buf[35U] = 0U;
   vSYSSerial( buf );
   vSYSSerial( "\n\r" );
   return;

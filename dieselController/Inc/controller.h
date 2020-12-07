@@ -26,9 +26,9 @@ typedef enum
   CONTROLLER_STATUS_IDLE,
   CONTROLLER_STATUS_ALARM,
   CONTROLLER_STATUS_START,
+  CONTROLLER_STATUS_START_WITH_DELAY,
   CONTROLLER_STATUS_PLAN_STOP,
-  CONTROLLER_STATUS_PLAN_STOP_DELAY,
-  CONTROLLER_STATUS_SHUTDOWN,
+  CONTROLLER_STATUS_PLAN_STOP_WITH_DELAY,
   CONTROLLER_STATUS_WORK,
 } CONTROLLER_STATE;
 
@@ -36,6 +36,7 @@ typedef enum
 {
   CONTROLLER_TURNING_IDLE,
   CONTROLLER_TURNING_READY,
+  CONTROLLER_TURNING_START_DELAY,
   CONTROLLER_TURNING_DELAY,
   CONTROLLER_TURNING_RELOAD,
   CONTROLLER_TURNING_ENGINE,
@@ -55,14 +56,16 @@ typedef struct __packed
   uint16_t      stopPIN;
   GPIO_TypeDef* stopGPIO;
 } CONTROLLER_INIT;
+
 typedef struct __packed
 {
-  CONTROLLER_MODE   mode;
-  CONTROLLER_STATE  state;
-  uint8_t           banAutoShutdown;
-  uint8_t           banAutoStart;
-  uint8_t           banGenLoad;
+  CONTROLLER_MODE   mode            : 1U;
+  CONTROLLER_STATE  state           : 3U;
+  PERMISSION        banAutoShutdown : 1U;
+  PERMISSION        banAutoStart    : 1U;
+  PERMISSION        banGenLoad      : 1U;
   fix16_t           stopDelay;
+  fix16_t           startDelay;
   SYSTEM_TIMER      timer;
 } CONTROLLER_TYPE;
 /*----------------------- Extern ---------------------------------------*/

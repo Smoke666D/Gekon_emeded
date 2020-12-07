@@ -26,7 +26,7 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  ERROR_LIST_STATUS status;
+  ERROR_LIST_STATUS status : 2U;
   LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
   uint8_t           counter;
 } ACTIVE_ERROR_LIST;

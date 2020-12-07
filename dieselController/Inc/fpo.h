@@ -86,8 +86,8 @@ typedef struct __packed
   GPIO_TypeDef*  port;   /* GPIO port*/
   uint16_t       pin;    /* Pin number */
   /* Logic */
-  FPO_FUNCTION   function;
-  FPO_POLARITY   polarity;
+  FPO_FUNCTION   function : 5U;
+  FPO_POLARITY   polarity : 1U;
 } FPO;
 
 typedef struct __packed

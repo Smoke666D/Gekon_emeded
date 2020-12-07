@@ -355,13 +355,11 @@ fix16_t fGENERATORprocess ( void )
   }
   vELECTROalarmCheck( &generator.overloadAlarm, power, MAINS_LINE_NUMBER );
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );
-
   vELECTROpowerUsageProcessing();
-
   return fELECTROgetMax( voltage, MAINS_LINE_NUMBER );
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
+void vELECTROdataInit ( void )
 {
   shortCircuitDividend = fix16_mul( shortCircuitTrippingCurve, shortCircuitConstant );
 
@@ -508,17 +506,14 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
   generator.overloadAlarm.error.id     = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.currentAlarm.state               = ELECTRO_CURRENT_STATUS_IDLE;
-  generator.currentAlarm.over.current        = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
+  generator.currentAlarm.over.current        = fix16_mul( generator.rating.current.nominal, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
   generator.currentAlarm.over.delay          = 0U;
   generator.currentAlarm.over.event.type     = EVENT_OVER_CURRENT;
   generator.currentAlarm.over.event.action   = ACTION_PLAN_STOP;
-  generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current.nominal,
-                                                          fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
+  generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current.nominal, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
   generator.currentAlarm.cutout.delay        = 0U;
   generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
   generator.currentAlarm.cutout.event.action = ACTION_PLAN_STOP;
-  //generator.currentAlarm.tim                 = currentTIM;
   /*----------------------------------------------------------------------------*/
   generator.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_GEN );
   generator.relay.status = RELAY_OFF;
@@ -652,10 +647,12 @@ void vELECTROdataInit ( /*TIM_HandleTypeDef* currentTIM*/ void )
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void vELECTROinit ( void )
+void vELECTROinit ( TIM_HandleTypeDef* tim )
 {
   /* Data initialization */
   vELECTROdataInit();
+  generator.currentAlarm.tim = tim;
+  HAL_TIM_Base_Start_IT( tim );
   /* OS initialization */
   pElectroCommandQueue = xQueueCreateStatic( ELECTRO_COMMAND_QUEUE_LENGTH, sizeof( ELECTRO_COMMAND ), electroCommandBuffer, &xElectroCommandQueue );
   const osThreadAttr_t electroTask_attributes = {
@@ -665,9 +662,9 @@ void vELECTROinit ( void )
   };
   electroHandle = osThreadNew( vELECTROtask, NULL, &electroTask_attributes );
   /* Default condition initialization */
-  mains.relay.set( RELAY_ON );
-  mains.state = ELECTRO_STATUS_LOAD;
-  generator.relay.set( RELAY_OFF );
+  vRELAYset( &mains.relay,     RELAY_ON );
+  vRELAYset( &generator.relay, RELAY_OFF );
+  mains.state     = ELECTRO_STATUS_LOAD;
   generator.state = ELECTRO_STATUS_IDLE;
   return;
 }
@@ -709,10 +706,14 @@ TRIGGER_STATE eELECTROgetMainsErrorFlag ( void )
   return eERRORisActive( &mains.autoStart );
 }
 /*---------------------------------------------------------------------------------------------------*/
+ELECTRO_PROCESS_STATUS eELECTROgetStatus ( void )
+{
+  return electro.state;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vELECTROtask ( void* argument )
 {
-  ELECTRO_COMMAND inputCmd    = ELECTRO_CMD_NONE;
-  uint32_t        inputNotifi = 0U;
+  ELECTRO_COMMAND inputCmd = ELECTRO_CMD_NONE;
   for(;;)
   {
     /*-------------------- Read system notification --------------------*/
@@ -743,7 +744,7 @@ void vELECTROtask ( void* argument )
           switch ( electro.state )
           {
             case ELECTRO_PROC_STATUS_IDLE:
-              generator.relay.set( RELAY_OFF );
+              vRELAYset( &generator.relay, RELAY_OFF );
               vRELAYdelayTrig( &generator.relayOff );
               electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
               vLOGICprintDebug( ">>Electro         : Disconnect Generator\r\n" );
@@ -760,7 +761,7 @@ void vELECTROtask ( void* argument )
               if ( uLOGICisTimer( electro.timer ) > 0U )
               {
                 generator.state = ELECTRO_STATUS_IDLE;
-                mains.relay.set( RELAY_ON );
+                vRELAYset( &mains.relay, RELAY_ON );
                 vRELAYdelayTrig( &mains.relayOn );
                 electro.state = ELECTRO_PROC_STATUS_DONE;
                 vLOGICprintDebug( ">>Electro         : Connect mains\r\n" );
@@ -788,7 +789,7 @@ void vELECTROtask ( void* argument )
           switch ( electro.state )
           {
             case ELECTRO_PROC_STATUS_IDLE:
-              mains.relay.set( RELAY_OFF );
+              vRELAYset( &mains.relay, RELAY_OFF );
               vRELAYdelayTrig( &mains.relayOff );
               vLOGICstartTimer( &electro.timer );
               electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
@@ -806,7 +807,7 @@ void vELECTROtask ( void* argument )
               if ( uLOGICisTimer( electro.timer ) > 0U )
               {
                 mains.state   = ELECTRO_STATUS_IDLE;
-                generator.relay.set( RELAY_ON );
+                vRELAYset( &generator.relay, RELAY_ON );
                 vRELAYdelayTrig( &generator.relayOn );
                 electro.state = ELECTRO_PROC_STATUS_DONE;
                 vLOGICprintDebug( ">>Electro         : Connect generator\r\n" );
@@ -829,10 +830,14 @@ void vELECTROtask ( void* argument )
         }
         break;
       case ELECTRO_CMD_ENABLE_STOP_ALARMS:
-        mains.lowVoltageAlarm.error.active          = PERMISSION_ENABLE;
-        mains.hightVoltageAlarm.error.active        = PERMISSION_ENABLE;
-        mains.lowFreqAlarm.error.active             = PERMISSION_ENABLE;
-        mains.hightFreqAlarm.error.active           = PERMISSION_ENABLE;
+        mains.lowVoltageAlarm.error.active   = PERMISSION_ENABLE;
+        mains.hightVoltageAlarm.error.active = PERMISSION_ENABLE;
+        mains.lowFreqAlarm.error.active      = PERMISSION_ENABLE;
+        mains.hightFreqAlarm.error.active    = PERMISSION_ENABLE;
+        vERRORreset( &mains.lowVoltageAlarm.error   );
+        vERRORreset( &mains.hightVoltageAlarm.error );
+        vERRORreset( &mains.lowFreqAlarm.error      );
+        vERRORreset( &mains.hightFreqAlarm.error    );
         generator.lowVoltageAlarm.error.active      = PERMISSION_DISABLE;
         generator.lowVoltagePreAlarm.error.active   = PERMISSION_DISABLE;
         generator.hightVoltagePreAlarm.error.active = PERMISSION_DISABLE;
@@ -869,12 +874,26 @@ void vELECTROtask ( void* argument )
         mains.hightFreqAlarm.error.active           = PERMISSION_ENABLE;
         generator.lowVoltageAlarm.error.active      = PERMISSION_ENABLE;
         generator.lowVoltagePreAlarm.error.active   = PERMISSION_ENABLE;
+        generator.lowFreqPreAlarm.error.active      = PERMISSION_ENABLE;
+        generator.lowFreqAlarm.error.active         = PERMISSION_ENABLE;
         generator.hightVoltagePreAlarm.error.active = PERMISSION_ENABLE;
         generator.hightVoltageAlarm.error.active    = PERMISSION_ENABLE;
         generator.hightFreqPreAlarm.error.active    = PERMISSION_ENABLE;
         generator.hightFreqAlarm.error.active       = PERMISSION_ENABLE;
-        electro.alarmState                          = ELECTRO_ALARM_STATUS_START_ON_IDLE;
-        electro.cmd                                 = ELECTRO_CMD_NONE;
+        vERRORreset( &mains.lowVoltageAlarm.error          );
+        vERRORreset( &mains.hightVoltageAlarm.error        );
+        vERRORreset( &mains.lowFreqAlarm.error             );
+        vERRORreset( &mains.hightFreqAlarm.error           );
+        vERRORreset( &generator.lowVoltageAlarm.error      );
+        vERRORreset( &generator.lowVoltagePreAlarm.error   );
+        vERRORreset( &generator.lowFreqPreAlarm.error      );
+        vERRORreset( &generator.lowFreqAlarm.error         );
+        vERRORreset( &generator.hightVoltagePreAlarm.error );
+        vERRORreset( &generator.hightVoltageAlarm.error    );
+        vERRORreset( &generator.hightFreqPreAlarm.error    );
+        vERRORreset( &generator.hightFreqAlarm.error       );
+        electro.alarmState = ELECTRO_ALARM_STATUS_START_ON_IDLE;
+        electro.cmd        = ELECTRO_CMD_NONE;
         vLOGICprintDebug( ">>Electro         : Alarms set as start on idle\r\n" );
         break;
       case ELECTRO_CMD_DISABLE_IDLE_ALARMS:
@@ -891,29 +910,33 @@ void vELECTROtask ( void* argument )
         generator.lowFreqPreAlarm.error.active    = PERMISSION_ENABLE;
         generator.lowVoltageAlarm.error.active    = PERMISSION_ENABLE;
         generator.lowVoltagePreAlarm.error.active = PERMISSION_ENABLE;
-        electro.alarmState                        = ELECTRO_ALARM_STATUS_WORK;
-        electro.cmd                               = ELECTRO_CMD_NONE;
+        vERRORreset( &generator.lowFreqAlarm.error       );
+        vERRORreset( &generator.lowFreqPreAlarm.error    );
+        vERRORreset( &generator.lowVoltageAlarm.error    );
+        vERRORreset( &generator.lowVoltagePreAlarm.error );
+        electro.alarmState = ELECTRO_ALARM_STATUS_WORK;
+        electro.cmd        = ELECTRO_CMD_NONE;
         vLOGICprintDebug( ">>Electro         : Alarms set as normal work\r\n" );
         break;
       case ELECTRO_CMD_RESET_TO_IDLE:
-        vERRORreset( &mains.lowVoltageAlarm.error );
-        vERRORreset( &mains.hightVoltageAlarm.error );
-        vERRORreset( &mains.lowFreqAlarm.error );
-        vERRORreset( &mains.hightFreqAlarm.error );
-        vERRORreset( &generator.hightFreqAlarm.error );
-        vERRORreset( &generator.hightFreqPreAlarm.error );
-        vERRORreset( &generator.hightVoltageAlarm.error );
+        mains.lowVoltageAlarm.error.active   = PERMISSION_ENABLE;
+        mains.hightVoltageAlarm.error.active = PERMISSION_ENABLE;
+        mains.lowFreqAlarm.error.active      = PERMISSION_ENABLE;
+        mains.hightFreqAlarm.error.active    = PERMISSION_ENABLE;
+        vERRORreset( &mains.lowVoltageAlarm.error          );
+        vERRORreset( &mains.hightVoltageAlarm.error        );
+        vERRORreset( &mains.lowFreqAlarm.error             );
+        vERRORreset( &mains.hightFreqAlarm.error           );
+        vERRORreset( &generator.hightFreqAlarm.error       );
+        vERRORreset( &generator.hightFreqPreAlarm.error    );
+        vERRORreset( &generator.hightVoltageAlarm.error    );
         vERRORreset( &generator.hightVoltagePreAlarm.error );
-        vERRORreset( &generator.lowFreqAlarm.error );
-        vERRORreset( &generator.lowFreqPreAlarm.error );
-        vERRORreset( &generator.lowVoltageAlarm.error );
-        vERRORreset( &generator.lowVoltagePreAlarm.error );
-        vERRORreset( &generator.overloadAlarm.error );
-        vERRORreset( &generator.phaseImbalanceAlarm.error );
-        mains.lowVoltageAlarm.error.active          = PERMISSION_ENABLE;
-        mains.hightVoltageAlarm.error.active        = PERMISSION_ENABLE;
-        mains.lowFreqAlarm.error.active             = PERMISSION_ENABLE;
-        mains.hightFreqAlarm.error.active           = PERMISSION_ENABLE;
+        vERRORreset( &generator.lowFreqAlarm.error         );
+        vERRORreset( &generator.lowFreqPreAlarm.error      );
+        vERRORreset( &generator.lowVoltageAlarm.error      );
+        vERRORreset( &generator.lowVoltagePreAlarm.error   );
+        vERRORreset( &generator.overloadAlarm.error        );
+        vERRORreset( &generator.phaseImbalanceAlarm.error  );
         vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
         break;
       default:
@@ -922,9 +945,9 @@ void vELECTROtask ( void* argument )
     }
     /*----------------------- Output processing ------------------------*/
     vRELAYdelayProcess( &generator.relayOff );
-    vRELAYdelayProcess( &mains.relayOn );
-    vRELAYdelayProcess( &generator.relayOn );
-    vRELAYdelayProcess( &mains.relayOff );
+    vRELAYdelayProcess( &mains.relayOn      );
+    vRELAYdelayProcess( &generator.relayOn  );
+    vRELAYdelayProcess( &mains.relayOff     );
   }
 }
 /*----------------------------------------------------------------------------*/

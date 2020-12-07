@@ -18,6 +18,8 @@
 uint8_t  getBitMap( const eConfigReg* reg, uint8_t bit );
 uint16_t getUintValue ( const eConfigReg* reg );
 fix16_t  getValue( const eConfigReg* reg );
+uint16_t setValue ( const eConfigReg* reg, fix16_t data );
+fix16_t  getMaxValue ( const eConfigReg* reg );
 fix16_t  fix16_pow ( fix16_t x, fix16_t y );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAPROCES_H_ */

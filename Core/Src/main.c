@@ -1336,14 +1336,14 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
+  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
+  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
   while ( uADCGetValidDataFlag() == 0U )
   {
     osDelay( 10U );
   }
   osDelay( 2000U );                           /* Delay ADC valid data ready*/
-  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
-  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
-  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */

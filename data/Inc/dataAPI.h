@@ -28,14 +28,15 @@
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
-  DATA_API_CMD_READ,     /* Read data from local register */
-  DATA_API_CMD_WRITE,    /* Save data from external data buffer to the data register */
-  DATA_API_CMD_INC,      /* Increment data in the register, the external data buffer is ignored */
-  DATA_API_CMD_DEC,      /* Decrement data in the register, the external data buffer is ignored */
-  DATA_API_CMD_SAVE,     /* Save all data registers to the EEPROM. The input data is ignore */
-  DATA_API_CMD_LOAD,     /* Load all data registers from the EEPROM. The input data is ignore */
-  DATA_API_CMD_ERASE,    /* Erase memory sector in EEPORM */
-  DATA_API_CMD_ADD,      /* Add record to variable size data */
+  DATA_API_CMD_READ,      /* Read data from local register */
+  DATA_API_CMD_READ_CASH, /* Read data from the EEPROM first time and from cash next time with same address */
+  DATA_API_CMD_WRITE,     /* Save data from external data buffer to the data register */
+  DATA_API_CMD_INC,       /* Increment data in the register, the external data buffer is ignored */
+  DATA_API_CMD_DEC,       /* Decrement data in the register, the external data buffer is ignored */
+  DATA_API_CMD_SAVE,      /* Save all data registers to the EEPROM. The input data is ignore */
+  DATA_API_CMD_LOAD,      /* Load all data registers from the EEPROM. The input data is ignore */
+  DATA_API_CMD_ERASE,     /* Erase memory sector in EEPORM */
+  DATA_API_CMD_ADD,       /* Add record to variable size data */
 } DATA_API_COMMAND;
 
 typedef enum
@@ -51,7 +52,11 @@ typedef enum
   DATA_API_STAT_ERROR,         /* Other error */
 } DATA_API_STATUS;
 /*----------------------- Structures -----------------------------------*/
-
+typedef struct __packed
+{
+  uint16_t        adr;
+  LOG_RECORD_TYPE record;
+} LOG_CASH_TYPE;
 /*------------------------ Functions -----------------------------------*/
 void               vDATAAPIdataInit ( void );
 void               vDATAAPIinit ( void );

@@ -1369,7 +1369,7 @@ void vENGINEtask ( void* argument )
     {
       if ( engine.cmd != inputCmd )
       {
-        //-------------------- One action commands ---------------------*/
+        /*-------------------- One action commands ---------------------*/
         if ( inputCmd == ENGINE_CMD_BAN_START )
         {
           engine.banStart = PERMISSION_ENABLE;
@@ -1378,7 +1378,7 @@ void vENGINEtask ( void* argument )
         {
           engine.banStart = PERMISSION_DISABLE;
         }
-        //------------------- Long actions command ---------------------*/
+        /*------------------- Long actions command ---------------------*/
         else
         {
           switch ( engine.status )
@@ -1629,9 +1629,6 @@ void vENGINEtask ( void* argument )
               starter.iteration = 0U;
               eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
               eDATAAPIfreeData( DATA_API_CMD_SAVE, ENGINE_STARTS_NUMBER_ADR, NULL );
-              //maintence.oil.alarm.error.active  = PERMISSION_ENABLE;
-              //maintence.air.alarm.error.active  = PERMISSION_ENABLE;
-              //maintence.fuel.alarm.error.active = PERMISSION_ENABLE;
               vLOGICprintStarterStatus( starter.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_START;
@@ -1733,9 +1730,6 @@ void vENGINEtask ( void* argument )
               engine.status               = ENGINE_STATUS_IDLE;
               engine.cmd                  = ENGINE_CMD_NONE;
               planStop.status             = STOP_IDLE;
-              //maintence.oil.alarm.error.active  = 0U;
-              //maintence.air.alarm.error.active  = 0U;
-              //maintence.fuel.alarm.error.active = 0U;
               vFPOsetReadyToStart( RELAY_ON );
               vLOGICprintPlanStopStatus( planStop.status );
               event.action = ACTION_NONE;

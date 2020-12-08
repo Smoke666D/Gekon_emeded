@@ -261,9 +261,19 @@ static xScreenObjet const Net2Screen[]=
 
 static xScreenObjet const AlarmMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"АВАРИИ",NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"АВАРИЙ :",NULL,0U},
+  {0U,FONT_SIZE*17U,LINE1-12U,15U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_COUNT},
+ // {0U,LEFT_OFFSET,LINE1+6U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_ALARM_TIME},
   {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U}
 };
+
+static xScreenObjet const AlarmScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"АВАРИЙ:",NULL,0U},
+  {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U}
+};
+
+
 
 static xScreenObjet const EventMainScreen[]=
 {
@@ -344,12 +354,14 @@ static xScreenObjet const xYesNoScreen[]=
 xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   {InfoMainScreen,&xMainMenu,&xAboutMenu,0U,0U},
+  {AlarmMainScreen,&xMainMenu,&xAlarmMenu,0U,0U},
+  {EventMainScreen,&xMainMenu,NULL,0U,0U},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
   {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
   {StatusMainScreen,NULL,NULL,0U,0U},
   {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
-  {AlarmMainScreen,NULL,NULL,0U,0U},
-  {EventMainScreen,&xMainMenu,NULL,0U,0U},
+
+
 
 };
 
@@ -379,6 +391,16 @@ xScreenType xNetScreens[NET_MENU_COUNT]=
 };
 
 
+xScreenType  xAlarmScreens[ALARM_MENU_COUNT]=
+{
+  {AlarmScreen,&xMainMenu,NULL,0U,0U},
+};
+
+xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
+{
+  { SettingsScreen, (void*)&xMainMenu, NULL,  0U, 0U},
+};
+
 
 xScreenType  xAboutScreens[ABOUT_MENU_COUNT]=
 {
@@ -393,11 +415,6 @@ xScreenType   xEventScreens[EVENT_MENU_COUNT]=
   { EventScreen, &xMainMenu, NULL,  0U, 0U},
 };
 
-
-xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
-{
-  { SettingsScreen, (void*)&xMainMenu, NULL,  0U, 0U},
-};
 
 xScreenType   xYesNoScreens[SETTINGS_MENU_COUNT]=
 {
@@ -465,3 +482,11 @@ xScreenSetObject xAboutMenu =
   ( void* )&xInfoScreenCallBack,
 };
 
+
+xScreenSetObject xAlarmMenu =
+{
+  xAlarmScreens,
+  ( ALARM_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xInfoScreenCallBack,
+};

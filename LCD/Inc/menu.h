@@ -13,6 +13,8 @@
 #include "data_type.h"
 #include "dataAPI.h"
 #include "adc.h"
+#include "journal.h"
+#include "alarm.h"
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
 #define CENTER_ALIGN        1U
@@ -40,6 +42,8 @@
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
 #define MAX_KEY_PRESS
 
+#define ALARM_COUNT         01U
+#define CURRENT_ALARM_TIME  02U
 
 #define SW_VER         54U
 #define HW_VER         55U
@@ -56,6 +60,7 @@
 #define ENGINE_SCOUNT  83U
 #define ENGINE_WTIME   84U
 #define COS_FI         85U
+
 
 
 #define IP_ADRESS           0x01
@@ -119,6 +124,7 @@ void vUToStr(uint8_t * str, uint16_t data, signed char scale);
 void vMenuMessageInit( osThreadId_t xmainprocess );
 void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
 void EventScreenKeyCallBack( xScreenSetObject* menu, char key );

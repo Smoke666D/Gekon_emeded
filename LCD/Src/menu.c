@@ -346,7 +346,7 @@ void vMenuTask ( void )
     }
     else
     {
-      BufferEvent = TempEvent;
+    BufferEvent = TempEvent;
       //Если зафиксировано нажатие клавиши
       if ( TempEvent.Status == MAKECODE )
       {
@@ -820,6 +820,40 @@ char cHexToChar(uint8_t data)
   else
      return data-10 +'A';
 }
+
+
+static uint8_t uCurrentAlarm =0;
+
+void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  LOG_RECORD_TYPE  xrecord;
+  uint8_t  utemp=10;
+  switch (ID)
+  {
+    case ALARM_COUNT:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      //sprintf(Data,"10");
+     sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
+      break;
+    case CURRENT_ALARM_TIME:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      if (uCurrentAlarm < utemp)
+      {
+        eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&uCurrentAlarm);
+        sprintf(Data,"10:20:20");
+       // sprintf(Data,"%i:%i:%i",GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
+
+      }
+      else
+       sprintf(Data,"Пусто");
+      break;
+    default:
+      break;
+
+  }
+
+}
+
 
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {

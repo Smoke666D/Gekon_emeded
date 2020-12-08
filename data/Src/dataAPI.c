@@ -39,6 +39,10 @@ void vDATAAPIsendEventAll ( DATA_API_REINIT message )
              DATA_API_FLAG_FPI_TASK_CONFIG_REINIT;
       xEventGroupSetBits( xDataApiEvents, mask );
       break;
+    case DATA_API_REINIT_MAINTANCE:
+      mask = DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT;
+      xEventGroupSetBits( xDataApiEvents, mask );
+      break;
     default:
       break;
   }
@@ -699,6 +703,7 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
                 break;
               }
             }
+            vDATAAPIsendEventAll( DATA_API_REINIT_MAINTANCE );
             xSemaphoreGive( xSemaphore );
           }
           else

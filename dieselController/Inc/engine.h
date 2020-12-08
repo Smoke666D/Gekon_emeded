@@ -40,6 +40,14 @@ typedef enum
 
 typedef enum
 {
+  SENSOR_CHANNEL_OIL,
+  SENSOR_CHANNEL_COOLANT,
+  SENSOR_CHANNEL_FUEL,
+  SENSOR_CHANNEL_COMMON,
+} SENSOR_CHANNEL;
+
+typedef enum
+{
   ENGINE_CMD_NONE,                 /* 0 */
   ENGINE_CMD_START,                /* 1 Ignition */
   ENGINE_CMD_PLAN_STOP,            /* 2 */
@@ -113,8 +121,9 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  SENSOR_TYPE       type   : 3U;
-  SENSOR_STATUS     status : 2U;
+  SENSOR_TYPE       type    : 3U;
+  SENSOR_STATUS     status  : 2U;
+  SENSOR_CHANNEL    channel : 2U;
   eChartData*       chart;
   getValueCallBack  get;
   ERROR_TYPE        cutout;
@@ -192,11 +201,17 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  ALARM_TYPE alarm;
+  uint16_t   data;
+} MAINTENCE_VALUE;
+
+typedef struct __packed
+{
   MAINTENCE_STATUS status;
   SYSTEM_TIMER     timer;
-  ALARM_TYPE       oil;
-  ALARM_TYPE       air;
-  ALARM_TYPE       fuel;
+  MAINTENCE_VALUE  oil;
+  MAINTENCE_VALUE  air;
+  MAINTENCE_VALUE  fuel;
 } MAINTENCE_TYPE;
 
 typedef struct __packed
@@ -244,6 +259,7 @@ void          vENGINEsendCmd ( ENGINE_COMMAND cmd );
 QueueHandle_t pENGINEgetCommandQueue ( void );
 uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );
+PERMISSION    eENGINEisStartBan ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

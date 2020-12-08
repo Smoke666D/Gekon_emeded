@@ -106,7 +106,7 @@ void vUSBfreeDataToReport ( USB_REPORT* report, uint16_t adr )
 {
   report->stat     = USB_OK_STAT;
   report->length   = 2U;
-  report->data[0U] = ( uint8_t )( *freeDataArray[adr] << 8U );
+  report->data[0U] = ( uint8_t )( *freeDataArray[adr] >> 8U );
   report->data[1U] = ( uint8_t )( *freeDataArray[adr]       );
   return;
 }
@@ -406,7 +406,7 @@ USB_STATUS eUSBReportToFreeData ( const USB_REPORT* report )
         status = DATA_API_STAT_BUSY;
         while ( status == DATA_API_STAT_BUSY )
         {
-          status = eDATAAPIfreeData( DATA_API_CMD_SAVE,  report->adr, NULL );
+          status = eDATAAPIfreeData( DATA_API_CMD_SAVE, report->adr, NULL );
         }
         if ( status != DATA_API_STAT_OK )
         {
@@ -432,14 +432,14 @@ USB_STATUS eUSBReportToFreeData ( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
 {
-  USB_STATUS    res                        = USB_DONE;
-  uint8_t       count                      = 0U;
-  uint8_t       i                          = 0U;
-  uint8_t       length                     = 0U;
-  uint16_t      valueBuf[MAX_VALUE_LENGTH] = { 0U };
-  int8_t        scale                      = 0U;
-  uint16_t      units[MAX_UNITS_LENGTH]    = { 0U };
-  DATA_API_STATUS status                   = DATA_API_STAT_BUSY;
+  USB_STATUS      res                        = USB_DONE;
+  uint8_t         count                      = 0U;
+  uint8_t         i                          = 0U;
+  uint8_t         length                     = 0U;
+  uint16_t        valueBuf[MAX_VALUE_LENGTH] = { 0U };
+  int8_t          scale                      = 0U;
+  uint16_t        units[MAX_UNITS_LENGTH]    = { 0U };
+  DATA_API_STATUS status                     = DATA_API_STAT_BUSY;
   /*------------- Length control --------------*/
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {

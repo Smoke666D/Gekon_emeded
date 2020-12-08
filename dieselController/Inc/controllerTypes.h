@@ -55,6 +55,7 @@ extern const fix16_t fix100U;
 typedef enum
 {
   DATA_API_REINIT_CONFIG,
+  DATA_API_REINIT_MAINTANCE,
 } DATA_API_REINIT;
 
 typedef enum

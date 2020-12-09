@@ -836,7 +836,7 @@ char cHexToChar(uint8_t data)
 static char TempArray[70];
 static char StringShift =0,ScrollDelay=0;
 static char StringShift1 =0,ScrollDelay1=0;
-static char BufferAlarm=0;
+static char BufferAlarm=0,ALD=0;
 
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -848,11 +848,19 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case ALARM_STATUS:
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
       if (utemp >0)
+      {
+              ALD++;
+              if (ALD>1)
+              {
+                sprintf(Data,"A");
+                ALD=0;
+              }
+              else
+                sprintf(Data," ");
 
-              sprintf(Data,"A");
+      }
             else
               sprintf(Data," ");
-
       break;
 
     case ALARM_COUNT:

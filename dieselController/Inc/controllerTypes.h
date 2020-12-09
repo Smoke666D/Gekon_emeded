@@ -55,6 +55,7 @@ extern const fix16_t fix100U;
 typedef enum
 {
   DATA_API_REINIT_CONFIG,
+  DATA_API_REINIT_MAINTANCE,
 } DATA_API_REINIT;
 
 typedef enum
@@ -271,6 +272,12 @@ typedef struct __packed
   SYSTEM_EVENT  event;  /* 2 bytes */
 } LOG_RECORD_TYPE;
 /*----------------------- Extern ---------------------------------------*/
+extern const char* logActionsDictionary[LOG_ACTION_SIZE];
+extern const char* logTypesDictionary[LOG_TYPES_SIZE];
+#if ( DEBUG_SERIAL_ALARM > 0U )
+  extern const char* alarmActionStr[LOG_ACTION_SIZE];
+  extern const char* eventTypesStr[LOG_TYPES_SIZE];
+#endif
 /*----------------------- Functions ------------------------------------*/
 void              vLOGICinit ( TIM_HandleTypeDef* tim );
 QueueHandle_t     pLOGICgetEventQueue ( void );

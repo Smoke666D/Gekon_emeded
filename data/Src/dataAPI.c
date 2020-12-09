@@ -17,8 +17,9 @@ static SemaphoreHandle_t  xSemaphore     = NULL;
 static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static uint8_t initDone     = 0U;
-static uint8_t flTakeSource = 0U;
+static uint8_t       initDone     = 0U;
+static uint8_t       flTakeSource = 0U;
+static LOG_CASH_TYPE logCash      = { 0U };
 /*------------------------ Define -------------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -39,11 +40,48 @@ void vDATAAPIsendEventAll ( DATA_API_REINIT message )
              DATA_API_FLAG_FPI_TASK_CONFIG_REINIT;
       xEventGroupSetBits( xDataApiEvents, mask );
       break;
+    case DATA_API_REINIT_MAINTANCE:
+      mask = DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT;
+      xEventGroupSetBits( xDataApiEvents, mask );
+      break;
     default:
       break;
   }
   return;
 }
+/*---------------------------------------------------------------------------------------------------*/
+DATA_API_STATUS vDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
+{
+  DATA_API_STATUS res      = DATA_API_STAT_OK;
+  uint16_t        pointer  = 0U;
+  if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+  {
+    flTakeSource = 18U;
+    if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
+    {
+      if ( adr < pointer)
+      {
+        if ( eSTORAGEreadLogRecord( adr, record ) != EEPROM_OK )
+        {
+          res = DATA_API_STAT_EEPROM_ERROR;
+        }
+      }
+      else
+      {
+        record->time         = 0U;
+        record->event.type   = EVENT_NONE;
+        record->event.action = ACTION_NONE;
+      }
+    }
+    xSemaphoreGive( xSemaphore );
+  }
+  else
+  {
+    res = DATA_API_STAT_BUSY;
+  }
+  return res;
+}
+
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -273,6 +311,7 @@ void vDATAAPIinit ( void )
 {
   xSemaphore     = xSemaphoreCreateMutex();
   xDataApiEvents = xEventGroupCreate();
+  logCash.adr    = 0xFFFFU;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -699,6 +738,7 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
                 break;
               }
             }
+            vDATAAPIsendEventAll( DATA_API_REINIT_MAINTANCE );
             xSemaphoreGive( xSemaphore );
           }
           else
@@ -920,6 +960,7 @@ DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer )
  * 6. DATA_API_CMD_LOAD  - load addressed log record to the buffer
  * 7. DATA_API_CMD_ERASE - erase all log records
  * 8. DATA_API_CMD_ADD   - add new log record to the EEPROM
+ * 9.
  */
 DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record )
 {
@@ -972,32 +1013,22 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
             res = DATA_API_STAT_BUSY;
           }
           break;
-        case DATA_API_CMD_LOAD:
-          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+
+        case DATA_API_CMD_READ_CASH:
+          if ( logCash.adr == adr )
           {
-            flTakeSource = 18U;
-            if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
-            {
-              if ( adr < pointer)
-              {
-                if ( eSTORAGEreadLogRecord( adr, record ) != EEPROM_OK )
-                {
-                  res = DATA_API_STAT_EEPROM_ERROR;
-                }
-              }
-              else
-              {
-                record->time         = 0U;
-                record->event.type   = EVENT_NONE;
-                record->event.action = ACTION_NONE;
-              }
-            }
-            xSemaphoreGive( xSemaphore );
+            *record = logCash.record;
           }
           else
           {
-            res = DATA_API_STAT_BUSY;
+            res            = vDATAAPIlogLoad( adr, record );
+            logCash.adr    = adr;
+            logCash.record = *record;
           }
+          break;
+
+        case DATA_API_CMD_LOAD:
+          res = vDATAAPIlogLoad( adr, record );
           break;
         case DATA_API_CMD_ERASE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )

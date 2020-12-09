@@ -69,7 +69,6 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
 {
   uint8_t i              = 0U;
   uint8_t warningCounter = 0U;
-
   switch ( cmd )
   {
     case ERROR_LIST_CMD_ERASE:
@@ -300,7 +299,21 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
              ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val >= alarm->level ) ) )
         {
           alarm->error.status = ALARM_STATUS_WAIT_DELAY;
-          vLOGICstartTimer( &alarm->timer );
+          if ( alarm->timer.delay == 0U )
+          {
+            if ( alarm->error.trig == TRIGGER_IDLE )
+            {
+              alarm->error.status = ALARM_STATUS_TRIG;
+            }
+            else
+            {
+              alarm->error.status = ALARM_STATUS_RELAX;
+            }
+          }
+          else
+          {
+            vLOGICstartTimer( &alarm->timer );
+          }
         }
         break;
       /*-----------------------------------------------------------------------------------*/

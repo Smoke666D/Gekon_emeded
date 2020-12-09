@@ -1336,8 +1336,8 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
-  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIdataInit();                         /* Data from EEPROM initialization */
+  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
   while ( uADCGetValidDataFlag() == 0U )
   {

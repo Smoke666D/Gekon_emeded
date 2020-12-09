@@ -67,7 +67,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Прерванная остановка"
 };
 #if ( DEBUG_SERIAL_ALARM > 0U )
-  const char* eventTypesStr[] =
+  const char* eventTypesStr[LOG_TYPES_SIZE] =
   {
     "NONE",                       /* NONE */
     "EXTERN_EMERGENCY_STOP",      /* EMERGENCY_STOP */
@@ -108,7 +108,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "INTERRUPTED_START",
     "INTERRUPTED_STOP"
   };
-  const char* alarmActionStr[] =
+  const char* alarmActionStr[LOG_ACTION_SIZE] =
   {
     "NONE",
     "WARNING",

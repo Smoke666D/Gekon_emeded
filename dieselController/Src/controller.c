@@ -93,20 +93,27 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERstartAutoStart ( PERMISSION delay )
 {
-  if ( ( controller.mode         == CONTROLLER_MODE_AUTO   ) &&
-       ( controller.banAutoStart == 0U                     ) &&
-       ( controller.state        == CONTROLLER_STATUS_IDLE ) )
+  if ( eENGINEisStartBan() == PERMISSION_DISABLE )
   {
-    if ( delay == PERMISSION_ENABLE )
+    if ( ( controller.mode         == CONTROLLER_MODE_AUTO   ) &&
+         ( controller.banAutoStart == 0U                     ) &&
+         ( controller.state        == CONTROLLER_STATUS_IDLE ) )
     {
-      controller.state = CONTROLLER_STATUS_START_WITH_DELAY;
+      if ( delay == PERMISSION_ENABLE )
+      {
+        controller.state = CONTROLLER_STATUS_START_WITH_DELAY;
+      }
+      else
+      {
+        controller.state = CONTROLLER_STATUS_START;
+      }
+      stopState        = CONTROLLER_TURNING_IDLE;
+      startState       = CONTROLLER_TURNING_IDLE;
     }
     else
     {
-      controller.state = CONTROLLER_STATUS_START;
+      vLOGICprintDebug( ">>Autostart       : Engine start ban\r\n" );
     }
-    stopState        = CONTROLLER_TURNING_IDLE;
-    startState       = CONTROLLER_TURNING_IDLE;
   }
   return;
 }
@@ -171,6 +178,8 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 
     case ACTION_BAN_START:
       vENGINEsendCmd( ENGINE_CMD_BAN_START );
+      vFPOsetReadyToStart( RELAY_OFF );
+      eLOGaddRecord( &record );
       break;
 
     case ACTION_AUTO_START:
@@ -276,17 +285,23 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
   switch ( startState )
   {
     case CONTROLLER_TURNING_IDLE:
-
-      if ( delayOnStart == PERMISSION_ENABLE )
+      if ( eENGINEisStartBan() == PERMISSION_DISABLE )
       {
-        controller.timer.delay = controller.startDelay;
-        vLOGICstartTimer( &controller.timer );
-        startState = CONTROLLER_TURNING_START_DELAY;
-        vLOGICprintDebug( ">>Autostart       : Delay trigger\r\n" );
+        if ( delayOnStart == PERMISSION_ENABLE )
+        {
+          controller.timer.delay = controller.startDelay;
+          vLOGICstartTimer( &controller.timer );
+          startState = CONTROLLER_TURNING_START_DELAY;
+          vLOGICprintDebug( ">>Autostart       : Delay trigger\r\n" );
+        }
+        else
+        {
+          startState = CONTROLLER_TURNING_READY;
+        }
       }
       else
       {
-        startState = CONTROLLER_TURNING_READY;
+        vLOGICprintDebug( ">>Autostart       : Engine start ban\r\n" );
       }
       break;
 
@@ -562,11 +577,21 @@ void vCONTROLLERtask ( void* argument )
             /* START */
             if ( engineState == ENGINE_STATUS_IDLE )
             {
-              vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
-              vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
-              vFPIsetBlock();
-              controller.state = CONTROLLER_STATUS_START;
-              vENGINEsendCmd( ENGINE_CMD_START );
+              if ( eENGINEisStartBan() == PERMISSION_DISABLE )
+              {
+                vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+                vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
+                vFPIsetBlock();
+                controller.state = CONTROLLER_STATUS_START;
+                vENGINEsendCmd( ENGINE_CMD_START );
+              }
+              else
+              {
+                vLOGICprintDebug( ">>Start           : Engine start ban\r\n" );
+                vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+                osDelay(10U);
+                vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
+              }
             }
             /* LOAD */
             else

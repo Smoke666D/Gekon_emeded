@@ -34,6 +34,63 @@ static uint8_t           Blink            = 0U;
 static uint16_t          uiSetting        = 3U;
 static uint8_t           ucActiveObject   = NO_SELECT_D;
 static uint8_t           EXIT_KEY_F       = 0U;
+
+static uint8_t uCurrentAlarm =0;
+
+
+char const ACTION_STRING[][16]={
+  "NONE",           /* 0 */
+  "WARNING",        /* 1 */
+  "EMERGENCY STOP", /* 2 */
+  "PLAN_STOP",      /* 3 */
+  "BAN_START",      /* 4 */
+  "AUTO_START",     /* 5 */
+  "AUTO_STOP",      /* 6 */
+};
+
+char const ALARM_STRING[][50]={
+  "NONE",                       /* 0  NONE */
+  "EXTERN_EMERGENCY_STOP",      /* 1  EMERGENCY_STOP */
+  "START_FAIL",                 /* 2  EMERGENCY_STOP */
+  "STOP_FAIL",                  /* 3  EMERGENCY_STOP */
+  "OIL_LOW_PRESSURE",           /* 4  WARNING & EMERGENCY_STOP */
+  "OIL_SENSOR_ERROR",           /* 5  EMERGENCY_STOP */
+  "ENGINE_HIGHT_TEMP",          /* 6  WARNING & EMERGENCY_STOP */
+  "ENGINE_TEMP_SENSOR_ERROR",   /* 7  EMERGENCY_STOP */
+  "EVENT_FUEL_LOW_LEVEL",             /* 8  WARNING & PLAN_STOP */
+  "FUEL_HIGHT_LEVEL",           /* 9  WARNING & PLAN_STOP */
+  "FUEL_LEVEL_SENSOR_ERROR",    /* 10 EMERGENCY_STOP */
+  "SPEED_HIGHT",                /* 11 EMERGENCY_STOP */
+  "SPEED_LOW",                  /* 12 EMERGENCY_STOP */
+  "SPEED_SENSOR_ERROR",         /* 13 EMERGENCY_STOP */
+  "CHARGER_FAIL",               /* 14 WARNING & EMERGENCY_STOP */
+  "BATTERY_LOW",                /* 15 WARNING */
+  "BATTERY_HIGHT",              /* 16 WARNING */
+  "GENERATOR_LOW_VOLTAGE",      /* 17 WARNING & EMERGENCY_STOP */
+  "GENERATOR_HIGHT_VOLTAGE",    /* 18 WARNING & EMERGENCY_STOP */
+  "GENERATOR_LOW_FREQUENCY",    /* 19 WARNING & EMERGENCY_STOP */
+  "GENERATOR_HIGHT_FREQUENCY",  /* 20 WARNING & EMERGENCY_STOP */
+  "PHASE_IMBALANCE",            /* 21 EMERGENCY_STOP */
+  "OVER_CURRENT",               /* 22 PLAN_STOP */
+  "OVER_POWER",                 /* 23 PLAN_STOP */
+  "SHORT_CIRCUIT",              /* 24 PLAN_STOP */
+  "MAINS_LOW_VOLTAGE",          /* 25 WARNING */
+  "MAINS_HIGHT_VOLTAGE",        /* 26 WARNING */
+  "MINS_LOW_FREQUENCY",        /* 27 WARNING */
+  "MAINS_HIGHT_FREQUENCY",      /* 28 WARNING */
+  "MAINTENANCE_OIL",            /* 29 WARNING & BAN_START */
+  "MAINTENANCE_AIR",            /* 30 WARNING & BAN_START */
+  "MAINTENANCE_FUEL",           /* 31 WARNING & BAN_START */
+  "ENGINE_START",               /* 32 NONE */
+  "ENGINE_STOP",                /* 33 NONE */
+  "MAINS_OK",                   /* 34 AUTO_STOP */
+  "MAINS_FAIL",                 /* 35 AUTO_START */
+  "INTERRUPTED_START",          /* 36 EMERGENCY_STOP */
+  "INTERRUPTED_STOP",           /* 37 EMERGENCY_STOP */
+};
+
+
+
 /*----------------------- Functions -----------------------------------------------------------------*/
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key );
 /*----------------------- Structures ----------------------------------------------------------------*/
@@ -250,6 +307,14 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       {
         //Если нажата клавиша вниз, проверяем флаг, сигнализурующий что мы листаем
         //карусель вложенных экранов
+        if (pCurrMenu == &xAlarmMenu)
+        {
+
+          uCurrentAlarm++;
+
+        }
+        else
+
         if ( DownScreen == 0U )
         {
           if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
@@ -821,32 +886,59 @@ char cHexToChar(uint8_t data)
      return data-10 +'A';
 }
 
-
-static uint8_t uCurrentAlarm =0;
+static char TempArray[40];
 
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   LOG_RECORD_TYPE  xrecord;
+
   uint8_t  utemp=10;
   switch (ID)
   {
     case ALARM_COUNT:
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
       //sprintf(Data,"10");
+      if (uCurrentAlarm >=utemp) uCurrentAlarm=0;
      sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
       break;
     case CURRENT_ALARM_TIME:
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
       if (uCurrentAlarm < utemp)
       {
-        eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&uCurrentAlarm);
-        sprintf(Data,"10:20:20");
-       // sprintf(Data,"%i:%i:%i",GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
-
+        eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+        sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",GET_LOG_DAY( xrecord.time ),GET_LOG_MONTH( xrecord.time ) , LOG_START_YEAR + GET_LOG_YEAR(xrecord.time)  ,GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
       }
       else
        sprintf(Data,"Пусто");
       break;
+    case CURRENT_ALARM_T:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+           if (uCurrentAlarm < utemp)
+           {
+             eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+             sprintf(TempArray,"%s",  ALARM_STRING[xrecord.event.type]);
+             if (strlen(TempArray)> 18U)
+             {
+               TempArray[19]=0;
+
+             }
+             sprintf(Data,"%s",TempArray);
+
+                        }
+           else
+            sprintf(Data,"Пусто");
+           break;
+
+    case CURRENT_ALARM_ACTION:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+           if (uCurrentAlarm < utemp)
+           {
+             eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+             sprintf(Data,"%s",  ACTION_STRING[xrecord.event.action]);
+           }
+           else
+            sprintf(Data,"Пусто");
+           break;
     default:
       break;
 

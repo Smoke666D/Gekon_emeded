@@ -42,8 +42,13 @@
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
 #define MAX_KEY_PRESS
 
-#define ALARM_COUNT         01U
-#define CURRENT_ALARM_TIME  02U
+#define ALARM_COUNT           1
+#define CURRENT_ALARM_TIME    2
+#define CURRENT_ALARM_T       3
+#define CURRENT_ALARM_ACTION  4
+
+
+
 
 #define SW_VER         54U
 #define HW_VER         55U

@@ -263,7 +263,9 @@ static xScreenObjet const AlarmMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"АВАРИЙ :",NULL,0U},
   {0U,FONT_SIZE*17U,LINE1-12U,15U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_COUNT},
- // {0U,LEFT_OFFSET,LINE1+6U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_ALARM_TIME},
+  {0U,LEFT_OFFSET,LINE1+6U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_ALARM_TIME},
+  {0U,LEFT_OFFSET,LINE2+3U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_ALARM_T},
+  {0U,LEFT_OFFSET,LINE3+3U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_ALARM_ACTION},
   {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U}
 };
 
@@ -393,7 +395,7 @@ xScreenType xNetScreens[NET_MENU_COUNT]=
 
 xScreenType  xAlarmScreens[ALARM_MENU_COUNT]=
 {
-  {AlarmScreen,&xMainMenu,NULL,0U,0U},
+  {AlarmMainScreen,&xMainMenu,NULL,0U,0U},
 };
 
 xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=

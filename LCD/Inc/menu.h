@@ -15,6 +15,7 @@
 #include "adc.h"
 #include "journal.h"
 #include "alarm.h"
+#include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
 #define CENTER_ALIGN        1U
@@ -46,6 +47,7 @@
 #define CURRENT_ALARM_TIME    2
 #define CURRENT_ALARM_T       3
 #define CURRENT_ALARM_ACTION  4
+#define ALARM_STATUS          5
 
 
 

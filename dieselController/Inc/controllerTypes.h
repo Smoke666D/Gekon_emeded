@@ -206,8 +206,8 @@ typedef void     ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup re
 /*----------------------- Structures -----------------------------------*/
  typedef struct __packed
 {
-  SYSTEM_ACTION      action : 3U;
-  SYSTEM_EVENT_TYPE  type   : 6U;
+  SYSTEM_ACTION      action;
+  SYSTEM_EVENT_TYPE  type;
 } SYSTEM_EVENT;
 
 typedef struct __packed

@@ -887,11 +887,12 @@ char cHexToChar(uint8_t data)
 }
 
 static char TempArray[40];
+static char StringShift =0,ScrollDelay=0;
 
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   LOG_RECORD_TYPE  xrecord;
-
+  char * StartArray;
   uint8_t  utemp=10;
   switch (ID)
   {
@@ -917,14 +918,30 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            {
              eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
              sprintf(TempArray,"%s",  ALARM_STRING[xrecord.event.type]);
-             if (strlen(TempArray)> 18U)
+             if (strlen(TempArray)> 21U)
              {
-               TempArray[19]=0;
 
+               StartArray =&TempArray[StringShift];
+
+               StartArray[20]=0;
+               ScrollDelay++;
+               if (ScrollDelay>1)
+               {
+                 ScrollDelay=0;
+                 StringShift++;
+                 if (StringShift == (strlen(TempArray)-1))
+                   StringShift=0;
+               }
              }
-             sprintf(Data,"%s",TempArray);
+             else
+             {
 
-                        }
+               StringShift =0;
+               StartArray= TempArray;
+             }
+             sprintf(Data,"%s",StartArray);
+
+           }
            else
             sprintf(Data,"Пусто");
            break;

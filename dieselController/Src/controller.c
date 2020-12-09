@@ -488,6 +488,7 @@ void vCONTROLLERresetAlarm ( void )
   {
     controller.state = CONTROLLER_STATUS_IDLE;
     vENGINEsendCmd( ENGINE_CMD_RESET_TO_IDLE );
+    vELECTROsendCmd( ELECTRO_CMD_RESET_TO_IDLE );
     vFPIreset();
     vFPOsetAlarm( RELAY_OFF );
     vFPOsetMainsFail( RELAY_OFF );

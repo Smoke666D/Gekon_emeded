@@ -13,7 +13,7 @@
 #include "storage.h"
 /*------------------------ Define --------------------------------------*/
 #define  LOG_TIME_ERROR        1U
-#define  LOG_START_YEAR        2020U
+#define  LOG_START_YEAR        2000U
 #define  LOG_DAY_MASK          0xF8000000U
 #define  LOG_DAY_SHIFT         27U
 #define  LOG_MONTH_MASK        0x07800000U

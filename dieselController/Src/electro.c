@@ -938,6 +938,8 @@ void vELECTROtask ( void* argument )
         vERRORreset( &generator.overloadAlarm.error        );
         vERRORreset( &generator.phaseImbalanceAlarm.error  );
         vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
+        electro.alarmState = ELECTRO_ALARM_STATUS_STOP;
+        electro.cmd        = ELECTRO_CMD_NONE;
         break;
       default:
         vLOGICprintDebug( ">>Electro         : Error command\r\n" );

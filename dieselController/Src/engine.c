@@ -126,12 +126,37 @@ uint8_t uENGINEisSensorCutout ( fix16_t value )
   return res;
 }
 /*----------------------------------------------------------------------------*/
+uint8_t eSENSORcheckCutout ( SENSOR_CHANNEL source )
+{
+  uint8_t res = 0U;
+
+  switch ( source )
+  {
+    case SENSOR_CHANNEL_OIL:
+      res = uADCGetDCChError( OP_CHANEL_ERROR );
+      break;
+    case SENSOR_CHANNEL_COOLANT:
+      res = uADCGetDCChError( CT_CHANEL_ERROR );
+      break;
+    case SENSOR_CHANNEL_FUEL:
+      res = uADCGetDCChError( FL_CHANEL_ERROR );
+      break;
+    case SENSOR_CHANNEL_COMMON:
+      res = uADCGetDCChError( COMMON_ERROR );
+      break;
+    default:
+      break;
+  }
+
+  return res;
+}
+/*----------------------------------------------------------------------------*/
 void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
 {
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
 
   *value = sensor->get();
-  vERRORcheck( &sensor->cutout, uENGINEisSensorCutout( *value ) );
+  //vERRORcheck( &sensor->cutout, eSENSORcheckCutout( sensor->channel ) );
   if ( sensor->cutout.status != ALARM_STATUS_IDLE )
   {
     sensor->status = SENSOR_STATUS_LINE_ERROR;
@@ -333,8 +358,18 @@ fix16_t fCHARGERprocess ( PERMISSION startup )
 void vENGINEmileageProcess ( void )
 {
   uint16_t data     = 0U;
-  uint16_t setPoint = 0U;
+  uint8_t  changeFl = 0U;
 
+  vALARMcheck( &maintence.oil.alarm,  fix16_from_int( maintence.oil.data  ) );
+  vALARMcheck( &maintence.air.alarm,  fix16_from_int( maintence.air.data  ) );
+  vALARMcheck( &maintence.fuel.alarm, fix16_from_int( maintence.fuel.data ) );
+  if ( ( maintence.oil.alarm.error.status  == ALARM_STATUS_IDLE ) &&
+       ( maintence.air.alarm.error.status  == ALARM_STATUS_IDLE ) &&
+       ( maintence.fuel.alarm.error.status == ALARM_STATUS_IDLE ) &&
+       ( engine.banStart                   == PERMISSION_ENABLE ) )
+  {
+    engine.banStart = PERMISSION_DISABLE;
+  }
   if ( engine.status == ENGINE_STATUS_WORK )
   {
     switch ( maintence.status )
@@ -361,23 +396,35 @@ void vENGINEmileageProcess ( void )
         }
         break;
       case MAINTENCE_STATUS_CHECK:
-        eDATAAPIfreeData( DATA_API_CMD_READ, ENGINE_WORK_TIME_ADR, &setPoint );
-        if ( ( maintence.oil.error.enb > 0U ) && ( maintence.oil.error.active > 0U ) )
+        changeFl = 0U;
+        if ( ( maintence.oil.alarm.error.enb    == PERMISSION_ENABLE ) &&
+             ( maintence.oil.alarm.error.active == PERMISSION_ENABLE ) &&
+             ( maintence.oil.alarm.error.status == ALARM_STATUS_IDLE ) )
         {
-          eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
-          vALARMcheck( &maintence.oil,  fix16_from_int( setPoint ) );
+          eDATAAPIfreeData( DATA_API_CMD_INC, MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
+          maintence.oil.data++;
+          changeFl = 1U;
         }
-        if ( ( maintence.air.error.enb > 0U ) && ( maintence.air.error.active > 0U ) )
+        if ( ( maintence.air.alarm.error.enb    == PERMISSION_ENABLE ) &&
+             ( maintence.air.alarm.error.active == PERMISSION_ENABLE ) &&
+             ( maintence.air.alarm.error.status == ALARM_STATUS_IDLE ) )
         {
-          eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
-          vALARMcheck( &maintence.air,  fix16_from_int( setPoint ) );
+          eDATAAPIfreeData( DATA_API_CMD_INC, MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
+          maintence.air.data++;
+          changeFl = 1U;
         }
-        if ( ( maintence.fuel.error.enb > 0U ) && ( maintence.fuel.error.active > 0U ) )
+        if ( ( maintence.fuel.alarm.error.enb    == PERMISSION_ENABLE ) &&
+             ( maintence.fuel.alarm.error.active == PERMISSION_ENABLE ) &&
+             ( maintence.fuel.alarm.error.status == ALARM_STATUS_IDLE ) )
         {
-          eDATAAPIfreeData( DATA_API_CMD_INC,  MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
-          vALARMcheck( &maintence.fuel, fix16_from_int( setPoint ) );
+          eDATAAPIfreeData( DATA_API_CMD_INC, MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
+          maintence.fuel.data++;
+          changeFl = 1U;
         }
-        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+        if ( changeFl > 0U )
+        {
+          eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+        }
         vLOGICstartTimer( &maintence.timer );
         maintence.status = MAINTENCE_STATUS_RUN;
         break;
@@ -765,6 +812,7 @@ void vENGINEdataInit ( void )
   preHeater.timer.delay  = getValue( &enginePreHeatDelay );
   /*--------------------------------------------------------------*/
   fuel.level.type                 = getBitMap( &fuelLevelSetup, FUEL_LEVEL_SENSOR_TYPE_ADR );
+  fuel.level.channel              = SENSOR_CHANNEL_FUEL;
   fuel.level.chart                = &fuelSensorChart;
   fuel.level.get                  = FUEL_SENSOR_SOURCE;
   fuel.level.cutout.active        = PERMISSION_ENABLE;
@@ -853,7 +901,7 @@ void vENGINEdataInit ( void )
   /*--------------------------------------------------------------*/
   battery.get                           = xADCGetVDD;
   battery.lowAlarm.error.enb            = getBitMap( &batteryAlarms, BATTERY_UNDER_VOLTAGE_ENB_ADR );
-  battery.lowAlarm.error.active         = PERMISSION_DISABLE;
+  battery.lowAlarm.error.active         = PERMISSION_ENABLE;
   battery.lowAlarm.type                 = ALARM_LEVEL_LOW;
   battery.lowAlarm.level                = getValue( &batteryUnderVoltageLevel );
   battery.lowAlarm.timer.delay          = getValue( &batteryUnderVoltageDelay );
@@ -866,7 +914,7 @@ void vENGINEdataInit ( void )
   battery.lowAlarm.error.status         = ALARM_STATUS_IDLE;
 
   battery.hightAlarm.error.enb          = getBitMap( &batteryAlarms, BATTERY_OVER_VOLTAGE_ENB_ADR );
-  battery.hightAlarm.error.active       = PERMISSION_DISABLE;
+  battery.hightAlarm.error.active       = PERMISSION_ENABLE;
   battery.hightAlarm.type               = ALARM_LEVEL_HIGHT;
   battery.hightAlarm.level              = getValue( &batteryOverVoltageLevel );
   battery.hightAlarm.timer.delay        = getValue( &batteryOverVoltageDelay );
@@ -951,6 +999,15 @@ void vENGINEdataInit ( void )
   engine.stopError.status        = ALARM_STATUS_IDLE;
   engine.stopError.trig          = TRIGGER_IDLE;
 
+  engine.sensorCommonError.enb          = PERMISSION_ENABLE;
+  engine.sensorCommonError.active       = PERMISSION_ENABLE;
+  engine.sensorCommonError.ack          = PERMISSION_ENABLE;
+  engine.sensorCommonError.event.action = ACTION_EMERGENCY_STOP;
+  engine.sensorCommonError.event.type   = EVENT_SENSOR_COMMON_ERROR;
+  engine.sensorCommonError.id           = DEFINE_ERROR_LIST_ADR;
+  engine.sensorCommonError.status       = ALARM_STATUS_IDLE;
+  engine.sensorCommonError.trig         = TRIGGER_IDLE;
+
   engine.startError.enb          = PERMISSION_ENABLE;
   engine.startError.active       = PERMISSION_DISABLE;
   engine.startError.ack          = PERMISSION_DISABLE;
@@ -1002,69 +1059,69 @@ void vENGINEdataInit ( void )
   idleRelay.set    = vFPOsetIdle;
   idleRelay.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
-  maintence.timer.delay          = fix60;
-  maintence.timer.id             = LOGIC_DEFAULT_TIMER_ID;
-  maintence.oil.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
-  maintence.oil.error.active     = PERMISSION_DISABLE;
-  maintence.oil.type             = ALARM_LEVEL_HIGHT;
-  maintence.oil.level            = getValue( &maintenanceAlarmOilTime );
-  maintence.oil.timer.delay      = 0U;
-  maintence.oil.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.oil.error.event.type = EVENT_MAINTENANCE_OIL;
-  maintence.oil.error.id         = DEFINE_ERROR_LIST_ADR;
+  maintence.timer.delay                = fix60;
+  maintence.timer.id                   = LOGIC_DEFAULT_TIMER_ID;
+  maintence.oil.data                   = *freeDataArray[MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR];
+  maintence.oil.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
+  maintence.oil.alarm.error.active     = PERMISSION_ENABLE;
+  maintence.oil.alarm.type             = ALARM_LEVEL_HIGHT;
+  maintence.oil.alarm.level            = getValue( &maintenanceAlarmOilTime );
+  maintence.oil.alarm.timer.delay      = 0U;
+  maintence.oil.alarm.timer.id         = LOGIC_DEFAULT_TIMER_ID;
+  maintence.oil.alarm.error.event.type = EVENT_MAINTENANCE_OIL;
+  maintence.oil.alarm.error.id         = DEFINE_ERROR_LIST_ADR;
   if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ACTION_ADR ) == 0U )
   {
-    maintence.oil.error.event.action = ACTION_BAN_START;
-    maintence.oil.error.ack          = PERMISSION_DISABLE;
+    maintence.oil.alarm.error.event.action = ACTION_BAN_START;
   }
   else
   {
-    maintence.oil.error.event.action = ACTION_WARNING;
-    maintence.oil.error.ack          = PERMISSION_ENABLE;
+    maintence.oil.alarm.error.event.action = ACTION_WARNING;
   }
-  maintence.oil.error.trig   = TRIGGER_IDLE;
-  maintence.oil.error.status = ALARM_STATUS_IDLE;
+  maintence.oil.alarm.error.ack    = PERMISSION_ENABLE;
+  maintence.oil.alarm.error.trig   = TRIGGER_IDLE;
+  maintence.oil.alarm.error.status = ALARM_STATUS_IDLE;
 
-  maintence.air.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ENB_ADR );
-  maintence.air.error.active     = PERMISSION_DISABLE;
-  maintence.air.type             = ALARM_LEVEL_HIGHT;
-  maintence.air.level            = getValue( &maintenanceAlarmAirTime );
-  maintence.air.timer.delay      = 0U;
-  maintence.air.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.air.error.event.type = EVENT_MAINTENANCE_AIR;
-  maintence.air.error.id         = DEFINE_ERROR_LIST_ADR;
+  maintence.air.data                   = *freeDataArray[MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR];
+  maintence.air.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ENB_ADR );
+  maintence.air.alarm.error.active     = PERMISSION_ENABLE;
+  maintence.air.alarm.type             = ALARM_LEVEL_HIGHT;
+  maintence.air.alarm.level            = getValue( &maintenanceAlarmAirTime );
+  maintence.air.alarm.timer.delay      = 0U;
+  maintence.air.alarm.timer.id         = LOGIC_DEFAULT_TIMER_ID;
+  maintence.air.alarm.error.event.type = EVENT_MAINTENANCE_AIR;
+  maintence.air.alarm.error.id         = DEFINE_ERROR_LIST_ADR;
   if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ACTION_ADR ) == 0U )
   {
-    maintence.air.error.event.action = ACTION_BAN_START;
-    maintence.air.error.ack          = PERMISSION_DISABLE;
+    maintence.air.alarm.error.event.action = ACTION_BAN_START;
   }
   else
   {
-    maintence.air.error.event.action = ACTION_WARNING;
-    maintence.air.error.ack          = PERMISSION_ENABLE;
+    maintence.air.alarm.error.event.action = ACTION_WARNING;
   }
-  maintence.air.error.trig   = TRIGGER_IDLE;
-  maintence.air.error.status = ALARM_STATUS_IDLE;
+  maintence.air.alarm.error.ack    = PERMISSION_ENABLE;
+  maintence.air.alarm.error.trig   = TRIGGER_IDLE;
+  maintence.air.alarm.error.status = ALARM_STATUS_IDLE;
 
-  maintence.fuel.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ENB_ADR );
-  maintence.fuel.error.active     = PERMISSION_DISABLE;
-  maintence.fuel.type             = ALARM_LEVEL_HIGHT;
-  maintence.fuel.level            = getValue( &maintenanceAlarmFuelTime );
-  maintence.fuel.timer.delay      = 0U;
-  maintence.fuel.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.fuel.error.event.type = EVENT_MAINTENANCE_FUEL;
+  maintence.fuel.data                   = *freeDataArray[MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR];
+  maintence.fuel.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ENB_ADR );
+  maintence.fuel.alarm.error.active     = PERMISSION_ENABLE;
+  maintence.fuel.alarm.type             = ALARM_LEVEL_HIGHT;
+  maintence.fuel.alarm.level            = getValue( &maintenanceAlarmFuelTime );
+  maintence.fuel.alarm.timer.delay      = 0U;
+  maintence.fuel.alarm.timer.id         = LOGIC_DEFAULT_TIMER_ID;
+  maintence.fuel.alarm.error.event.type = EVENT_MAINTENANCE_FUEL;
   if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ACTION_ADR ) == 0U )
   {
-    maintence.fuel.error.event.action = ACTION_BAN_START;
-    maintence.fuel.error.ack          = PERMISSION_DISABLE;
+    maintence.fuel.alarm.error.event.action = ACTION_BAN_START;
   }
   else
   {
-    maintence.fuel.error.event.action = ACTION_WARNING;
-    maintence.fuel.error.ack          = PERMISSION_ENABLE;
+    maintence.fuel.alarm.error.event.action = ACTION_WARNING;
   }
-  maintence.fuel.error.trig   = TRIGGER_IDLE;
-  maintence.fuel.error.status = ALARM_STATUS_IDLE;
+  maintence.fuel.alarm.error.ack    = PERMISSION_ENABLE;
+  maintence.fuel.alarm.error.trig   = TRIGGER_IDLE;
+  maintence.fuel.alarm.error.status = ALARM_STATUS_IDLE;
 
   return;
 }
@@ -1072,6 +1129,7 @@ void vENGINEdataInit ( void )
 void vENGINEdataReInit ( void )
 {
   oil.pressure.type       = getBitMap( &oilPressureSetup, OIL_PRESSURE_SENSOR_TYPE_ADR );
+  oil.pressure.channel    = SENSOR_CHANNEL_OIL;
   oil.pressure.cutout.enb = getBitMap( &oilPressureSetup, OIL_PRESSURE_OPEN_CIRCUIT_ALARM_ENB_ADR );
   if ( oil.pressure.type == SENSOR_TYPE_NONE )
   {
@@ -1093,6 +1151,7 @@ void vENGINEdataReInit ( void )
   }
   /*--------------------------------------------------------------*/
   coolant.temp.type       = getBitMap( &coolantTempSetup, COOLANT_TEMP_SENSOR_TYPE_ADR );
+  coolant.temp.channel    = SENSOR_CHANNEL_COOLANT;
   coolant.temp.cutout.enb = getBitMap( &coolantTempSetup, COOLANT_TEMP_OPEN_CIRCUIT_ALARM_ENB_ADR );
   if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
   {
@@ -1179,63 +1238,61 @@ void vENGINEdataReInit ( void )
   /*--------------------------------------------------------------*/
   idleRelay.enb = uFPOisEnable( FPO_FUN_IDLING );
   /*--------------------------------------------------------------*/
-  maintence.oil.error.enb = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
-  maintence.oil.level     = getValue( &maintenanceAlarmOilTime );
+  maintence.oil.data            = *freeDataArray[MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR];
+  maintence.oil.alarm.error.enb = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
+  maintence.oil.alarm.level     = getValue( &maintenanceAlarmOilTime );
   if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ACTION_ADR ) == 0U )
   {
-    maintence.oil.error.event.action = ACTION_BAN_START;
-    maintence.oil.error.ack          = PERMISSION_DISABLE;
+    maintence.oil.alarm.error.event.action = ACTION_BAN_START;
   }
   else
   {
-    maintence.oil.error.event.action = ACTION_WARNING;
-    maintence.oil.error.ack          = PERMISSION_ENABLE;
+    maintence.oil.alarm.error.event.action = ACTION_WARNING;
   }
-  maintence.air.error.enb = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ENB_ADR );
-  maintence.air.level     = getValue( &maintenanceAlarmAirTime );
+  maintence.air.data            = *freeDataArray[MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR];
+  maintence.air.alarm.error.enb = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ENB_ADR );
+  maintence.air.alarm.level     = getValue( &maintenanceAlarmAirTime );
   if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ACTION_ADR ) == 0U )
   {
-    maintence.air.error.event.action = ACTION_BAN_START;
-    maintence.air.error.ack          = PERMISSION_DISABLE;
+    maintence.air.alarm.error.event.action = ACTION_BAN_START;
   }
   else
   {
-    maintence.air.error.event.action = ACTION_WARNING;
-    maintence.air.error.ack          = PERMISSION_ENABLE;
+    maintence.air.alarm.error.event.action = ACTION_WARNING;
   }
-  maintence.fuel.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ENB_ADR );
-  maintence.fuel.level            = getValue( &maintenanceAlarmFuelTime );
+  maintence.fuel.data                   = *freeDataArray[MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR];
+  maintence.fuel.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ENB_ADR );
+  maintence.fuel.alarm.level            = getValue( &maintenanceAlarmFuelTime );
   if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ACTION_ADR ) == 0U )
   {
-    maintence.fuel.error.event.action = ACTION_BAN_START;
-    maintence.fuel.error.ack          = PERMISSION_DISABLE;
+    maintence.fuel.alarm.error.event.action = ACTION_BAN_START;
   }
   else
   {
-    maintence.fuel.error.event.action = ACTION_WARNING;
-    maintence.fuel.error.ack          = PERMISSION_ENABLE;
+    maintence.fuel.alarm.error.event.action = ACTION_WARNING;
   }
   return;
 }
 /*----------------------------------------------------------------------------*/
 void vENGINEresetAlarms ( void )
 {
-  vERRORreset( &speed.hightAlarm.error );
-  vERRORreset( &speed.lowAlarm.error );
   //vERRORreset( &charger.error.error );
   //vERRORreset( &charger.hightPreAlarm.error );
+  vERRORreset( &speed.hightAlarm.error   );
+  vERRORreset( &speed.lowAlarm.error     );
   vERRORreset( &battery.hightAlarm.error );
-  vERRORreset( &battery.lowAlarm.error );
-  vERRORreset( &fuel.hightAlarm.error );
+  vERRORreset( &battery.lowAlarm.error   );
+  vERRORreset( &fuel.hightAlarm.error    );
   vERRORreset( &fuel.hightPreAlarm.error );
-  vERRORreset( &fuel.lowAlarm.error );
-  vERRORreset( &fuel.lowPreAlarm.error );
-  vERRORreset( &coolant.alarm.error );
-  vERRORreset( &coolant.preAlarm.error );
-  vERRORreset( &oil.alarm.error );
-  vERRORreset( &oil.preAlarm.error );
-  vERRORreset( &engine.stopError );
-  vERRORreset( &engine.startError );
+  vERRORreset( &fuel.lowAlarm.error      );
+  vERRORreset( &fuel.lowPreAlarm.error   );
+  vERRORreset( &coolant.alarm.error      );
+  vERRORreset( &coolant.preAlarm.error   );
+  vERRORreset( &oil.alarm.error          );
+  vERRORreset( &oil.preAlarm.error       );
+  vERRORreset( &engine.stopError         );
+  vERRORreset( &engine.startError        );
+  vERRORreset( &engine.sensorCommonError );
   engine.banStart = PERMISSION_DISABLE;
   return;
 }
@@ -1289,6 +1346,11 @@ ENGINE_STATUS eENGINEgetEngineStatus ( void )
   return engine.status;
 }
 /*----------------------------------------------------------------------------*/
+PERMISSION eENGINEisStartBan ( void )
+{
+  return engine.banStart;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
@@ -1317,7 +1379,7 @@ void vENGINEtask ( void* argument )
     {
       if ( engine.cmd != inputCmd )
       {
-        //-------------------- One action commands ---------------------*/
+        /*-------------------- One action commands ---------------------*/
         if ( inputCmd == ENGINE_CMD_BAN_START )
         {
           engine.banStart = PERMISSION_ENABLE;
@@ -1326,7 +1388,7 @@ void vENGINEtask ( void* argument )
         {
           engine.banStart = PERMISSION_DISABLE;
         }
-        //------------------- Long actions command ---------------------*/
+        /*------------------- Long actions command ---------------------*/
         else
         {
           switch ( engine.status )
@@ -1403,6 +1465,7 @@ void vENGINEtask ( void* argument )
     fFUELprocess();
     speedVal   = fSPEEDprocess();
     fBATTERYprocess();
+    //vERRORcheck( &engine.sensorCommonError, eSENSORcheckCutout( SENSOR_CHANNEL_COMMON ) );
     //chargerVal = fCHARGERprocess( PERMISSION_DISABLE );
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/
@@ -1449,7 +1512,6 @@ void vENGINEtask ( void* argument )
               //charger.error.error.active         = PERMISSION_DISABLE;
               //charger.hightPreAlarm.error.active = PERMISSION_DISABLE;
               engine.status                      = ENGINE_STATUS_BUSY_STARTING;
-              starter.status                     = STARTER_START_PREPARATION;
               vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
               vRELAYset( &fuel.pump, RELAY_ON );
               if ( starter.idlingDelay != 0U )
@@ -1457,9 +1519,10 @@ void vENGINEtask ( void* argument )
                 vRELAYset( &idleRelay, RELAY_ON );
               }
               vLOGICprintStarterStatus( starter.status );
+              starter.status                     = STARTER_START_PREPARATION;
               break;
             case STARTER_START_PREPARATION:
-              if ( eELECTROgetAlarmStatus() == ELECTRO_CMD_DISABLE_START_ALARMS )
+              if ( eELECTROgetAlarmStatus() == ELECTRO_ALARM_STATUS_START )
               {
                 starter.status   = STARTER_READY;
                 preHeater.active = PERMISSION_ENABLE;
@@ -1577,9 +1640,6 @@ void vENGINEtask ( void* argument )
               starter.iteration = 0U;
               eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
               eDATAAPIfreeData( DATA_API_CMD_SAVE, ENGINE_STARTS_NUMBER_ADR, NULL );
-              maintence.oil.error.active  = PERMISSION_ENABLE;
-              maintence.air.error.active  = PERMISSION_ENABLE;
-              maintence.fuel.error.active = PERMISSION_ENABLE;
               vLOGICprintStarterStatus( starter.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_START;
@@ -1681,9 +1741,6 @@ void vENGINEtask ( void* argument )
               engine.status               = ENGINE_STATUS_IDLE;
               engine.cmd                  = ENGINE_CMD_NONE;
               planStop.status             = STOP_IDLE;
-              maintence.oil.error.active  = 0U;
-              maintence.air.error.active  = 0U;
-              maintence.fuel.error.active = 0U;
               vFPOsetReadyToStart( RELAY_ON );
               vLOGICprintPlanStopStatus( planStop.status );
               event.action = ACTION_NONE;

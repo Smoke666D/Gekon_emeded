@@ -23,14 +23,14 @@
 #define  LOGIC_COUNTERS_SIZE        10U
 #define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
-#define  LOG_TYPES_SIZE             36U
+#define  LOG_TYPES_SIZE             37U
 #define  LOG_ACTION_SIZE            7U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
 #define  SYS_TIMER_SEMAPHORE_DELAY  200U
 #define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
 #define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
-#define  SEMAPHORE_AEL_TAKE_DELAY   200U
+#define  SEMAPHORE_AEL_TAKE_DELAY   10U
 /*------------------------ Tasks ---------------------------------------*/
 #define  FPI_TASK_PRIORITY          osPriorityLow
 #define  ENGINE_TASK_PRIORITY       osPriorityLow     /* Engine and Electro priority need to be equal */
@@ -55,6 +55,7 @@ extern const fix16_t fix100U;
 typedef enum
 {
   DATA_API_REINIT_CONFIG,
+  DATA_API_REINIT_MAINTANCE,
 } DATA_API_REINIT;
 
 typedef enum
@@ -117,6 +118,7 @@ typedef enum
   EVENT_MAINS_FAIL,                 /* 35 AUTO_START */
   EVENT_INTERRUPTED_START,          /* 36 EMERGENCY_STOP */
   EVENT_INTERRUPTED_STOP,           /* 37 EMERGENCY_STOP */
+  EVENT_SENSOR_COMMON_ERROR,        /* 38 EMERGENCY_STOP */
 } SYSTEM_EVENT_TYPE;
 
 typedef enum
@@ -271,6 +273,12 @@ typedef struct __packed
   SYSTEM_EVENT  event;  /* 2 bytes */
 } LOG_RECORD_TYPE;
 /*----------------------- Extern ---------------------------------------*/
+extern const char* logActionsDictionary[LOG_ACTION_SIZE];
+extern const char* logTypesDictionary[LOG_TYPES_SIZE];
+#if ( DEBUG_SERIAL_ALARM > 0U )
+  extern const char* alarmActionStr[LOG_ACTION_SIZE];
+  extern const char* eventTypesStr[LOG_TYPES_SIZE];
+#endif
 /*----------------------- Functions ------------------------------------*/
 void              vLOGICinit ( TIM_HandleTypeDef* tim );
 QueueHandle_t     pLOGICgetEventQueue ( void );

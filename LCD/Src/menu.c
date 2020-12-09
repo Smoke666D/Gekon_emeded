@@ -34,6 +34,10 @@ static uint8_t           Blink            = 0U;
 static uint16_t          uiSetting        = 3U;
 static uint8_t           ucActiveObject   = NO_SELECT_D;
 static uint8_t           EXIT_KEY_F       = 0U;
+
+static uint8_t uCurrentAlarm =0;
+
+
 /*----------------------- Functions -----------------------------------------------------------------*/
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key );
 /*----------------------- Structures ----------------------------------------------------------------*/
@@ -250,6 +254,14 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       {
         //Если нажата клавиша вниз, проверяем флаг, сигнализурующий что мы листаем
         //карусель вложенных экранов
+        if (pCurrMenu == &xAlarmMenu)
+        {
+
+          uCurrentAlarm++;
+
+        }
+        else
+
         if ( DownScreen == 0U )
         {
           if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
@@ -346,7 +358,7 @@ void vMenuTask ( void )
     }
     else
     {
-      BufferEvent = TempEvent;
+    BufferEvent = TempEvent;
       //Если зафиксировано нажатие клавиши
       if ( TempEvent.Status == MAKECODE )
       {
@@ -420,7 +432,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
 {
   char* TEXT      = NULL;
   uint8_t  Insert    = 0U;
-  uint8_t  Text[16U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+  char  Text[40U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ',' ',' ',' '};
   uint8_t  i         = 0U;
   uint8_t  x_offset  = 0U;
   uint8_t  y_offset  = 0U;
@@ -820,6 +832,144 @@ char cHexToChar(uint8_t data)
   else
      return data-10 +'A';
 }
+
+static char TempArray[70];
+static char StringShift =0,ScrollDelay=0;
+static char StringShift1 =0,ScrollDelay1=0;
+static char BufferAlarm=0,ALD=0;
+
+void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  LOG_RECORD_TYPE  xrecord;
+  char * StartArray;
+  uint8_t  utemp=10;
+  switch (ID)
+  {
+    case ALARM_STATUS:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      if (utemp >0)
+      {
+              ALD++;
+              if (ALD>1)
+              {
+                sprintf(Data,"A");
+                ALD=0;
+              }
+              else
+                sprintf(Data," ");
+
+      }
+            else
+              sprintf(Data," ");
+      break;
+
+    case ALARM_COUNT:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      if (uCurrentAlarm >=utemp) uCurrentAlarm=0;
+      if (utemp >0)
+      {
+        sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
+        if (uCurrentAlarm!=BufferAlarm)
+        {
+          BufferAlarm =uCurrentAlarm;
+          StringShift =0;
+          StringShift1 =0;
+        }
+      }
+      else
+        sprintf(Data,"0 / 0");
+      break;
+    case CURRENT_ALARM_TIME:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      if (uCurrentAlarm < utemp)
+      {
+        eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+        sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",GET_LOG_DAY( xrecord.time ),GET_LOG_MONTH( xrecord.time ) , LOG_START_YEAR + GET_LOG_YEAR(xrecord.time)  ,GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
+      }
+      else
+       sprintf(Data,"Пусто");
+
+      break;
+    case CURRENT_ALARM_T:
+            eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+           if (uCurrentAlarm < utemp)
+           {
+             eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+             sprintf(TempArray,"%s",  logTypesDictionary[xrecord.event.type]);
+             utemp =strlen(TempArray);
+             if (utemp> 39U)
+             {
+               StartArray =&TempArray[StringShift];
+               if ((utemp-StringShift)<39)
+               StartArray[utemp-StringShift]=0;
+               else
+                 StartArray[39]=0;
+               ScrollDelay++;
+               if (ScrollDelay>1)
+               {
+                 ScrollDelay=0;
+                 StringShift++;
+                 if (StringShift >= utemp)
+                   StringShift=0;
+               }
+             }
+             else
+             {
+
+               StringShift =0;
+               StartArray= TempArray;
+             }
+             sprintf(Data,"%s",StartArray);
+
+           }
+           else
+            sprintf(Data,"Пусто");
+           break;
+
+    case CURRENT_ALARM_ACTION:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      if (uCurrentAlarm < utemp)
+                {
+                  eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+                  sprintf(TempArray,"%s", logActionsDictionary[xrecord.event.action]);
+                  utemp =strlen(TempArray);
+                  if (utemp> 39U)
+                  {
+                    StartArray =&TempArray[StringShift1];
+                    if ((utemp-StringShift1)<39)
+                                 StartArray[utemp-StringShift1]=0;
+                                 else
+                                   StartArray[39]=0;
+                    ScrollDelay1++;
+                    if (ScrollDelay1>1)
+                    {
+                      ScrollDelay1=0;
+                      StringShift1++;
+                      if (StringShift1 >= utemp)
+                        StringShift1=0;
+                    }
+                  }
+                  else
+                  {
+
+                    StringShift1 =0;
+                    StartArray= TempArray;
+                  }
+                  sprintf(Data,"%s",StartArray);
+
+                }
+                else
+                 sprintf(Data,"Пусто");
+                break;
+
+
+    default:
+      break;
+
+  }
+
+}
+
 
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {

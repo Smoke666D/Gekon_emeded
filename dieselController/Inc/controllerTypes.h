@@ -23,7 +23,7 @@
 #define  LOGIC_COUNTERS_SIZE        10U
 #define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
-#define  LOG_TYPES_SIZE             36U
+#define  LOG_TYPES_SIZE             37U
 #define  LOG_ACTION_SIZE            7U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
@@ -118,6 +118,7 @@ typedef enum
   EVENT_MAINS_FAIL,                 /* 35 AUTO_START */
   EVENT_INTERRUPTED_START,          /* 36 EMERGENCY_STOP */
   EVENT_INTERRUPTED_STOP,           /* 37 EMERGENCY_STOP */
+  EVENT_SENSOR_COMMON_ERROR,        /* 38 EMERGENCY_STOP */
 } SYSTEM_EVENT_TYPE;
 
 typedef enum

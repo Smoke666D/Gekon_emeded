@@ -64,7 +64,8 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Сеть востановлена",
     "Ошибка сети",
     "Прерванный старт",
-    "Прерванная остановка"
+    "Прерванная остановка",
+    "Ошибка общего провода датчиков"
 };
 #if ( DEBUG_SERIAL_ALARM > 0U )
   const char* eventTypesStr[LOG_TYPES_SIZE] =
@@ -106,7 +107,8 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "MAINS_OK",
     "MAINS_FAIL",
     "INTERRUPTED_START",
-    "INTERRUPTED_STOP"
+    "INTERRUPTED_STOP",
+    "SENSOR_COMMON_ERROR"
   };
   const char* alarmActionStr[LOG_ACTION_SIZE] =
   {

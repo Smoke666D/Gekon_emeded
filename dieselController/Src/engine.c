@@ -999,6 +999,15 @@ void vENGINEdataInit ( void )
   engine.stopError.status        = ALARM_STATUS_IDLE;
   engine.stopError.trig          = TRIGGER_IDLE;
 
+  engine.sensorCommonError.enb          = PERMISSION_ENABLE;
+  engine.sensorCommonError.active       = PERMISSION_ENABLE;
+  engine.sensorCommonError.ack          = PERMISSION_ENABLE;
+  engine.sensorCommonError.event.action = ACTION_EMERGENCY_STOP;
+  engine.sensorCommonError.event.type   = EVENT_SENSOR_COMMON_ERROR;
+  engine.sensorCommonError.id           = DEFINE_ERROR_LIST_ADR;
+  engine.sensorCommonError.status       = ALARM_STATUS_IDLE;
+  engine.sensorCommonError.trig         = TRIGGER_IDLE;
+
   engine.startError.enb          = PERMISSION_ENABLE;
   engine.startError.active       = PERMISSION_DISABLE;
   engine.startError.ack          = PERMISSION_DISABLE;
@@ -1267,22 +1276,23 @@ void vENGINEdataReInit ( void )
 /*----------------------------------------------------------------------------*/
 void vENGINEresetAlarms ( void )
 {
-  vERRORreset( &speed.hightAlarm.error );
-  vERRORreset( &speed.lowAlarm.error );
   //vERRORreset( &charger.error.error );
   //vERRORreset( &charger.hightPreAlarm.error );
+  vERRORreset( &speed.hightAlarm.error   );
+  vERRORreset( &speed.lowAlarm.error     );
   vERRORreset( &battery.hightAlarm.error );
-  vERRORreset( &battery.lowAlarm.error );
-  vERRORreset( &fuel.hightAlarm.error );
+  vERRORreset( &battery.lowAlarm.error   );
+  vERRORreset( &fuel.hightAlarm.error    );
   vERRORreset( &fuel.hightPreAlarm.error );
-  vERRORreset( &fuel.lowAlarm.error );
-  vERRORreset( &fuel.lowPreAlarm.error );
-  vERRORreset( &coolant.alarm.error );
-  vERRORreset( &coolant.preAlarm.error );
-  vERRORreset( &oil.alarm.error );
-  vERRORreset( &oil.preAlarm.error );
-  vERRORreset( &engine.stopError );
-  vERRORreset( &engine.startError );
+  vERRORreset( &fuel.lowAlarm.error      );
+  vERRORreset( &fuel.lowPreAlarm.error   );
+  vERRORreset( &coolant.alarm.error      );
+  vERRORreset( &coolant.preAlarm.error   );
+  vERRORreset( &oil.alarm.error          );
+  vERRORreset( &oil.preAlarm.error       );
+  vERRORreset( &engine.stopError         );
+  vERRORreset( &engine.startError        );
+  vERRORreset( &engine.sensorCommonError );
   engine.banStart = PERMISSION_DISABLE;
   return;
 }
@@ -1455,6 +1465,7 @@ void vENGINEtask ( void* argument )
     fFUELprocess();
     speedVal   = fSPEEDprocess();
     fBATTERYprocess();
+    //vERRORcheck( &engine.sensorCommonError, eSENSORcheckCutout( SENSOR_CHANNEL_COMMON ) );
     //chargerVal = fCHARGERprocess( PERMISSION_DISABLE );
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/

@@ -225,7 +225,6 @@ typedef struct __packed
   ALARM_STATUS   status : 3U; /* Status of the alarm */
   TRIGGER_STATE  trig   : 1U; /* Alarm triggered flag. Reset from outside */
   SYSTEM_EVENT   event;       /* Event data of alarm */
-  uint8_t        id;          /* ID in active error list */
 } ERROR_TYPE;
 
 typedef struct __packed

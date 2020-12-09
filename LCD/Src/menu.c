@@ -18,6 +18,7 @@
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
 #define CHANGE_D      2U
+#define VIEW_DELAY    5U
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2             = NULL;
 static osThreadId_t      xProccesToNotify = NULL;
@@ -34,9 +35,11 @@ static uint8_t           Blink            = 0U;
 static uint16_t          uiSetting        = 3U;
 static uint8_t           ucActiveObject   = NO_SELECT_D;
 static uint8_t           EXIT_KEY_F       = 0U;
-
+static char TempArray[70];
+static uint8_t StringShift =0,ScrollDelay=0;
+static uint8_t StringShift1 =0;
+static uint8_t BufferAlarm=0,ALD=0,BufAlarmCount=0;
 static uint8_t uCurrentAlarm =0;
-
 
 /*----------------------- Functions -----------------------------------------------------------------*/
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key );
@@ -217,16 +220,24 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 /*---------------------------------------------------------------------------------------------------*/
 /* Callback функция пролистывания информационных экранов.
  *
+
  */
+#define AUTO_KEY_READY   0x01U
+#define START_KEY_READY  0x02U
+#define STOP_KEY_READY   0x04U
+
+
+//Функция обработки нажатий в базовых меню
 void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
 {
   uint8_t           index = menu->pCurrIndex;
   xScreenSetObject* pMenu = menu;
-  static  uint8_t auto_key_ready =0;
+  static  uint8_t key_ready =0;
+
   switch ( key )
   {
     case KEY_UP:
-      uSettingScreen = 0U;
+      //Смотрим, не находимся ли мы в экранах нижнего уровня
       if ( DownScreen > 0U )
       {
         DownScreen = 0U;
@@ -246,70 +257,68 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       }
       break;
     case KEY_DOWN:
-      if ( uSettingScreen == 1U )
-      {
-        pCurrMenu = &xSettingsMenu;
-      }
-      else
-      {
         //Если нажата клавиша вниз, проверяем флаг, сигнализурующий что мы листаем
         //карусель вложенных экранов
-        if (pCurrMenu == &xAlarmMenu)
+        if (menu->pHomeMenu[index].pDownScreenSet == &xAlarmMenu)
         {
-
           uCurrentAlarm++;
-
-        }
-        else
-
-        if ( DownScreen == 0U )
-        {
-          if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
-          {
-            pCurrMenu             = menu->pHomeMenu[index].pDownScreenSet;
-            DownScreen            = 1U;
-            pCurrMenu->pCurrIndex = 0U;
-          }
         }
         else
         {
-          if ( menu->pCurrIndex == menu->pMaxIndex )
-          {
-            menu->pCurrIndex = 0U;
-          }
-          else
-          {
-            menu->pCurrIndex++;
-          }
+            if ( DownScreen == 0U )
+            {
+              if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
+              {
+                pCurrMenu             = menu->pHomeMenu[index].pDownScreenSet;
+                DownScreen            = 1U;
+                pCurrMenu->pCurrIndex = 0U;
+              }
+            }
+            else
+            {
+              if ( menu->pCurrIndex == menu->pMaxIndex )
+              {
+                menu->pCurrIndex = 0U;
+              }
+              else
+              {
+                menu->pCurrIndex++;
+              }
+            }
         }
-      }
-      break;
+       break;
     case KEY_EXIT:
-      uSettingScreen = 0U;
       DownScreen     = 0U;
     break;
     case KEY_STOP:
-      xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_STOP, eSetBits );
-      uSettingScreen = 1U;
+      if ((key_ready & STOP_KEY_READY )==0U)
+      {
+        key_ready |= STOP_KEY_READY;
+        xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_STOP, eSetBits );
+      }
       break;
     case KEY_STOP_BREAK:
-      uSettingScreen = 0U;
+      key_ready &=  ~STOP_KEY_READY;
       break;
     case KEY_AUTO:
-      if ( auto_key_ready==0U)
+      if (( key_ready & AUTO_KEY_READY)==0U)
       {
-        auto_key_ready =1U;
+        key_ready |=AUTO_KEY_READY;
         xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_AUTO, eSetBits );
-        uSettingScreen = 0U;
       }
       break;
     case KEY_AUTO_BREAK:
-      auto_key_ready = 0U;
+      key_ready &= AUTO_KEY_READY;
       break;
-
     case KEY_START:
-      xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_START, eSetBits );
-      uSettingScreen = 0U;
+      if ((key_ready &  START_KEY_READY)==0U)
+      {
+          key_ready |= START_KEY_READY;
+          xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_START, eSetBits );
+      }
+      break;
+    case KEY_START_BREAK:
+      key_ready &= ~START_KEY_READY;
       break;
     default:
       break;
@@ -409,6 +418,9 @@ void vMenuTask ( void )
             break;
           case auto_key:
             key= KEY_AUTO_BREAK;
+            break;
+          case start_key:
+            key= KEY_START_BREAK;
             break;
           default:
             break;
@@ -812,18 +824,13 @@ void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   switch ( IP_ADRESS )
   {
     case 1:
-
       cSERVERgetStrIP( Data );
       break;
     default:
       break;
-
   }
 
-
 }
-
-
 
 char cHexToChar(uint8_t data)
 {
@@ -833,10 +840,6 @@ char cHexToChar(uint8_t data)
      return data-10 +'A';
 }
 
-static char TempArray[70];
-static char StringShift =0,ScrollDelay=0;
-static char StringShift1 =0,ScrollDelay1=0;
-static char BufferAlarm=0,ALD=0;
 
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -846,26 +849,29 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   switch (ID)
   {
     case ALARM_STATUS:
+      //Комадна вывода статуса в правом углу экрана
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      sprintf(Data," ");
       if (utemp >0)
       {
-              ALD++;
-              if (ALD>1)
-              {
-                sprintf(Data,"A");
-                ALD=0;
-              }
-              else
-                sprintf(Data," ");
-
+         ALD++;
+         if (ALD>1)
+         {
+           sprintf(Data,"О");
+           ALD=0;
+         }
       }
-            else
-              sprintf(Data," ");
       break;
 
     case ALARM_COUNT:
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
       if (uCurrentAlarm >=utemp) uCurrentAlarm=0;
+      if (BufAlarmCount!=utemp)
+      {
+        BufAlarmCount=utemp;
+        StringShift =0;
+        StringShift1 =0;
+      }
       if (utemp >0)
       {
         sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
@@ -878,6 +884,13 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       }
       else
         sprintf(Data,"0 / 0");
+
+      if (ScrollDelay>VIEW_DELAY)
+      {
+        ScrollDelay = VIEW_DELAY -1U;
+      }
+      ScrollDelay++;
+
       break;
     case CURRENT_ALARM_TIME:
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
@@ -886,88 +899,75 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
         sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",GET_LOG_DAY( xrecord.time ),GET_LOG_MONTH( xrecord.time ) , LOG_START_YEAR + GET_LOG_YEAR(xrecord.time)  ,GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
       }
-      else
-       sprintf(Data,"Пусто");
-
       break;
     case CURRENT_ALARM_T:
-            eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
-           if (uCurrentAlarm < utemp)
-           {
-             eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
-             sprintf(TempArray,"%s",  logTypesDictionary[xrecord.event.type]);
-             utemp =strlen(TempArray);
-             if (utemp> 39U)
-             {
+      if (uCurrentAlarm < BufAlarmCount)
+      {
+         eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+         sprintf(TempArray,"%s",  logTypesDictionary[xrecord.event.type]);
+         utemp =strlen(TempArray);
+         if (utemp> 39U)
+         {
                StartArray =&TempArray[StringShift];
                if ((utemp-StringShift)<39)
                StartArray[utemp-StringShift]=0;
                else
                  StartArray[39]=0;
-               ScrollDelay++;
-               if (ScrollDelay>1)
+               if (ScrollDelay>VIEW_DELAY)
                {
-                 ScrollDelay=0;
                  StringShift++;
-                 if (StringShift >= utemp)
+                 if (StringShift >= (utemp-39))
                    StringShift=0;
                }
              }
              else
              {
-
                StringShift =0;
                StartArray= TempArray;
              }
              sprintf(Data,"%s",StartArray);
-
            }
            else
-            sprintf(Data,"Пусто");
+            sprintf(Data,"ОШИБОК НЕТ");
            break;
 
     case CURRENT_ALARM_ACTION:
-      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
-      if (uCurrentAlarm < utemp)
-                {
-                  eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
-                  sprintf(TempArray,"%s", logActionsDictionary[xrecord.event.action]);
-                  utemp =strlen(TempArray);
-                  if (utemp> 39U)
-                  {
-                    StartArray =&TempArray[StringShift1];
-                    if ((utemp-StringShift1)<39)
-                                 StartArray[utemp-StringShift1]=0;
-                                 else
-                                   StartArray[39]=0;
-                    ScrollDelay1++;
-                    if (ScrollDelay1>1)
-                    {
-                      ScrollDelay1=0;
-                      StringShift1++;
-                      if (StringShift1 >= utemp)
-                        StringShift1=0;
-                    }
-                  }
-                  else
-                  {
-
-                    StringShift1 =0;
-                    StartArray= TempArray;
-                  }
-                  sprintf(Data,"%s",StartArray);
-
-                }
-                else
-                 sprintf(Data,"Пусто");
-                break;
-
-
+      if (uCurrentAlarm < BufAlarmCount)
+      {
+         eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+         sprintf(TempArray,"%s", logActionsDictionary[xrecord.event.action]);
+         utemp =strlen(TempArray);
+         if (utemp> 39U)
+         {
+            StartArray =&TempArray[StringShift1];
+            if ((utemp-StringShift1)<39)
+            {
+               StartArray[utemp-StringShift1]=0;
+            }
+            else
+            {
+              StartArray[39]=0;
+            }
+            if (ScrollDelay>VIEW_DELAY)
+            {
+                StringShift1++;
+                if (StringShift1 >= (utemp-39))
+                    StringShift1=0;
+            }
+         }
+         else
+         {
+           StringShift1 =0;
+           StartArray= TempArray;
+         }
+         sprintf(Data,"%s",StartArray);
+      }
+      break;
     default:
       break;
 
   }
-
+ return;
 }
 
 
@@ -977,14 +977,13 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   uint16_t utempdata;
   uint16_t tt[6]={0,0,0,0,0,0};
   eConfigAttributes ATR;
-  uint16_t adr=0;
   switch (ID)
   {
     case HW_VER:
       eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&ATR);
       if (ATR.len ==1 )
       {
-             eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&tt);
+             eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,(uint16_t*)&tt);
              sprintf(Data,"%i",tt[0]);
       }
       break;
@@ -992,12 +991,12 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR,&ATR);
       if (ATR.len ==1 )
       {
-        eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR,&tt);
+        eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR, (uint16_t*)&tt);
         sprintf(Data,"%i",tt[0]);
       }
       break;
     case SERIAL_L:
-      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
+      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR, (uint16_t*)&tt);
       for (uint8_t i=0;i<3;i++)
                {
                  Data[i*6]  = cHexToChar((tt[i]>>12)  & 0x0F );
@@ -1010,7 +1009,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       Data[17]=0;
       break;
     case SERIAL_H:
-      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,&tt);
+      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,(uint16_t*)&tt);
       for (uint8_t i=0;i<3;i++)
           {
             Data[i*6]  = cHexToChar((tt[i+3]>>12) & 0x0F );
@@ -1023,7 +1022,6 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         Data[17]=0;
 
       break;
-
     case FUEL_LEVEL:
       eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
       fix16_to_str( temp, Data, 0U );
@@ -1039,7 +1037,6 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );
       break;
-
     case NET_L1_LINE_V:
     case NET_L2_LINE_V:
     case NET_L3_LINE_V:
@@ -1109,15 +1106,10 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
          case COS_FI:
            fix16_to_str( xADCGetCOSFi(), Data, 2 );
            break;
-
-
     default:
      break;
-
-
   }
-
-
+ return;
 }
 
 
@@ -1126,90 +1118,26 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   switch ( ID )
   {
 
-    case 15:
-      Data[0]='1';
-      Data[1]='2';
-      Data[2]='3';
-      Data[3]=',';
-      Data[4]='3';
-      Data[5]='0';
-      Data[6]=0;
-      break;
-    case 13:
-      Data[0]='1';
-      Data[1]='0';
-      Data[2]='0';
-      Data[3]=0;
-      break;
-    case 12:
-      Data[0]='1';
-      Data[1]='4';
-      Data[2]=',';
-      Data[3]='5';
-      Data[4]=0;
-      break;
-    case 11:
-      Data[0]='1';
-      Data[1]='3';
-      Data[2]=',';
-      Data[3]='6';
-      Data[4]=0;
-      break;
-    case 7:
-      Data[0]='2';
-      Data[1]='3';
-      Data[2]='0';
-      Data[3]=0;
-      break;
-    case 5:
-      Data[0]='5';
-      Data[1]='0';
-      Data[2]=0;
-      break;
     case 4:
       Data[0]='4';
       Data[1]='0';
       Data[2]='0';
       Data[3]=0;
       break;
-    case 3:
-      Data[0]='1';
-      Data[1]='5';
-      Data[2]='0';
-      Data[3]='0';
-      Data[4]=0;
-      break;
+
     case 2:
       Data[0]='1';
       Data[1]='0';
       Data[2]='0';
       Data[3]=0;
       break;
-    case 1:
-      Data[0]='0';
-      Data[1]=',';
-      Data[2]='9';
-      Data[3]=0;
-      break;
+
     default:
+      Data[0]='1';
+      Data[1]='0';
+      Data[2]='0';
+      Data[3]=0;
       break;
   }
   return;
 }
-/*---------------------------------------------------------------------------------------------------*/
-void GetTime( char* Data )
-{
-  Data[0]='1';
-  Data[1]='1';
-  Data[2]=':';
-  Data[3]='2';
-  Data[4]='0';
-  Data[5]=':';
-  Data[6]='5';
-  Data[7]='4';
-  Data[8]=0;
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------------------------------*/

@@ -16,6 +16,8 @@
 #include "journal.h"
 #include "alarm.h"
 #include "controllerTypes.h"
+#include "string.h"
+
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
 #define CENTER_ALIGN        1U
@@ -28,6 +30,7 @@
 #define KEY_STOP            3U
 #define KEY_STOP_BREAK      7U
 #define KEY_AUTO_BREAK      8U
+#define KEY_START_BREAK     9U
 #define KEY_AUTO            4U
 #define KEY_START           5U
 #define KEY_EXIT            6U

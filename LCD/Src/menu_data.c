@@ -16,30 +16,7 @@ extern xScreenSetObject xNetMenu;
 extern xScreenSetObject xSettingsMenu;
 
 
-/*----------------------- Variables -----------------------------------------------------------------*/
-static char EventLog[][44U]=
-{
-  "Вспомог. входы",
-  "Аналог. вход",
-  "Аналог. вход высокий",
-  "Аналог. вход низкий",
-  "Размык. цепи",
-  "Ошибка запуска",
-  "Масло низк. дав.",
-  "Высокая темп. двиг.",
-  "Понижена скорость",
-  "Повышеная скорость",
-  "Сбой зарядки",
-  "Низка скорость вент.",
-  "Топливо низк. уров.",
-  "Топливо высок. уров.",
-  "Напряж. ген. низк",
-  "Напряж. ген. высок",
-  "Напряжение ген.",
-};
-
-
-
+/*----------------------- Defines -----------------------------------------------------------------*/
 #define MAX_HEADER_STRING_SIZE 40U
 #define LINE4_HIGTH            ( 64U / 4U )
 #define LINE5_HIGTH            ( 64U / 5U )
@@ -112,9 +89,6 @@ static xScreenObjet const Engine2Screen[]=
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Кол-во запусков",NULL,0U},
   {0U,FONT_SIZE*16U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,ENGINE_SCOUNT},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
-  //{0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"Уровень топлива",NULL,0U},
-  //{0U,FONT_SIZE*16U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetTestData,13U},
-  //{1U,FONT_SIZE*20U,LINE4,0U,0U,TEXT_STRING,LeftText,"%",NULL,0U}
 };
 
 
@@ -273,7 +247,7 @@ static xScreenObjet const Net2Screen[]=
 
 static xScreenObjet const AlarmMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"АВАРИЙ :",NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ОШИБОК :",NULL,0U},
   {0U,FONT_SIZE*17U,LINE1-12U,15U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_COUNT},
   {0U,LEFT_OFFSET,LINE1+6U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_ALARM_TIME},
   {0U,LEFT_OFFSET,LINE2+3U,120U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)vGetAlarmForMenu,CURRENT_ALARM_T},
@@ -281,13 +255,6 @@ static xScreenObjet const AlarmMainScreen[]=
   {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
 
 };
-
-static xScreenObjet const AlarmScreen[]=
-{
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"АВАРИЙ:",NULL,0U},
-  {1U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U}
-};
-
 
 
 static xScreenObjet const EventMainScreen[]=

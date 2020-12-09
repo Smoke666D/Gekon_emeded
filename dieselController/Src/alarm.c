@@ -69,11 +69,11 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
 {
   uint8_t i              = 0U;
   uint8_t warningCounter = 0U;
-  if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+  switch ( cmd )
   {
-    switch ( cmd )
-    {
-      case ERROR_LIST_CMD_ERASE:
+    case ERROR_LIST_CMD_ERASE:
+      if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+      {
         for ( i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
         {
           activeErrorList.array[i].event.action = ACTION_NONE;
@@ -84,9 +84,12 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
         activeErrorList.status  = ERROR_LIST_STATUS_EMPTY;
         vFPOsetWarning( RELAY_OFF );
         xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_ACK:
-        /*------------------- ACK -------------------*/
+      }
+      break;
+    case ERROR_LIST_CMD_ACK:
+      /*------------------- ACK -------------------*/
+      if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+      {
         if ( *adr < activeErrorList.counter )
         {
           for ( i=*adr; i<activeErrorList.counter; i++ )
@@ -120,12 +123,14 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           vFPOsetWarning( RELAY_OFF );
         }
         xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_COUNTER:
-        *adr = activeErrorList.counter;
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_ADD:
+      }
+      break;
+    case ERROR_LIST_CMD_COUNTER:
+      *adr = activeErrorList.counter;
+      break;
+    case ERROR_LIST_CMD_ADD:
+      if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+      {
         if ( activeErrorList.counter <= ACTIV_ERROR_LIST_SIZE )
         {
           if ( vALARMisWarning( *record ) > 0U )
@@ -142,14 +147,13 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           activeErrorList.status = ERROR_LIST_STATUS_OVER;
         }
         xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_READ:
-        *record = activeErrorList.array[*adr];
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      default:
-        break;
-    }
+      }
+      break;
+    case ERROR_LIST_CMD_READ:
+      *record = activeErrorList.array[*adr];
+      break;
+    default:
+      break;
   }
   return activeErrorList.status;
 }

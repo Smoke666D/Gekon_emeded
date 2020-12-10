@@ -45,8 +45,9 @@ LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
 {
   LOG_STATUS res  = LOG_STATUS_ERROR;
-  if ( eDATAAPIlog( DATA_API_CMD_ADD, 0U, record ) == DATA_API_STAT_OK )
+  if ( eDATAAPIlog( DATA_API_CMD_ADD, NULL, record ) == DATA_API_STAT_OK )
   {
+    vDATAAPIincLogSize();
     res = LOG_STATUS_OK;
   }
   return res;

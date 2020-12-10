@@ -52,27 +52,26 @@ void vDATAAPIsendEventAll ( DATA_API_REINIT message )
 /*---------------------------------------------------------------------------------------------------*/
 DATA_API_STATUS vDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
 {
-  DATA_API_STATUS res      = DATA_API_STAT_OK;
-  uint16_t        pointer  = 0U;
+  DATA_API_STATUS res = DATA_API_STAT_OK;
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
     flTakeSource = 18U;
-    if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
-    {
-      if ( adr < pointer)
-      {
+    //if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
+    //{
+      //if ( adr < pointer )
+      //{
         if ( eSTORAGEreadLogRecord( adr, record ) != EEPROM_OK )
         {
           res = DATA_API_STAT_EEPROM_ERROR;
         }
-      }
-      else
-      {
-        record->time         = 0U;
-        record->event.type   = EVENT_NONE;
-        record->event.action = ACTION_NONE;
-      }
-    }
+      //}
+      //else
+      //{
+        //record->time         = 0U;
+        //record->event.type   = EVENT_NONE;
+        //record->event.action = ACTION_NONE;
+      //}
+    //}
     xSemaphoreGive( xSemaphore );
   }
   else
@@ -84,6 +83,15 @@ DATA_API_STATUS vDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
 
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+void vDATAAPIincLogSize ( void )
+{
+  if ( logCash.size < LOG_SIZE )
+  {
+    logCash.size++;
+  }
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 EventGroupHandle_t xDATAAPIgetEventGroup ( void )
 {
@@ -311,7 +319,28 @@ void vDATAAPIinit ( void )
 {
   xSemaphore     = xSemaphoreCreateMutex();
   xDataApiEvents = xEventGroupCreate();
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vDATAAPIlogInit ( void )
+{
+  LOG_RECORD_TYPE record  = { 0U};
+  uint16_t        pointer = 0U;
   logCash.adr    = 0xFFFFU;
+  if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
+  {
+    if ( eSTORAGEreadLogRecord( pointer, &record ) == EEPROM_OK )
+    {
+      if ( record.time == 0U )
+      {
+        logCash.size = pointer;
+      }
+      else
+      {
+        logCash.size = LOG_SIZE;
+      }
+    }
+  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -952,17 +981,18 @@ DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer )
  *         record - log record structure
  * output: status of operation
  * available commands:
- * 1. DATA_API_CMD_READ  - none
- * 2. DATA_API_CMD_WRITE - none
- * 3. DATA_API_CMD_INC   - none
- * 4. DATA_API_CMD_DEC   - none
- * 5. DATA_API_CMD_SAVE  - none
- * 6. DATA_API_CMD_LOAD  - load addressed log record to the buffer
- * 7. DATA_API_CMD_ERASE - erase all log records
- * 8. DATA_API_CMD_ADD   - add new log record to the EEPROM
- * 9.
+ * 1.  DATA_API_CMD_READ      - none
+ * 2.  DATA_API_CMD_WRITE     - none
+ * 3.  DATA_API_CMD_INC       - none
+ * 4.  DATA_API_CMD_DEC       - none
+ * 5.  DATA_API_CMD_SAVE      - none
+ * 6.  DATA_API_CMD_LOAD      - load addressed log record to the buffer
+ * 7.  DATA_API_CMD_ERASE     - erase all log records
+ * 8.  DATA_API_CMD_ADD       - add new log record to the EEPROM
+ * 9.  DATA_API_CMD_READ_CASH - read record with cash
+ * 10. DATA_API_CMD_COUNTER   - read to adr size of log,
  */
-DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record )
+DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TYPE* record )
 {
   DATA_API_STATUS res      = DATA_API_STAT_OK;
   uint16_t        pointer  = 0U;
@@ -970,7 +1000,7 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
   SYSTEM_EVENT    eraseEv  = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
   LOG_RECORD_TYPE eraseRec = { .time = 0U, .event = eraseEv };
 
-  if ( adr < LOG_SIZE )
+  if ( *adr < LOG_SIZE )
   {
     if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
     {
@@ -1015,20 +1045,24 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYP
           break;
 
         case DATA_API_CMD_READ_CASH:
-          if ( logCash.adr == adr )
+          if ( logCash.adr == *adr )
           {
             *record = logCash.record;
           }
           else
           {
-            res            = vDATAAPIlogLoad( adr, record );
-            logCash.adr    = adr;
+            res            = vDATAAPIlogLoad( *adr, record );
+            logCash.adr    = *adr;
             logCash.record = *record;
           }
           break;
 
+        case DATA_API_CMD_COUNTER:
+          *adr = logCash.size;
+          break;
+
         case DATA_API_CMD_LOAD:
-          res = vDATAAPIlogLoad( adr, record );
+          res = vDATAAPIlogLoad( *adr, record );
           break;
         case DATA_API_CMD_ERASE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )

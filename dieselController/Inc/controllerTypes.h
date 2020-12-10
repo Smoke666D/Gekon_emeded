@@ -206,8 +206,8 @@ typedef void     ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup re
 /*----------------------- Structures -----------------------------------*/
  typedef struct __packed
 {
-  SYSTEM_ACTION      action : 3U;
-  SYSTEM_EVENT_TYPE  type   : 6U;
+  SYSTEM_ACTION      action;
+  SYSTEM_EVENT_TYPE  type;
 } SYSTEM_EVENT;
 
 typedef struct __packed
@@ -225,7 +225,6 @@ typedef struct __packed
   ALARM_STATUS   status : 3U; /* Status of the alarm */
   TRIGGER_STATE  trig   : 1U; /* Alarm triggered flag. Reset from outside */
   SYSTEM_EVENT   event;       /* Event data of alarm */
-  uint8_t        id;          /* ID in active error list */
 } ERROR_TYPE;
 
 typedef struct __packed

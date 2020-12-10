@@ -273,10 +273,10 @@ void vMAINSprocess ( void )
     mains.lowFreqAlarm.error.ignor      = PERMISSION_ENABLE;
     mains.hightVoltageAlarm.error.ignor = PERMISSION_ENABLE;
     mains.lowVoltageAlarm.error.ignor   = PERMISSION_ENABLE;
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &mains.hightFreqAlarm.error.id    );
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &mains.lowFreqAlarm.error.id      );
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &mains.hightVoltageAlarm.error.id );
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &mains.lowVoltageAlarm.error.id   );
+    vERRORrelax( &mains.hightFreqAlarm.error    );
+    vERRORrelax( &mains.lowFreqAlarm.error      );
+    vERRORrelax( &mains.hightVoltageAlarm.error );
+    vERRORrelax( &mains.lowVoltageAlarm.error   );
   }
   if ( ( generator.state != ELECTRO_STATUS_LOAD ) && ( mains.alarmsIgnor == PERMISSION_ENABLE ) )
   {
@@ -390,7 +390,6 @@ void vELECTROdataInit ( void )
   generator.lowVoltageAlarm.error.event.type   = EVENT_GENERATOR_LOW_VOLTAGE;
   generator.lowVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.lowVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.lowVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.lowVoltagePreAlarm.error.enb          = getBitMap( &genAlarms, GEN_UNDER_VOLTAGE_PRE_ALARM_ENB_ADR );
   generator.lowVoltagePreAlarm.error.active       = 0U;
@@ -401,7 +400,6 @@ void vELECTROdataInit ( void )
   generator.lowVoltagePreAlarm.error.event.type   = EVENT_GENERATOR_LOW_VOLTAGE;
   generator.lowVoltagePreAlarm.error.event.action = ACTION_WARNING;
   generator.lowVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.lowVoltagePreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.hightVoltagePreAlarm.error.enb          = getBitMap( &genAlarms, GEN_OVER_VOLTAGE_PRE_ALARM_ENB_ADR );
   generator.hightVoltagePreAlarm.error.active       = 0U;
@@ -412,7 +410,6 @@ void vELECTROdataInit ( void )
   generator.hightVoltagePreAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_VOLTAGE;
   generator.hightVoltagePreAlarm.error.event.action = ACTION_WARNING;
   generator.hightVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.hightVoltagePreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.hightVoltageAlarm.error.enb          = 1U;
   generator.hightVoltageAlarm.error.active       = 0U;
@@ -423,7 +420,6 @@ void vELECTROdataInit ( void )
   generator.hightVoltageAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_VOLTAGE;
   generator.hightVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.hightVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.hightVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.lowFreqAlarm.error.enb          = getBitMap( &genAlarms, GEN_UNDER_FREQUENCY_ALARM_ENB_ADR );
   generator.lowFreqAlarm.error.active       = 0U;
@@ -434,7 +430,6 @@ void vELECTROdataInit ( void )
   generator.lowFreqAlarm.error.event.type   = EVENT_GENERATOR_LOW_FREQUENCY;
   generator.lowFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.lowFreqAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.lowFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.lowFreqPreAlarm.error.enb          = getBitMap( &genAlarms, GEN_UNDER_FREQUENCY_PRE_ALARM_ENB_ADR );
   generator.lowFreqPreAlarm.error.active       = 0U;
@@ -445,7 +440,6 @@ void vELECTROdataInit ( void )
   generator.lowFreqPreAlarm.error.event.type   = EVENT_GENERATOR_LOW_FREQUENCY;
   generator.lowFreqPreAlarm.error.event.action = ACTION_WARNING;
   generator.lowFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.lowFreqPreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.hightFreqPreAlarm.error.enb          = getBitMap( &genAlarms, GEN_OVER_FREQUENCY_PRE_ALARM_ENB_ADR );
   generator.hightFreqPreAlarm.error.active       = 0U;
@@ -456,7 +450,6 @@ void vELECTROdataInit ( void )
   generator.hightFreqPreAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_FREQUENCY;
   generator.hightFreqPreAlarm.error.event.action = ACTION_WARNING;
   generator.hightFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.hightFreqPreAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.hightFreqAlarm.error.enb          = getBitMap( &genAlarms, GEN_OVER_FREQUENCY_ALARM_ENB_ADR );
   generator.hightFreqAlarm.error.active       = 0U;
@@ -467,7 +460,6 @@ void vELECTROdataInit ( void )
   generator.hightFreqAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_FREQUENCY;;
   generator.hightFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.hightFreqAlarm.error.status       = ALARM_STATUS_IDLE;
-  generator.hightFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.phaseImbalanceAlarm.error.enb        = getBitMap( &genAlarms, GEN_CURRENT_OVER_PHASE_IMBALANCE_ENB_ADR );
   generator.phaseImbalanceAlarm.error.active     = 0U;
@@ -485,7 +477,6 @@ void vELECTROdataInit ( void )
     generator.phaseImbalanceAlarm.error.event.action = ACTION_WARNING;
   }
   generator.phaseImbalanceAlarm.error.status = ALARM_STATUS_IDLE;
-  generator.phaseImbalanceAlarm.error.id     = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.overloadAlarm.error.enb        = getBitMap( &genAlarms, GEN_CURRENT_OVERLOAD_PROTECTION_ENB_ADR );
   generator.overloadAlarm.error.active     = 0U;
@@ -503,7 +494,6 @@ void vELECTROdataInit ( void )
     generator.overloadAlarm.error.event.action = ACTION_WARNING;
   }
   generator.overloadAlarm.error.status = ALARM_STATUS_IDLE;
-  generator.overloadAlarm.error.id     = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   generator.currentAlarm.state               = ELECTRO_CURRENT_STATUS_IDLE;
   generator.currentAlarm.over.current        = fix16_mul( generator.rating.current.nominal, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
@@ -553,7 +543,6 @@ void vELECTROdataInit ( void )
   mains.autoStart.enb          = PERMISSION_ENABLE;
   mains.autoStart.event.action = ACTION_AUTO_START;
   mains.autoStart.event.type   = EVENT_MAINS_FAIL;
-  mains.autoStart.id           = DEFINE_ERROR_LIST_ADR;
   mains.autoStart.ignor        = PERMISSION_DISABLE;
   mains.autoStart.status       = ALARM_STATUS_IDLE;
   mains.autoStart.trig         = TRIGGER_IDLE;
@@ -563,7 +552,6 @@ void vELECTROdataInit ( void )
   mains.autoStop.enb          = PERMISSION_ENABLE;
   mains.autoStop.event.action = ACTION_AUTO_STOP;
   mains.autoStop.event.type   = EVENT_MAINS_OK;
-  mains.autoStop.id           = DEFINE_ERROR_LIST_ADR;
   mains.autoStop.ignor        = PERMISSION_DISABLE;
   mains.autoStop.status       = ALARM_STATUS_IDLE;
   mains.autoStop.trig         = TRIGGER_IDLE;
@@ -578,7 +566,6 @@ void vELECTROdataInit ( void )
   mains.lowVoltageAlarm.error.event.action = ACTION_WARNING;
   mains.lowVoltageAlarm.error.ack          = PERMISSION_ENABLE;
   mains.lowVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
-  mains.lowVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   mains.hightVoltageAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_OVER_VOLTAGE_ALARM_ENB_ADR );
   mains.hightVoltageAlarm.error.active       = PERMISSION_ENABLE;
@@ -590,7 +577,6 @@ void vELECTROdataInit ( void )
   mains.hightVoltageAlarm.error.event.action = ACTION_WARNING;
   mains.hightVoltageAlarm.error.ack          = PERMISSION_ENABLE;
   mains.hightVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
-  mains.hightVoltageAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   mains.lowFreqAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_UNDER_FREQUENCY_ALARM_ENB_ADR );
   mains.lowFreqAlarm.error.active       = PERMISSION_ENABLE;
@@ -602,7 +588,6 @@ void vELECTROdataInit ( void )
   mains.lowFreqAlarm.error.event.action = ACTION_WARNING;
   mains.lowFreqAlarm.error.ack          = PERMISSION_ENABLE;
   mains.lowFreqAlarm.error.status       = ALARM_STATUS_IDLE;
-  mains.lowFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   mains.hightFreqAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_OVER_FREQUENCY_ALARM_ENB_ADR );
   mains.hightFreqAlarm.error.active       = PERMISSION_ENABLE;
@@ -614,7 +599,6 @@ void vELECTROdataInit ( void )
   mains.hightFreqAlarm.error.event.action = ACTION_WARNING;
   mains.hightFreqAlarm.error.ack          = PERMISSION_ENABLE;
   mains.hightFreqAlarm.error.status       = ALARM_STATUS_IDLE;
-  mains.hightFreqAlarm.error.id           = DEFINE_ERROR_LIST_ADR;
   /*----------------------------------------------------------------------------*/
   mains.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_MAINS );
   mains.relay.status = RELAY_OFF;

@@ -69,6 +69,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
 {
   uint8_t i              = 0U;
   uint8_t warningCounter = 0U;
+  uint8_t number         = 0U;
   switch ( cmd )
   {
     case ERROR_LIST_CMD_ERASE:
@@ -90,15 +91,19 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
       /*------------------- ACK -------------------*/
       if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
       {
-        if ( *adr < activeErrorList.counter )
+        for ( i=0U; i<activeErrorList.counter; i++ )
         {
-          for ( i=*adr; i<activeErrorList.counter; i++ )
+          if ( activeErrorList.array[i].event.type == record->event.type )
           {
-            activeErrorList.array[i] = activeErrorList.array[i + 1U];
+            number = i;
+            break;
           }
-          activeErrorList.counter--;
-          *adr = DEFINE_ERROR_LIST_ADR;
         }
+        for ( i=number; i<activeErrorList.counter; i++ )
+        {
+          activeErrorList.array[i] = activeErrorList.array[i + 1U];
+        }
+        activeErrorList.counter--;
         /*------------- Check warnings --------------*/
         warningCounter = 0U;
         for ( i=0U; i<activeErrorList.counter; i++ )
@@ -138,7 +143,6 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
             vFPOsetWarning( RELAY_ON );
           }
           activeErrorList.array[activeErrorList.counter] = *record;
-          *adr = activeErrorList.counter;
           activeErrorList.counter++;
           activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
         }
@@ -187,9 +191,11 @@ uint8_t uALARMisForList ( SYSTEM_EVENT* event )
 /*-----------------------------------------------------------------------------------------*/
 void vERRORrelax ( ERROR_TYPE* error )
 {
+  LOG_RECORD_TYPE rec = { 0U };
+  rec.event = error->event;
   if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( &error->event ) > 0U ) )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &error->id );
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, &rec, NULL );
   }
   error->status = ALARM_STATUS_IDLE;
   error->trig   = TRIGGER_IDLE;
@@ -202,7 +208,7 @@ void vERRORtriggering ( ERROR_TYPE* error )
   vSYSeventSend( error->event, &record );
   if ( uALARMisForList( &error->event ) > 0U )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, &error->id );
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
   }
   error->trig = TRIGGER_SET;
   return;

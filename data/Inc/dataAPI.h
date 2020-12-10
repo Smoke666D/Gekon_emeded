@@ -37,6 +37,7 @@ typedef enum
   DATA_API_CMD_LOAD,      /* Load all data registers from the EEPROM. The input data is ignore */
   DATA_API_CMD_ERASE,     /* Erase memory sector in EEPORM */
   DATA_API_CMD_ADD,       /* Add record to variable size data */
+  DATA_API_CMD_COUNTER,   /* Read size of data */
 } DATA_API_COMMAND;
 
 typedef enum
@@ -55,11 +56,13 @@ typedef enum
 typedef struct __packed
 {
   uint16_t        adr;
+  uint16_t        size;
   LOG_RECORD_TYPE record;
 } LOG_CASH_TYPE;
 /*------------------------ Functions -----------------------------------*/
 void               vDATAAPIdataInit ( void );
 void               vDATAAPIinit ( void );
+void               vDATAAPIlogInit ( void );
 DATA_API_STATUS    eDATAAPIisInit ( void );
 DATA_API_STATUS    eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
 DATA_API_STATUS    eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib );
@@ -68,8 +71,9 @@ DATA_API_STATUS    eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartDat
 DATA_API_STATUS    eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data );
 DATA_API_STATUS    eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* password );
 DATA_API_STATUS    eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length );
-DATA_API_STATUS    eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t adr, LOG_RECORD_TYPE* record );
+DATA_API_STATUS    eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TYPE* record );
 DATA_API_STATUS    eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer );
+void               vDATAAPIincLogSize ( void );
 void               vDATAAPIprintMemoryMap ( void );
 void               vDATAprintSerialNumber ( void );
 EventGroupHandle_t xDATAAPIgetEventGroup ( void );

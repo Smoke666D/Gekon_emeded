@@ -25,15 +25,20 @@
 #define LEFT_ALIGN          3U
 #define NO_ALIGN            0U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
-#define KEY_UP              1U
-#define KEY_DOWN            2U
-#define KEY_STOP            3U
-#define KEY_STOP_BREAK      7U
-#define KEY_AUTO_BREAK      8U
-#define KEY_START_BREAK     9U
-#define KEY_AUTO            4U
-#define KEY_START           5U
-#define KEY_EXIT            6U
+#define KEY_UP_BREAK        1U
+#define KEY_UP              2U
+#define KEY_DOWN_BREAK      3U
+#define KEY_DOWN            4U
+#define KEY_STOP            5U
+#define KEY_STOP_BREAK      6U
+#define KEY_AUTO_BREAK      7U
+#define KEY_START_BREAK     8U
+#define KEY_AUTO            9U
+#define KEY_START           10U
+#define KEY_EXIT            11U
+
+
+
 #define MAX_SCREEN_COUNT    3U
 #define MAX_SCREEN_OBJECT   20U
 #define XRESULURION         128U
@@ -46,13 +51,20 @@
 #define FONT_TYPE_NUMBER4   ( u8g2_font_5x8_mf )
 #define MAX_KEY_PRESS
 
-#define ALARM_COUNT           1
-#define CURRENT_ALARM_TIME    2
-#define CURRENT_ALARM_T       3
-#define CURRENT_ALARM_ACTION  4
-#define ALARM_STATUS          5
+#define ALARM_COUNT           1U
+#define EVENT_COUNT           2U
+#define CURRENT_ALARM_TIME    3U
+#define CURRENT_EVENT_TIME    4U
+#define CURRENT_ALARM_T       5U
+#define CURRENT_EVENT_T       6U
+#define CURRENT_ALARM_ACTION  7U
+#define CURRENT_EVENT_ACTION  8U
+#define ALARM_STATUS          9U
 
-
+#define AUTO_KEY_READY   0x01U
+#define START_KEY_READY  0x02U
+#define STOP_KEY_READY   0x04U
+#define SET_MENU_READY   0x08U
 
 
 #define SW_VER         54U

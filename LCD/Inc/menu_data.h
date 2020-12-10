@@ -38,5 +38,11 @@
  extern xScreenSetObject xMainMenu;
  extern xScreenSetObject xAboutMenu;
  extern xScreenSetObject xAlarmMenu;
+ extern xScreenSetObject xEventMenu;
+ extern xScreenSetObject xMainMenu;
+ extern xScreenSetObject xGeneratorMenu;
+ extern xScreenSetObject xEngineMenu;
+ extern xScreenSetObject xNetMenu;
+ extern xScreenSetObject xSettingsMenu;
 
 #endif /* INC_MENU_DATA_H_ */

@@ -39,7 +39,7 @@ static char TempArray[70];
 static uint8_t StringShift =0,ScrollDelay=0;
 static uint8_t StringShift1 =0;
 static uint8_t BufferAlarm=0,ALD=0,BufAlarmCount=0;
-static uint8_t uCurrentAlarm =0;
+static uint16_t uCurrentAlarm =0;
 
 /*----------------------- Functions -----------------------------------------------------------------*/
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key );
@@ -51,6 +51,7 @@ xScreenSetObject xYesNoMenu =
   0U,
   ( void* )&xYesNoScreenKeyCallBack,
 };
+
 void EventScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
   switch ( key )
@@ -154,7 +155,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
           eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
         }
         break;
-      case KEY_DOWN:
+      case KEY_DOWN_BREAK:
         if ( ( ucActiveObject == NO_SELECT_D) && ( uiSetting >= 10U ) )
         {
           uiSetting -= 10U;
@@ -168,7 +169,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
           }
         }
         break;
-      case KEY_UP:
+      case KEY_UP_BREAK:
         if ( ( ucActiveObject == NO_SELECT_D)  && ( uiSetting <= ( SETTING_REGISTER_NUMBER - 12U ) ) )
         {
           uiSetting += 10U;
@@ -222,9 +223,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
  *
 
  */
-#define AUTO_KEY_READY   0x01U
-#define START_KEY_READY  0x02U
-#define STOP_KEY_READY   0x04U
+
 
 
 //Функция обработки нажатий в базовых меню
@@ -236,7 +235,11 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
 
   switch ( key )
   {
+
     case KEY_UP:
+      key_ready|= SET_MENU_READY;
+      break;
+    case KEY_UP_BREAK:
       //Смотрим, не находимся ли мы в экранах нижнего уровня
       if ( DownScreen > 0U )
       {
@@ -255,11 +258,13 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       {
         pMenu->pCurrIndex++;
       }
+      uCurrentAlarm =0;
+      key_ready&= ~SET_MENU_READY;
       break;
-    case KEY_DOWN:
+    case KEY_DOWN_BREAK:
         //Если нажата клавиша вниз, проверяем флаг, сигнализурующий что мы листаем
         //карусель вложенных экранов
-        if (menu->pHomeMenu[index].pDownScreenSet == &xAlarmMenu)
+        if ((menu->pHomeMenu[index].pDownScreenSet == &xAlarmMenu) || (menu->pHomeMenu[index].pDownScreenSet == &xEventMenu))
         {
           uCurrentAlarm++;
         }
@@ -295,6 +300,10 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       {
         key_ready |= STOP_KEY_READY;
         xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_STOP, eSetBits );
+        if  ((key_ready & SET_MENU_READY)!=0)
+        {
+            //Переход в меню
+        }
       }
       break;
     case KEY_STOP_BREAK:
@@ -373,6 +382,12 @@ void vMenuTask ( void )
       {
         switch ( TempEvent.KeyCode )
         {
+          case up_key:
+            key = KEY_UP;
+            break;
+          case down_key:
+            key = KEY_DOWN;
+            break;
           case stop_key:
             key = KEY_STOP;
             break;
@@ -396,7 +411,7 @@ void vMenuTask ( void )
           case up_key:
             if ( EXIT_KEY_F == 0U )
             {
-              key = KEY_UP;
+              key = KEY_UP_BREAK;
             }
             else
             {
@@ -406,7 +421,7 @@ void vMenuTask ( void )
           case down_key:
             if ( EXIT_KEY_F == 0U )
             {
-              key = KEY_DOWN;
+              key = KEY_DOWN_BREAK;
             }
             else
             {
@@ -845,13 +860,13 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   LOG_RECORD_TYPE  xrecord;
   char * StartArray;
-  uint8_t  utemp=10;
+  uint16_t  utemp=10;
   Data[0]=0;
   switch (ID)
   {
     case ALARM_STATUS:
       //Комадна вывода статуса в правом углу экрана
-      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
       sprintf(Data," ");
       if (utemp >0)
       {
@@ -865,22 +880,30 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
 
     case ALARM_COUNT:
-      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+    case EVENT_COUNT:
+      if (ID == ALARM_COUNT)
+      {
+        eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
+      }
+      else
+      {
+        eDATAAPIlog(DATA_API_CMD_COUNTER,&utemp,&xrecord);
+      }
       if (uCurrentAlarm >=utemp) uCurrentAlarm=0;
       if (BufAlarmCount!=utemp)
       {
-        BufAlarmCount=utemp;
-        StringShift =0;
-        StringShift1 =0;
+        BufAlarmCount   = utemp;
+        StringShift     = 0U;
+        StringShift1    = 0U;
       }
       if (utemp >0)
       {
         sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
-        if (uCurrentAlarm!=BufferAlarm)
+        if ( uCurrentAlarm != BufferAlarm )
         {
-          BufferAlarm =uCurrentAlarm;
-          StringShift =0;
-          StringShift1 =0;
+          BufferAlarm   = uCurrentAlarm;
+          StringShift   = 0U;
+          StringShift1  = 0U;
         }
       }
       else
@@ -894,22 +917,44 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
       break;
     case CURRENT_ALARM_TIME:
-      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,&utemp);
+    case CURRENT_EVENT_TIME:
+      if (ID == CURRENT_ALARM_TIME)
+      {
+        eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
+      }
+      else
+      {
+        eDATAAPIlog(DATA_API_CMD_COUNTER,&utemp,&xrecord);
+      }
       if (uCurrentAlarm < utemp)
       {
-        eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+        if (ID == CURRENT_ALARM_TIME)
+        {
+          eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,(uint8_t *)&uCurrentAlarm);
+        }
+        else
+        {
+          eDATAAPIlog(DATA_API_CMD_READ_CASH,&utemp,&xrecord);
+        }
         sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",GET_LOG_DAY( xrecord.time ),GET_LOG_MONTH( xrecord.time ) , LOG_START_YEAR + GET_LOG_YEAR(xrecord.time)  ,GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
       }
-
       break;
     case CURRENT_ALARM_T:
+    case CURRENT_EVENT_T:
       if (uCurrentAlarm < BufAlarmCount)
       {
-         eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
-         sprintf(TempArray,"%s",  logTypesDictionary[xrecord.event.type]);
-         utemp =strlen(TempArray);
-         if (utemp> 39U)
-         {
+      /*  if (ID == CURRENT_ALARM_TIME)
+        {
+           eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,(uint8_t *)&uCurrentAlarm);
+        }
+        else
+        {
+          eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
+        }*/
+        sprintf(TempArray,"%s",  logTypesDictionary[xrecord.event.type]);
+        utemp =strlen(TempArray);
+        if (utemp> 39U)
+        {
                StartArray =&TempArray[StringShift];
                if ((utemp-StringShift)<39)
                StartArray[utemp-StringShift]=0;
@@ -934,9 +979,18 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            break;
 
     case CURRENT_ALARM_ACTION:
+    case CURRENT_EVENT_ACTION:
       if (uCurrentAlarm < BufAlarmCount)
       {
-         eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
+
+      /*  if (ID == CURRENT_ALARM_ACTION)
+        {
+            eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,(uint8_t *)&uCurrentAlarm);
+        }
+        else
+        {
+           eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
+         }*/
          sprintf(TempArray,"%s", logActionsDictionary[xrecord.event.action]);
          utemp =strlen(TempArray);
          if (utemp> 39U)
@@ -971,6 +1025,8 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   }
  return;
 }
+
+
 
 
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )

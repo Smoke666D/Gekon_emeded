@@ -9,11 +9,7 @@
 
 #include "menu_data.h"
 /*------------------------ Extern -------------------------------------------------------------------*/
-extern xScreenSetObject xMainMenu;
-extern xScreenSetObject xGeneratorMenu;
-extern xScreenSetObject xEngineMenu;
-extern xScreenSetObject xNetMenu;
-extern xScreenSetObject xSettingsMenu;
+
 
 
 /*----------------------- Defines -----------------------------------------------------------------*/
@@ -260,6 +256,10 @@ static xScreenObjet const AlarmMainScreen[]=
 static xScreenObjet const EventMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ЖУРНАЛ СОБЫТИЙ №",NULL,0U},
+  {0U,FONT_SIZE*17U,LINE1-12U,15U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,EVENT_COUNT},
+  {0U,LEFT_OFFSET,LINE1+6U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_EVENT_TIME},
+  {0U,LEFT_OFFSET,LINE2+3U,120U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)vGetAlarmForMenu,CURRENT_EVENT_T},
+  {0U,LEFT_OFFSET,LINE3+3U,120U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)vGetAlarmForMenu,CURRENT_EVENT_ACTION},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };

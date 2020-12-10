@@ -18,7 +18,7 @@
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
 #define CHANGE_D      2U
-#define VIEW_DELAY    5U
+#define VIEW_DELAY    10U
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2             = NULL;
 static osThreadId_t      xProccesToNotify = NULL;
@@ -846,6 +846,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   LOG_RECORD_TYPE  xrecord;
   char * StartArray;
   uint8_t  utemp=10;
+  Data[0]=0;
   switch (ID)
   {
     case ALARM_STATUS:
@@ -899,6 +900,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,&uCurrentAlarm);
         sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",GET_LOG_DAY( xrecord.time ),GET_LOG_MONTH( xrecord.time ) , LOG_START_YEAR + GET_LOG_YEAR(xrecord.time)  ,GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
       }
+
       break;
     case CURRENT_ALARM_T:
       if (uCurrentAlarm < BufAlarmCount)
@@ -916,7 +918,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
                if (ScrollDelay>VIEW_DELAY)
                {
                  StringShift++;
-                 if (StringShift >= (utemp-39))
+                 if (StringShift >= (utemp-38))
                    StringShift=0;
                }
              }
@@ -942,22 +944,22 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             StartArray =&TempArray[StringShift1];
             if ((utemp-StringShift1)<39)
             {
-               StartArray[utemp-StringShift1]=0;
+               StartArray[utemp-StringShift1]=0U;
             }
             else
             {
-              StartArray[39]=0;
+              StartArray[39]=0U;
             }
             if (ScrollDelay>VIEW_DELAY)
             {
                 StringShift1++;
-                if (StringShift1 >= (utemp-39))
+                if (StringShift1 >= (utemp-38U))
                     StringShift1=0;
             }
          }
          else
          {
-           StringShift1 =0;
+           StringShift1 =0U;
            StartArray= TempArray;
          }
          sprintf(Data,"%s",StartArray);

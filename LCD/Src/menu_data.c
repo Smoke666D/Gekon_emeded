@@ -264,12 +264,7 @@ static xScreenObjet const EventMainScreen[]=
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
-static xScreenObjet const EventScreen[]=
-{
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СОБЫТИE",NULL,0U},
-  {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
-  {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
-};
+
 
 
 static xScreenObjet const InfoMainScreen[]=
@@ -399,7 +394,7 @@ xScreenType  xAboutScreens[ABOUT_MENU_COUNT]=
 
 xScreenType   xEventScreens[EVENT_MENU_COUNT]=
 {
-  { EventScreen, &xMainMenu, NULL,  0U, 0U},
+  {EventMainScreen, &xMainMenu, NULL,  0U, 0U},
 };
 
 

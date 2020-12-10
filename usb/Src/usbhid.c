@@ -121,7 +121,7 @@ void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
 
   while ( status == DATA_API_STAT_BUSY )
   {
-    status = eDATAAPIlog( DATA_API_CMD_LOAD, adr, &record );
+    status = eDATAAPIlog( DATA_API_CMD_LOAD, &adr, &record );
   }
   if ( status == DATA_API_STAT_OK )
   {
@@ -813,7 +813,7 @@ USB_STATUS vUSBeraseLOG ( const USB_REPORT* report )
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
   while ( status == DATA_API_STAT_BUSY )
   {
-    status = eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL );
+    status = eDATAAPIlog( DATA_API_CMD_ERASE, NULL, NULL );
   }
   if ( status != DATA_API_STAT_OK )
   {

@@ -858,7 +858,7 @@ char cHexToChar(uint8_t data)
 
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
-  LOG_RECORD_TYPE  xrecord;
+  static LOG_RECORD_TYPE  xrecord;
   char * StartArray;
   uint16_t  utemp=10;
   Data[0]=0;
@@ -918,15 +918,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
     case CURRENT_ALARM_TIME:
     case CURRENT_EVENT_TIME:
-      if (ID == CURRENT_ALARM_TIME)
-      {
-        eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
-      }
-      else
-      {
-        eDATAAPIlog(DATA_API_CMD_COUNTER,&utemp,&xrecord);
-      }
-      if (uCurrentAlarm < utemp)
+      if (uCurrentAlarm < BufAlarmCount)
       {
         if (ID == CURRENT_ALARM_TIME)
         {
@@ -934,7 +926,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         }
         else
         {
-          eDATAAPIlog(DATA_API_CMD_READ_CASH,&utemp,&xrecord);
+          eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
         }
         sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",GET_LOG_DAY( xrecord.time ),GET_LOG_MONTH( xrecord.time ) , LOG_START_YEAR + GET_LOG_YEAR(xrecord.time)  ,GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
       }
@@ -943,14 +935,6 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case CURRENT_EVENT_T:
       if (uCurrentAlarm < BufAlarmCount)
       {
-      /*  if (ID == CURRENT_ALARM_TIME)
-        {
-           eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,(uint8_t *)&uCurrentAlarm);
-        }
-        else
-        {
-          eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
-        }*/
         sprintf(TempArray,"%s",  logTypesDictionary[xrecord.event.type]);
         utemp =strlen(TempArray);
         if (utemp> 39U)
@@ -982,15 +966,6 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case CURRENT_EVENT_ACTION:
       if (uCurrentAlarm < BufAlarmCount)
       {
-
-      /*  if (ID == CURRENT_ALARM_ACTION)
-        {
-            eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,(uint8_t *)&uCurrentAlarm);
-        }
-        else
-        {
-           eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
-         }*/
          sprintf(TempArray,"%s", logActionsDictionary[xrecord.event.action]);
          utemp =strlen(TempArray);
          if (utemp> 39U)

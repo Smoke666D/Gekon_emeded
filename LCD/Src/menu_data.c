@@ -255,7 +255,7 @@ static xScreenObjet const AlarmMainScreen[]=
 
 static xScreenObjet const EventMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ЖУРНАЛ СОБЫТИЙ №",NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ЖУРНАЛ:",NULL,0U},
   {0U,FONT_SIZE*17U,LINE1-12U,15U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,EVENT_COUNT},
   {0U,LEFT_OFFSET,LINE1+6U,120U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,CURRENT_EVENT_TIME},
   {0U,LEFT_OFFSET,LINE2+3U,120U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)vGetAlarmForMenu,CURRENT_EVENT_T},
@@ -339,7 +339,7 @@ xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
   {InfoMainScreen,&xMainMenu,&xAboutMenu,0U,0U},
   {AlarmMainScreen,&xMainMenu,&xAlarmMenu,0U,0U},
-  {EventMainScreen,&xMainMenu,NULL,0U,0U},
+  {EventMainScreen,&xMainMenu,&xEventMenu,0U,0U},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
   {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
   {StatusMainScreen,NULL,NULL,0U,0U},
@@ -453,7 +453,7 @@ xScreenSetObject xEventMenu =
   xEventScreens,
   ( EVENT_MENU_COUNT  - 1U ),
   0U,
-  ( void* )&EventScreenKeyCallBack,
+  ( void* )&xInfoScreenCallBack,
 };
 
 xScreenSetObject xAboutMenu =

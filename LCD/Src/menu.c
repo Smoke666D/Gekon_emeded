@@ -349,6 +349,7 @@ void vMenuMessageInit ( osThreadId_t xmainprocess )
 void vMenuTask ( void )
 {
     //Блок обработки нажатий на клавиши
+  static uint8_t uTimeOutCounter=0;
   uint32_t ulNotifiedValue;
   xTaskNotifyWait( pdFALSE, 0xFFFFFFFU, &ulNotifiedValue, 200U );
   if ( ulNotifiedValue == 0x55U )
@@ -445,8 +446,18 @@ void vMenuTask ( void )
       pCurrMenu->pFunc( pCurrMenu, key );
       if ( TempEvent.KeyCode == time_out )
       {
-        //pCurrMenu = &xMainMenu;
-    	  //pCurrMenu->pCurrIndex = 0U;
+          uTimeOutCounter=1;
+          pCurrMenu = &xMainMenu;
+          pCurrMenu->pCurrIndex = 0U;
+          vLCDSetLedBrigth(1);
+      }
+      else
+      {
+        if (uTimeOutCounter)
+        {
+           uTimeOutCounter =0;
+           vLCDBrigthInit();
+        }
       }
     }
   }

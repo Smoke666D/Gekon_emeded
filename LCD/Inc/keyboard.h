@@ -14,6 +14,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "event_groups.h"
+#include "config.h"
 /*------------------------ Define --------------------------------------*/
 /* Константа определяющая количесвто клавиш, которые обрабатываем драйвер */
 #define KEYBOARD_COUNT     5U

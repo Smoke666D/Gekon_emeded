@@ -23,7 +23,7 @@ static unsigned char STATUS[KEYBOARD_COUNT]                     = { 0U };
 static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
 static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, start_key ,auto_key };
 static unsigned long KeyNorPressTimeOut                         = 0U;
-static unsigned long KEY_TIME_OUT                               = 60000U;
+static unsigned long KEY_TIME_OUT                               = 1000U;
 static char          cKeyDelay                                  = 0U;
 uint8_t              KeyboardBuffer[ 16U * sizeof( KeyEvent ) ] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ void vKeyboardTask( void const * argument )
       }
     }
     KeyNorPressTimeOut++;
-    if ( KeyNorPressTimeOut >= ( KEY_TIME_OUT / ( KEY_PEREOD / portTICK_RATE_MS ) ) )
+    if ( KeyNorPressTimeOut >= (displaySleepDelay.value[0] * (KEY_TIME_OUT / ( KEY_PEREOD / portTICK_RATE_MS ) ) ) )
     {
       KeyNorPressTimeOut = 0U;
       TEvent.KeyCode     = time_out;

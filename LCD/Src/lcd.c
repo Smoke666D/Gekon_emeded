@@ -144,6 +144,11 @@ void vLCDDelay( void )
       lcd_brigth_counter = 0U;
       HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_SET );
     }
+
+  if (lcd_brigth == 0)
+  {
+    HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_RESET );
+   }
   //Задержка после команды lcd
   if (lcd_delay)
     if ( hspi3.State != HAL_SPI_STATE_BUSY_TX )

@@ -50,22 +50,7 @@ xScreenSetObject xYesNoMenu =
   ( void* )&xYesNoScreenKeyCallBack,
 };
 
-void EventScreenKeyCallBack( xScreenSetObject* menu, char key )
-{
-  switch ( key )
-     {
-       case KEY_EXIT:
-         pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-         vExitCurObject();
-         DownScreen = 0U;
-         uiSetting  = 0U;
-         break;
-       default:
-         break;
-     }
 
-
-}
 
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -217,14 +202,8 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 
 
 /*---------------------------------------------------------------------------------------------------*/
-/* Callback функция пролистывания информационных экранов.
- *
-
- */
-
-
-
 //Функция обработки нажатий в базовых меню
+
 void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
 {
   uint8_t           index = menu->pCurrIndex;
@@ -304,18 +283,13 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         }
       }
       break;
-    case KEY_STOP_BREAK:
-      key_ready &=  ~STOP_KEY_READY;
-      break;
+
     case KEY_AUTO:
       if (( key_ready & AUTO_KEY_READY)==0U)
       {
         key_ready |=AUTO_KEY_READY;
         xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_AUTO, eSetBits );
       }
-      break;
-    case KEY_AUTO_BREAK:
-      key_ready &= AUTO_KEY_READY;
       break;
     case KEY_START:
       if ((key_ready &  START_KEY_READY)==0U)
@@ -324,8 +298,14 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
           xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_START, eSetBits );
       }
       break;
+    case KEY_AUTO_BREAK:
+      key_ready &= AUTO_KEY_READY;
+      break;
     case KEY_START_BREAK:
       key_ready &= ~START_KEY_READY;
+      break;
+    case KEY_STOP_BREAK:
+      key_ready &=  ~STOP_KEY_READY;
       break;
     default:
       break;
@@ -865,35 +845,7 @@ char cHexToChar(uint8_t data)
 }
 
 
-char * vScrollFunction(uint16_t utemp, uint8_t  * shift,uint8_t sd)
-{
-  char * StartArray;
-  if (utemp> 39U)
-  {
-     StartArray =&TempArray[*shift];
-     if ((utemp-(*shift))<39)
-     {
-        StartArray[utemp-(*shift)]=0U;
-     }
-     else
-     {
-        StartArray[39]=0U;
-     }
-     if ( sd >VIEW_DELAY)
-     {
-        *shift=*shift+1;
-        if ((*shift) >= (utemp-38U))
-        *shift=0;
-     }
-  }
-  else
-  {
-     *shift =0U;
-     StartArray= TempArray;
-  }
 
-   return StartArray;
-}
 
 
 void vStrCopy(char * dest, char * source)
@@ -909,113 +861,139 @@ void vStrCopy(char * dest, char * source)
 
 }
 
+static uint8_t  StringShift   = 0,
+                StringShift1   = 0,
+                BufferAlarm   = 0,
+                ScrollDelay   = 0,
+                BufAlarmCount = 0;
+/*
+ * Вспомогательная функция для vGetAlarmForMenu. Предназначена для вывода текущей отображаемой ошибки или события в форматие x/общее количество событий
+ *
+ */
+void vEventCountPrintFunction(uint16_t  utemp,char * Data )
+{
+     if (uCurrentAlarm >= utemp)
+     {
+       uCurrentAlarm=0U;
+     }
+     if ((BufAlarmCount!=utemp) || ( uCurrentAlarm != BufferAlarm ) )
+     {
+       BufAlarmCount   = utemp;
+       BufferAlarm     = uCurrentAlarm;
+       StringShift     = 0U;
+       StringShift1    = 0U;
+     }
+     if (utemp >0)
+     {
+       sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
+     }
+     else
+     {
+       vStrCopy(Data,"0 / 0");
+     }
+     if (++ScrollDelay>VIEW_DELAY)
+     {
+       ScrollDelay = VIEW_DELAY -1U;
+     }
+}
+/*
+ * Вспомогательная функция для vGetAlarmForMenu.
+ *
+ */
+char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
+{
+  char * StartArray;
+  if (utemp> 39U)
+  {
+     StartArray =&TempArray[*shift];
+     if ((utemp-(*shift))<39)
+     {
+        StartArray[utemp-(*shift)]=0U;
+     }
+     else
+     {
+        StartArray[39]=0U;
+     }
+     if ( ScrollDelay >VIEW_DELAY)
+     {
+        *shift=*shift+1;
+        if ((*shift) >= (utemp-38U))
+        *shift=0;
+     }
+  }
+  else
+  {
+     *shift =0U;
+     StartArray= TempArray;
+  }
 
+   return StartArray;
+}
 
+/*
+ * Функция для отображения списка текущх ошибок или списка событий
+ * !!!Важно.Для кооректого исполнения комманд, первой должна обязатаельнос вывполнятся команда ALARM_COUNT или EVENT_COUNT
+ * В связи с тем, что функция писалась под конкретную сруктуру вывода в меню, для сокращения обращений к памяти, текущая запись кэшируется при выволненении команды ALARM_COUNT или EVENT_COUNT
+ */
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
-  static uint8_t StringShift =0,ScrollDelay=0;
-  static uint8_t StringShift1 =0;
-  static uint8_t BufferAlarm=0,ALD=0,BufAlarmCount=0;
-
-
-
-  uint16_t  utemp=10;
-
-
-  Data[0]=0;
+  static uint8_t  ALD   = 0;
+  uint16_t        utemp;
+  vStrCopy(Data," ");
   switch (ID)
   {
     case ALARM_STATUS:
       //Комадна вывода статуса в правом углу экрана
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
-      sprintf(Data," ");
       if (utemp >0)
       {
-         ALD++;
-         if (ALD>1)
+         if (++ALD>1)
          {
-           sprintf(Data,"О");
+           vStrCopy(Data,"О");
            ALD=0;
          }
       }
       break;
-
     case ALARM_COUNT:
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
+      vEventCountPrintFunction(utemp,Data);
+      eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,(uint8_t *)&uCurrentAlarm);
+      break;
     case EVENT_COUNT:
-      if (ID == ALARM_COUNT)
-      {
-        eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
-      }
-      else
-      {
-        eDATAAPIlog(DATA_API_CMD_COUNTER,&utemp,&xrecord);
-      }
-      if (uCurrentAlarm >=utemp) uCurrentAlarm=0;
-      if (BufAlarmCount!=utemp)
-      {
-        BufAlarmCount   = utemp;
-        StringShift     = 0U;
-        StringShift1    = 0U;
-      }
-      if (utemp >0)
-      {
-        sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
-        if ( uCurrentAlarm != BufferAlarm )
-        {
-          BufferAlarm   = uCurrentAlarm;
-          StringShift   = 0U;
-          StringShift1  = 0U;
-        }
-      }
-      else
-        sprintf(Data,"0 / 0");
-
-      if (ScrollDelay>VIEW_DELAY)
-      {
-        ScrollDelay = VIEW_DELAY -1U;
-      }
-      ScrollDelay++;
-
+      eDATAAPIlog(DATA_API_CMD_COUNTER,&utemp,&xrecord);
+      vEventCountPrintFunction(utemp,Data);
+      eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
       break;
     case CURRENT_ALARM_TIME:
     case CURRENT_EVENT_TIME:
       if (uCurrentAlarm < BufAlarmCount)
       {
-        if (ID == CURRENT_ALARM_TIME)
-        {
-          eLOGICERactiveErrorList(ERROR_LIST_CMD_READ,&xrecord,(uint8_t *)&uCurrentAlarm);
-        }
-        else
-        {
-          eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
-        }
-        sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",GET_LOG_DAY( xrecord.time ),GET_LOG_MONTH( xrecord.time ) , LOG_START_YEAR + GET_LOG_YEAR(xrecord.time)  ,GET_LOG_HOUR(xrecord.time) ,GET_LOG_MIN( xrecord.time ),GET_LOG_SEC( xrecord.time ) );
+        sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",(int)GET_LOG_DAY( xrecord.time ),(int)GET_LOG_MONTH( xrecord.time ) ,(int) LOG_START_YEAR + (int)GET_LOG_YEAR(xrecord.time)  ,(int)GET_LOG_HOUR(xrecord.time) ,(int)GET_LOG_MIN( xrecord.time ),(int)GET_LOG_SEC( xrecord.time ) );
       }
       break;
     case CURRENT_ALARM_T:
     case CURRENT_EVENT_T:
-          if (uCurrentAlarm < BufAlarmCount)
-          {
-            vStrCopy(TempArray,logTypesDictionary[xrecord.event.type]);
-            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift, ScrollDelay));
-           }
-           else
-           {
-            vStrCopy(Data,"ОШИБОК НЕТ");
-           }
-           break;
+      if (uCurrentAlarm < BufAlarmCount)
+      {
+        vStrCopy(TempArray,(char*)logTypesDictionary[xrecord.event.type]);
+        vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift));
+      }
+      else
+      {
+        vStrCopy(Data,"ОШИБОК НЕТ");
+      }
+      break;
     case CURRENT_ALARM_ACTION:
     case CURRENT_EVENT_ACTION:
-        if (uCurrentAlarm < BufAlarmCount)
-        {
-            vStrCopy(TempArray,logActionsDictionary[xrecord.event.action]);
-            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift1, ScrollDelay ));
-        }
+      if (uCurrentAlarm < BufAlarmCount)
+      {
+         vStrCopy(TempArray,(char*)logActionsDictionary[xrecord.event.action]);
+         vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift1));
+      }
       break;
     default:
       break;
-
   }
  return;
 }
@@ -1117,45 +1095,36 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
      fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
      break;
     case NET_ROTATION:
-             switch (uADCGetNetFaseRotation())
+    case GEN_ROTATION:
+        if (ID ==NET_ROTATION)
+          utempdata=uADCGetNetFaseRotation();
+        else
+          utempdata=uADCGetGenFaseRotation();
+             switch (utempdata)
              {
                case B_C_ROTATION:
-                 sprintf(Data,"L1-L2-L3");
+                 vStrCopy(Data,"L1-L2-L3");
                  break;
                case C_B_ROTATION:
-                 sprintf(Data,"L1-L3-L2");
+                 vStrCopy(Data,"L1-L3-L2");
                  break;
                default:
-                 sprintf(Data,"XX-XX-XX");
+                 vStrCopy(Data,"XX-XX-XX");
                  break;
              }
              break;
-    case GEN_ROTATION:
-         switch (uADCGetGenFaseRotation())
-         {
-            case B_C_ROTATION:
-             sprintf(Data,"L1-L2-L3");
-             break;
-           case C_B_ROTATION:
-             sprintf(Data,"L1-L3-L2");
-             break;
-           default:
-            sprintf(Data,"XX-XX-XX");
-            break;
-         }
-         break;
-         case ENGINE_SPEED:
+     case ENGINE_SPEED:
            fix16_to_str( fVRgetSpeed(), Data, 0U );
            break;
-         case  ENGINE_SCOUNT:
+     case  ENGINE_SCOUNT:
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);
            sprintf(Data,"%u",utempdata);
            break;
-         case ENGINE_WTIME:
+     case ENGINE_WTIME:
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
            sprintf(Data,"%u",utempdata);
            break;
-         case COS_FI:
+     case COS_FI:
            fix16_to_str( xADCGetCOSFi(), Data, 2 );
            break;
     default:

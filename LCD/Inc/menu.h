@@ -25,17 +25,17 @@
 #define LEFT_ALIGN          3U
 #define NO_ALIGN            0U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
-#define KEY_UP_BREAK        1U
-#define KEY_UP              2U
-#define KEY_DOWN_BREAK      3U
-#define KEY_DOWN            4U
-#define KEY_STOP            5U
-#define KEY_STOP_BREAK      6U
-#define KEY_AUTO_BREAK      7U
-#define KEY_START_BREAK     8U
-#define KEY_AUTO            9U
-#define KEY_START           10U
-#define KEY_EXIT            11U
+#define KEY_UP_BREAK        up_key | BRAKECODE //1U
+#define KEY_UP              up_key | MAKECODE //2U
+#define KEY_DOWN_BREAK      down_key | BRAKECODE //3U
+#define KEY_DOWN            down_key | MAKECODE  //4U
+#define KEY_STOP            stop_key | MAKECODE  //5U
+#define KEY_STOP_BREAK      stop_key | BRAKECODE // 6U
+#define KEY_AUTO            auto_key | MAKECODE  //9U
+#define KEY_AUTO_BREAK      auto_key | BRAKECODE//7U
+#define KEY_START           start_key | MAKECODE //10U
+#define KEY_START_BREAK     start_key | BRAKECODE// 8U
+#define KEY_EXIT            time_out | MAKECODE  //11U
 
 
 

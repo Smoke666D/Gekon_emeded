@@ -355,35 +355,13 @@ void vMenuTask ( void )
     }
     else
     {
-    BufferEvent = TempEvent;
+       BufferEvent = TempEvent;
       //Если зафиксировано нажатие клавиши
       if ( TempEvent.Status == MAKECODE )
       {
-        switch ( TempEvent.KeyCode )
-        {
-          case up_key:
-            key = KEY_UP;
-            break;
-          case down_key:
-            key = KEY_DOWN;
-            break;
-          case stop_key:
-            key = KEY_STOP;
-            break;
-          case start_key:
-            key = KEY_START;
-            break;
-          case auto_key:
-            key = KEY_AUTO;
-            break;
-          case time_out:
-            key = KEY_EXIT;
-            break;
-          default:
-            break;
-        }
+          key = TempEvent.KeyCode | MAKECODE;
       }
-      if ( TempEvent.Status == BRAKECODE )
+      else
       {
         switch ( TempEvent.KeyCode )
         {
@@ -408,13 +386,7 @@ void vMenuTask ( void )
             }
             break;
           case stop_key:
-            key = KEY_STOP_BREAK;
-            break;
-          case auto_key:
-            key= KEY_AUTO_BREAK;
-            break;
-          case start_key:
-            key= KEY_START_BREAK;
+            key = TempEvent.KeyCode | BRAKECODE;
             break;
           default:
             break;

@@ -36,9 +36,7 @@ static uint16_t          uiSetting        = 3U;
 static uint8_t           ucActiveObject   = NO_SELECT_D;
 static uint8_t           EXIT_KEY_F       = 0U;
 static char TempArray[70];
-static uint8_t StringShift =0,ScrollDelay=0;
-static uint8_t StringShift1 =0;
-static uint8_t BufferAlarm=0,ALD=0,BufAlarmCount=0;
+
 static uint16_t uCurrentAlarm =0;
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -859,8 +857,15 @@ char cHexToChar(uint8_t data)
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
+  static uint8_t StringShift =0,ScrollDelay=0;
+  static uint8_t StringShift1 =0;
+  static uint8_t BufferAlarm=0,ALD=0,BufAlarmCount=0;
+
+
   char * StartArray;
   uint16_t  utemp=10;
+
+
   Data[0]=0;
   switch (ID)
   {
@@ -961,7 +966,6 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            else
             sprintf(Data,"ОШИБОК НЕТ");
            break;
-
     case CURRENT_ALARM_ACTION:
     case CURRENT_EVENT_ACTION:
       if (uCurrentAlarm < BufAlarmCount)

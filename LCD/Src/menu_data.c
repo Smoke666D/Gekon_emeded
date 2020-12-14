@@ -337,13 +337,14 @@ static xScreenObjet const xYesNoScreen[]=
 
 xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
-  {InfoMainScreen,&xMainMenu,&xAboutMenu,0U,0U},
+    {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
+    {InfoMainScreen,&xMainMenu,&xAboutMenu,0U,0U},
   {AlarmMainScreen,&xMainMenu,&xAlarmMenu,0U,0U},
   {EventMainScreen,&xMainMenu,&xEventMenu,0U,0U},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
   {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
   {StatusMainScreen,NULL,NULL,0U,0U},
-  {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
+
 
 };
 

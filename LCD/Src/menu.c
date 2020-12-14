@@ -1032,7 +1032,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       if (ATR.len ==1 )
       {
              eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,(uint16_t*)&tt);
-             sprintf(Data,"%i",tt[0]);
+             sprintf(Data,"%i.%i",tt[0]/1000,tt[0]%1000);
       }
       break;
     case SW_VER:
@@ -1040,7 +1040,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       if (ATR.len ==1 )
       {
         eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR, (uint16_t*)&tt);
-        sprintf(Data,"%i",tt[0]);
+        sprintf(Data,"%i.%i",tt[0]/1000,tt[0]%1000);
       }
       break;
     case SERIAL_L:

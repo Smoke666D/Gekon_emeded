@@ -865,6 +865,52 @@ char cHexToChar(uint8_t data)
 }
 
 
+char * vScrollFunction(uint16_t utemp, uint8_t  * shift,uint8_t sd)
+{
+  char * StartArray;
+  if (utemp> 39U)
+  {
+     StartArray =&TempArray[*shift];
+     if ((utemp-(*shift))<39)
+     {
+        StartArray[utemp-(*shift)]=0U;
+     }
+     else
+     {
+        StartArray[39]=0U;
+     }
+     if ( sd >VIEW_DELAY)
+     {
+        *shift=*shift+1;
+        if ((*shift) >= (utemp-38U))
+        *shift=0;
+     }
+  }
+  else
+  {
+     *shift =0U;
+     StartArray= TempArray;
+  }
+
+   return StartArray;
+}
+
+
+void vStrCopy(char * dest, char * source)
+{
+  uint8_t i;
+  for (i=0;i<100;i++)
+  {
+    dest[i]=source[i];
+    if (source[i]==0) break;
+  }
+  if (i==100) dest[i]=0;
+  return;
+
+}
+
+
+
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
@@ -873,7 +919,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   static uint8_t BufferAlarm=0,ALD=0,BufAlarmCount=0;
 
 
-  char * StartArray;
+
   uint16_t  utemp=10;
 
 
@@ -949,65 +995,23 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
     case CURRENT_ALARM_T:
     case CURRENT_EVENT_T:
-      if (uCurrentAlarm < BufAlarmCount)
-      {
-        sprintf(TempArray,"%s",  logTypesDictionary[xrecord.event.type]);
-        utemp =strlen(TempArray);
-        if (utemp> 39U)
-        {
-               StartArray =&TempArray[StringShift];
-               if ((utemp-StringShift)<39)
-               StartArray[utemp-StringShift]=0;
-               else
-                 StartArray[39]=0;
-               if (ScrollDelay>VIEW_DELAY)
-               {
-                 StringShift++;
-                 if (StringShift >= (utemp-38))
-                   StringShift=0;
-               }
-             }
-             else
-             {
-               StringShift =0;
-               StartArray= TempArray;
-             }
-             sprintf(Data,"%s",StartArray);
+          if (uCurrentAlarm < BufAlarmCount)
+          {
+            vStrCopy(TempArray,logTypesDictionary[xrecord.event.type]);
+            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift, ScrollDelay));
            }
            else
-            sprintf(Data,"ОШИБОК НЕТ");
+           {
+            vStrCopy(Data,"ОШИБОК НЕТ");
+           }
            break;
     case CURRENT_ALARM_ACTION:
     case CURRENT_EVENT_ACTION:
-      if (uCurrentAlarm < BufAlarmCount)
-      {
-         sprintf(TempArray,"%s", logActionsDictionary[xrecord.event.action]);
-         utemp =strlen(TempArray);
-         if (utemp> 39U)
-         {
-            StartArray =&TempArray[StringShift1];
-            if ((utemp-StringShift1)<39)
-            {
-               StartArray[utemp-StringShift1]=0U;
-            }
-            else
-            {
-              StartArray[39]=0U;
-            }
-            if (ScrollDelay>VIEW_DELAY)
-            {
-                StringShift1++;
-                if (StringShift1 >= (utemp-38U))
-                    StringShift1=0;
-            }
-         }
-         else
-         {
-           StringShift1 =0U;
-           StartArray= TempArray;
-         }
-         sprintf(Data,"%s",StartArray);
-      }
+        if (uCurrentAlarm < BufAlarmCount)
+        {
+            vStrCopy(TempArray,logActionsDictionary[xrecord.event.action]);
+            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift1, ScrollDelay ));
+        }
       break;
     default:
       break;

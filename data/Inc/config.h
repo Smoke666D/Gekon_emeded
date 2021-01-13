@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-12-02 12:37:25
+ * Make time: 2021-01-13 08:08:57
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -10,13 +10,13 @@
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   MAX_BIT_MAP_LENGTH           12U
-#define   SETTING_REGISTER_NUMBER      120U
+#define   MAX_BIT_MAP_LENGTH           16U
+#define   SETTING_REGISTER_NUMBER      121U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              77U     // bytes
-#define   CONFIG_TOTAL_SIZE            1570U   // bytes
+#define   CONFIG_MAX_SIZE              89U     // bytes
+#define   CONFIG_TOTAL_SIZE            1594U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )
@@ -199,6 +199,8 @@ typedef struct __packed
 #define   MAINTENANCE_ALARM_AIR_TIME_ADR                         117U
 #define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        118U
 #define   LOG_SETUP_ADR                                          119U
+#define   RECORD_SETUP_ADR                                       120U
+#define   RECORD_INTERVAL_ADR                                    121U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   MODULE_TYPE_ADR                              0U
 #define   ALARM_ALL_BLOCK_ADR                          1U
@@ -287,6 +289,22 @@ typedef struct __packed
 #define   MAINTENANCE_ALARM_FUEL_ACTION_ADR            5U
 #define   LOG_SAVE_WARNING_EVENTS_ENB_ADR              0U
 #define   LOG_POSITIVE_EVENTS_ENB_ADR                  1U
+#define   RECORD_ENB_ADR                               0U
+#define   RECORD_TIME_ENB_ADR                          1U
+#define   RECORD_DATE_ENB_ADR                          2U
+#define   RECORD_OIL_PRESSURE_ENB_ADR                  3U
+#define   RECORD_COOLANT_TEMP_ENB_ADR                  4U
+#define   RECORD_FUEL_LEVEL_ENB_ADR                    5U
+#define   RECORD_SPEED_ENB_ADR                         6U
+#define   RECORD_INPUT_A_ENB_ADR                       7U
+#define   RECORD_INPUT_B_ENB_ADR                       8U
+#define   RECORD_INPUT_C_ENB_ADR                       9U
+#define   RECORD_INPUT_D_ENB_ADR                       10U
+#define   RECORD_VOLTAGE_GEN_ENB_ADR                   11U
+#define   RECORD_FREQ_GEN_ENB_ADR                      12U
+#define   RECORD_VOLTAGE_NET_ENB_ADR                   13U
+#define   RECORD_FREQ_NET_ENB_ADR                      14U
+#define   RECORD_VOLTAGE_ACC_ENB_ADR                   15U
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg versionController;
 extern eConfigReg versionFirmware;
@@ -408,6 +426,8 @@ extern eConfigReg maintenanceAlarmOilTime;
 extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg logSetup;
+extern eConfigReg recordSetup;
+extern eConfigReg recordInterval;
 extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];
 extern const char*       dictionaryArray[SETTING_REGISTER_NUMBER];
 extern const fix16_t     scaleMulArray[CONFIG_SCALE_NUM];

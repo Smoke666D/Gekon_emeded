@@ -302,7 +302,7 @@ EEPROM_STATUS eSTORAGEreadConfigs ( void )
         calc = uBlobToConfig( configReg[i], buffer );
         if ( calc != size )
         {
-          res = EEPROM_ERROR;
+          res = EEPROM_SIZE_ERROR;
           break;
         }
       }

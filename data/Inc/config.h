@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2021-01-13 09:04:24
+ * Make time: 2021-01-19 08:05:44
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -11,7 +11,7 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
 #define   MAX_BIT_MAP_LENGTH           16U
-#define   SETTING_REGISTER_NUMBER      121U
+#define   SETTING_REGISTER_NUMBER      122U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U

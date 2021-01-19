@@ -507,7 +507,7 @@ void vUSBParsingChartDots ( uint16_t adr, uint8_t firstDot, uint8_t size, const 
 {
   uint8_t i       = 0U;
   uint8_t counter = 0U;
-  for ( i=0; i<size; i++ )
+  for ( i=0U; i<size; i++ )
   {
     charts[adr]->dots[i + firstDot].x = *( fix16_t* )( &data[counter] );
     counter += 4U;
@@ -612,7 +612,7 @@ USB_STATUS eUSBReportToEWA ( const USB_REPORT* report )
       if ( status == DATA_API_STAT_OK )
       {
 	      checkAdr = STORAGE_EWA_DATA_ADR + index;
-	      for ( i=0; i<length; i++ )
+	      for ( i=0U; i<length; i++ )
 	      {
 	        status = DATA_API_STAT_BUSY;
 	        while ( status == DATA_API_STAT_BUSY )

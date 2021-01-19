@@ -1,6 +1,5 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2021-01-13 09:04:24
  */
 #include   "config.h"
 

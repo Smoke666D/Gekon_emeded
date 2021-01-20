@@ -64,7 +64,7 @@ EEPROM_STATUS eEEPROMwrite( uint8_t cmd, const uint32_t* adr, uint8_t* data, uin
       {
         while ( EEPROMspi->State != HAL_SPI_STATE_READY )
         {
-    	  osDelay( EEPROM_TIMEOUT );
+    	    osDelay( EEPROM_TIMEOUT );
         }
         hal = HAL_SPI_Transmit( EEPROMspi, data, size, EEPROM_TIMEOUT );
         EEPROM_NSS_SET;
@@ -263,8 +263,8 @@ EEPROM_STATUS eEEPROMpoolUntil ( EEPROM_SR_STATE target )
  */
 EEPROM_STATUS eEEPROMWriteData ( const uint32_t* adr, uint8_t* data, uint8_t len )
 {
-  EEPROM_STATUS   res    = EEPROM_OK;
-  EEPROM_SR_STATE state  = EEPROM_SR_IDLE;
+  EEPROM_STATUS   res   = EEPROM_OK;
+  EEPROM_SR_STATE state = EEPROM_SR_IDLE;
   if ( ( *adr + len ) <= EEPROM_MAX_ADR )
   {
     if ( EEPROM_PAGE_SIZE - ( *adr - ( ( ( uint8_t )( *adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) ) >= len )
@@ -317,8 +317,7 @@ EEPROM_STATUS eEEPROMWriteData ( const uint32_t* adr, uint8_t* data, uint8_t len
 EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint32_t nssPIN )
 {
   EEPROM_STATUS res = EEPROM_OK;
-
-  EEPROMspi      = hspi;
+  EEPROMspi     = hspi;
   EEPROMnssPin  = nssPIN;
   EEPROMnssPort = nssPORT;
   EEPROM_NSS_SET;
@@ -347,7 +346,6 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
   uint32_t        count  = adr;           /* Counter of address */
   uint32_t        shift  = 0U;             /* Shift in output buffer */
   uint16_t        subLen = len;            /* Length of write iteration */
-
   res = eEEPROMreadSR( &state );
   if ( res == EEPROM_OK )
   {
@@ -359,7 +357,7 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
         size   = (uint8_t)( ( len - remain ) / EEPROM_PAGE_SIZE );
         subLen = remain;
       }
-      res = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
+      res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
       shift += subLen;
       count += subLen;
       if ( res == EEPROM_OK )
@@ -399,21 +397,20 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
  */
 EEPROM_STATUS eEEPROMwriteMemory ( uint32_t adr, uint8_t* data, uint16_t len )
 {
-  EEPROM_STATUS   res    = EEPROM_OK;
-  uint16_t        i      = 0U;
-  uint16_t        size   = 0U;             /* Size of data in memory pages */
-  uint16_t        remain = 0U;             /* Remain of first page in bytes */
-  uint32_t        count  = adr;            /* Counter of address */
-  uint32_t        shift  = 0U;             /* Shift in output buffer */
-  uint16_t        subLen = len;            /* Length of write iteration */
-
+  EEPROM_STATUS res    = EEPROM_OK;
+  uint16_t      i      = 0U;
+  uint16_t      size   = 0U;             /* Size of data in memory pages */
+  uint16_t      remain = 0U;             /* Remain of first page in bytes */
+  uint32_t      count  = adr;            /* Counter of address */
+  uint32_t      shift  = 0U;             /* Shift in output buffer */
+  uint16_t      subLen = len;            /* Length of write iteration */
   remain = EEPROM_PAGE_SIZE - ( adr - ( ( ( uint8_t )( adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
   if ( remain < len )
   {
     size   = (uint8_t)( ( len - remain ) / EEPROM_PAGE_SIZE );
     subLen = remain;
   }
-  res = eEEPROMWriteData( &count, &data[shift], subLen );
+  res    = eEEPROMWriteData( &count, &data[shift], subLen );
   count += subLen;
   shift += subLen;
   if ( res == EEPROM_OK )

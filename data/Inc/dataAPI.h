@@ -73,6 +73,7 @@ DATA_API_STATUS    eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* passw
 DATA_API_STATUS    eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length );
 DATA_API_STATUS    eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TYPE* record );
 DATA_API_STATUS    eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer );
+DATA_API_STATUS    eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8_t length, uint16_t* data );
 void               vDATAAPIincLogSize ( void );
 void               vDATAAPIprintMemoryMap ( void );
 void               vDATAprintSerialNumber ( void );

@@ -134,6 +134,11 @@ void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
     report->data[4U] = ( uint8_t )( record.event.type   );
     report->data[5U] = ( uint8_t )( record.event.action );
   }
+  else
+  {
+    report->stat   = USB_REPORT_STATE_INTERNAL;
+    report->length = 0U;
+  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -335,6 +340,10 @@ USB_STATUS eUSBReportToPassword ( const USB_REPORT* report )
         status = eDATAAPIpassword( DATA_API_CMD_SAVE, NULL );
       }
       if ( status != DATA_API_STAT_OK )
+      {
+        res = USB_STATUS_STORAGE_ERROR;
+      }
+      else
       {
         res = USB_STATUS_STORAGE_ERROR;
       }
@@ -820,6 +829,10 @@ USB_STATUS eUSBeraseLOG ( const USB_REPORT* report )
   {
     res = USB_STATUS_STORAGE_ERROR;
   }
+  else
+  {
+    res = USB_REPORT_STATE_INTERNAL;
+  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -979,10 +992,10 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
       response.stat = USB_REPORT_STATE_BAD_REQ;
       break;
     case USB_STATUS_ERROR_ADR:
-      response.stat = USB_REPORT_STATE_BAD_REQ;
+      response.stat = USB_REPORT_STATE_NON_CON;
       break;
     case USB_STATUS_STORAGE_ERROR:
-      response.stat = USB_REPORT_STATE_NON_CON;
+      response.stat = USB_REPORT_STATE_INTERNAL;
       break;
     case USB_STATUS_UNAUTHORIZED_ERROR:
       response.stat = USB_REPORT_STATE_UNAUTHORIZED;

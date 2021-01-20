@@ -409,7 +409,7 @@ EEPROM_STATUS eSTORAGEsetFreeData ( FREE_DATA_ADR n, const uint16_t* data )
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* data )
 {
-  return eEEPROMreadMemory( ( STORAGE_MEASUREMENT_ADR + adr * length ), ( uint8_t* )data, ( uint16_t )( length * 2U ) );
+  return eEEPROMreadMemory( ( STORAGE_MEASUREMENT_ADR + adr * 2U * length ), ( uint8_t* )data, ( uint16_t )( length * 2U ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEeraseMeasurement ( void )

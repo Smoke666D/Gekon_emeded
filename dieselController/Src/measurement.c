@@ -103,6 +103,11 @@ QueueHandle_t pMEASUREMENTgetCommandQueue ( void )
   return pMeasurementCommandQueue;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint16_t uMEASUREMENTgetSize ( void )
+{
+  return measurement.size;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTtask ( void* argument )
 {
   uint16_t        i                                = 0U;

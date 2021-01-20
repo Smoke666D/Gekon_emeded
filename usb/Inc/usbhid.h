@@ -25,48 +25,53 @@ typedef enum
 
 typedef enum
 {
-  USB_DONE,               /* Operation done */
-  USB_CONT,               /* Message is not end. Wait for new package */
-  USB_ERROR_LENGTH,       /* Error in declared and received length of data*/
-  USB_ERROR_ADR,          /* Wrong address */
-  USB_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
-  USB_UNAUTHORIZED_ERROR, /* Non unauthorized request */
-  USB_ENGINE_NON_STOP,    /* Access forbiden */
+  USB_STATUS_DONE,               /* Operation done */
+  USB_STATUS_CONT,               /* Message is not end. Wait for new package */
+  USB_STATUS_ERROR_LENGTH,       /* Error in declared and received length of data*/
+  USB_STATUS_ERROR_ADR,          /* Wrong address */
+  USB_STATUS_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
+  USB_STATUS_UNAUTHORIZED_ERROR, /* Non unauthorized request */
+  USB_STATUS_ENGINE_NON_STOP,    /* Access forbidden - engine is non stop */
+  USB_STATUS_FORBIDDEN,          /* Access forbidden */
 } USB_STATUS;
 
 typedef enum
 {
-  USB_OUTPUT,
-  USB_INPUT,
+  USB_REPORT_DIR_OUTPUT,
+  USB_REPORT_DIR_INPUT,
 } USB_REPORT_DIR;
 
 typedef enum
 {
-  USB_OK_STAT           = 0x01U,     /* 200 analog - all OK                             */
-  USB_BAD_REQ_STAT      = 0x02U,     /* 400 analog - request is distorted               */
-  USB_NON_CON_STAT      = 0x03U,     /* 404 analog - requesting a nonexistent resource  */
-  USB_STAT_UNAUTHORIZED = 0x04U,     /* 401 analog - unauthorized request               */
-  USB_FORBIDDEN         = 0x05U,     /* 403 analog - machine not stop, access forbidden */
+  USB_REPORT_STATE_OK           = 0x01U, /* 200 analog - all OK                             */
+  USB_REPORT_STATE_BAD_REQ      = 0x02U, /* 400 analog - request is distorted               */
+  USB_REPORT_STATE_NON_CON      = 0x03U, /* 404 analog - requesting a nonexistent resource  */
+  USB_REPORT_STATE_UNAUTHORIZED = 0x04U, /* 401 analog - unauthorized request               */
+  USB_REPORT_STATE_FORBIDDEN    = 0x05U, /* 403 analog - machine not stop, access forbidden */
+  USB_REPORT_STATE_INTERNAL     = 0x06U, /* 500 analog - internal server error */
 } USB_REPORT_STATE;
 
 typedef enum
 {
-  USB_GET_CONFIG_CMD  = 0x01U,
-  USB_PUT_CONFIG_CMD  = 0x02U,
-  USB_GET_CHART_CMD   = 0x03U,
-  USB_PUT_CHART_CMD   = 0x04U,
-  USB_PUT_EWA_CMD     = 0x05U,
-  USB_SAVE_CONFIG_CMD = 0x06U,
-  USB_SAVE_CHART_CMD  = 0x07U,
-  USB_GET_TIME        = 0x08U,
-  USB_PUT_TIME        = 0x09U,
-  USB_GET_FREE_DATA   = 0x0AU,
-  USB_PUT_FREE_DATA   = 0x0BU,
-  USB_GET_LOG         = 0x0CU,
-  USB_ERASE_LOG       = 0x0DU,
-  USB_PUT_PASSWORD    = 0x0EU,
-  USB_AUTHORIZATION   = 0x0FU,
-  USB_ERASE_PASSWORD  = 0x10U,
+  USB_REPORT_CMD_GET_CONFIG        = 0x01U,
+  USB_REPORT_CMD_PUT_CONFIG        = 0x02U,
+  USB_REPORT_CMD_GET_CHART         = 0x03U,
+  USB_REPORT_CMD_PUT_CHART         = 0x04U,
+  USB_REPORT_CMD_PUT_EWA           = 0x05U,
+  USB_REPORT_CMD_SAVE_CONFIG       = 0x06U,
+  USB_REPORT_CMD_SAVE_CHART        = 0x07U,
+  USB_REPORT_CMD_GET_TIME          = 0x08U,
+  USB_REPORT_CMD_PUT_TIME          = 0x09U,
+  USB_REPORT_CMD_GET_FREE_DATA     = 0x0AU,
+  USB_REPORT_CMD_PUT_FREE_DATA     = 0x0BU,
+  USB_REPORT_CMD_GET_LOG           = 0x0CU,
+  USB_REPORT_CMD_ERASE_LOG         = 0x0DU,
+  USB_REPORT_CMD_PUT_PASSWORD      = 0x0EU,
+  USB_REPORT_CMD_AUTHORIZATION     = 0x0FU,
+  USB_REPORT_CMD_ERASE_PASSWORD    = 0x10U,
+  USB_REPORT_CMD_PUT_MEMORY_SIZE   = 0x11U,
+  USB_REPORT_CMD_GET_MEASUREMENT   = 0x12U,
+  USB_REPORT_CMD_ERASE_MEASUREMENT = 0x13U,
 } USB_REPORT_CMD;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U
@@ -91,8 +96,8 @@ typedef enum
 #define USB_INPUT_REPORT_ID   0x01U    /* Direction - first byte in report */
 #define USB_OUTPUT_REPORT_ID  0x02U    /* Direction - first byte in report */
 /*------------------------------ Macros --------------------------------------*/
-#define USB_GET_DIR_VAL(e)    ( e == USB_INPUT ) ? ( USB_INPUT_REPORT_ID ) : ( USB_OUTPUT_REPORT_ID )
-#define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? ( USB_INPUT ) : ( USB_OUTPUT )
+#define USB_GET_DIR_VAL(e)    ( e == USB_REPORT_DIR_INPUT ) ? ( USB_INPUT_REPORT_ID ) : ( USB_OUTPUT_REPORT_ID )
+#define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? ( USB_REPORT_DIR_INPUT ) : ( USB_REPORT_DIR_OUTPUT )
 /*---------------------------- Structures ------------------------------------*/
 typedef struct __packed
 {

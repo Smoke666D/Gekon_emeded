@@ -131,6 +131,7 @@ void vMEASUREMENTtask ( void* argument )
       case MEASURMENT_CMD_NONE:
         break;
       case MEASURMENT_CMD_RESET:
+        vLOGICprintDebug( ">>Measurement     : Reset command\r\n" );
         status = DATA_API_STAT_BUSY;
         while ( status == DATA_API_STAT_BUSY )
         {
@@ -142,6 +143,7 @@ void vMEASUREMENTtask ( void* argument )
         }
         if ( status != DATA_API_STAT_OK )
         {
+          vLOGICprintDebug( ">>Measurement     : Error!\r\n" );
           measurement.state = MEASURMENT_STATE_ERROR;
         }
         else
@@ -153,6 +155,7 @@ void vMEASUREMENTtask ( void* argument )
         measurement.cmd = MEASURMENT_CMD_NONE;
         break;
       case MEASURMENT_CMD_START:
+        vLOGICprintDebug( ">>Measurement     : Start command\r\n" );
         if ( measurement.state == MEASURMENT_STATE_IDLE )
         {
           measurement.state = MEASURMENT_STATE_START;
@@ -160,6 +163,7 @@ void vMEASUREMENTtask ( void* argument )
         measurement.cmd = MEASURMENT_CMD_NONE;
         break;
       case MEASURMENT_CMD_STOP:
+        vLOGICprintDebug( ">>Measurement     : Stop command\r\n" );
         if ( ( measurement.state != MEASURMENT_STATE_IDLE ) && ( measurement.state != MEASURMENT_STATE_ERROR ) )
         {
           if ( measurement.state == MEASURMENT_STATE_WAIT )
@@ -184,6 +188,7 @@ void vMEASUREMENTtask ( void* argument )
         case MEASURMENT_STATE_IDLE:
           break;
         case MEASURMENT_STATE_START:
+          vLOGICprintDebug( ">>Measurement     : Status start\r\n" );
           if ( measurement.counter < measurement.size )
           {
             vLOGICstartTimer( &measurement.timer );
@@ -203,6 +208,7 @@ void vMEASUREMENTtask ( void* argument )
         case MEASURMENT_STATE_WRITE:
           if ( measurement.counter < measurement.size )
           {
+            vLOGICprintDebug( ">>Measurement     : Read data\r\n" );
             for ( i=0U; i<MEASUREMENT_CHANNEL_NUMBER; i++ )
             {
               if ( measurement.channels[i].enb == PERMISSION_ENABLE )
@@ -221,6 +227,7 @@ void vMEASUREMENTtask ( void* argument )
             }
             if ( status != DATA_API_STAT_OK )
             {
+              vLOGICprintDebug( ">>Measurement     : Error!\r\n" );
               measurement.state = MEASURMENT_STATE_ERROR;
             }
             else
@@ -232,6 +239,7 @@ void vMEASUREMENTtask ( void* argument )
           }
           else
           {
+            vLOGICprintDebug( ">>Measurement     : Memory is full\r\n" );
             measurement.state = MEASURMENT_STATE_IDLE;
           }
           break;

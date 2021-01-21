@@ -829,10 +829,6 @@ USB_STATUS eUSBeraseLOG ( const USB_REPORT* report )
   {
     res = USB_STATUS_STORAGE_ERROR;
   }
-  else
-  {
-    res = USB_REPORT_STATE_INTERNAL;
-  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -958,27 +954,20 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
 
   if ( ( usbAuthorization == AUTH_DONE ) || ( report->cmd == USB_REPORT_CMD_AUTHORIZATION ) )
   {
-    res = callback( report );
-  }
-  else
-  {
-    res = USB_STATUS_UNAUTHORIZED_ERROR;
-  }
-
-  if ( report->cmd != USB_REPORT_CMD_AUTHORIZATION )
-  {
-    if ( eCONTROLLERgetMode()   == CONTROLLER_MODE_MANUAL )
+    if ( ( eCONTROLLERgetMode()   == CONTROLLER_MODE_MANUAL  ) ||
+         ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_IDLE  ) ||
+         ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_ALARM ) )
     {
-      if ( ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_IDLE  ) &&
-           ( eCONTROLLERgetStatus() != CONTROLLER_STATUS_ALARM ) )
-      {
-        res = USB_STATUS_ENGINE_NON_STOP;
-      }
+      res = callback( report );
     }
     else
     {
       res = USB_STATUS_ENGINE_NON_STOP;
     }
+  }
+  else
+  {
+    res = USB_STATUS_UNAUTHORIZED_ERROR;
   }
   switch ( res )
   {

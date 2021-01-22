@@ -693,11 +693,12 @@ void vUSBmakeReport ( USB_REPORT* report )
   report->buf[USB_DIR_BYTE]  = USB_GET_DIR_VAL( report->dir );
   report->buf[USB_CMD_BYTE]  = report->cmd;
   report->buf[USB_STAT_BYTE] = report->stat;
-  report->buf[USB_ADR1_BYTE] = ( uint8_t )( report->adr >> 8U );
   report->buf[USB_ADR0_BYTE] = ( uint8_t )( report->adr );
-  report->buf[USB_LEN2_BYTE] = ( uint8_t )( report->length >> 16U );
-  report->buf[USB_LEN1_BYTE] = ( uint8_t )( report->length >> 8U );
+  report->buf[USB_ADR1_BYTE] = ( uint8_t )( report->adr >> 8U );
   report->buf[USB_LEN0_BYTE] = ( uint8_t )( report->length );
+  report->buf[USB_LEN1_BYTE] = ( uint8_t )( report->length >> 8U );
+  report->buf[USB_LEN2_BYTE] = ( uint8_t )( report->length >> 16U );
+
   if ( report->length < USB_DATA_SIZE )
   {
     len = report->length;
@@ -1105,7 +1106,7 @@ void vStartUsbTask ( void *argument )
         case USB_REPORT_CMD_ERASE_PASSWORD:
           vUSBget( &report, eUSBerasePassword );
           break;
-        case USB_REPORT_CMD_PUT_MEMORY_SIZE:
+        case USB_REPORT_CMD_GET_MEMORY_SIZE:
           vUSBsend( &report, vUSBmemorySizeToReport );
           break;
         case USB_REPORT_CMD_GET_MEASUREMENT:

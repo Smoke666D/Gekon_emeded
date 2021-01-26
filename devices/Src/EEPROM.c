@@ -343,7 +343,7 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
   uint16_t        i      = 0;
   uint16_t        size   = 0U;             /* Size of data in memory pages */
   uint16_t        remain = 0U;             /* Remain of first page in bytes */
-  uint32_t        count  = adr;           /* Counter of address */
+  uint32_t        count  = adr;            /* Counter of address */
   uint32_t        shift  = 0U;             /* Shift in output buffer */
   uint16_t        subLen = len;            /* Length of write iteration */
   res = eEEPROMreadSR( &state );
@@ -354,7 +354,7 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
       remain = EEPROM_PAGE_SIZE - ( adr - ( ( ( uint8_t )( adr / EEPROM_PAGE_SIZE ) ) * EEPROM_PAGE_SIZE ) );
       if ( remain < len )
       {
-        size   = (uint8_t)( ( len - remain ) / EEPROM_PAGE_SIZE );
+        size   = ( uint8_t )( ( len - remain ) / EEPROM_PAGE_SIZE );
         subLen = remain;
       }
       res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
@@ -362,22 +362,22 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
       count += subLen;
       if ( res == EEPROM_OK )
       {
-	subLen = EEPROM_PAGE_SIZE;
-	for ( i=0U; i<size; i++ )
-	{
-	  res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
-	  shift += subLen;
-	  count += EEPROM_PAGE_SIZE;
-	  if ( res != EEPROM_OK )
-	  {
-	    break;
-	  }
-	}
-	if ( ( count < ( adr + len ) ) && ( res == EEPROM_OK ) )
-	{
-	  subLen = ( uint16_t )( adr + len - count );
-	  res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
-	}
+	      subLen = EEPROM_PAGE_SIZE;
+	      for ( i=0U; i<size; i++ )
+	      {
+	        res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
+	        shift += subLen;
+	        count += EEPROM_PAGE_SIZE;
+	        if ( res != EEPROM_OK )
+	        {
+	          break;
+	        }
+	      }
+	      if ( ( count < ( adr + len ) ) && ( res == EEPROM_OK ) )
+	      {
+	        subLen = ( uint16_t )( adr + len - count );
+	        res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
+	      }
       }
     }
     else

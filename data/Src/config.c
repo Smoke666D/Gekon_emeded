@@ -2479,7 +2479,7 @@ const eConfigAttributes recordIntervalAtrib =
 {
    .adr        = 121U,
    .min        = 1U,
-   .max        = 65535U,
+   .max        = 36000U,
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,

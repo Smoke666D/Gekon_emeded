@@ -72,10 +72,19 @@ void vMEASUREMENTinit ( void )
       {
         measurement.channels[i].enb = getBitMap( &recordSetup, ( RECORD_ENB_ADR + 1U + i ) );
         measurement.channels[i].get = measurementCallbacks[i];
-        measurement.length++;
+        if ( measurement.channels[i].enb == PERMISSION_ENABLE )
+        {
+          measurement.length++;
+        }
       }
-      measurement.size = ( uint16_t )( STORAGE_MEASUREMENT_SIZE / ( measurement.length * 2U ) );
-
+      if ( measurement.length > 0U )
+      {
+        measurement.size = ( uint16_t )( STORAGE_MEASUREMENT_SIZE / ( measurement.length * 2U ) );
+      }
+      else
+      {
+        measurement.size = 0U;
+      }
       pMeasurementCommandQueue = xQueueCreateStatic( MEASUREMENT_COMMAND_QUEUE_LENGTH,
                                                     sizeof( MEASURMENT_CMD ),
                                                     measurementCommandBuffer,
@@ -105,7 +114,7 @@ QueueHandle_t pMEASUREMENTgetCommandQueue ( void )
 /*---------------------------------------------------------------------------------------------------*/
 uint16_t uMEASUREMENTgetSize ( void )
 {
-  return measurement.size;
+  return measurement.length;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTtask ( void* argument )

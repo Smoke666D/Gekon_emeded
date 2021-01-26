@@ -882,7 +882,7 @@ void eUSBmeasurementToReport ( USB_REPORT* report, uint16_t adr )
     if ( status == DATA_API_STAT_OK )
     {
       report->stat = USB_REPORT_STATE_OK;
-      for ( i=0U; i<report->length; i++ )
+      for ( i=0U; i<uMEASUREMENTgetSize(); i++ )
       {
         report->data[0U + i * 2U] = ( uint8_t )( data[i]       );
         report->data[1U + i * 2U] = ( uint8_t )( data[i] >> 8U );

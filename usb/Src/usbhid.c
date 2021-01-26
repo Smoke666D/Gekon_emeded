@@ -107,8 +107,8 @@ void vUSBfreeDataToReport ( USB_REPORT* report, uint16_t adr )
 {
   report->stat     = USB_REPORT_STATE_OK;
   report->length   = 2U;
-  report->data[0U] = ( uint8_t )( *freeDataArray[adr] >> 8U );
-  report->data[1U] = ( uint8_t )( *freeDataArray[adr]       );
+  report->data[0U] = ( uint8_t )( *freeDataArray[adr]       );
+  report->data[1U] = ( uint8_t )( *freeDataArray[adr] >> 8U );
   return;
 }
 
@@ -127,10 +127,10 @@ void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
   if ( status == DATA_API_STAT_OK )
   {
     report->stat     = USB_REPORT_STATE_OK;
-    report->data[0U] = ( uint8_t )( record.time >> 24U  );
-    report->data[1U] = ( uint8_t )( record.time >> 16U  );
-    report->data[2U] = ( uint8_t )( record.time >> 8U   );
-    report->data[3U] = ( uint8_t )( record.time         );
+    report->data[0U] = ( uint8_t )( record.time         );
+    report->data[1U] = ( uint8_t )( record.time >> 8U   );
+    report->data[2U] = ( uint8_t )( record.time >> 16U  );
+    report->data[3U] = ( uint8_t )( record.time >> 24U  );
     report->data[4U] = ( uint8_t )( record.event.type   );
     report->data[5U] = ( uint8_t )( record.event.action );
   }
@@ -161,8 +161,7 @@ void vUSBConfigToReport ( USB_REPORT* report, uint16_t adr )
     /*----------- Configuration value -----------*/
     for ( i=0U; i<configReg[adr]->atrib->len; i++ )
     {
-      report->data[count + ( 2U * i )]      = ( uint8_t )( ( configReg[adr]->value[i] >> 8U ) & 0x00FFU );
-      report->data[count + ( 2U * i ) + 1U] = ( uint8_t )( ( configReg[adr]->value[i]       ) & 0x00FFU );
+      vUint16ToBytes( configReg[adr]->value[i], &report->data[count + ( 2U * i )] );
     }
     count += 2U * configReg[adr]->atrib->len;
     /*----------- Configuration scale -----------*/
@@ -327,7 +326,8 @@ USB_STATUS eUSBReportToPassword ( const USB_REPORT* report )
   if ( report->length >= PASSWORD_SIZE )
   {
     pass.status = report->data[0U];
-    pass.data   = ( ( ( uint16_t )report->data[1U] ) << 8U ) | ( uint16_t )report->data[2U];
+    pass.data   = ( ( ( uint16_t )report->data[1U] )       ) |
+                  ( ( ( uint16_t )report->data[2U] ) << 8U );
     while ( status == DATA_API_STAT_BUSY )
     {
       status = eDATAAPIpassword( DATA_API_CMD_WRITE, &pass );
@@ -368,7 +368,8 @@ USB_STATUS eUSBcheckupPassword ( const USB_REPORT* report )
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
   if ( report->length >= 2U )
   {
-    input = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
+    input = ( ( ( uint16_t )report->data[0U] )       ) |
+            ( ( ( uint16_t )report->data[1U] ) << 8U );
     while ( status == DATA_API_STAT_BUSY )
     {
       status = eDATAAPIpassword( DATA_API_CMD_READ, &pass );
@@ -406,7 +407,8 @@ USB_STATUS eUSBReportToFreeData ( const USB_REPORT* report )
   {
     if ( report->adr <= FREE_DATA_SIZE )
     {
-      value = ( ( ( uint16_t )report->data[0U] ) << 8U ) | ( ( uint16_t )report->data[1U] );
+      value = ( ( ( uint16_t )report->data[0U] )       ) |
+              ( ( ( uint16_t )report->data[1U] ) << 8U );
       while ( status == DATA_API_STAT_BUSY )
       {
         status = eDATAAPIfreeData( DATA_API_CMD_WRITE, report->adr, &value );
@@ -462,7 +464,8 @@ USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
     /*----------- Configuration value -----------*/
       for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
       {
-        valueBuf[i] = ( uint16_t )( report->data[count + ( 2U * i ) + 1U] ) | ( ( uint16_t )( report->data[count + ( 2U * i )] ) << 8U );
+        valueBuf[i] = ( ( uint16_t )( report->data[count + ( 2U * i ) + 1U] ) << 8U ) |
+                      ( ( uint16_t )( report->data[count + ( 2U * i )] ) );
       }
       count += 2U * configReg[report->adr]->atrib->len;
     /*----------- Configuration scale -----------*/
@@ -855,10 +858,10 @@ void vUSBmemorySizeToReport ( USB_REPORT* report, uint16_t adr )
   {
     report->stat     = USB_REPORT_STATE_OK;
     report->length   = 4U;
-    report->data[0U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE >> 24U  );
-    report->data[1U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE >> 16U  );
-    report->data[2U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE >> 8U   );
-    report->data[3U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE         );
+    report->data[0U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE         );
+    report->data[1U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE >> 8U   );
+    report->data[2U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE >> 16U  );
+    report->data[3U] = ( uint8_t )( STORAGE_MEASUREMENT_SIZE >> 24U  );
   }
   return;
 }
@@ -879,11 +882,34 @@ void eUSBmeasurementToReport ( USB_REPORT* report, uint16_t adr )
     if ( status == DATA_API_STAT_OK )
     {
       report->stat = USB_REPORT_STATE_OK;
-      for ( i=0U; i<report->length; i++ )
+      for ( i=0U; i<uMEASUREMENTgetSize(); i++ )
       {
-        report->data[0U + i * 2U] = ( uint8_t )( data[i] >> 8U );
-        report->data[1U + i * 2U] = ( uint8_t )( data[i]       );
+        report->data[0U + i * 2U] = ( uint8_t )( data[i]       );
+        report->data[1U + i * 2U] = ( uint8_t )( data[i] >> 8U );
       }
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void eUSBmeasurementLengthToReport ( USB_REPORT* report, uint16_t adr )
+{
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  uint16_t        data   = 0U;
+  report->stat   = USB_REPORT_STATE_NON_CON;
+  report->length = 0U;
+  if ( MEASUREMENT_ENB > 0U )
+  {
+    while ( status == DATA_API_STAT_BUSY )
+    {
+      status = eDATAAPImeasurement( DATA_API_CMD_COUNTER, &data, uMEASUREMENTgetSize(), NULL );
+    }
+    if ( status == DATA_API_STAT_OK )
+    {
+      report->stat     = USB_REPORT_STATE_OK;
+      report->length   = 2U;
+      report->data[0U] = ( uint8_t )( data         );
+      report->data[1U] = ( uint8_t )( data >> 8U   );
     }
   }
   return;
@@ -1114,6 +1140,9 @@ void vStartUsbTask ( void *argument )
           break;
         case USB_REPORT_CMD_ERASE_MEASUREMENT:
           vUSBget( &report, eUSBeraseMeasurement );
+          break;
+        case USB_REPORT_CMD_GET_MEASUREMENT_LENGTH:
+          vUSBsend( &report, eUSBmeasurementLengthToReport );
           break;
         default:
           break;

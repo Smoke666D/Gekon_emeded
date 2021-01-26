@@ -17,9 +17,10 @@ static SemaphoreHandle_t  xSemaphore     = NULL;
 static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static uint8_t       initDone     = 0U;
-static uint8_t       flTakeSource = 0U;
-static LOG_CASH_TYPE logCash      = { 0U };
+static uint8_t       initDone              = 0U;
+static uint8_t       flTakeSource          = 0U;
+static LOG_CASH_TYPE logCash               = { 0U };
+static uint16_t      measurementNumberCash = 0U;
 /*------------------------ Define -------------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -1279,16 +1280,19 @@ DATA_API_STATUS eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8
           {
             res = DATA_API_STAT_EEPROM_ERROR;
           }
+          measurementNumberCash = 0U;
           xSemaphoreGive( xSemaphore );
         }
         break;
       case DATA_API_CMD_ADD:
         if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
         {
-          if ( eSTORAGEaddMeasurement( *adr, length, data ) != EEPROM_OK )
+
+          if ( eSTORAGEaddMeasurement( measurementNumberCash, length, data ) != EEPROM_OK )
           {
             res = DATA_API_STAT_EEPROM_ERROR;
           }
+          measurementNumberCash++;
           xSemaphoreGive( xSemaphore );
         }
         break;
@@ -1299,6 +1303,7 @@ DATA_API_STATUS eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8
           {
             res = DATA_API_STAT_EEPROM_ERROR;
           }
+          measurementNumberCash = *adr;
           xSemaphoreGive( xSemaphore );
         }
         break;

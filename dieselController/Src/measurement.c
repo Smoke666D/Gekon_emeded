@@ -65,16 +65,39 @@ void vMEASUREMENTinit ( void )
           osDelay( 1U );
         }
       }
-      measurement.state       = MEASURMENT_STATE_START;
+      measurement.state       = MEASURMENT_STATE_IDLE;
       measurement.timer.delay = getValue( &recordInterval );
       measurement.timer.id    = LOGIC_DEFAULT_TIMER_ID;
       for ( i=0U; i<MEASUREMENT_CHANNEL_NUMBER; i++ )
       {
         measurement.channels[i].enb = getBitMap( &recordSetup, ( RECORD_ENB_ADR + 1U + i ) );
         measurement.channels[i].get = measurementCallbacks[i];
-        measurement.length++;
+        if ( measurement.channels[i].enb == PERMISSION_ENABLE )
+        {
+          measurement.length++;
+        }
       }
-      measurement.size = ( uint16_t )( STORAGE_MEASUREMENT_SIZE / ( measurement.length * 2U ) );
+      if ( measurement.length > 0U )
+      {
+        measurement.size = ( uint16_t )( STORAGE_MEASUREMENT_SIZE / ( measurement.length * 2U ) );
+      }
+      else
+      {
+        measurement.size = 0U;
+      }
+
+      /* TEST DATA */
+      DATA_API_STATUS status = DATA_API_STAT_BUSY;
+      uint16_t        data   = 0U;
+      for ( data=0; data<10; data++ )
+      {
+        status = DATA_API_STAT_BUSY;
+        while ( status == DATA_API_STAT_BUSY )
+        {
+          status = eDATAAPImeasurement( DATA_API_CMD_ADD, &data, 1U, &data );
+        }
+      }
+      /* TEST DATA */
 
       pMeasurementCommandQueue = xQueueCreateStatic( MEASUREMENT_COMMAND_QUEUE_LENGTH,
                                                     sizeof( MEASURMENT_CMD ),
@@ -105,7 +128,7 @@ QueueHandle_t pMEASUREMENTgetCommandQueue ( void )
 /*---------------------------------------------------------------------------------------------------*/
 uint16_t uMEASUREMENTgetSize ( void )
 {
-  return measurement.size;
+  return measurement.length;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTtask ( void* argument )

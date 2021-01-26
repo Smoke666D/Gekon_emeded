@@ -414,8 +414,8 @@ EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* 
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEeraseMeasurement ( void )
 {
-  uint8_t data[1U] = { 0U };
-  return eEEPROMwriteMemory( STORAGE_MEASUREMENT_SR_ADR, data, 1U );
+  uint8_t data[STORAGE_MEASUREMENT_SR_SIZE] = { 0U };
+  return eEEPROMwriteMemory( STORAGE_MEASUREMENT_SR_ADR, data, STORAGE_MEASUREMENT_SR_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint16_t* data )

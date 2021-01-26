@@ -892,6 +892,29 @@ void eUSBmeasurementToReport ( USB_REPORT* report, uint16_t adr )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void eUSBmeasurementLengthToReport ( USB_REPORT* report, uint16_t adr )
+{
+  DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  uint16_t        data   = 0U;
+  report->stat   = USB_REPORT_STATE_NON_CON;
+  report->length = 0U;
+  if ( MEASUREMENT_ENB > 0U )
+  {
+    while ( status == DATA_API_STAT_BUSY )
+    {
+      status = eDATAAPImeasurement( DATA_API_CMD_COUNTER, &data, uMEASUREMENTgetSize(), NULL );
+    }
+    if ( status == DATA_API_STAT_OK )
+    {
+      report->stat     = USB_REPORT_STATE_OK;
+      report->length   = 2U;
+      report->data[0U] = ( uint8_t )( data         );
+      report->data[1U] = ( uint8_t )( data >> 8U   );
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 USB_STATUS eUSBeraseMeasurement ( const USB_REPORT* report )
 {
   USB_STATUS      res    = USB_STATUS_FORBIDDEN;
@@ -1117,6 +1140,9 @@ void vStartUsbTask ( void *argument )
           break;
         case USB_REPORT_CMD_ERASE_MEASUREMENT:
           vUSBget( &report, eUSBeraseMeasurement );
+          break;
+        case USB_REPORT_CMD_GET_MEASUREMENT_LENGTH:
+          vUSBsend( &report, eUSBmeasurementLengthToReport );
           break;
         default:
           break;

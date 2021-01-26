@@ -85,6 +85,11 @@ void vMEASUREMENTinit ( void )
       {
         measurement.size = 0U;
       }
+
+      /* TEST DATA */
+
+      /* TEST DATA */
+
       pMeasurementCommandQueue = xQueueCreateStatic( MEASUREMENT_COMMAND_QUEUE_LENGTH,
                                                     sizeof( MEASURMENT_CMD ),
                                                     measurementCommandBuffer,

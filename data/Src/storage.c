@@ -421,10 +421,10 @@ EEPROM_STATUS eSTORAGEeraseMeasurement ( void )
 EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint16_t* data )
 {
   EEPROM_STATUS res = EEPROM_OK;
-  res = eEEPROMwriteMemory( STORAGE_MEASUREMENT_ADR, ( uint8_t* )data, ( length * 2 ) );
+  res = eEEPROMwriteMemory( ( STORAGE_MEASUREMENT_ADR + adr * 2U * length ), ( uint8_t* )data, ( length * 2 ) );
   if ( res == EEPROM_OK )
   {
-    res = eEEPROMwriteMemory( STORAGE_MEASUREMENT_SR_ADR, &length, 1U );
+    res = eEEPROMwriteMemory( STORAGE_MEASUREMENT_SR_ADR, ( uint8_t* )&adr, STORAGE_MEASUREMENT_SR_SIZE );
   }
   return res;
 }

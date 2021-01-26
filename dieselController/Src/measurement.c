@@ -65,7 +65,7 @@ void vMEASUREMENTinit ( void )
           osDelay( 1U );
         }
       }
-      measurement.state       = MEASURMENT_STATE_START;
+      measurement.state       = MEASURMENT_STATE_IDLE;
       measurement.timer.delay = getValue( &recordInterval );
       measurement.timer.id    = LOGIC_DEFAULT_TIMER_ID;
       for ( i=0U; i<MEASUREMENT_CHANNEL_NUMBER; i++ )
@@ -87,7 +87,16 @@ void vMEASUREMENTinit ( void )
       }
 
       /* TEST DATA */
-
+      DATA_API_STATUS status = DATA_API_STAT_BUSY;
+      uint16_t        data   = 0U;
+      for ( data=0; data<10; data++ )
+      {
+        status = DATA_API_STAT_BUSY;
+        while ( status == DATA_API_STAT_BUSY )
+        {
+          status = eDATAAPImeasurement( DATA_API_CMD_ADD, &data, 1U, &data );
+        }
+      }
       /* TEST DATA */
 
       pMeasurementCommandQueue = xQueueCreateStatic( MEASUREMENT_COMMAND_QUEUE_LENGTH,

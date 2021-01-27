@@ -1170,13 +1170,15 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
             flTakeSource = 21U;
-            if ( eSTORAGEwriteConfigs() != EEPROM_OK )
+            res = DATA_API_STAT_EEPROM_ERROR;
+            if ( eSTORAGEwriteConfigs() == EEPROM_OK )
             {
-              res = DATA_API_STAT_EEPROM_ERROR;
-            }
-            else
-            {
-              vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
+              if ( eSTORAGEeraseMeasurement() == EEPROM_OK )
+              {
+                measurementNumberCash = 0U;
+                res = DATA_API_STAT_OK;
+                vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
+              }
             }
             xSemaphoreGive( xSemaphore );
           }

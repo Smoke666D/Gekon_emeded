@@ -902,7 +902,7 @@ void eUSBmeasurementLengthToReport ( USB_REPORT* report, uint16_t adr )
   {
     while ( status == DATA_API_STAT_BUSY )
     {
-      status = eDATAAPImeasurement( DATA_API_CMD_COUNTER, &data, uMEASUREMENTgetSize(), NULL );
+      status = eDATAAPImeasurement( DATA_API_CMD_COUNTER, &data, 0U, NULL );
     }
     if ( status == DATA_API_STAT_OK )
     {

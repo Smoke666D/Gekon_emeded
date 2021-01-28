@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2021-01-28 10:38:57
+ * Make time: 2021-01-28 12:38:32
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -209,6 +209,7 @@ typedef struct __packed
 #define   OIL_PRESSURE_OPEN_CIRCUIT_ALARM_ENB_ADR      1U
 #define   OIL_PRESSURE_ALARM_ENB_ADR                   2U
 #define   OIL_PRESSURE_PRE_ALARM_ENB_ADR               3U
+#define   OIL_PRESSURE_UNITS_ENB_ADR                   4U
 #define   COOLANT_TEMP_SENSOR_TYPE_ADR                 0U
 #define   COOLANT_TEMP_OPEN_CIRCUIT_ALARM_ENB_ADR      1U
 #define   COOLANT_HIGHT_TEMP_ALARM_ENB_ADR             2U

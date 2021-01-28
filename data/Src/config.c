@@ -160,12 +160,13 @@ eConfigReg moduleSetup =
    .units      = {' ', ' ', ' ', ' '},
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap oilPressureSetupBitMap[4U] = 
+const eConfigBitMap oilPressureSetupBitMap[5U] = 
 {
    { 15U, 0U },     // oilPressureSensorType
    { 16U, 4U },     // oilPressureOpenCircuitAlarmEnb
    { 32U, 5U },     // oilPressureAlarmEnb
    { 64U, 6U },     // oilPressurePreAlarmEnb
+   { 128U, 7U },     // oilPressureUnitsEnb
 };
 uint16_t oilPressureSetupValue[1U] = { 51U };
 const eConfigAttributes oilPressureSetupAtrib =
@@ -175,7 +176,7 @@ const eConfigAttributes oilPressureSetupAtrib =
    .max        = 63U,
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 4U,
+   .bitMapSize = 5U,
    .bitMap     = oilPressureSetupBitMap
 };
 eConfigReg oilPressureSetup =

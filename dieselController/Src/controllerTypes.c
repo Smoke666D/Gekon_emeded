@@ -243,15 +243,15 @@ TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
+TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer ) /* Проверить стоит ли сделать указатель */
 {
   TIMER_ERROR stat = TIMER_OK;
   if ( timer.id <= LOGIC_COUNTERS_SIZE )
   {
     if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {
-      aciveCounters  &= ~( 1U << timer.id );
-      targetArray[timer.id] = 0U;
+      aciveCounters         &= ~( 1U << timer.id );
+      targetArray[timer.id]  = 0U;
       if ( activeNumber > 0U )
       {
         activeNumber--;

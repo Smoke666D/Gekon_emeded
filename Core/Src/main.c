@@ -50,6 +50,7 @@
 #include "electro.h"
 #include "controller.h"
 #include "alarm.h"
+#include "measurement.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1353,6 +1354,7 @@ void StartDefaultTask(void *argument)
   vELECTROinit( &htim12 );                    /**/
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
+  vMEASUREMENTinit();                         /**/
   /* Infinite loop */
   for(;;)
   {

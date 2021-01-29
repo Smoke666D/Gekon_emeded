@@ -160,13 +160,12 @@ eConfigReg moduleSetup =
    .units      = {' ', ' ', ' ', ' '},
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap oilPressureSetupBitMap[5U] = 
+const eConfigBitMap oilPressureSetupBitMap[4U] = 
 {
    { 15U, 0U },     // oilPressureSensorType
    { 16U, 4U },     // oilPressureOpenCircuitAlarmEnb
    { 32U, 5U },     // oilPressureAlarmEnb
    { 64U, 6U },     // oilPressurePreAlarmEnb
-   { 128U, 7U },     // oilPressureUnitsEnb
 };
 uint16_t oilPressureSetupValue[1U] = { 51U };
 const eConfigAttributes oilPressureSetupAtrib =
@@ -176,7 +175,7 @@ const eConfigAttributes oilPressureSetupAtrib =
    .max        = 63U,
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 5U,
+   .bitMapSize = 4U,
    .bitMap     = oilPressureSetupBitMap
 };
 eConfigReg oilPressureSetup =
@@ -1526,8 +1525,8 @@ uint16_t genCurrentTrasformRatioLevelValue[1U] = { 1U };
 const eConfigAttributes genCurrentTrasformRatioLevelAtrib =
 {
    .adr        = 75U,
-   .min        = 1U,
-   .max        = 100U,
+   .min        = 5U,
+   .max        = 1500U,
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -2456,24 +2455,22 @@ eConfigReg logSetup =
    .units      = {' ', ' ', ' ', ' '},
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap recordSetupBitMap[16U] = 
+const eConfigBitMap recordSetupBitMap[14U] = 
 {
    { 1U, 0U },     // recordEnb
-   { 2U, 1U },     // recordTimeEnb
-   { 4U, 2U },     // recordDateEnb
-   { 8U, 3U },     // recordOilPressureEnb
-   { 16U, 4U },     // recordCoolantTempEnb
-   { 32U, 5U },     // recordFuelLevelEnb
-   { 64U, 6U },     // recordSpeedEnb
-   { 128U, 7U },     // recordInputAEnb
-   { 256U, 8U },     // recordInputBEnb
-   { 512U, 9U },     // recordInputCEnb
-   { 1024U, 10U },     // recordInputDEnb
-   { 2048U, 11U },     // recordVoltageGenEnb
-   { 4096U, 12U },     // recordFreqGenEnb
-   { 8192U, 13U },     // recordVoltageNetEnb
-   { 16384U, 14U },     // recordFreqNetEnb
-   { 32768U, 15U },     // recordVoltageAccEnb
+   { 2U, 1U },     // recordOilPressureEnb
+   { 4U, 2U },     // recordCoolantTempEnb
+   { 8U, 3U },     // recordFuelLevelEnb
+   { 16U, 4U },     // recordSpeedEnb
+   { 32U, 5U },     // recordInputAEnb
+   { 64U, 6U },     // recordInputBEnb
+   { 128U, 7U },     // recordInputCEnb
+   { 256U, 8U },     // recordInputDEnb
+   { 512U, 9U },     // recordVoltageGenEnb
+   { 1024U, 10U },     // recordFreqGenEnb
+   { 2048U, 11U },     // recordVoltageNetEnb
+   { 4096U, 12U },     // recordFreqNetEnb
+   { 8192U, 13U },     // recordVoltageAccEnb
 };
 uint16_t recordSetupValue[1U] = { 1U };
 const eConfigAttributes recordSetupAtrib =
@@ -2483,7 +2480,7 @@ const eConfigAttributes recordSetupAtrib =
    .max        = 65535U,
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 16U,
+   .bitMapSize = 14U,
    .bitMap     = recordSetupBitMap
 };
 eConfigReg recordSetup =

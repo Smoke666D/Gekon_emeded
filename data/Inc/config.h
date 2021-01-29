@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2021-01-28 12:38:32
+ * Make time: 2021-01-29 19:55:04
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -10,12 +10,12 @@
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   MAX_BIT_MAP_LENGTH           16U
+#define   MAX_BIT_MAP_LENGTH           14U
 #define   SETTING_REGISTER_NUMBER      123U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              89U     // bytes
+#define   CONFIG_MAX_SIZE              83U     // bytes
 #define   CONFIG_TOTAL_SIZE            1606U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
@@ -209,7 +209,6 @@ typedef struct __packed
 #define   OIL_PRESSURE_OPEN_CIRCUIT_ALARM_ENB_ADR      1U
 #define   OIL_PRESSURE_ALARM_ENB_ADR                   2U
 #define   OIL_PRESSURE_PRE_ALARM_ENB_ADR               3U
-#define   OIL_PRESSURE_UNITS_ENB_ADR                   4U
 #define   COOLANT_TEMP_SENSOR_TYPE_ADR                 0U
 #define   COOLANT_TEMP_OPEN_CIRCUIT_ALARM_ENB_ADR      1U
 #define   COOLANT_HIGHT_TEMP_ALARM_ENB_ADR             2U
@@ -292,21 +291,19 @@ typedef struct __packed
 #define   LOG_SAVE_WARNING_EVENTS_ENB_ADR              0U
 #define   LOG_POSITIVE_EVENTS_ENB_ADR                  1U
 #define   RECORD_ENB_ADR                               0U
-#define   RECORD_TIME_ENB_ADR                          1U
-#define   RECORD_DATE_ENB_ADR                          2U
-#define   RECORD_OIL_PRESSURE_ENB_ADR                  3U
-#define   RECORD_COOLANT_TEMP_ENB_ADR                  4U
-#define   RECORD_FUEL_LEVEL_ENB_ADR                    5U
-#define   RECORD_SPEED_ENB_ADR                         6U
-#define   RECORD_INPUT_A_ENB_ADR                       7U
-#define   RECORD_INPUT_B_ENB_ADR                       8U
-#define   RECORD_INPUT_C_ENB_ADR                       9U
-#define   RECORD_INPUT_D_ENB_ADR                       10U
-#define   RECORD_VOLTAGE_GEN_ENB_ADR                   11U
-#define   RECORD_FREQ_GEN_ENB_ADR                      12U
-#define   RECORD_VOLTAGE_NET_ENB_ADR                   13U
-#define   RECORD_FREQ_NET_ENB_ADR                      14U
-#define   RECORD_VOLTAGE_ACC_ENB_ADR                   15U
+#define   RECORD_OIL_PRESSURE_ENB_ADR                  1U
+#define   RECORD_COOLANT_TEMP_ENB_ADR                  2U
+#define   RECORD_FUEL_LEVEL_ENB_ADR                    3U
+#define   RECORD_SPEED_ENB_ADR                         4U
+#define   RECORD_INPUT_A_ENB_ADR                       5U
+#define   RECORD_INPUT_B_ENB_ADR                       6U
+#define   RECORD_INPUT_C_ENB_ADR                       7U
+#define   RECORD_INPUT_D_ENB_ADR                       8U
+#define   RECORD_VOLTAGE_GEN_ENB_ADR                   9U
+#define   RECORD_FREQ_GEN_ENB_ADR                      10U
+#define   RECORD_VOLTAGE_NET_ENB_ADR                   11U
+#define   RECORD_FREQ_NET_ENB_ADR                      12U
+#define   RECORD_VOLTAGE_ACC_ENB_ADR                   13U
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg versionController;
 extern eConfigReg versionFirmware;

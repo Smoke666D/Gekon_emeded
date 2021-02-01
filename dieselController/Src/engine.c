@@ -46,7 +46,14 @@ static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );
 
 
 #if ( DEBUG_SERIAL_STATUS > 0U )
-  static const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTIVE", "CURRENT" };
+  static const char* cSensorTypes[5U] =
+  {
+    "NONE",
+    "NORMAL_OPEN",
+    "NORMAL_CLOSE",
+    "RESISTIVE",
+    "CURRENT"
+  };
   static const char* engineCmdStr[8U] =
   {
     "NONE",
@@ -692,7 +699,6 @@ void vENGINEdataInit ( void )
   oil.pressure.cutout.event.type   = EVENT_OIL_SENSOR_ERROR;
   oil.pressure.cutout.trig         = TRIGGER_IDLE;
   oil.pressure.status              = SENSOR_STATUS_NORMAL;
-
   if ( oil.pressure.type == SENSOR_TYPE_NONE )
   {
     oil.alarm.error.enb     = PERMISSION_DISABLE;
@@ -711,7 +717,6 @@ void vENGINEdataInit ( void )
     oil.preAlarm.error.enb  = PERMISSION_DISABLE;
     oil.pressure.cutout.enb = PERMISSION_DISABLE;
   }
-
   oil.alarm.type                  = ALARM_LEVEL_LOW;
   oil.alarm.level                 = getValue( &oilPressureAlarmLevel );
   oil.alarm.timer.delay           = 0U;

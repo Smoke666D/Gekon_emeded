@@ -93,7 +93,8 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
       {
         for ( i=0U; i<activeErrorList.counter; i++ )
         {
-          if ( activeErrorList.array[i].event.type == record->event.type )
+          if ( ( activeErrorList.array[i].event.type   == record->event.type   ) &&
+               ( activeErrorList.array[i].event.action == record->event.action ) )
           {
             number = i;
             break;
@@ -119,7 +120,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
           if ( warningCounter > 0U )
           {
-            vFPOsetWarning( RELAY_OFF );
+            vFPOsetWarning( RELAY_ON );
           }
         }
         else
@@ -182,7 +183,10 @@ void vCONTROLLERprintActiveErrorList ( void )
 uint8_t uALARMisForList ( SYSTEM_EVENT* event )
 {
   uint8_t res = 0U;
-  if ( ( event->action == ACTION_WARNING ) || ( event->action == ACTION_EMERGENCY_STOP ) )
+  if ( ( event->action == ACTION_PLAN_STOP_AND_BAN_START ) ||
+       ( event->action  == ACTION_BAN_START              ) ||
+       ( event->action == ACTION_WARNING                 ) ||
+       ( event->action == ACTION_EMERGENCY_STOP          ) )
   {
     res = 1U;
   }

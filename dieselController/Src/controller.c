@@ -176,6 +176,12 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
       vENGINEsendCmd( ENGINE_CMD_PLAN_STOP );
       break;
 
+    case ACTION_PLAN_STOP_AND_BAN_START:
+      vENGINEsendCmd( ENGINE_CMD_PLAN_STOP_AND_BAN_START );
+      eLOGaddRecord( &record );
+      vFPOsetReadyToStart( RELAY_OFF );
+      break;
+
     case ACTION_BAN_START:
       vENGINEsendCmd( ENGINE_CMD_BAN_START );
       vFPOsetReadyToStart( RELAY_OFF );

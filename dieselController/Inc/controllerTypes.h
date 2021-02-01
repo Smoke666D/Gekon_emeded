@@ -23,8 +23,8 @@
 #define  LOGIC_COUNTERS_SIZE        10U
 #define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
-#define  LOG_TYPES_SIZE             37U
-#define  LOG_ACTION_SIZE            7U
+#define  LOG_TYPES_SIZE             39U
+#define  LOG_ACTION_SIZE            8U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
 #define  SYS_TIMER_SEMAPHORE_DELAY  200U
@@ -71,13 +71,14 @@ typedef enum
 
 typedef enum
 {
-  ACTION_NONE,           /* 0 */
-  ACTION_WARNING,        /* 1 */
-  ACTION_EMERGENCY_STOP, /* 2 */
-  ACTION_PLAN_STOP,      /* 3 */
-  ACTION_BAN_START,      /* 4 */
-  ACTION_AUTO_START,     /* 5 */
-  ACTION_AUTO_STOP,      /* 6 */
+  ACTION_NONE,                    /* 0 */
+  ACTION_WARNING,                 /* 1 */
+  ACTION_EMERGENCY_STOP,          /* 2 */
+  ACTION_PLAN_STOP,               /* 3 */
+  ACTION_PLAN_STOP_AND_BAN_START, /* 4 */
+  ACTION_BAN_START,               /* 5 */
+  ACTION_AUTO_START,              /* 6 */
+  ACTION_AUTO_STOP,               /* 7 */
 } SYSTEM_ACTION;
 
 typedef enum

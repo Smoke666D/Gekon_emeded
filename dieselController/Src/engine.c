@@ -370,13 +370,6 @@ void vENGINEmileageProcess ( void )
   vALARMcheck( &maintence.oil.alarm,  fix16_from_int( maintence.oil.data  ) );
   vALARMcheck( &maintence.air.alarm,  fix16_from_int( maintence.air.data  ) );
   vALARMcheck( &maintence.fuel.alarm, fix16_from_int( maintence.fuel.data ) );
-  if ( ( maintence.oil.alarm.error.status  == ALARM_STATUS_IDLE ) &&
-       ( maintence.air.alarm.error.status  == ALARM_STATUS_IDLE ) &&
-       ( maintence.fuel.alarm.error.status == ALARM_STATUS_IDLE ) &&
-       ( engine.banStart                   == PERMISSION_ENABLE ) )
-  {
-    engine.banStart = PERMISSION_DISABLE;
-  }
   if ( engine.status == ENGINE_STATUS_WORK )
   {
     switch ( maintence.status )
@@ -553,6 +546,24 @@ uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, fix16_t
        ( voltage  == 0U ) )
   {
     res = 1U;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+uint8_t uENGINEisUnban( void )
+{
+  uint8_t         res    = 1U;
+  uint8_t         size   = 0U;
+  uint8_t         i      = 0U;
+  LOG_RECORD_TYPE record = { 0U };
+  eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, NULL, &size );
+  for ( i=0U; i<size; i++ )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
+    if ( ( record.event.action == ACTION_BAN_START ) || ( record.event.action == ACTION_PLAN_STOP_AND_BAN_START ) )
+    {
+      res = 0U;
+    }
   }
   return res;
 }
@@ -845,7 +856,7 @@ void vENGINEdataInit ( void )
   fuel.lowAlarm.timer.delay             = getValue( &fuelLevelLowAlarmDelay );
   fuel.lowAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
   fuel.lowAlarm.error.event.type        = EVENT_FUEL_LOW_LEVEL;
-  fuel.lowAlarm.error.event.action      = ACTION_PLAN_STOP;
+  fuel.lowAlarm.error.event.action      = ACTION_PLAN_STOP_AND_BAN_START;
   fuel.lowAlarm.error.ack               = PERMISSION_ENABLE;
   fuel.lowAlarm.error.trig              = TRIGGER_IDLE;
   fuel.lowAlarm.error.status            = ALARM_STATUS_IDLE;
@@ -1367,10 +1378,6 @@ void vENGINEtask ( void* argument )
         {
           engine.banStart = PERMISSION_ENABLE;
         }
-        else if ( inputCmd == ENGINE_CMD_ALLOW_START )
-        {
-          engine.banStart = PERMISSION_DISABLE;
-        }
         /*------------------- Long actions command ---------------------*/
         else
         {
@@ -1439,6 +1446,10 @@ void vENGINEtask ( void* argument )
           }
         }
       }
+      if ( engine.cmd == ENGINE_CMD_PLAN_STOP_AND_BAN_START ) {
+        engine.banStart = PERMISSION_ENABLE;
+        engine.cmd      = ENGINE_CMD_PLAN_STOP;
+      }
     }
     /*------------------------------------------------------------------*/
     /*------------------------- Process inputs -------------------------*/
@@ -1459,6 +1470,16 @@ void vENGINEtask ( void* argument )
     /*--------------------- Statistic calculation ----------------------*/
     /*------------------------------------------------------------------*/
     vENGINEmileageProcess();
+    /*------------------------------------------------------------------*/
+    /*-------------------- Engine ban start check ----------------------*/
+    /*------------------------------------------------------------------*/
+    if (engine.banStart == PERMISSION_ENABLE )
+    {
+      if ( uENGINEisUnban() > 0U )
+      {
+        engine.banStart = PERMISSION_DISABLE;
+      }
+    }
     /*------------------------------------------------------------------*/
     /*------------------------- Input commands -------------------------*/
     /*------------------------------------------------------------------*/
@@ -1841,9 +1862,6 @@ void vENGINEtask ( void* argument )
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_BAN_START:
         engine.banStart = PERMISSION_ENABLE;
-        break;
-      case ENGINE_CMD_ALLOW_START:
-        engine.banStart = PERMISSION_DISABLE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

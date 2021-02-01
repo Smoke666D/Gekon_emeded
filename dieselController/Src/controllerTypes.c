@@ -116,6 +116,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "WARNING",
     "EMERGENCY_STOP",
     "PLAN_STOP",
+    "PLAN_STOP_AND_BAN_START",
     "BAN_START",
     "AUTO_START",
     "AUTO_STOP"

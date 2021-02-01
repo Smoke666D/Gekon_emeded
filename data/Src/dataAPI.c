@@ -590,10 +590,10 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
           {
             value[i] = configReg[adr]->value[i];
           }
-          *scale = configReg[adr]->scale;
+          *scale = configReg[adr]->atrib->scale;
           for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
           {
-            units[i] = configReg[adr]->units[i];
+            units[i] = configReg[adr]->atrib->units[i];
           }
           break;
         case DATA_API_CMD_WRITE:
@@ -603,11 +603,6 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
             for ( i=0U; i<configReg[adr]->atrib->len; i++ )
             {
               configReg[adr]->value[i] = value[i];
-            }
-            configReg[adr]->scale = *scale;
-            for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
-            {
-              configReg[adr]->units[i] = units[i];
             }
             xSemaphoreGive( xSemaphore );
           }

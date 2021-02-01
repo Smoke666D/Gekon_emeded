@@ -22,7 +22,7 @@
 #define  SEMAPHORE_TAKE_DELAY   ( ( TickType_t ) 100U )
 #define  NOTIFY_TARGETS_NUMBER  5U
 #define  EWA_ERASE_SIZE         8U
-#define  REWRITE_ALL_EEPROM     0U                     /* Rewrite all data in EEPROM to define at each start. Set it to 0 for normal work */
+#define  REWRITE_ALL_EEPROM     1U                     /* Rewrite all data in EEPROM to define at each start. Set it to 0 for normal work */
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/

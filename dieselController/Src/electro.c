@@ -123,7 +123,7 @@ void vELECTROpowerUsageProcessing ( void )
   uint8_t    saveFl   = 0U;
   if ( generator.state == ELECTRO_STATUS_LOAD )
   {
-    if ( uLOGICisTimer( generator.timer ) > 0U )
+    if ( uLOGICisTimer( &generator.timer ) > 0U )
     {
       vLOGICstartTimer( &generator.timer );
       eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
@@ -742,7 +742,7 @@ void vELECTROtask ( void* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
-              if ( uLOGICisTimer( electro.timer ) > 0U )
+              if ( uLOGICisTimer( &electro.timer ) > 0U )
               {
                 generator.state = ELECTRO_STATUS_IDLE;
                 vRELAYset( &mains.relay, RELAY_ON );
@@ -788,7 +788,7 @@ void vELECTROtask ( void* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
-              if ( uLOGICisTimer( electro.timer ) > 0U )
+              if ( uLOGICisTimer( &electro.timer ) > 0U )
               {
                 mains.state   = ELECTRO_STATUS_IDLE;
                 vRELAYset( &generator.relay, RELAY_ON );

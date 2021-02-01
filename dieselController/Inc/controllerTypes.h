@@ -292,8 +292,8 @@ void              vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t v
 void              vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
 void              vLOGICtimerHandler ( void );
 TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer );
-uint8_t           uLOGICisTimer ( SYSTEM_TIMER timer );
-TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER timer );
+uint8_t           uLOGICisTimer ( SYSTEM_TIMER* timer );
+TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER* timer );
 void              vLOGICtimerCallback ( void );
 void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
 void              vLOGICprintEvent ( SYSTEM_EVENT event );

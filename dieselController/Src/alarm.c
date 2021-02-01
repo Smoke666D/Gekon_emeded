@@ -330,7 +330,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       /*--------------------------------- Delay of trigger --------------------------------*/
       /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_WAIT_DELAY:
-        if ( uLOGICisTimer( alarm->timer ) > 0U )
+        if ( uLOGICisTimer( &alarm->timer ) > 0U )
         {
           if ( alarm->error.trig == TRIGGER_IDLE )
           {
@@ -345,7 +345,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
                   ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val < alarm->level ) ) )
         {
           alarm->error.status = ALARM_STATUS_IDLE;
-          vLOGICresetTimer( alarm->timer );
+          vLOGICresetTimer( &alarm->timer );
         }
         else
         {

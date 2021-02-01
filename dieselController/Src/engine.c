@@ -214,11 +214,11 @@ fix16_t fOILprocess ( void )
   }
   else if ( oil.pressure.type == SENSOR_TYPE_NORMAL_OPEN )
   {
-    vERRORcheck( &oil.alarm.error, uENGINEisSensorCutout( value ) );
+    vERRORcheck( &oil.alarm.error, !( uENGINEisSensorCutout( value ) ) );
   }
   else if ( oil.pressure.type == SENSOR_TYPE_NORMAL_CLOSE )
   {
-    vERRORcheck( &oil.alarm.error, !( uENGINEisSensorCutout( value ) ) );
+    vERRORcheck( &oil.alarm.error, uENGINEisSensorCutout( value ) );
   }
   else
   {
@@ -243,11 +243,11 @@ fix16_t fCOOLANTprocess ( void )
   }
   else if ( coolant.temp.type == SENSOR_TYPE_NORMAL_OPEN )
   {
-    vERRORcheck( &coolant.alarm.error, uENGINEisSensorCutout( value ) );
+    vERRORcheck( &coolant.alarm.error, !( uENGINEisSensorCutout( value ) ) );
   }
   else if ( coolant.temp.type == SENSOR_TYPE_NORMAL_CLOSE )
   {
-    vERRORcheck( &coolant.alarm.error, !( uENGINEisSensorCutout( value ) ) );
+    vERRORcheck( &coolant.alarm.error, uENGINEisSensorCutout( value ) );
   }
   else
   {

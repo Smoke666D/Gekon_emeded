@@ -903,10 +903,14 @@ void vELECTROtask ( void* argument )
         vLOGICprintDebug( ">>Electro         : Alarms set as normal work\r\n" );
         break;
       case ELECTRO_CMD_RESET_TO_IDLE:
-        mains.lowVoltageAlarm.error.active   = PERMISSION_ENABLE;
-        mains.hightVoltageAlarm.error.active = PERMISSION_ENABLE;
-        mains.lowFreqAlarm.error.active      = PERMISSION_ENABLE;
-        mains.hightFreqAlarm.error.active    = PERMISSION_ENABLE;
+        mains.lowVoltageAlarm.error.active        = PERMISSION_ENABLE;
+        mains.hightVoltageAlarm.error.active      = PERMISSION_ENABLE;
+        mains.lowFreqAlarm.error.active           = PERMISSION_ENABLE;
+        mains.hightFreqAlarm.error.active         = PERMISSION_ENABLE;
+        generator.lowFreqAlarm.error.active       = PERMISSION_DISABLE;
+        generator.lowFreqPreAlarm.error.active    = PERMISSION_DISABLE;
+        generator.lowVoltageAlarm.error.active    = PERMISSION_DISABLE;
+        generator.lowVoltagePreAlarm.error.active = PERMISSION_DISABLE;
         vERRORreset( &mains.lowVoltageAlarm.error          );
         vERRORreset( &mains.hightVoltageAlarm.error        );
         vERRORreset( &mains.lowFreqAlarm.error             );

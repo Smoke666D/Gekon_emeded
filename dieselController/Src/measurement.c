@@ -173,7 +173,7 @@ void vMEASUREMENTtask ( void* argument )
         {
           measurement.state   = MEASURMENT_STATE_START;
           measurement.counter = 0U;
-          vLOGICresetTimer( measurement.timer );
+          vLOGICresetTimer( &measurement.timer );
         }
         measurement.cmd = MEASURMENT_CMD_NONE;
         break;
@@ -191,7 +191,7 @@ void vMEASUREMENTtask ( void* argument )
         {
           if ( measurement.state == MEASURMENT_STATE_WAIT )
           {
-            vLOGICresetTimer( measurement.timer );
+            vLOGICresetTimer( &measurement.timer );
             measurement.state = MEASURMENT_STATE_IDLE;
           }
         }
@@ -223,7 +223,7 @@ void vMEASUREMENTtask ( void* argument )
           }
           break;
         case MEASURMENT_STATE_WAIT:
-          if ( uLOGICisTimer( measurement.timer ) > 0U )
+          if ( uLOGICisTimer( &measurement.timer ) > 0U )
           {
             measurement.state = MEASURMENT_STATE_WRITE;
           }

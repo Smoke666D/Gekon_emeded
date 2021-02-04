@@ -18,6 +18,7 @@
 #include "dataProces.h"
 #include "engine.h"
 #include "controllerTypes.h"
+#include "dataAPI.h"
 /*-------------------------------- Structures --------------------------------*/
 static QueueHandle_t     pFPIQueue     = NULL;
 static StaticQueue_t     xFPIQueue     = { 0U };
@@ -137,7 +138,7 @@ void vFPIcheckReset ( FPI* fpi )
 {
   if ( vFPIgetTrig( fpi ) == 0U )
   {
-    vLOGICresetTimer( fpi->timer );
+    vLOGICresetTimer( &fpi->timer );
     fpi->state = FPI_IDLE;
   }
   return;
@@ -328,7 +329,7 @@ void vFPITask ( void* argument )
               }
               break;
             case FPI_TRIGGERED:
-              if ( uLOGICisTimer( fpis[i].timer ) > 0U )
+              if ( uLOGICisTimer( &fpis[i].timer ) > 0U )
               {
                 event.level    = fpis[i].level;
                 event.function = fpis[i].function;

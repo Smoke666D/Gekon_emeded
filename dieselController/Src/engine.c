@@ -46,7 +46,14 @@ static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );
 
 
 #if ( DEBUG_SERIAL_STATUS > 0U )
-  static const char* cSensorTypes[5U] = { "NONE", "NORMAL_OPEN", "NORMAL_CLOSE", "RESISTIVE", "CURRENT" };
+  static const char* cSensorTypes[5U] =
+  {
+    "NONE",
+    "NORMAL_OPEN",
+    "NORMAL_CLOSE",
+    "RESISTIVE",
+    "CURRENT"
+  };
   static const char* engineCmdStr[8U] =
   {
     "NONE",
@@ -207,11 +214,11 @@ fix16_t fOILprocess ( void )
   }
   else if ( oil.pressure.type == SENSOR_TYPE_NORMAL_OPEN )
   {
-    vERRORcheck( &oil.alarm.error, uENGINEisSensorCutout( value ) );
+    vERRORcheck( &oil.alarm.error, !( uENGINEisSensorCutout( value ) ) );
   }
   else if ( oil.pressure.type == SENSOR_TYPE_NORMAL_CLOSE )
   {
-    vERRORcheck( &oil.alarm.error, !( uENGINEisSensorCutout( value ) ) );
+    vERRORcheck( &oil.alarm.error, uENGINEisSensorCutout( value ) );
   }
   else
   {
@@ -236,11 +243,11 @@ fix16_t fCOOLANTprocess ( void )
   }
   else if ( coolant.temp.type == SENSOR_TYPE_NORMAL_OPEN )
   {
-    vERRORcheck( &coolant.alarm.error, uENGINEisSensorCutout( value ) );
+    vERRORcheck( &coolant.alarm.error, !( uENGINEisSensorCutout( value ) ) );
   }
   else if ( coolant.temp.type == SENSOR_TYPE_NORMAL_CLOSE )
   {
-    vERRORcheck( &coolant.alarm.error, !( uENGINEisSensorCutout( value ) ) );
+    vERRORcheck( &coolant.alarm.error, uENGINEisSensorCutout( value ) );
   }
   else
   {
@@ -339,7 +346,7 @@ fix16_t fCHARGERprocess ( PERMISSION startup )
         }
         break;
       case CHARGER_STATUS_DELAY:
-        if ( uLOGICisTimer( charger.timer ) > 0U )
+        if ( uLOGICisTimer( &charger.timer ) > 0U )
         {
 
         }
@@ -363,13 +370,6 @@ void vENGINEmileageProcess ( void )
   vALARMcheck( &maintence.oil.alarm,  fix16_from_int( maintence.oil.data  ) );
   vALARMcheck( &maintence.air.alarm,  fix16_from_int( maintence.air.data  ) );
   vALARMcheck( &maintence.fuel.alarm, fix16_from_int( maintence.fuel.data ) );
-  if ( ( maintence.oil.alarm.error.status  == ALARM_STATUS_IDLE ) &&
-       ( maintence.air.alarm.error.status  == ALARM_STATUS_IDLE ) &&
-       ( maintence.fuel.alarm.error.status == ALARM_STATUS_IDLE ) &&
-       ( engine.banStart                   == PERMISSION_ENABLE ) )
-  {
-    engine.banStart = PERMISSION_DISABLE;
-  }
   if ( engine.status == ENGINE_STATUS_WORK )
   {
     switch ( maintence.status )
@@ -379,7 +379,7 @@ void vENGINEmileageProcess ( void )
         maintence.status = MAINTENCE_STATUS_RUN;
         break;
       case MAINTENCE_STATUS_RUN:
-        if ( uLOGICisTimer( maintence.timer ) > 0U )
+        if ( uLOGICisTimer( &maintence.timer ) > 0U )
         {
           eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_WORK_MINUTES_ADR, &data );
           if ( data >= 60U )
@@ -430,14 +430,14 @@ void vENGINEmileageProcess ( void )
         break;
       default:
         maintence.status = MAINTENCE_STATUS_STOP;
-        vLOGICresetTimer( maintence.timer );
+        vLOGICresetTimer( &maintence.timer );
         break;
     }
   }
   else if ( maintence.status != MAINTENCE_STATUS_STOP )
   {
     maintence.status = MAINTENCE_STATUS_STOP;
-    vLOGICresetTimer( maintence.timer );
+    vLOGICresetTimer( &maintence.timer );
   }
   else
   {
@@ -546,6 +546,24 @@ uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, fix16_t
        ( voltage  == 0U ) )
   {
     res = 1U;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+uint8_t uENGINEisUnban( void )
+{
+  uint8_t         res    = 1U;
+  uint8_t         size   = 0U;
+  uint8_t         i      = 0U;
+  LOG_RECORD_TYPE record = { 0U };
+  eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, NULL, &size );
+  for ( i=0U; i<size; i++ )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
+    if ( ( record.event.action == ACTION_BAN_START ) || ( record.event.action == ACTION_PLAN_STOP_AND_BAN_START ) )
+    {
+      res = 0U;
+    }
   }
   return res;
 }
@@ -692,7 +710,6 @@ void vENGINEdataInit ( void )
   oil.pressure.cutout.event.type   = EVENT_OIL_SENSOR_ERROR;
   oil.pressure.cutout.trig         = TRIGGER_IDLE;
   oil.pressure.status              = SENSOR_STATUS_NORMAL;
-
   if ( oil.pressure.type == SENSOR_TYPE_NONE )
   {
     oil.alarm.error.enb     = PERMISSION_DISABLE;
@@ -711,7 +728,6 @@ void vENGINEdataInit ( void )
     oil.preAlarm.error.enb  = PERMISSION_DISABLE;
     oil.pressure.cutout.enb = PERMISSION_DISABLE;
   }
-
   oil.alarm.type                  = ALARM_LEVEL_LOW;
   oil.alarm.level                 = getValue( &oilPressureAlarmLevel );
   oil.alarm.timer.delay           = 0U;
@@ -840,7 +856,7 @@ void vENGINEdataInit ( void )
   fuel.lowAlarm.timer.delay             = getValue( &fuelLevelLowAlarmDelay );
   fuel.lowAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
   fuel.lowAlarm.error.event.type        = EVENT_FUEL_LOW_LEVEL;
-  fuel.lowAlarm.error.event.action      = ACTION_PLAN_STOP;
+  fuel.lowAlarm.error.event.action      = ACTION_PLAN_STOP_AND_BAN_START;
   fuel.lowAlarm.error.ack               = PERMISSION_ENABLE;
   fuel.lowAlarm.error.trig              = TRIGGER_IDLE;
   fuel.lowAlarm.error.status            = ALARM_STATUS_IDLE;
@@ -1362,10 +1378,6 @@ void vENGINEtask ( void* argument )
         {
           engine.banStart = PERMISSION_ENABLE;
         }
-        else if ( inputCmd == ENGINE_CMD_ALLOW_START )
-        {
-          engine.banStart = PERMISSION_DISABLE;
-        }
         /*------------------- Long actions command ---------------------*/
         else
         {
@@ -1434,6 +1446,10 @@ void vENGINEtask ( void* argument )
           }
         }
       }
+      if ( engine.cmd == ENGINE_CMD_PLAN_STOP_AND_BAN_START ) {
+        engine.banStart = PERMISSION_ENABLE;
+        engine.cmd      = ENGINE_CMD_PLAN_STOP;
+      }
     }
     /*------------------------------------------------------------------*/
     /*------------------------- Process inputs -------------------------*/
@@ -1454,6 +1470,16 @@ void vENGINEtask ( void* argument )
     /*--------------------- Statistic calculation ----------------------*/
     /*------------------------------------------------------------------*/
     vENGINEmileageProcess();
+    /*------------------------------------------------------------------*/
+    /*-------------------- Engine ban start check ----------------------*/
+    /*------------------------------------------------------------------*/
+    if (engine.banStart == PERMISSION_ENABLE )
+    {
+      if ( uENGINEisUnban() > 0U )
+      {
+        engine.banStart = PERMISSION_DISABLE;
+      }
+    }
     /*------------------------------------------------------------------*/
     /*------------------------- Input commands -------------------------*/
     /*------------------------------------------------------------------*/
@@ -1521,12 +1547,12 @@ void vENGINEtask ( void* argument )
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;
                 starter.status = STARTER_CONTROL_BLOCK;
-                vLOGICresetTimer( commonTimer );
+                vLOGICresetTimer( &commonTimer );
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer );
                 vLOGICprintStarterStatus( starter.status );
               }
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 starter.set( RELAY_OFF );
                 if ( starter.iteration < starter.attempts )
@@ -1547,14 +1573,14 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_CRANK_DELAY:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 starter.status = STARTER_READY;
                 vLOGICprintStarterStatus( starter.status );
               }
               break;
             case STARTER_CONTROL_BLOCK:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 commonTimer.delay = starter.idlingDelay;
                 vLOGICstartTimer( &commonTimer );
@@ -1572,7 +1598,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_IDLE_WORK:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 vRELAYset( &idleRelay, RELAY_OFF );
                 commonTimer.delay = starter.nominalDelay;
@@ -1582,7 +1608,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_MOVE_TO_NOMINAL:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 commonTimer.delay = starter.warmingDelay;
                 vLOGICstartTimer( &commonTimer );
@@ -1593,7 +1619,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_WARMING:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 starter.status   = STARTER_OK;
                 preHeater.active = PERMISSION_DISABLE;
@@ -1624,7 +1650,7 @@ void vENGINEtask ( void* argument )
               vSYSeventSend( event, NULL );
               break;
             default:
-              vLOGICresetTimer( commonTimer );
+              vLOGICresetTimer( &commonTimer );
               engine.status  = ENGINE_STATUS_FAIL_STARTING;
               engine.cmd     = ENGINE_CMD_NONE;
               starter.status = STARTER_FAIL;
@@ -1655,7 +1681,7 @@ void vENGINEtask ( void* argument )
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_COOLDOWN:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 planStop.status = STOP_WAIT_ELECTRO;
                 vELECTROsendCmd( ELECTRO_CMD_DISABLE_IDLE_ALARMS );
@@ -1677,7 +1703,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STOP_IDLE_COOLDOWN:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 oil.alarm.error.active    = PERMISSION_DISABLE;
                 oil.preAlarm.error.active = PERMISSION_DISABLE;
@@ -1692,7 +1718,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STOP_PROCESSING:
-              if ( uLOGICisTimer( commonTimer ) > 0U )
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 planStop.status = STOP_FAIL;
                 vLOGICprintPlanStopStatus( planStop.status );
@@ -1700,7 +1726,7 @@ void vENGINEtask ( void* argument )
               }
               if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), xADCGetGENLFreq(), oilVal, speedVal ) > 0U )
               {
-                vLOGICresetTimer( commonTimer );
+                vLOGICresetTimer( &commonTimer );
                 planStop.status = STOP_OK;
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
@@ -1726,7 +1752,7 @@ void vENGINEtask ( void* argument )
               vSYSeventSend( event, NULL );
               break;
             default:
-              vLOGICresetTimer( commonTimer );
+              vLOGICresetTimer( &commonTimer );
               planStop.status = STOP_FAIL;
               vLOGICprintPlanStopStatus( planStop.status );
               break;
@@ -1773,7 +1799,7 @@ void vENGINEtask ( void* argument )
             engine.status = ENGINE_STATUS_WORK_GOTO_NOMINAL;
             break;
           case ENGINE_STATUS_WORK_GOTO_NOMINAL:
-            if ( uLOGICisTimer( commonTimer ) > 0U )
+            if ( uLOGICisTimer( &commonTimer ) > 0U )
             {
               engine.status = ENGINE_STATUS_WORK;
               vLOGICprintEngineStatus( engine.status );
@@ -1810,10 +1836,9 @@ void vENGINEtask ( void* argument )
         engine.stopError.active   = PERMISSION_ENABLE;
         oil.alarm.error.active    = PERMISSION_DISABLE;
         oil.preAlarm.error.active = PERMISSION_DISABLE;
-
-        vLOGICresetTimer( commonTimer );
+        vLOGICresetTimer( &commonTimer );
         maintence.timer.id        = LOGIC_DEFAULT_TIMER_ID;
-        commonTimer.id            = LOGIC_DEFAULT_TIMER_ID;
+        //commonTimer.id            = LOGIC_DEFAULT_TIMER_ID;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/
@@ -1836,9 +1861,6 @@ void vENGINEtask ( void* argument )
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_BAN_START:
         engine.banStart = PERMISSION_ENABLE;
-        break;
-      case ENGINE_CMD_ALLOW_START:
-        engine.banStart = PERMISSION_DISABLE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

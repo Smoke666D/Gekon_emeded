@@ -157,7 +157,7 @@ void vUSBConfigToReport ( USB_REPORT* report, uint16_t adr )
   if ( adr < SETTING_REGISTER_NUMBER )
   {
     report->stat = USB_REPORT_STATE_OK;
-    shift        = uEncodeURI( configReg[adr]->units, MAX_UNITS_LENGTH, strBuffer );
+    shift        = uEncodeURI( configReg[adr]->atrib->units, MAX_UNITS_LENGTH, strBuffer );
     /*----------- Configuration value -----------*/
     for ( i=0U; i<configReg[adr]->atrib->len; i++ )
     {
@@ -165,7 +165,7 @@ void vUSBConfigToReport ( USB_REPORT* report, uint16_t adr )
     }
     count += 2U * configReg[adr]->atrib->len;
     /*----------- Configuration scale -----------*/
-    report->data[count] = ( uint8_t )( configReg[adr]->scale );
+    report->data[count] = ( uint8_t )( configReg[adr]->atrib->scale );
     count++;
     /*----------- Configuration units -----------*/
     for ( i=0U; i<shift; i++ )

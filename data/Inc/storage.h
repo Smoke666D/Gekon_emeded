@@ -68,7 +68,6 @@ EEPROM_STATUS eSTORAGEreadLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
 EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, const LOG_RECORD_TYPE* record );
 EEPROM_STATUS eSTORAGEsavePassword ( void );
 EEPROM_STATUS eSTORAGEloadPassword ( void );
-
 EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* data );
 EEPROM_STATUS eSTORAGEeraseMeasurement ( void );
 EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint16_t* data );

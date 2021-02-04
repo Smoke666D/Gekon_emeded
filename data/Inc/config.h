@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2021-01-29 20:39:55
+ * Make time: 2021-02-04 09:16:06
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -62,20 +62,20 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint16_t         adr;                     // R
-  uint16_t         min;                     // R
-  uint16_t         max;                     // R
-  int8_t           scale;                   // R
-  uint16_t         units[MAX_UNITS_LENGTH]; // R
-  CONFIG_TYPE      type;                    // R
-  uint8_t          len;                     // R
-  uint8_t          bitMapSize;              // R
-  eConfigBitMap*   bitMap;                  // R
+  uint16_t              adr;                     // R
+  uint16_t              min;                     // R
+  uint16_t              max;                     // R
+  int8_t                scale;                   // R
+  uint16_t              units[MAX_UNITS_LENGTH]; // R
+  CONFIG_TYPE           type;                    // R
+  uint8_t               len;                     // R
+  uint8_t               bitMapSize;              // R
+  eConfigBitMap const*  bitMap;                  // R
 } eConfigAttributes;
 
 typedef struct __packed
 {
-  const eConfigAttributes* atrib;  // R
+  eConfigAttributes const* atrib;  // R
   uint16_t*                value;  // RW
 } eConfigReg;
 /*---------------------- Register addresses ----------------------------*/

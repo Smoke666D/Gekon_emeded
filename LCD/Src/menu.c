@@ -386,6 +386,8 @@ void vMenuTask ( void )
             }
             break;
           case stop_key:
+          case start_key:
+          case auto_key:
             key = TempEvent.KeyCode | BRAKECODE;
             break;
           default:
@@ -1025,6 +1027,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
       break;
     case FUEL_LEVEL:
+
       eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
       fix16_to_str( temp, Data, 0U );
      break;

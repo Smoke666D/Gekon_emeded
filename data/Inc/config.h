@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2021-02-04 09:16:06
+ * Make time: 2021-02-04 12:56:12
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -16,7 +16,7 @@
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
 #define   CONFIG_MAX_SIZE              83U     // bytes
-#define   CONFIG_TOTAL_SIZE            1606U   // bytes
+#define   CONFIG_TOTAL_SIZE            499U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )

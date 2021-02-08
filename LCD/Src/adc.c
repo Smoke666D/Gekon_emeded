@@ -357,6 +357,7 @@ void vADCNetDataUpdate()
 void vADCGeneratorDataUpdate()
 {
   EventBits_t GenFlag;
+  uint16_t tempdata;
   fix16_t temp;
   GenFlag = xEventGroupGetBits(xADCEvent);
   if (GenFlag & GEN_UPDATE)
@@ -384,12 +385,14 @@ void vADCGeneratorDataUpdate()
     }
 
     xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
-
+//    genCurrentTrasformRatioLevel
     //Вычисление значения токов
-    //Пересчет данных с АЦП в значения тока на шутнирующих резисторах
-    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(xGEN_F1_CUR, xLCurCoof  );
-    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, xLCurCoof  );
-    GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(xGEN_F3_CUR, xLCurCoof  );
+    //Пересчет данных с АЦП в значения тока на шутнирующих резисторах и применяем коофицент трансформации для токовых измирительных трасформатров
+    eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);  //считываем коофицент трансформамции
+
+    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(fix16_mul(xGEN_F1_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F1_CUR, xLCurCoof  );
+    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(fix16_mul(xGEN_F2_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F2_CUR, xLCurCoof  );
+    GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(fix16_mul(xGEN_F3_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F3_CUR, xLCurCoof  );
 
     //Расчзет косинуса Фм
     xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(uCosFiPeriod));  // 2Pi/uCurPeriod

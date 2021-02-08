@@ -299,7 +299,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       }
       break;
     case KEY_AUTO_BREAK:
-      key_ready &= AUTO_KEY_READY;
+      key_ready &= ~AUTO_KEY_READY;
       break;
     case KEY_START_BREAK:
       key_ready &= ~START_KEY_READY;

@@ -23,8 +23,8 @@
 #define  LOGIC_COUNTERS_SIZE        10U
 #define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
-#define  LOG_TYPES_SIZE             37U
-#define  LOG_ACTION_SIZE            7U
+#define  LOG_TYPES_SIZE             39U
+#define  LOG_ACTION_SIZE            8U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
 #define  SYS_TIMER_SEMAPHORE_DELAY  200U
@@ -32,14 +32,16 @@
 #define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
 #define  SEMAPHORE_AEL_TAKE_DELAY   10U
 /*------------------------ Tasks ---------------------------------------*/
-#define  FPI_TASK_PRIORITY          osPriorityLow
-#define  ENGINE_TASK_PRIORITY       osPriorityLow     /* Engine and Electro priority need to be equal */
-#define  ELECTRO_TASK_PRIORITY      osPriorityLow     /* Engine and Electro priority need to be equal */
-#define  CONTROLLER_TASK_PRIORITY   osPriorityNormal
-#define  FPI_TASK_STACK_SIZE        1024U
-#define  ENGINE_TASK_STACK_SIZE     1024U
-#define  ELECTRO_TASK_STACK_SIZE    1024U
-#define  CONTROLLER_TASK_STACK_SIZE 1024U
+#define  FPI_TASK_PRIORITY           osPriorityLow
+#define  ENGINE_TASK_PRIORITY        osPriorityLow     /* Engine and Electro priority need to be equal */
+#define  ELECTRO_TASK_PRIORITY       osPriorityLow     /* Engine and Electro priority need to be equal */
+#define  CONTROLLER_TASK_PRIORITY    osPriorityNormal
+#define  MEASUREMENT_TASK_PRIORITY   osPriorityLow
+#define  FPI_TASK_STACK_SIZE         1024U
+#define  ENGINE_TASK_STACK_SIZE      1024U
+#define  ELECTRO_TASK_STACK_SIZE     1024U
+#define  CONTROLLER_TASK_STACK_SIZE  1024U
+#define  MEASUREMENT_TASK_STACK_SIZE 1024U
 
 #define  OIL_SENSOR_SOURCE          xADCGetSOP
 #define  FUEL_SENSOR_SOURCE         xADCGetSFL
@@ -69,13 +71,14 @@ typedef enum
 
 typedef enum
 {
-  ACTION_NONE,           /* 0 */
-  ACTION_WARNING,        /* 1 */
-  ACTION_EMERGENCY_STOP, /* 2 */
-  ACTION_PLAN_STOP,      /* 3 */
-  ACTION_BAN_START,      /* 4 */
-  ACTION_AUTO_START,     /* 5 */
-  ACTION_AUTO_STOP,      /* 6 */
+  ACTION_NONE,                    /* 0 */
+  ACTION_WARNING,                 /* 1 */
+  ACTION_EMERGENCY_STOP,          /* 2 */
+  ACTION_PLAN_STOP,               /* 3 */
+  ACTION_PLAN_STOP_AND_BAN_START, /* 4 */
+  ACTION_BAN_START,               /* 5 */
+  ACTION_AUTO_START,              /* 6 */
+  ACTION_AUTO_STOP,               /* 7 */
 } SYSTEM_ACTION;
 
 typedef enum
@@ -289,8 +292,8 @@ void              vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t v
 void              vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
 void              vLOGICtimerHandler ( void );
 TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer );
-uint8_t           uLOGICisTimer ( SYSTEM_TIMER timer );
-TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER timer );
+uint8_t           uLOGICisTimer ( SYSTEM_TIMER* timer );
+TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER* timer );
 void              vLOGICtimerCallback ( void );
 void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
 void              vLOGICprintEvent ( SYSTEM_EVENT event );

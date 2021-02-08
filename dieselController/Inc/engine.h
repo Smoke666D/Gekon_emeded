@@ -48,16 +48,16 @@ typedef enum
 
 typedef enum
 {
-  ENGINE_CMD_NONE,                 /* 0 */
-  ENGINE_CMD_START,                /* 1 Ignition */
-  ENGINE_CMD_PLAN_STOP,            /* 2 */
-  ENGINE_CMD_PLAN_STOP_WITH_DELAY, /* 3 */
-  ENGINE_CMD_GOTO_IDLE,            /* 4 */
-  ENGINE_CMD_GOTO_NORMAL,          /* 5 */
-  ENGINE_CMD_EMEGENCY_STOP,        /* 6 */
-  ENGINE_CMD_RESET_TO_IDLE,        /* 7 */
-  ENGINE_CMD_BAN_START,            /* 8 */
-  ENGINE_CMD_ALLOW_START,          /* 9 */
+  ENGINE_CMD_NONE,                    /*  0 */
+  ENGINE_CMD_START,                   /*  1 Ignition */
+  ENGINE_CMD_PLAN_STOP,               /*  2 */
+  ENGINE_CMD_PLAN_STOP_WITH_DELAY,    /*  3 */
+  ENGINE_CMD_GOTO_IDLE,               /*  4 */
+  ENGINE_CMD_GOTO_NORMAL,             /*  5 */
+  ENGINE_CMD_EMEGENCY_STOP,           /*  6 */
+  ENGINE_CMD_RESET_TO_IDLE,           /*  7 */
+  ENGINE_CMD_BAN_START,               /*  8 */
+  ENGINE_CMD_PLAN_STOP_AND_BAN_START, /* 10 */
 } ENGINE_COMMAND;
 
 typedef enum

@@ -55,10 +55,11 @@ typedef enum
   EEPROM_OK,            /* Command done and bus is free for new one */
   EEPROM_BUSY,          /* Some process in progress */
   EEPROM_WRITE_DISABLE, /* Write disable by W pin */
-  EEPROM_OVER_PAGE,	/* Try to write over one page */
+  EEPROM_OVER_PAGE,	    /* Try to write over one page */
   EEPROM_OVER_ROLL,     /* Try to read over end of memory */
   EEPROM_ADR_ERROR,     /* Try to get access over address */
   EEPROM_INIT_ERROR,    /* No SPI structure*/
+  EEPROM_SIZE_ERROR,    /* Size control error */
   EEPROM_ERROR,         /* Other errors */
 } EEPROM_STATUS;
 

@@ -123,7 +123,7 @@ void vELECTROpowerUsageProcessing ( void )
   uint8_t    saveFl   = 0U;
   if ( generator.state == ELECTRO_STATUS_LOAD )
   {
-    if ( uLOGICisTimer( generator.timer ) > 0U )
+    if ( uLOGICisTimer( &generator.timer ) > 0U )
     {
       vLOGICstartTimer( &generator.timer );
       eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
@@ -193,21 +193,28 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
     case ELECTRO_CURRENT_STATUS_OVER_TRIG:
       if ( current >= alarm->cutout.current )
       {
-        alarm->over.delay = fIDMTcalcTemp( current, alarm->over.current );
-        if ( alarm->tim->Instance->CNT >= uSecToTic( alarm->over.delay ) )
-        {
-          vSYSeventSend( alarm->over.event, NULL );
-          alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
-        }
+        alarm->state = ELECTRO_CURRENT_STATUS_CUTOUT_TRIG;
       }
       else
       {
-        alarm->state = ELECTRO_CURRENT_STATUS_OVER_COOLDOWN;
+        if ( current >= alarm->over.current )
+        {
+          alarm->over.delay = fIDMTcalcTemp( current, alarm->over.current );
+          if ( alarm->tim->Instance->CNT >= uSecToTic( alarm->over.delay ) )
+          {
+            vSYSeventSend( alarm->over.event, NULL );
+            alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
+          }
+        }
+        else
+        {
+          alarm->state = ELECTRO_CURRENT_STATUS_OVER_COOLDOWN;
+        }
       }
       break;
     /*--------------------------------------------------------------------------------*/
     case ELECTRO_CURRENT_STATUS_OVER_COOLDOWN:
-      if ( current >= alarm->cutout.current )
+      if ( current >= alarm->over.current )
       {
         alarm->state = ELECTRO_CURRENT_STATUS_OVER_TRIG;
       }
@@ -216,10 +223,9 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
         if ( alarm->tim->Instance->CNT >= alarm->over.delay )
         {
           alarm->state = ELECTRO_CURRENT_STATUS_IDLE;
+          HAL_TIM_Base_Stop( alarm->tim );
         }
       }
-      alarm->state = ELECTRO_CURRENT_STATUS_IDLE;
-      HAL_TIM_Base_Stop( alarm->tim );
       break;
     /*--------------------------------------------------------------------------------*/
     case ELECTRO_CURRENT_STATUS_CUTOUT_TRIG:
@@ -499,11 +505,11 @@ void vELECTROdataInit ( void )
   generator.currentAlarm.over.current        = fix16_mul( generator.rating.current.nominal, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
   generator.currentAlarm.over.delay          = 0U;
   generator.currentAlarm.over.event.type     = EVENT_OVER_CURRENT;
-  generator.currentAlarm.over.event.action   = ACTION_PLAN_STOP;
+  generator.currentAlarm.over.event.action   = ACTION_PLAN_STOP_AND_BAN_START;
   generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current.nominal, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
   generator.currentAlarm.cutout.delay        = 0U;
   generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
-  generator.currentAlarm.cutout.event.action = ACTION_PLAN_STOP;
+  generator.currentAlarm.cutout.event.action = ACTION_PLAN_STOP_AND_BAN_START;
   /*----------------------------------------------------------------------------*/
   generator.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_GEN );
   generator.relay.status = RELAY_OFF;
@@ -742,7 +748,7 @@ void vELECTROtask ( void* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
-              if ( uLOGICisTimer( electro.timer ) > 0U )
+              if ( uLOGICisTimer( &electro.timer ) > 0U )
               {
                 generator.state = ELECTRO_STATUS_IDLE;
                 vRELAYset( &mains.relay, RELAY_ON );
@@ -788,7 +794,7 @@ void vELECTROtask ( void* argument )
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
-              if ( uLOGICisTimer( electro.timer ) > 0U )
+              if ( uLOGICisTimer( &electro.timer ) > 0U )
               {
                 mains.state   = ELECTRO_STATUS_IDLE;
                 vRELAYset( &generator.relay, RELAY_ON );
@@ -903,10 +909,14 @@ void vELECTROtask ( void* argument )
         vLOGICprintDebug( ">>Electro         : Alarms set as normal work\r\n" );
         break;
       case ELECTRO_CMD_RESET_TO_IDLE:
-        mains.lowVoltageAlarm.error.active   = PERMISSION_ENABLE;
-        mains.hightVoltageAlarm.error.active = PERMISSION_ENABLE;
-        mains.lowFreqAlarm.error.active      = PERMISSION_ENABLE;
-        mains.hightFreqAlarm.error.active    = PERMISSION_ENABLE;
+        mains.lowVoltageAlarm.error.active        = PERMISSION_ENABLE;
+        mains.hightVoltageAlarm.error.active      = PERMISSION_ENABLE;
+        mains.lowFreqAlarm.error.active           = PERMISSION_ENABLE;
+        mains.hightFreqAlarm.error.active         = PERMISSION_ENABLE;
+        generator.lowFreqAlarm.error.active       = PERMISSION_DISABLE;
+        generator.lowFreqPreAlarm.error.active    = PERMISSION_DISABLE;
+        generator.lowVoltageAlarm.error.active    = PERMISSION_DISABLE;
+        generator.lowVoltagePreAlarm.error.active = PERMISSION_DISABLE;
         vERRORreset( &mains.lowVoltageAlarm.error          );
         vERRORreset( &mains.hightVoltageAlarm.error        );
         vERRORreset( &mains.lowFreqAlarm.error             );

@@ -10,7 +10,8 @@
 #define  OIL_Y_MAX_DEF       F16( 2U )
 #define  COOLANT_Y_MAX_DEF   F16( 250U )
 #define  FUEL_Y_MAX_DEF      F16( 100U )
-#define  RESIST_X_MAX_DEF    F16( 1048U )
+#define  RESIST_X_MAX_DEF    F16( 1500U )
+#define  CURRENT_X_MAX_DEF   F16( 20U )
 /*---------------------- Structures ------------------------------------*/
 SemaphoreHandle_t xCHARTSemaphore;
 eChartData oilSensorChart = {

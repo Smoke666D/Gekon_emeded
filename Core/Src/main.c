@@ -50,6 +50,7 @@
 #include "electro.h"
 #include "controller.h"
 #include "alarm.h"
+#include "measurement.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -251,7 +252,7 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick.
    *
    */
-   HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -1353,6 +1354,7 @@ void StartDefaultTask(void *argument)
   vELECTROinit( &htim12 );                    /**/
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
+  vMEASUREMENTinit();                         /**/
   /* Infinite loop */
   for(;;)
   {

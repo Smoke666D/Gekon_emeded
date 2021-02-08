@@ -176,6 +176,12 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
       vENGINEsendCmd( ENGINE_CMD_PLAN_STOP );
       break;
 
+    case ACTION_PLAN_STOP_AND_BAN_START:
+      vENGINEsendCmd( ENGINE_CMD_PLAN_STOP_AND_BAN_START );
+      eLOGaddRecord( &record );
+      vFPOsetReadyToStart( RELAY_OFF );
+      break;
+
     case ACTION_BAN_START:
       vENGINEsendCmd( ENGINE_CMD_BAN_START );
       vFPOsetReadyToStart( RELAY_OFF );
@@ -227,7 +233,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       break;
 
     case CONTROLLER_TURNING_START_DELAY:
-      if ( uLOGICisTimer( controller.timer ) > 0U )
+      if ( uLOGICisTimer( &controller.timer ) > 0U )
       {
         stopState = CONTROLLER_TURNING_RELOAD;
         vLOGICprintDebug( ">>Plan stop       : Turn to mains\r\n" );
@@ -236,7 +242,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       {
         controller.state = CONTROLLER_STATUS_WORK;
         stopState        = CONTROLLER_TURNING_IDLE;
-        vLOGICresetTimer( controller.timer );
+        vLOGICresetTimer( &controller.timer );
         vLOGICprintDebug( ">>Plan stop       : Cancel\r\n" );
       }
       break;
@@ -306,7 +312,7 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
       break;
 
     case CONTROLLER_TURNING_START_DELAY:
-      if ( uLOGICisTimer( controller.timer ) > 0U )
+      if ( uLOGICisTimer( &controller.timer ) > 0U )
       {
         startState = CONTROLLER_TURNING_READY;
       }
@@ -314,7 +320,7 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
       {
         controller.state = CONTROLLER_STATUS_IDLE;
         startState       = CONTROLLER_TURNING_IDLE;
-        vLOGICresetTimer( controller.timer );
+        vLOGICresetTimer( &controller.timer );
         vLOGICprintDebug( ">>Autostart       : Cancel\r\n" );
       }
       break;

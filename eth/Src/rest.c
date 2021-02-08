@@ -167,13 +167,13 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
 
   output[0U] = '{';
   position += uRESTmakeDigRecord( CONFIG_REG_ADR_STR,           reg->atrib->adr,   REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeSignedRecord( CONFIG_REG_SCALE_STR,      reg->scale,        REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeSignedRecord( CONFIG_REG_SCALE_STR,      reg->atrib->scale, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_LEN_STR,           reg->atrib->len,   REST_CONT_RECORD, &output[position] );
   position += uRESTmakeValueRecord( CONFIG_REG_VALUE_STR,       reg->value,        reg->atrib->len, reg->atrib->type , REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_MIN_STR,           reg->atrib->min,   REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_MAX_STR,           reg->atrib->max,   REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord( CONFIG_REG_UNITS_STR,         ( uint16_t* )( &( reg->units ) ),        MAX_UNITS_LENGTH, REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          ( uint16_t* )( &( reg->atrib->type ) ), 1U, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord( CONFIG_REG_UNITS_STR,         ( uint16_t* )( &( reg->atrib->units ) ), MAX_UNITS_LENGTH, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          ( uint16_t* )( &( reg->atrib->type ) ),  1U, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_BIT_MAP_SIZE_STR,  reg->atrib->bitMapSize, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeBitMapArray( reg->atrib->bitMapSize, reg->atrib->bitMap, &output[position] );
   position++;

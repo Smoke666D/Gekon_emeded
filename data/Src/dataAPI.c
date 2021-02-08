@@ -17,9 +17,10 @@ static SemaphoreHandle_t  xSemaphore     = NULL;
 static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static uint8_t       initDone     = 0U;
-static uint8_t       flTakeSource = 0U;
-static LOG_CASH_TYPE logCash      = { 0U };
+static uint8_t       initDone              = 0U;
+static uint8_t       flTakeSource          = 0U;
+static LOG_CASH_TYPE logCash               = { 0U };
+static uint16_t      measurementNumberCash = 0U;
 /*------------------------ Define -------------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -526,7 +527,7 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
             flTakeSource = 6U;
-            for ( i=0; i<( STORAGE_WEB_SIZE / EWA_ERASE_SIZE ); i++ )
+            for ( i=0U; i<( STORAGE_WEB_SIZE / EWA_ERASE_SIZE ); i++ )
             {
               if ( eEEPROMwriteMemory( ( STORAGE_EWA_ADR + i * EWA_ERASE_SIZE ), buf, EWA_ERASE_SIZE )  != EEPROM_OK )
               {
@@ -585,28 +586,23 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
       switch ( cmd )
       {
         case DATA_API_CMD_READ:
-          for ( i=0; i<configReg[adr]->atrib->len; i++ )
+          for ( i=0U; i<configReg[adr]->atrib->len; i++ )
           {
             value[i] = configReg[adr]->value[i];
           }
-          *scale = configReg[adr]->scale;
+          *scale = configReg[adr]->atrib->scale;
           for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
           {
-            units[i] = configReg[adr]->units[i];
+            units[i] = configReg[adr]->atrib->units[i];
           }
           break;
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
             flTakeSource = 7U;
-            for ( i=0; i<configReg[adr]->atrib->len; i++ )
+            for ( i=0U; i<configReg[adr]->atrib->len; i++ )
             {
               configReg[adr]->value[i] = value[i];
-            }
-            configReg[adr]->scale = *scale;
-            for ( i=0U; i<MAX_UNITS_LENGTH; i++ )
-            {
-              configReg[adr]->units[i] = units[i];
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -1153,7 +1149,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             }
             if ( res == DATA_API_STAT_OK )
             {
-              for ( i=0; i<configReg[adr]->atrib->len; i++ )
+              for ( i=0U; i<configReg[adr]->atrib->len; i++ )
               {
                 configReg[adr]->value[i] = data[i];
               }
@@ -1169,13 +1165,15 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
             flTakeSource = 21U;
-            if ( eSTORAGEwriteConfigs() != EEPROM_OK )
+            res = DATA_API_STAT_EEPROM_ERROR;
+            if ( eSTORAGEwriteConfigs() == EEPROM_OK )
             {
-              res = DATA_API_STAT_EEPROM_ERROR;
-            }
-            else
-            {
-              vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
+              if ( eSTORAGEeraseMeasurement() == EEPROM_OK )
+              {
+                measurementNumberCash = 0U;
+                res = DATA_API_STAT_OK;
+                vDATAAPIsendEventAll( DATA_API_REINIT_CONFIG );
+              }
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -1251,6 +1249,67 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
   {
     res = DATA_API_STAT_ADR_ERROR;
   }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+DATA_API_STATUS eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8_t length, uint16_t* data )
+{
+  DATA_API_STATUS res = DATA_API_STAT_OK;
+
+  if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
+  {
+    switch ( cmd )
+    {
+      case DATA_API_CMD_READ:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          if ( eSTORAGEreadMeasurement( *adr, length, data ) != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          xSemaphoreGive( xSemaphore );
+        }
+        break;
+      case DATA_API_CMD_ERASE:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          if ( eSTORAGEeraseMeasurement() != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          measurementNumberCash = 0U;
+          xSemaphoreGive( xSemaphore );
+        }
+        break;
+      case DATA_API_CMD_ADD:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+
+          if ( eSTORAGEaddMeasurement( measurementNumberCash, length, data ) != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          measurementNumberCash++;
+          xSemaphoreGive( xSemaphore );
+        }
+        break;
+      case DATA_API_CMD_COUNTER:
+        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        {
+          if ( eSTORAGEreadMeasurementCounter( adr ) != EEPROM_OK )
+          {
+            res = DATA_API_STAT_EEPROM_ERROR;
+          }
+          measurementNumberCash = *adr;
+          xSemaphoreGive( xSemaphore );
+        }
+        break;
+      default:
+        res = DATA_API_STAT_CMD_ERROR;
+        break;
+    }
+  }
+
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

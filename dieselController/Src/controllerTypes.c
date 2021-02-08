@@ -116,6 +116,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "WARNING",
     "EMERGENCY_STOP",
     "PLAN_STOP",
+    "PLAN_STOP_AND_BAN_START",
     "BAN_START",
     "AUTO_START",
     "AUTO_STOP"
@@ -243,15 +244,15 @@ TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
+TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER* timer ) /* Проверить стоит ли сделать указатель */
 {
   TIMER_ERROR stat = TIMER_OK;
-  if ( timer.id <= LOGIC_COUNTERS_SIZE )
+  if ( timer->id <= LOGIC_COUNTERS_SIZE )
   {
     if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {
-      aciveCounters  &= ~( 1U << timer.id );
-      targetArray[timer.id] = 0U;
+      aciveCounters         &= ~( 1U << timer->id );
+      targetArray[timer->id]  = 0U;
       if ( activeNumber > 0U )
       {
         activeNumber--;
@@ -260,7 +261,7 @@ TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
       {
         stat = TIMER_NO_SPACE;
       }
-      timer.id = LOGIC_DEFAULT_TIMER_ID;
+      timer->id = LOGIC_DEFAULT_TIMER_ID;
       xSemaphoreGive( xSYSTIMERsemaphore );
     }
     else
@@ -271,12 +272,12 @@ TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-uint8_t uLOGICisTimer ( SYSTEM_TIMER timer )
+uint8_t uLOGICisTimer ( SYSTEM_TIMER* timer )
 {
   uint8_t res = 0U;
-  if ( ( ( 1U << timer.id ) & aciveCounters ) )
+  if ( ( ( 1U << timer->id ) & aciveCounters ) )
   {
-    if ( targetArray[timer.id] <= counterArray[timer.id] )
+    if ( targetArray[timer->id] <= counterArray[timer->id] )
     {
       if ( vLOGICresetTimer( timer ) == TIMER_OK )
       {
@@ -397,7 +398,7 @@ void vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device )
         }
         break;
       case RELAY_DELAY_WORK:
-        if ( uLOGICisTimer( device->timer ) > 0U )
+        if ( uLOGICisTimer( &device->timer ) > 0U )
         {
           device->relay.set( RELAY_OFF );
           device->relay.status = RELAY_OFF;
@@ -442,7 +443,7 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
         device->status = RELAY_IMPULSE_START;
         vLOGICstartTimer( &device->timer );
       }
-      if ( ( device->status == RELAY_IMPULSE_START ) && ( uLOGICisTimer( device->timer ) > 0U ) )
+      if ( ( device->status == RELAY_IMPULSE_START ) && ( uLOGICisTimer( &device->timer ) > 0U ) )
       {
         device->status = RELAY_IMPULSE_DONE;
       }

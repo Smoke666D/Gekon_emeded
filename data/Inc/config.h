@@ -1,6 +1,6 @@
 /*
  * Configuration file from 'config.csv'
- * Make time: 2020-12-02 12:37:25
+ * Make time: 2021-02-04 09:16:06
  */
 /*----------------------------------------------------------------------*/
 #ifndef INC_CONFIG_H_
@@ -10,13 +10,13 @@
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   MAX_BIT_MAP_LENGTH           12U
-#define   SETTING_REGISTER_NUMBER      120U
+#define   MAX_BIT_MAP_LENGTH           14U
+#define   SETTING_REGISTER_NUMBER      123U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              77U     // bytes
-#define   CONFIG_TOTAL_SIZE            1570U   // bytes
+#define   CONFIG_MAX_SIZE              83U     // bytes
+#define   CONFIG_TOTAL_SIZE            1606U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )
@@ -62,21 +62,21 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint16_t         adr;         // R
-  uint16_t         min;         // R
-  uint16_t         max;         // R
-  CONFIG_TYPE      type;        // R
-  uint8_t          len;         // R
-  uint8_t          bitMapSize;  // R
-  eConfigBitMap*   bitMap;      // R
+  uint16_t              adr;                     // R
+  uint16_t              min;                     // R
+  uint16_t              max;                     // R
+  int8_t                scale;                   // R
+  uint16_t              units[MAX_UNITS_LENGTH]; // R
+  CONFIG_TYPE           type;                    // R
+  uint8_t               len;                     // R
+  uint8_t               bitMapSize;              // R
+  eConfigBitMap const*  bitMap;                  // R
 } eConfigAttributes;
 
 typedef struct __packed
 {
-  const eConfigAttributes* atrib;                   // R
-  int8_t                   scale;                   // RW
-  uint16_t*                value;                   // RW
-  uint16_t                 units[MAX_UNITS_LENGTH]; // RW
+  eConfigAttributes const* atrib;  // R
+  uint16_t*                value;  // RW
 } eConfigReg;
 /*---------------------- Register addresses ----------------------------*/
 #define   VERSION_CONTROLLER_ADR                                 0U
@@ -154,51 +154,54 @@ typedef struct __packed
 #define   GEN_RATED_FREQUENCY_LEVEL_ADR                          72U
 #define   GEN_CURRENT_PRIMARY_LEVEL_ADR                          73U
 #define   GEN_CURRENT_FULL_LOAD_RATING_LEVEL_ADR                 74U
-#define   GEN_ALARMS_ADR                                         75U
-#define   GEN_UNDER_VOLTAGE_ALARM_LEVEL_ADR                      76U
-#define   GEN_UNDER_VOLTAGE_PRE_ALARM_LEVEL_ADR                  77U
-#define   GEN_OVER_VOLTAGE_PRE_ALARM_LEVEL_ADR                   78U
-#define   GEN_OVER_VOLTAGE_ALARM_LEVEL_ADR                       79U
-#define   GEN_UNDER_FREQUENCY_ALARM_LEVEL_ADR                    80U
-#define   GEN_UNDER_FREQUENCY_PRE_ALARM_LEVEL_ADR                81U
-#define   GEN_OVER_FREQUENCY_PRE_ALARM_LEVEL_ADR                 82U
-#define   GEN_OVER_FREQUENCY_ALARM_LEVEL_ADR                     83U
-#define   GEN_OVER_CURRENT_THERMAL_PROTECTION_LEVEL_ADR          84U
-#define   GEN_OVER_CURRENT_CUTOFF_LEVEL_ADR                      85U
-#define   GEN_OVER_CURRENT_ALARM_LEVEL_ADR                       86U
-#define   GEN_OVER_CURRENT_ALARM_DELAY_ADR                       87U
-#define   GEN_CURRENT_OVERLOAD_PROTECTION_LEVEL_ADR              88U
-#define   GEN_CURRENT_OVERLOAD_PROTECTION_DELAY_ADR              89U
-#define   GEN_CURRENT_OVER_PHASE_IMBALANCE_LEVEL_ADR             90U
-#define   GEN_CURRENT_OVER_PHASE_IMBALANCE_DELAY_ADR             91U
-#define   MAINS_SETUP_ADR                                        92U
-#define   MAINS_ALARMS_ADR                                       93U
-#define   MAINS_UNDER_VOLTAGE_ALARM_LEVEL_ADR                    94U
-#define   MAINS_OVER_VOLTAGE_ALARM_LEVEL_ADR                     95U
-#define   MAINS_UNDER_FREQUENCY_ALARM_LEVEL_ADR                  96U
-#define   MAINS_OVER_FREQUENCY_ALARM_LEVEL_ADR                   97U
-#define   ENGINE_SETUP_ADR                                       98U
-#define   ENGINE_PRE_HEAT_LEVEL_ADR                              99U
-#define   ENGINE_PRE_HEAT_DELAY_ADR                              100U
-#define   STARTER_STOP_SETUP_ADR                                 101U
-#define   STARTER_STOP_GEN_FREQ_LEVEL_ADR                        102U
-#define   STARTER_STOP_OIL_PRESSURE_LEVEL_ADR                    103U
-#define   STARTER_STOP_CHARGE_ALTERNATOR_LEVEL_ADR               104U
-#define   STARTER_STOP_SPEED_LEVEL_ADR                           105U
-#define   BATTERY_ALARMS_ADR                                     106U
-#define   BATTERY_UNDER_VOLTAGE_LEVEL_ADR                        107U
-#define   BATTERY_UNDER_VOLTAGE_DELAY_ADR                        108U
-#define   BATTERY_OVER_VOLTAGE_LEVEL_ADR                         109U
-#define   BATTERY_OVER_VOLTAGE_DELAY_ADR                         110U
-#define   BATTERY_CHARGE_SHUTDOWN_LEVEL_ADR                      111U
-#define   BATTERY_CHARGE_SHUTDOWN_DELAY_ADR                      112U
-#define   BATTERY_CHARGE_WARNING_LEVEL_ADR                       113U
-#define   BATTERY_CHARGE_WARNING_DELAY_ADR                       114U
-#define   MAINTENANCE_ALARMS_ADR                                 115U
-#define   MAINTENANCE_ALARM_OIL_TIME_ADR                         116U
-#define   MAINTENANCE_ALARM_AIR_TIME_ADR                         117U
-#define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        118U
-#define   LOG_SETUP_ADR                                          119U
+#define   GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR                   75U
+#define   GEN_ALARMS_ADR                                         76U
+#define   GEN_UNDER_VOLTAGE_ALARM_LEVEL_ADR                      77U
+#define   GEN_UNDER_VOLTAGE_PRE_ALARM_LEVEL_ADR                  78U
+#define   GEN_OVER_VOLTAGE_PRE_ALARM_LEVEL_ADR                   79U
+#define   GEN_OVER_VOLTAGE_ALARM_LEVEL_ADR                       80U
+#define   GEN_UNDER_FREQUENCY_ALARM_LEVEL_ADR                    81U
+#define   GEN_UNDER_FREQUENCY_PRE_ALARM_LEVEL_ADR                82U
+#define   GEN_OVER_FREQUENCY_PRE_ALARM_LEVEL_ADR                 83U
+#define   GEN_OVER_FREQUENCY_ALARM_LEVEL_ADR                     84U
+#define   GEN_OVER_CURRENT_THERMAL_PROTECTION_LEVEL_ADR          85U
+#define   GEN_OVER_CURRENT_CUTOFF_LEVEL_ADR                      86U
+#define   GEN_OVER_CURRENT_ALARM_LEVEL_ADR                       87U
+#define   GEN_OVER_CURRENT_ALARM_DELAY_ADR                       88U
+#define   GEN_CURRENT_OVERLOAD_PROTECTION_LEVEL_ADR              89U
+#define   GEN_CURRENT_OVERLOAD_PROTECTION_DELAY_ADR              90U
+#define   GEN_CURRENT_OVER_PHASE_IMBALANCE_LEVEL_ADR             91U
+#define   GEN_CURRENT_OVER_PHASE_IMBALANCE_DELAY_ADR             92U
+#define   MAINS_SETUP_ADR                                        93U
+#define   MAINS_ALARMS_ADR                                       94U
+#define   MAINS_UNDER_VOLTAGE_ALARM_LEVEL_ADR                    95U
+#define   MAINS_OVER_VOLTAGE_ALARM_LEVEL_ADR                     96U
+#define   MAINS_UNDER_FREQUENCY_ALARM_LEVEL_ADR                  97U
+#define   MAINS_OVER_FREQUENCY_ALARM_LEVEL_ADR                   98U
+#define   ENGINE_SETUP_ADR                                       99U
+#define   ENGINE_PRE_HEAT_LEVEL_ADR                              100U
+#define   ENGINE_PRE_HEAT_DELAY_ADR                              101U
+#define   STARTER_STOP_SETUP_ADR                                 102U
+#define   STARTER_STOP_GEN_FREQ_LEVEL_ADR                        103U
+#define   STARTER_STOP_OIL_PRESSURE_LEVEL_ADR                    104U
+#define   STARTER_STOP_CHARGE_ALTERNATOR_LEVEL_ADR               105U
+#define   STARTER_STOP_SPEED_LEVEL_ADR                           106U
+#define   BATTERY_ALARMS_ADR                                     107U
+#define   BATTERY_UNDER_VOLTAGE_LEVEL_ADR                        108U
+#define   BATTERY_UNDER_VOLTAGE_DELAY_ADR                        109U
+#define   BATTERY_OVER_VOLTAGE_LEVEL_ADR                         110U
+#define   BATTERY_OVER_VOLTAGE_DELAY_ADR                         111U
+#define   BATTERY_CHARGE_SHUTDOWN_LEVEL_ADR                      112U
+#define   BATTERY_CHARGE_SHUTDOWN_DELAY_ADR                      113U
+#define   BATTERY_CHARGE_WARNING_LEVEL_ADR                       114U
+#define   BATTERY_CHARGE_WARNING_DELAY_ADR                       115U
+#define   MAINTENANCE_ALARMS_ADR                                 116U
+#define   MAINTENANCE_ALARM_OIL_TIME_ADR                         117U
+#define   MAINTENANCE_ALARM_AIR_TIME_ADR                         118U
+#define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        119U
+#define   LOG_SETUP_ADR                                          120U
+#define   RECORD_SETUP_ADR                                       121U
+#define   RECORD_INTERVAL_ADR                                    122U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   MODULE_TYPE_ADR                              0U
 #define   ALARM_ALL_BLOCK_ADR                          1U
@@ -287,6 +290,20 @@ typedef struct __packed
 #define   MAINTENANCE_ALARM_FUEL_ACTION_ADR            5U
 #define   LOG_SAVE_WARNING_EVENTS_ENB_ADR              0U
 #define   LOG_POSITIVE_EVENTS_ENB_ADR                  1U
+#define   RECORD_ENB_ADR                               0U
+#define   RECORD_OIL_PRESSURE_ENB_ADR                  1U
+#define   RECORD_COOLANT_TEMP_ENB_ADR                  2U
+#define   RECORD_FUEL_LEVEL_ENB_ADR                    3U
+#define   RECORD_SPEED_ENB_ADR                         4U
+#define   RECORD_INPUT_A_ENB_ADR                       5U
+#define   RECORD_INPUT_B_ENB_ADR                       6U
+#define   RECORD_INPUT_C_ENB_ADR                       7U
+#define   RECORD_INPUT_D_ENB_ADR                       8U
+#define   RECORD_VOLTAGE_GEN_ENB_ADR                   9U
+#define   RECORD_FREQ_GEN_ENB_ADR                      10U
+#define   RECORD_VOLTAGE_NET_ENB_ADR                   11U
+#define   RECORD_FREQ_NET_ENB_ADR                      12U
+#define   RECORD_VOLTAGE_ACC_ENB_ADR                   13U
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg versionController;
 extern eConfigReg versionFirmware;
@@ -363,6 +380,7 @@ extern eConfigReg genRatedApparentPowerLevel;
 extern eConfigReg genRatedFrequencyLevel;
 extern eConfigReg genCurrentPrimaryLevel;
 extern eConfigReg genCurrentFullLoadRatingLevel;
+extern eConfigReg genCurrentTrasformRatioLevel;
 extern eConfigReg genAlarms;
 extern eConfigReg genUnderVoltageAlarmLevel;
 extern eConfigReg genUnderVoltagePreAlarmLevel;
@@ -408,6 +426,8 @@ extern eConfigReg maintenanceAlarmOilTime;
 extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg logSetup;
+extern eConfigReg recordSetup;
+extern eConfigReg recordInterval;
 extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];
 extern const char*       dictionaryArray[SETTING_REGISTER_NUMBER];
 extern const fix16_t     scaleMulArray[CONFIG_SCALE_NUM];

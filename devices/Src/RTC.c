@@ -155,7 +155,12 @@ uint8_t decToBcd ( uint8_t num )
 {
   return ( ( ( num / 10U ) << 4U ) + ( num % 10U ) );
 }
-
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Check input time
+ * Input:  time structure
+ * Output: result of checking
+ */
 RTC_STATUS eVarifyTime ( RTC_TIME* time )
 {
   RTC_STATUS res = RTC_OK;
@@ -172,14 +177,19 @@ RTC_STATUS eVarifyTime ( RTC_TIME* time )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Check input alarm
+ * Input:  alarm structure
+ * Output: result of checking
+ */
 RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm )
 {
   RTC_STATUS res = RTC_OK;
-  if ( ( alarm->sec > RTC_SEC_MAX )   ||
-       ( alarm->min > RTC_MIN_MAX )   ||
+  if ( ( alarm->sec  > RTC_SEC_MAX )  ||
+       ( alarm->min  > RTC_MIN_MAX )  ||
        ( alarm->hour > RTC_HOUR_MAX ) ||
        ( alarm->wday < RTC_WDAY_MIN ) || ( alarm->wday > RTC_WDAY_MAX ) ||
-       ( alarm->day < RTC_DAY_MIN )   || ( alarm->day > RTC_DAY_MAX ) )
+       ( alarm->day  < RTC_DAY_MIN )  || ( alarm->day > RTC_DAY_MAX ) )
   {
     res = RTC_FORMAT_ERROR;
   }

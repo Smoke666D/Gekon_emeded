@@ -109,103 +109,112 @@ void vDATAAPIdataInit ( void )
   uint8_t       sr                                    = 0xFFU;
   uint16_t      i                                     = 0U;
   uint16_t      serialBuffer[serialNumber.atrib->len];
+  uint32_t      map[STORAGE_MAP_SIZE / 4U]            = { 0U };
 
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
-    res = eEEPROMreadMemory( STORAGE_SR_ADR, &sr, 1U );
-    if ( ( sr == STORAGE_SR_EMPTY ) || ( REWRITE_ALL_EEPROM > 0U ) )
+    res = eSTORAGEreadMap( map );
+    if ( res == EEPROM_OK )
     {
-      vSYSSerial( ">>EEPROM empty. All data is default.\n\r" );
-      vSYSgetUniqueID16( serialBuffer );                                                   /* Get serial number */
-      for ( i=0U; i<serialNumber.atrib->len; i++ )
+      res = eEEPROMreadMemory( STORAGE_SR_ADR, &sr, 1U );
+      if ( ( sr == STORAGE_SR_EMPTY        ) ||
+           ( REWRITE_ALL_EEPROM > 0U       ) ||
+           ( uSTORAGEcheckMap( map ) == 0U ) )
       {
-        serialNumber.value[i] = serialBuffer[i];
-      }
-      versionController.value[0U] = HARDWARE_VERSION;
-      versionFirmware.value[0U]   = SOFTWARE_VERSION;
-      res = eSTORAGEwriteConfigs();
-      if ( res == EEPROM_OK )
-      {
-        res = eSTORAGEwriteCharts();
+        vSYSSerial( ">>EEPROM empty. All data is default.\n\r" );
+        vSYSgetUniqueID16( serialBuffer );                                                   /* Get serial number */
+        for ( i=0U; i<serialNumber.atrib->len; i++ )
+        {
+          serialNumber.value[i] = serialBuffer[i];
+        }
+        versionController.value[0U] = HARDWARE_VERSION;
+        versionFirmware.value[0U]   = SOFTWARE_VERSION;
+        res = eSTORAGEwriteConfigs();
         if ( res == EEPROM_OK )
         {
-          for ( i=0U; i<FREE_DATA_SIZE; i++ )
-          {
-            res = eSTORAGEsaveFreeData( i );
-            if ( res == EEPROM_OK )
-            {
-              break;
-            }
-          }
+          res = eSTORAGEwriteCharts();
           if ( res == EEPROM_OK )
           {
-            res = eSTORAGEsavePassword();
-            if ( res == EEPROM_OK )
+            for ( i=0U; i<FREE_DATA_SIZE; i++ )
             {
-              sr  = 0x00U;
-              res = eEEPROMwriteMemory( STORAGE_SR_ADR, &sr, 1U );
+              res = eSTORAGEsaveFreeData( i );
               if ( res == EEPROM_OK )
               {
-                vSYSSerial( ">>EEPROM data initialization: done!\n\r" );
-                initDone = 1U;
+                break;
+              }
+            }
+            if ( res == EEPROM_OK )
+            {
+              res = eSTORAGEsavePassword();
+              if ( res == EEPROM_OK )
+              {
+                sr  = 0x00U;
+                res = eEEPROMwriteMemory( STORAGE_SR_ADR, &sr, 1U );
+                if ( res == EEPROM_OK )
+                {
+                  res = eSTORAGEwriteMap();
+                  if ( res == EEPROM_OK )
+                  {
+                    vSYSSerial( ">>EEPROM data initialization: done!\n\r" );
+                    initDone = 1U;
+                  }
+                }
               }
             }
           }
         }
-      }
-      if ( initDone == 0U )
-      {
-        vSYSSerial( ">>EEPROM data initialization: fail!\n\r" );
-      }
-    }
-    else
-    {
-      if ( eSTORAGEreadConfigs() == EEPROM_OK )
-      {
-        vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
-      }
-      else
-      {
-        vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
-      }
-
-      if ( eSTORAGEreadCharts() == EEPROM_OK )
-      {
-        vSYSSerial( ">>EEPROM charts read: done!\n\r" );
-      }
-      else
-      {
-        vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
-      }
-      for ( i=0U; i<FREE_DATA_SIZE; i++ )
-      {
-        res = eSTORAGEreadFreeData( i );
-        if ( res != EEPROM_OK )
+        if ( initDone == 0U )
         {
-          break;
+          vSYSSerial( ">>EEPROM data initialization: fail!\n\r" );
         }
       }
-      if ( res == EEPROM_OK )
-      {
-        vSYSSerial( ">>EEPROM free data read: done!\n\r" );
-      }
       else
       {
-        vSYSSerial( ">>EEPROM free data read: fail!\n\r" );
+        if ( eSTORAGEreadConfigs() == EEPROM_OK )
+        {
+          vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
+        }
+        else
+        {
+          vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
+        }
+        if ( eSTORAGEreadCharts() == EEPROM_OK )
+        {
+          vSYSSerial( ">>EEPROM charts read: done!\n\r" );
+        }
+        else
+        {
+          vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
+        }
+        for ( i=0U; i<FREE_DATA_SIZE; i++ )
+        {
+          res = eSTORAGEreadFreeData( i );
+          if ( res != EEPROM_OK )
+          {
+            break;
+          }
+        }
+        if ( res == EEPROM_OK )
+        {
+          vSYSSerial( ">>EEPROM free data read: done!\n\r" );
+        }
+        else
+        {
+          vSYSSerial( ">>EEPROM free data read: fail!\n\r" );
+        }
+        res = eSTORAGEloadPassword();
+        if ( res == EEPROM_OK )
+        {
+          vSYSSerial( ">>EEPROM password read: done!\n\r" );
+        }
+        else
+        {
+          vSYSSerial( ">>EEPROM password read: fail!\n\r" );
+        }
+        initDone = 1U;
       }
-
-      res = eSTORAGEloadPassword();
-      if ( res == EEPROM_OK )
-      {
-        vSYSSerial( ">>EEPROM password read: done!\n\r" );
-      }
-      else
-      {
-        vSYSSerial( ">>EEPROM password read: fail!\n\r" );
-      }
-      initDone = 1U;
+      xSemaphoreGive( xSemaphore );
     }
-    xSemaphoreGive( xSemaphore );
   }
   return;
 }

@@ -21,6 +21,7 @@
 #include "stdio.h"
 #include "alarm.h"
 #include "debug.h"
+#include "lcd.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE           engine              = { 0U };
 static OIL_TYPE              oil                 = { 0U };
@@ -43,6 +44,7 @@ static const fix16_t dryContactTrigLevel    = F16( 0x7FFFU );
 static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION );
 static const fix16_t oilTrashhold           = F16( 0.015 );
 static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );
+static const fix16_t fuelPrePumpingDelay    = F16( 1 );
 
 
 #if ( DEBUG_SERIAL_STATUS > 0U )
@@ -1345,6 +1347,16 @@ PERMISSION eENGINEisStartBan ( void )
   return engine.banStart;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eENGINEgetOilSensorState ( void )
+{
+  return oil.alarm.error.trig;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eENGINEgetCoolantSensorState ( void )
+{
+  return coolant.alarm.error.trig;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
@@ -1517,7 +1529,10 @@ void vENGINEtask ( void* argument )
               //charger.hightPreAlarm.error.active = PERMISSION_DISABLE;
               engine.status                      = ENGINE_STATUS_BUSY_STARTING;
               vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
+              vLCD_BrigthOFF();
               vRELAYset( &fuel.pump, RELAY_ON );
+              commonTimer.delay = fuelPrePumpingDelay;
+              vLOGICstartTimer( &commonTimer );
               if ( starter.idlingDelay != 0U )
               {
                 vRELAYset( &idleRelay, RELAY_ON );
@@ -1526,7 +1541,8 @@ void vENGINEtask ( void* argument )
               starter.status                     = STARTER_START_PREPARATION;
               break;
             case STARTER_START_PREPARATION:
-              if ( eELECTROgetAlarmStatus() == ELECTRO_ALARM_STATUS_START )
+              if ( ( eELECTROgetAlarmStatus()      == ELECTRO_ALARM_STATUS_START ) &&
+                   ( uLOGICisTimer( &commonTimer ) >  0U                         ) )
               {
                 starter.status   = STARTER_READY;
                 preHeater.active = PERMISSION_ENABLE;
@@ -1547,6 +1563,7 @@ void vENGINEtask ( void* argument )
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;
                 starter.status = STARTER_CONTROL_BLOCK;
+                vLCD_BrigthOn();
                 vLOGICresetTimer( &commonTimer );
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer );

@@ -368,16 +368,16 @@ fix16_t fGENERATORprocess ( void )
 void vELECTROdataInit ( void )
 {
   shortCircuitDividend = fix16_mul( shortCircuitTrippingCurve, shortCircuitConstant );
-
+  /*----------------------------------------------------------------------------*/
   electro.scheme      = getBitMap( &genSetup, GEN_AC_SYS_ADR );
   electro.state       = ELECTRO_PROC_STATUS_IDLE;
   electro.cmd         = ELECTRO_CMD_NONE;
   electro.timer.id    = 0U;
   electro.timer.delay = getValue( &timerTransferDelay );
-
+  /*----------------------------------------------------------------------------*/
   generator.timer.delay = powerUsageCalcTimeout;
   generator.timer.id    = LOGIC_DEFAULT_TIMER_ID;
-
+  /*----------------------------------------------------------------------------*/
   generator.enb                    = getBitMap( &genSetup, GEN_POWER_GENERATOR_CONTROL_ENB_ADR );
   generator.rating.power.active    = getValue( &genRatedActivePowerLevel );
   generator.rating.power.reactive  = getValue( &genRatedReactivePowerLevel );
@@ -387,8 +387,34 @@ void vELECTROdataInit ( void )
   generator.rating.current.primary = getValue( &genCurrentPrimaryLevel );
   generator.rating.current.nominal = getValue( &genCurrentFullLoadRatingLevel );
   /*----------------------------------------------------------------------------*/
-  generator.lowVoltageAlarm.error.enb          = getBitMap( &genAlarms, GEN_UNDER_VOLTAGE_ALARM_ENB_ADR );
-  generator.lowVoltageAlarm.error.active       = 0U;
+  if ( generator.enb == PERMISSION_ENABLE )
+  {
+    generator.lowVoltageAlarm.error.enb      = getBitMap( &genAlarms, GEN_UNDER_VOLTAGE_ALARM_ENB_ADR );
+    generator.lowVoltagePreAlarm.error.enb   = getBitMap( &genAlarms, GEN_UNDER_VOLTAGE_PRE_ALARM_ENB_ADR );
+    generator.hightVoltagePreAlarm.error.enb = getBitMap( &genAlarms, GEN_OVER_VOLTAGE_PRE_ALARM_ENB_ADR );
+    generator.hightVoltageAlarm.error.enb    = PERMISSION_ENABLE;
+    generator.lowFreqAlarm.error.enb         = getBitMap( &genAlarms, GEN_UNDER_FREQUENCY_ALARM_ENB_ADR );
+    generator.lowFreqPreAlarm.error.enb      = getBitMap( &genAlarms, GEN_UNDER_FREQUENCY_PRE_ALARM_ENB_ADR );
+    generator.hightFreqPreAlarm.error.enb    = getBitMap( &genAlarms, GEN_OVER_FREQUENCY_PRE_ALARM_ENB_ADR );
+    generator.hightFreqAlarm.error.enb       = getBitMap( &genAlarms, GEN_OVER_FREQUENCY_ALARM_ENB_ADR );
+    generator.phaseImbalanceAlarm.error.enb  = getBitMap( &genAlarms, GEN_CURRENT_OVER_PHASE_IMBALANCE_ENB_ADR );
+    generator.overloadAlarm.error.enb        = getBitMap( &genAlarms, GEN_CURRENT_OVERLOAD_PROTECTION_ENB_ADR );
+  }
+  else
+  {
+    generator.lowVoltageAlarm.error.enb      = PERMISSION_DISABLE;
+    generator.lowVoltagePreAlarm.error.enb   = PERMISSION_DISABLE;
+    generator.hightVoltagePreAlarm.error.enb = PERMISSION_DISABLE;
+    generator.hightVoltageAlarm.error.enb    = PERMISSION_DISABLE;
+    generator.lowFreqAlarm.error.enb         = PERMISSION_DISABLE;
+    generator.lowFreqPreAlarm.error.enb      = PERMISSION_DISABLE;
+    generator.hightFreqPreAlarm.error.enb    = PERMISSION_DISABLE;
+    generator.hightFreqAlarm.error.enb       = PERMISSION_DISABLE;
+    generator.phaseImbalanceAlarm.error.enb  = PERMISSION_DISABLE;
+    generator.overloadAlarm.error.enb        = PERMISSION_DISABLE;
+  }
+  /*----------------------------------------------------------------------------*/
+  generator.lowVoltageAlarm.error.active       = PERMISSION_DISABLE;
   generator.lowVoltageAlarm.type               = ALARM_LEVEL_LOW;
   generator.lowVoltageAlarm.level              = getValue( &genUnderVoltageAlarmLevel );
   generator.lowVoltageAlarm.timer.delay        = 0U;
@@ -397,8 +423,7 @@ void vELECTROdataInit ( void )
   generator.lowVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.lowVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.lowVoltagePreAlarm.error.enb          = getBitMap( &genAlarms, GEN_UNDER_VOLTAGE_PRE_ALARM_ENB_ADR );
-  generator.lowVoltagePreAlarm.error.active       = 0U;
+  generator.lowVoltagePreAlarm.error.active       = PERMISSION_DISABLE;
   generator.lowVoltagePreAlarm.type               = ALARM_LEVEL_LOW;
   generator.lowVoltagePreAlarm.level              = getValue( &genUnderVoltagePreAlarmLevel );
   generator.lowVoltagePreAlarm.timer.delay        = 0U;
@@ -407,8 +432,7 @@ void vELECTROdataInit ( void )
   generator.lowVoltagePreAlarm.error.event.action = ACTION_WARNING;
   generator.lowVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.hightVoltagePreAlarm.error.enb          = getBitMap( &genAlarms, GEN_OVER_VOLTAGE_PRE_ALARM_ENB_ADR );
-  generator.hightVoltagePreAlarm.error.active       = 0U;
+  generator.hightVoltagePreAlarm.error.active       = PERMISSION_DISABLE;
   generator.hightVoltagePreAlarm.type               = ALARM_LEVEL_HIGHT;
   generator.hightVoltagePreAlarm.level              = getValue( &genOverVoltagePreAlarmLevel );
   generator.hightVoltagePreAlarm.timer.delay        = 0U;
@@ -417,8 +441,7 @@ void vELECTROdataInit ( void )
   generator.hightVoltagePreAlarm.error.event.action = ACTION_WARNING;
   generator.hightVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.hightVoltageAlarm.error.enb          = 1U;
-  generator.hightVoltageAlarm.error.active       = 0U;
+  generator.hightVoltageAlarm.error.active       = PERMISSION_DISABLE;
   generator.hightVoltageAlarm.type               = ALARM_LEVEL_HIGHT;
   generator.hightVoltageAlarm.level              = getValue( &genOverVoltageAlarmLevel );
   generator.hightVoltageAlarm.timer.delay        = 0U;
@@ -427,8 +450,7 @@ void vELECTROdataInit ( void )
   generator.hightVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.hightVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.lowFreqAlarm.error.enb          = getBitMap( &genAlarms, GEN_UNDER_FREQUENCY_ALARM_ENB_ADR );
-  generator.lowFreqAlarm.error.active       = 0U;
+  generator.lowFreqAlarm.error.active       = PERMISSION_DISABLE;
   generator.lowFreqAlarm.type               = ALARM_LEVEL_LOW;
   generator.lowFreqAlarm.level              = getValue( &genUnderFrequencyAlarmLevel );
   generator.lowFreqAlarm.timer.delay        = 0U;
@@ -437,8 +459,7 @@ void vELECTROdataInit ( void )
   generator.lowFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.lowFreqAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.lowFreqPreAlarm.error.enb          = getBitMap( &genAlarms, GEN_UNDER_FREQUENCY_PRE_ALARM_ENB_ADR );
-  generator.lowFreqPreAlarm.error.active       = 0U;
+  generator.lowFreqPreAlarm.error.active       = PERMISSION_DISABLE;
   generator.lowFreqPreAlarm.type               = ALARM_LEVEL_LOW;
   generator.lowFreqPreAlarm.level              = getValue( &genUnderFrequencyPreAlarmLevel );
   generator.lowFreqPreAlarm.timer.delay        = 0U;
@@ -447,8 +468,7 @@ void vELECTROdataInit ( void )
   generator.lowFreqPreAlarm.error.event.action = ACTION_WARNING;
   generator.lowFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.hightFreqPreAlarm.error.enb          = getBitMap( &genAlarms, GEN_OVER_FREQUENCY_PRE_ALARM_ENB_ADR );
-  generator.hightFreqPreAlarm.error.active       = 0U;
+  generator.hightFreqPreAlarm.error.active       = PERMISSION_DISABLE;
   generator.hightFreqPreAlarm.type               = ALARM_LEVEL_HIGHT;
   generator.hightFreqPreAlarm.level              = getValue( &genOverFrequencyPreAlarmLevel );
   generator.hightFreqPreAlarm.timer.delay        = 0U;
@@ -457,8 +477,7 @@ void vELECTROdataInit ( void )
   generator.hightFreqPreAlarm.error.event.action = ACTION_WARNING;
   generator.hightFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.hightFreqAlarm.error.enb          = getBitMap( &genAlarms, GEN_OVER_FREQUENCY_ALARM_ENB_ADR );
-  generator.hightFreqAlarm.error.active       = 0U;
+  generator.hightFreqAlarm.error.active       = PERMISSION_DISABLE;
   generator.hightFreqAlarm.type               = ALARM_LEVEL_HIGHT;
   generator.hightFreqAlarm.level              = getValue( &genOverFrequencyAlarmLevel );
   generator.hightFreqAlarm.timer.delay        = 0U;
@@ -467,8 +486,7 @@ void vELECTROdataInit ( void )
   generator.hightFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
   generator.hightFreqAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.phaseImbalanceAlarm.error.enb        = getBitMap( &genAlarms, GEN_CURRENT_OVER_PHASE_IMBALANCE_ENB_ADR );
-  generator.phaseImbalanceAlarm.error.active     = 0U;
+  generator.phaseImbalanceAlarm.error.active     = PERMISSION_DISABLE;
   generator.phaseImbalanceAlarm.type             = ALARM_LEVEL_HIGHT;
   generator.phaseImbalanceAlarm.level            = getValue( &genCurrentOverPhaseImbalanceLevel );
   generator.phaseImbalanceAlarm.timer.delay      = getValue( &genCurrentOverPhaseImbalanceDelay );
@@ -484,8 +502,7 @@ void vELECTROdataInit ( void )
   }
   generator.phaseImbalanceAlarm.error.status = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.overloadAlarm.error.enb        = getBitMap( &genAlarms, GEN_CURRENT_OVERLOAD_PROTECTION_ENB_ADR );
-  generator.overloadAlarm.error.active     = 0U;
+  generator.overloadAlarm.error.active     = PERMISSION_DISABLE;
   generator.overloadAlarm.type             = ALARM_LEVEL_HIGHT;
   generator.overloadAlarm.level            = getValue( &genCurrentOverloadProtectionLevel );
   generator.overloadAlarm.timer.delay      = getValue( &genCurrentOverloadProtectionDelay );
@@ -553,27 +570,39 @@ void vELECTROdataInit ( void )
   mains.autoStart.status       = ALARM_STATUS_IDLE;
   mains.autoStart.trig         = TRIGGER_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.autoStop.ack          = PERMISSION_ENABLE;
-  mains.autoStop.active       = PERMISSION_ENABLE;
-  mains.autoStop.enb          = PERMISSION_ENABLE;
-  mains.autoStop.event.action = ACTION_AUTO_STOP;
-  mains.autoStop.event.type   = EVENT_MAINS_OK;
-  mains.autoStop.ignor        = PERMISSION_DISABLE;
-  mains.autoStop.status       = ALARM_STATUS_IDLE;
-  mains.autoStop.trig         = TRIGGER_IDLE;
+  mains.autoStop.ack           = PERMISSION_ENABLE;
+  mains.autoStop.active        = PERMISSION_ENABLE;
+  mains.autoStop.enb           = PERMISSION_ENABLE;
+  mains.autoStop.event.action  = ACTION_AUTO_STOP;
+  mains.autoStop.event.type    = EVENT_MAINS_OK;
+  mains.autoStop.ignor         = PERMISSION_DISABLE;
+  mains.autoStop.status        = ALARM_STATUS_IDLE;
+  mains.autoStop.trig          = TRIGGER_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.lowVoltageAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_UNDER_VOLTAGE_ALARM_ENB_ADR );
-  mains.lowVoltageAlarm.error.active       = PERMISSION_ENABLE;
-  mains.lowVoltageAlarm.type               = ALARM_LEVEL_LOW;
-  mains.lowVoltageAlarm.level              = getValue( &mainsUnderVoltageAlarmLevel );
-  mains.lowVoltageAlarm.timer.delay        = 0U;
-  mains.lowVoltageAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  mains.lowVoltageAlarm.error.event.type   = EVENT_MAINS_LOW_VOLTAGE;
-  mains.lowVoltageAlarm.error.event.action = ACTION_WARNING;
-  mains.lowVoltageAlarm.error.ack          = PERMISSION_ENABLE;
-  mains.lowVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
+  if ( mains.enb == PERMISSION_ENABLE )
+  {
+    mains.lowVoltageAlarm.error.enb   = getBitMap( &mainsAlarms, MAINS_UNDER_VOLTAGE_ALARM_ENB_ADR );
+    mains.hightVoltageAlarm.error.enb = getBitMap( &mainsAlarms, MAINS_OVER_VOLTAGE_ALARM_ENB_ADR );
+    mains.lowFreqAlarm.error.enb      = getBitMap( &mainsAlarms, MAINS_UNDER_FREQUENCY_ALARM_ENB_ADR );
+    mains.hightFreqAlarm.error.enb    = getBitMap( &mainsAlarms, MAINS_OVER_FREQUENCY_ALARM_ENB_ADR );
+  }
+  else
+  {
+    mains.lowVoltageAlarm.error.enb   = PERMISSION_DISABLE;
+    mains.hightVoltageAlarm.error.enb = PERMISSION_DISABLE;
+    mains.lowFreqAlarm.error.enb      = PERMISSION_DISABLE;
+    mains.hightFreqAlarm.error.enb    = PERMISSION_DISABLE;
+  }
+  mains.lowVoltageAlarm.error.active         = PERMISSION_ENABLE;
+  mains.lowVoltageAlarm.type                 = ALARM_LEVEL_LOW;
+  mains.lowVoltageAlarm.level                = getValue( &mainsUnderVoltageAlarmLevel );
+  mains.lowVoltageAlarm.timer.delay          = 0U;
+  mains.lowVoltageAlarm.timer.id             = LOGIC_DEFAULT_TIMER_ID;
+  mains.lowVoltageAlarm.error.event.type     = EVENT_MAINS_LOW_VOLTAGE;
+  mains.lowVoltageAlarm.error.event.action   = ACTION_WARNING;
+  mains.lowVoltageAlarm.error.ack            = PERMISSION_ENABLE;
+  mains.lowVoltageAlarm.error.status         = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.hightVoltageAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_OVER_VOLTAGE_ALARM_ENB_ADR );
   mains.hightVoltageAlarm.error.active       = PERMISSION_ENABLE;
   mains.hightVoltageAlarm.type               = ALARM_LEVEL_HIGHT;
   mains.hightVoltageAlarm.level              = getValue( &mainsOverVoltageAlarmLevel );
@@ -584,27 +613,25 @@ void vELECTROdataInit ( void )
   mains.hightVoltageAlarm.error.ack          = PERMISSION_ENABLE;
   mains.hightVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.lowFreqAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_UNDER_FREQUENCY_ALARM_ENB_ADR );
-  mains.lowFreqAlarm.error.active       = PERMISSION_ENABLE;
-  mains.lowFreqAlarm.type               = ALARM_LEVEL_LOW;
-  mains.lowFreqAlarm.level              = getValue( &mainsUnderFrequencyAlarmLevel );
-  mains.lowFreqAlarm.timer.delay        = 0U;
-  mains.lowFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  mains.lowFreqAlarm.error.event.type   = EVENT_MAINS_LOW_FREQUENCY;
-  mains.lowFreqAlarm.error.event.action = ACTION_WARNING;
-  mains.lowFreqAlarm.error.ack          = PERMISSION_ENABLE;
-  mains.lowFreqAlarm.error.status       = ALARM_STATUS_IDLE;
+  mains.lowFreqAlarm.error.active            = PERMISSION_ENABLE;
+  mains.lowFreqAlarm.type                    = ALARM_LEVEL_LOW;
+  mains.lowFreqAlarm.level                   = getValue( &mainsUnderFrequencyAlarmLevel );
+  mains.lowFreqAlarm.timer.delay             = 0U;
+  mains.lowFreqAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
+  mains.lowFreqAlarm.error.event.type        = EVENT_MAINS_LOW_FREQUENCY;
+  mains.lowFreqAlarm.error.event.action      = ACTION_WARNING;
+  mains.lowFreqAlarm.error.ack               = PERMISSION_ENABLE;
+  mains.lowFreqAlarm.error.status            = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.hightFreqAlarm.error.enb          = getBitMap( &mainsAlarms, MAINS_OVER_FREQUENCY_ALARM_ENB_ADR );
-  mains.hightFreqAlarm.error.active       = PERMISSION_ENABLE;
-  mains.hightFreqAlarm.type               = ALARM_LEVEL_HIGHT;
-  mains.hightFreqAlarm.level              = getValue( &mainsOverFrequencyAlarmLevel );
-  mains.hightFreqAlarm.timer.delay        = 0U;
-  mains.hightFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  mains.hightFreqAlarm.error.event.type   = EVENT_MAINS_HIGHT_FREQUENCY;
-  mains.hightFreqAlarm.error.event.action = ACTION_WARNING;
-  mains.hightFreqAlarm.error.ack          = PERMISSION_ENABLE;
-  mains.hightFreqAlarm.error.status       = ALARM_STATUS_IDLE;
+  mains.hightFreqAlarm.error.active          = PERMISSION_ENABLE;
+  mains.hightFreqAlarm.type                  = ALARM_LEVEL_HIGHT;
+  mains.hightFreqAlarm.level                 = getValue( &mainsOverFrequencyAlarmLevel );
+  mains.hightFreqAlarm.timer.delay           = 0U;
+  mains.hightFreqAlarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
+  mains.hightFreqAlarm.error.event.type      = EVENT_MAINS_HIGHT_FREQUENCY;
+  mains.hightFreqAlarm.error.event.action    = ACTION_WARNING;
+  mains.hightFreqAlarm.error.ack             = PERMISSION_ENABLE;
+  mains.hightFreqAlarm.error.status          = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_MAINS );
   mains.relay.status = RELAY_OFF;

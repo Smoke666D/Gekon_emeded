@@ -94,7 +94,112 @@ uint8_t uBlobToConfig ( eConfigReg* reg, const uint8_t* blob )
   return count;
 }
 /*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEwriteUint32 ( uint32_t data, uint32_t* adr )
+{
+  EEPROM_STATUS res        = EEPROM_OK;
+  uint8_t       len        = 0U;
+  uint8_t       buffer[4U] = { 0U };
+  len  = uUint32ToBlob( data, buffer );
+  res  = eEEPROMwriteMemory( *adr, buffer, len );
+  if ( res == EEPROM_OK )
+  {
+    *adr += len;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEreadUint32 ( uint32_t* data, uint32_t* adr )
+{
+  EEPROM_STATUS res        = EEPROM_OK;
+  uint8_t       buffer[4U] = { 0U };
+  res  = eEEPROMreadMemory( *adr, buffer, 4U );
+  if ( res == EEPROM_OK )
+  {
+    *adr += uBlobToUint32( data, buffer );
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEwriteMap ( void )
+{
+  EEPROM_STATUS res = EEPROM_OK;
+  uint32_t      adr = STORAGE_MAP_ADR;
+  res = eSTORAGEwriteUint32( (uint32_t)STORAGE_WEB_SIZE, &adr );
+  if ( res == EEPROM_OK )
+  {
+    res = eSTORAGEwriteUint32( (uint32_t)STORAGE_RESERVE_SIZE, &adr );
+    if ( res == EEPROM_OK )
+    {
+      res = eSTORAGEwriteUint32( (uint32_t)STORAGE_CONFIG_SIZE, &adr );
+      if ( res == EEPROM_OK )
+      {
+        res = eSTORAGEwriteUint32( (uint32_t)STORAGE_CHART_SIZE, &adr );
+        if ( res == EEPROM_OK )
+        {
+          res = eSTORAGEwriteUint32( (uint32_t)STORAGE_FREE_DATA_SIZE, &adr );
+          if ( res == EEPROM_OK )
+          {
+            res = eSTORAGEwriteUint32( (uint32_t)STORAGE_PASSWORD_SIZE, &adr );
+            if ( res == EEPROM_OK )
+            {
+              res = eSTORAGEwriteUint32( (uint32_t)STORAGE_LOG_POINTER_SIZE, &adr );
+              if ( res == EEPROM_OK )
+              {
+                res = eSTORAGEwriteUint32( (uint32_t)STORAGE_LOG_SIZE, &adr );
+                if ( res == EEPROM_OK )
+                {
+                  res = eSTORAGEwriteUint32( (uint32_t)STORAGE_JOURNAL_SIZE, &adr );
+                  if ( res == EEPROM_OK )
+                  {
+                    res = eSTORAGEwriteUint32( (uint32_t)STORAGE_MEASUREMENT_SR_SIZE, &adr );
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output )
+{
+  EEPROM_STATUS res = EEPROM_OK;
+  uint8_t       i   = 0U;
+  uint32_t      adr = STORAGE_MAP_ADR;
+  for ( i=0U; i<( STORAGE_MAP_SIZE / 4U ); i++ )
+  {
+    res = eSTORAGEreadUint32( &output[i], &adr );
+    if ( res != EEPROM_OK )
+    {
+      break;
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uSTORAGEcheckMap ( const uint32_t* map )
+{
+  uint8_t res = 0U;
+  if ( ( map[0U] == ( uint32_t )STORAGE_WEB_SIZE            ) &&
+       ( map[1U] == ( uint32_t )STORAGE_RESERVE_SIZE        ) &&
+       ( map[2U] == ( uint32_t )STORAGE_CONFIG_SIZE         ) &&
+       ( map[3U] == ( uint32_t )STORAGE_CHART_SIZE          ) &&
+       ( map[4U] == ( uint32_t )STORAGE_FREE_DATA_SIZE      ) &&
+       ( map[5U] == ( uint32_t )STORAGE_PASSWORD_SIZE       ) &&
+       ( map[6U] == ( uint32_t )STORAGE_LOG_POINTER_SIZE    ) &&
+       ( map[7U] == ( uint32_t )STORAGE_LOG_SIZE            ) &&
+       ( map[8U] == ( uint32_t )STORAGE_JOURNAL_SIZE        ) &&
+       ( map[9U] == ( uint32_t )STORAGE_MEASUREMENT_SR_SIZE ) )
+  {
+    res = 1U;
+  }
+  return res;
+}
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteCharts ( void )
 {
@@ -229,7 +334,7 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   uint8_t       buffer[CONFIG_MAX_SIZE + 1U] = { 0U };
   for( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
-    size       = uConfigToBlob( configReg[i], &buffer[1U] );
+    size = uConfigToBlob( configReg[i], &buffer[1U] );
     if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )
     {
       res = EEPROM_ADR_ERROR;

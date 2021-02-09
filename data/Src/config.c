@@ -2097,7 +2097,7 @@ const eConfigAttributes starterStopGenFreqLevelAtrib =
 {
    .adr        = 103U,
    .scale      = -1,
-   .min        = 0U,
+   .min        = 150U,
    .max        = 400U,
    .units      = {0xd093U, 0xd186U, 0x0020U, 0x0020U},
    .type       = CONFIG_TYPE_UNSIGNED,

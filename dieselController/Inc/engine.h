@@ -262,5 +262,7 @@ uint8_t       uENGINEisStarterScrollFinish ( void );
 uint8_t       uENGINEisBlockTimerFinish ( void );
 PERMISSION    eENGINEisStartBan ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
+TRIGGER_STATE eENGINEgetOilSensorState ( void );
+TRIGGER_STATE eENGINEgetCoolantSensorState ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

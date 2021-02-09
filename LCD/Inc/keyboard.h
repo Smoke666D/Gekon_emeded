@@ -14,6 +14,7 @@
 #include "task.h"
 #include "semphr.h"
 #include "event_groups.h"
+#include "config.h"
 /*------------------------ Define --------------------------------------*/
 /* Константа определяющая количесвто клавиш, которые обрабатываем драйвер */
 #define KEYBOARD_COUNT     5U
@@ -29,8 +30,8 @@
 #define SWITCHONDELAY      30U
 #define DefaultDelay       600U
 #define DefaultRepeatRate  400U
-#define BRAKECODE          2U
-#define MAKECODE           1U
+#define BRAKECODE          0x40U
+#define MAKECODE           0x80U
 #define LINE               4U
 #define ROW                5U
 #define up_key             0x01U
@@ -38,7 +39,7 @@
 #define stop_key           0x04U
 #define start_key          0x08U
 #define auto_key           0x10U
-#define time_out           0x40U
+#define time_out           0x20U
 /*---------------------------- Structures --------------------------------------*/
 typedef struct __packed
 {

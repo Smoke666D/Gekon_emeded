@@ -357,6 +357,7 @@ void vADCNetDataUpdate()
 void vADCGeneratorDataUpdate()
 {
   EventBits_t GenFlag;
+  uint16_t tempdata;
   fix16_t temp;
   GenFlag = xEventGroupGetBits(xADCEvent);
   if (GenFlag & GEN_UPDATE)
@@ -384,12 +385,14 @@ void vADCGeneratorDataUpdate()
     }
 
     xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
-
+//    genCurrentTrasformRatioLevel
     //Вычисление значения токов
-    //Пересчет данных с АЦП в значения тока на шутнирующих резисторах
-    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(xGEN_F1_CUR, xLCurCoof  );
-    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, xLCurCoof  );
-    GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(xGEN_F3_CUR, xLCurCoof  );
+    //Пересчет данных с АЦП в значения тока на шутнирующих резисторах и применяем коофицент трансформации для токовых измирительных трасформатров
+    eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);  //считываем коофицент трансформамции
+
+    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(fix16_mul(xGEN_F1_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F1_CUR, xLCurCoof  );
+    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(fix16_mul(xGEN_F2_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F2_CUR, xLCurCoof  );
+    GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(fix16_mul(xGEN_F3_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F3_CUR, xLCurCoof  );
 
     //Расчзет косинуса Фм
     xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(uCosFiPeriod));  // 2Pi/uCurPeriod
@@ -895,6 +898,7 @@ void vADCInit(void)
       uint16_t bitmask;
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
+      HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port,DIN_OFFSET_Pin, GPIO_PIN_SET );
       vADC3DCInit(DC);
       vADC3FrInit(ADC3Freq);
       vADC12FrInit(ADC2Freq);
@@ -937,7 +941,7 @@ void vADCInit(void)
 void StartADCTask(void *argument)
 {
    static uint8_t OF =0,OF1=0;
-
+   static uint16_t DCCount=0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    //Иницилиазация АЦП
@@ -953,7 +957,8 @@ void StartADCTask(void *argument)
     xEventGroupWaitBits( xADCEvent, ADC3_READY, pdTRUE, pdTRUE, portMAX_DELAY);   /* Ожидаем флага готовонсти о завершении преобразования */
 
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
-
+    if (ADC3_IN_Buffer[5]<1000)
+      DCCount++;
     vADCConvertToVDD(0);
     //Запускаем новоей преобразование
     StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,DC_SIZE*9);

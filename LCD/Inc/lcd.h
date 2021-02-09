@@ -51,5 +51,7 @@ void vST7920init(void);
 uint8_t ucLCDGetLedBrigth(void);
 void vLCDSetLedBrigth(uint8_t brigth);
 void vLCDInit( SemaphoreHandle_t temp );
+void vLCD_BrigthOn();
+void vLCD_BrigthOFF();
 /*----------------------------------------------------------------------------*/
 #endif /* INC_LCD_H_ */

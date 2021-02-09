@@ -21,6 +21,7 @@
 #include "stdio.h"
 #include "alarm.h"
 #include "debug.h"
+#include "lcd.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE           engine              = { 0U };
 static OIL_TYPE              oil                 = { 0U };
@@ -1518,6 +1519,7 @@ void vENGINEtask ( void* argument )
               //charger.hightPreAlarm.error.active = PERMISSION_DISABLE;
               engine.status                      = ENGINE_STATUS_BUSY_STARTING;
               vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
+              vLCD_BrigthOFF();
               vRELAYset( &fuel.pump, RELAY_ON );
               commonTimer.delay = fuelPrePumpingDelay;
               vLOGICstartTimer( &commonTimer );
@@ -1551,6 +1553,7 @@ void vENGINEtask ( void* argument )
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;
                 starter.status = STARTER_CONTROL_BLOCK;
+                vLCD_BrigthOn();
                 vLOGICresetTimer( &commonTimer );
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer );

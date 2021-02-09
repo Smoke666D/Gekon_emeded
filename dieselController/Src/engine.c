@@ -1347,6 +1347,16 @@ PERMISSION eENGINEisStartBan ( void )
   return engine.banStart;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eENGINEgetOilSensorState ( void )
+{
+  return oil.alarm.error.trig;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eENGINEgetCoolantSensorState ( void )
+{
+  return coolant.alarm.error.trig;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )

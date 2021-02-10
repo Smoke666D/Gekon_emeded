@@ -913,7 +913,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
   static uint8_t  ALD   = 0;
-  uint16_t        utemp;
+  static uint16_t        utemp;
   vStrCopy(Data," ");
   switch (ID)
   {

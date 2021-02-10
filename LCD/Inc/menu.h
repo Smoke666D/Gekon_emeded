@@ -82,7 +82,7 @@
 #define ENGINE_SCOUNT  83U
 #define ENGINE_WTIME   84U
 #define COS_FI         85U
-
+#define OIL_PRE_T      86U
 
 
 #define IP_ADRESS           0x01

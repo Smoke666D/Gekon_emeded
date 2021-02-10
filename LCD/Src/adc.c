@@ -87,7 +87,6 @@ fix16_t  GENERATOR_DATA[35]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 
 
-
 /*
  *  Константы
  */
@@ -102,6 +101,12 @@ static const fix16_t  xVDD_CF         = F16 (VDD_CF);
  * API функции
  *
  */
+
+SENSOR_TYPE xADCGetxOPChType(void)
+{
+ return xOPChType;
+
+}
 
 /*
  *  Функция возращает наряжения АКБ.

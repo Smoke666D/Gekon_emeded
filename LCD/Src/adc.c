@@ -82,7 +82,7 @@ static fix16_t xCosFi =0;
 static uint8_t xNetWiring  =STAR;
 static uint16_t uCosFiPeriod =0;
 static uint16_t uCosFiMax =0;
-
+static fix16_t  xTransCoof =0;
 fix16_t  GENERATOR_DATA[35]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
@@ -105,6 +105,12 @@ static const fix16_t  xVDD_CF         = F16 (VDD_CF);
 SENSOR_TYPE xADCGetxOPChType(void)
 {
  return xOPChType;
+
+}
+
+SENSOR_TYPE xADCGetxCTChType(void)
+{
+ return xCTChType;
 
 }
 
@@ -393,11 +399,11 @@ void vADCGeneratorDataUpdate()
 //    genCurrentTrasformRatioLevel
     //Вычисление значения токов
     //Пересчет данных с АЦП в значения тока на шутнирующих резисторах и применяем коофицент трансформации для токовых измирительных трасформатров
-    eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);  //считываем коофицент трансформамции
 
-    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(fix16_mul(xGEN_F1_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F1_CUR, xLCurCoof  );
-    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(fix16_mul(xGEN_F2_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F2_CUR, xLCurCoof  );
-    GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(fix16_mul(xGEN_F3_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F3_CUR, xLCurCoof  );
+     temp = fix16_mul(xLCurCoof,xTransCoof);
+    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(xGEN_F1_CUR, temp);//fix16_mul(xGEN_F1_CUR, xLCurCoof  );
+    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, temp);//fix16_mul(xGEN_F3_CUR, xLCurCoof  );
+    GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(xGEN_F3_CUR, temp);
     if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
         GENERATOR_DATA[GEN_L1_CUR] = 0;
     if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
@@ -899,14 +905,42 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
     return;
 
 }
+void vADCConfigInit(void)
+{
+  uint16_t bitmask;
+  eConfigAttributes atrib;
+  uint16_t tempdata=0;
+  for (uint8_t i=0;i<20;i++)
+       {
+         osDelay( 100U );
+         if  ( eDATAAPIconfigValue(DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR ,&bitmask) == DATA_API_STAT_OK)
+         {
+            eDATAAPIconfigAtrib (DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR, &atrib );
+            xCTChType = (bitmask  & atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].shift;
+
+            eDATAAPIconfigValue(DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR ,&bitmask);
+            eDATAAPIconfigAtrib (DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR, &atrib );
+            xOPChType = (bitmask  & atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].shift;
+
+            eDATAAPIconfigValue(DATA_API_CMD_READ,FUEL_LEVEL_SETUP_ADR  ,&bitmask);
+            eDATAAPIconfigAtrib (DATA_API_CMD_READ, FUEL_LEVEL_SETUP_ADR , &atrib );
+            xFLChType = (bitmask  & atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].shift;
+
+            eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);  //считываем коофицент трансформамции
+            xTransCoof = fix16_from_int(tempdata);
+           break;
+         }
 
 
+       }
+
+}
 
 void vADCInit(void)
 {
 
-      eConfigAttributes atrib;
-      uint16_t bitmask;
+
+
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
       HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port,DIN_OFFSET_Pin, GPIO_PIN_SET );
@@ -923,28 +957,8 @@ void vADCInit(void)
       hadc2.DMA_Handle->XferErrorCallback = ADC_DMAErro;
       hadc1.DMA_Handle->XferErrorCallback = ADC_DMAErro;
       ADC_VALID_DATA =0;
+      vADCConfigInit();
 
-
-      for (uint8_t i=0;i<20;i++)
-      {
-        osDelay( 100U );
-        if  ( eDATAAPIconfigValue(DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR ,&bitmask) == DATA_API_STAT_OK)
-        {
-           eDATAAPIconfigAtrib (DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR, &atrib );
-           xCTChType = (bitmask  & atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].shift;
-
-           eDATAAPIconfigValue(DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR ,&bitmask);
-           eDATAAPIconfigAtrib (DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR, &atrib );
-           xOPChType = (bitmask  & atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].shift;
-
-           eDATAAPIconfigValue(DATA_API_CMD_READ,FUEL_LEVEL_SETUP_ADR  ,&bitmask);
-           eDATAAPIconfigAtrib (DATA_API_CMD_READ, FUEL_LEVEL_SETUP_ADR , &atrib );
-           xFLChType = (bitmask  & atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].shift;
-          break;
-        }
-
-
-      }
 
 }
 
@@ -960,6 +974,11 @@ void StartADCTask(void *argument)
 
    for(;;)
    {
+     if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &   DATA_API_FLAG_ADC_TASK_CONFIG_REINIT ) > 0U )
+     {
+         vADCConfigInit();
+         xEventGroupClearBits( xDATAAPIgetEventGroup(),   DATA_API_FLAG_ADC_TASK_CONFIG_REINIT );
+     }
     osDelay( 100U );
     vADC3DCInit( DC );
     StartADCDMA( &hadc3, ( uint32_t* )&ADC3_IN_Buffer, ( DC_SIZE * 9U ) );         /* Запускаем преобразвоание АЦП */

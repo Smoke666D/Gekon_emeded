@@ -1043,9 +1043,9 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
             if (eENGINEgetOilSensorState()==TRIGGER_SET)
-              sprintf(Data,"Активен");
+              vStrCopy(Data,"Активен");
             else
-              sprintf(Data,"Не актив.");
+              vStrCopy(Data,"Не актив.");
             break;
         default:
             Data[0]=0;
@@ -1054,10 +1054,24 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
 
     case  COOL_TEMP:
-      eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
-      fix16_to_str( temp, Data, 0U );
-      strcat(Data, " гр.С");
-
+      switch (xADCGetxCTChType())
+      {
+        case SENSOR_TYPE_RESISTIVE:
+            eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
+            fix16_to_str( temp, Data, 0U );
+            strcat(Data, " гр.С");
+            break;
+        case SENSOR_TYPE_NORMAL_OPEN:
+        case SENSOR_TYPE_NORMAL_CLOSE:
+            if (eENGINEgetCoolantSensorState()==TRIGGER_SET)
+              vStrCopy(Data,"Активен");
+            else
+              vStrCopy(Data,"Не актив.");
+            break;
+        default:
+           Data[0]=0;
+           break;
+      }
       break;
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );

@@ -184,5 +184,5 @@ void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 uint8_t uADCGetDCChError();
-
+SENSOR_TYPE xADCGetxCTChType(void);
 #endif /* INC_ADC_H_ */

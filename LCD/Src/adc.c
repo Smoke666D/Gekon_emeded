@@ -393,6 +393,12 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(fix16_mul(xGEN_F1_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F1_CUR, xLCurCoof  );
     GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(fix16_mul(xGEN_F2_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F2_CUR, xLCurCoof  );
     GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(fix16_mul(xGEN_F3_CUR, xLCurCoof  ),fix16_from_int(tempdata));//fix16_mul(xGEN_F3_CUR, xLCurCoof  );
+    if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
+        GENERATOR_DATA[GEN_L1_CUR] = 0;
+    if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
+        GENERATOR_DATA[GEN_L2_CUR] = 0;
+    if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
+        GENERATOR_DATA[GEN_L3_CUR] = 0;
 
     //Расчзет косинуса Фм
     xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(uCosFiPeriod));  // 2Pi/uCurPeriod

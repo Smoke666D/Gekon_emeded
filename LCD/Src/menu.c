@@ -330,12 +330,15 @@ void vMenuTask ( void )
 {
     //Блок обработки нажатий на клавиши
   static uint8_t uTimeOutCounter=0;
-  uint32_t ulNotifiedValue;
-  xTaskNotifyWait( pdFALSE, 0xFFFFFFFU, &ulNotifiedValue, 200U );
-  if ( ulNotifiedValue == 0x55U )
-  {
-     vLCDBrigthInit();
-  }
+
+  if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
+    {
+          vLCDBrigthInit();
+         xEventGroupClearBits( xDATAAPIgetEventGroup(),    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT );
+     }
+
+
+
   temp_counter++;
   //Блок отрисовки экранов
   if ( temp_counter == 2U )

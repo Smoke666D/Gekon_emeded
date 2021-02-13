@@ -13,7 +13,7 @@
 #include "adc.h"
 #include "stdio.h"
 #include "server.h"
-#include "vrSensor.h"
+#include "engine.h"
 /*------------------------ Define -------------------------------------------------------------------*/
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
@@ -1126,7 +1126,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
              }
              break;
      case ENGINE_SPEED:
-           fix16_to_str( fVRgetSpeed(), Data, 0U );
+           fix16_to_str( fENGINEspeedGet(), Data, 0U );
            break;
      case  ENGINE_SCOUNT:
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);

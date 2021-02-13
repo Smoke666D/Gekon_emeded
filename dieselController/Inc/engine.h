@@ -165,6 +165,7 @@ typedef struct __packed
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
+  fix16_t           polePairs;
 } SPEED_TYPE;
 
 typedef struct __packed
@@ -265,5 +266,6 @@ PERMISSION    eENGINEisStartBan ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
 TRIGGER_STATE eENGINEgetOilSensorState ( void );
 TRIGGER_STATE eENGINEgetCoolantSensorState ( void );
+fix16_t       fENGINEspeedGet ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

@@ -108,6 +108,7 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );
 static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
 static uint8_t        starterFinish                                    = 0U;
 static uint8_t        blockTimerFinish                                 = 0U;
+static fix16_t        currentSpeed                                     = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -283,10 +284,15 @@ fix16_t fFUELprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fSPEEDfromFreq ( fix16_t freq )
+{
+  return fix16_div( fix16_mul( freq, fix60 ), speed.polePairs ); /* RPM */
+}
+/*----------------------------------------------------------------------------*/
 fix16_t fSPEEDprocess ( void )
 {
   fix16_t value = 0U;
-  if ( speed.enb > 0U )
+  if ( speed.enb == PERMISSION_ENABLE )
   {
     value = speed.get();
     vALARMcheck( &speed.hightAlarm, value );
@@ -1035,9 +1041,10 @@ void vENGINEdataInit ( void )
   engine.startError.status       = ALARM_STATUS_IDLE;
   engine.startError.trig         = TRIGGER_IDLE;
   /*--------------------------------------------------------------*/
-  speed.enb    = getBitMap( &speedSetup, SPEED_ENB_ADR );
-  speed.status = SENSOR_STATUS_NORMAL;
-  speed.get    = fVRgetSpeed;
+  speed.enb       = getBitMap( &speedSetup, SPEED_ENB_ADR );
+  speed.status    = SENSOR_STATUS_NORMAL;
+  speed.get       = fVRgetSpeed;
+  speed.polePairs = getValue( &genPoleQuantity );
 
   speed.lowAlarm.error.enb            = getBitMap( &speedSetup, SPEED_LOW_ALARM_ENB_ADR );
   speed.lowAlarm.error.active         = PERMISSION_DISABLE;
@@ -1248,6 +1255,7 @@ void vENGINEdataReInit ( void )
   speed.lowAlarm.error.enb = getBitMap( &speedSetup, SPEED_LOW_ALARM_ENB_ADR );
   speed.lowAlarm.level     = getValue( &speedLowAlarmLevel );
   speed.hightAlarm.level   = getValue( &speedHightAlarmLevel );
+  speed.polePairs          = ( uint8_t )( genPoleQuantity.value[0U] );
   /*--------------------------------------------------------------*/
   stopSolenoid.relay.enb   = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
   stopSolenoid.timer.delay = getValue( configReg[TIMER_SOLENOID_HOLD_ADR] );
@@ -1378,14 +1386,19 @@ TRIGGER_STATE eENGINEgetCoolantSensorState ( void )
   return coolant.alarm.error.trig;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fENGINEspeedGet ( void )
+{
+  return currentSpeed;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
 {
   fix16_t         oilVal      = 0U;
   fix16_t         coolantVal  = 0U;
-  fix16_t         speedVal    = 0U;
   fix16_t         chargerVal  = 0U;
+  fix16_t         genFreqVal  = 0U;
   SYSTEM_TIMER    commonTimer = { 0U };
   ENGINE_COMMAND  inputCmd    = ENGINE_CMD_NONE;
   SYSTEM_EVENT    event       = { 0U };
@@ -1487,17 +1500,24 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     /*------------------------- Process inputs -------------------------*/
     /*------------------------------------------------------------------*/
-    oilVal     = fOILprocess();
-    coolantVal = fCOOLANTprocess();
+    oilVal       = fOILprocess();
+    coolantVal   = fCOOLANTprocess();
     fFUELprocess();
-    speedVal   = fSPEEDprocess();
+    currentSpeed = fSPEEDprocess();
     fBATTERYprocess();
+    genFreqVal   = xADCGetGENLFreq();
+
+    if ( speed.enb == PERMISSION_DISABLE )
+    {
+      currentSpeed = fSPEEDfromFreq( genFreqVal );
+    }
+
     //vERRORcheck( &engine.sensorCommonError, eSENSORcheckCutout( SENSOR_CHANNEL_COMMON ) );
     //chargerVal = fCHARGERprocess( PERMISSION_DISABLE );
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/
     /*------------------------------------------------------------------*/
-    vERRORcheck( &engine.stopError, !( uENGINEisStop( fELECTROgetMaxGenVoltage(), xADCGetGENLFreq(), oilVal, speedVal )) );
+    vERRORcheck( &engine.stopError, !( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, currentSpeed ) ) );
     vERRORcheck( &engine.startError, 1U );
     /*------------------------------------------------------------------*/
     /*--------------------- Statistic calculation ----------------------*/
@@ -1579,7 +1599,7 @@ void vENGINEtask ( void* argument )
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_CRANKING:
-              if ( uENGINEisWork( xADCGetGENLFreq(), oilVal, chargerVal, speedVal ) > 0U )
+              if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
               {
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;
@@ -1762,7 +1782,7 @@ void vENGINEtask ( void* argument )
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
               }
-              if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), xADCGetGENLFreq(), oilVal, speedVal ) > 0U )
+              if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, currentSpeed ) > 0U )
               {
                 vLOGICresetTimer( &commonTimer );
                 planStop.status = STOP_OK;

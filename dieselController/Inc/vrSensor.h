@@ -21,6 +21,6 @@
 void    vVRinit ( TIM_HandleTypeDef* tim );
 void    vVRextiCallback ( void );
 void    vVRtimCallback ( void );
-fix16_t fVRgetSpeed( void );
+fix16_t fVRgetSpeed ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_VRSENSOR_H_ */

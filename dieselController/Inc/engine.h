@@ -141,6 +141,7 @@ typedef struct __packed
 {
   SENSOR             temp;
   ALARM_TYPE         alarm;
+  ALARM_TYPE         electroAlarm;
   ALARM_TYPE         preAlarm;
   RELAY_AUTO_DEVICE  cooler;
   RELAY_AUTO_DEVICE  heater;

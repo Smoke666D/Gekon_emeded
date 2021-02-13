@@ -93,6 +93,8 @@
 #define RCSHUNT         0.01  //Сопротивление шунтирующих резисторов токовых входов
 #define OPTRANSCOOF     20    //Коофециент усиления операционного усилителя на  токовых входах
 #define VRef            3.3
+#define MIN_PRESENT_FREQ 20.0
+
 
 #define R118_R122      104.7
 #define R122           4.7
@@ -142,6 +144,12 @@ typedef enum
   IDLE,
 } xADCFSMType;
 
+typedef enum
+{
+  NO_FREQ,
+  FREQ_DETECTED,
+} xADCGenDetectType;
+
 /*
  * Функции API драйвера
  */
@@ -185,4 +193,6 @@ void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 uint8_t uADCGetDCChError();
 SENSOR_TYPE xADCGetxCTChType(void);
+xADCGenDetectType vADCGetGenFreqPres( void );
+
 #endif /* INC_ADC_H_ */

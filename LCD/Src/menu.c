@@ -330,12 +330,15 @@ void vMenuTask ( void )
 {
     //Блок обработки нажатий на клавиши
   static uint8_t uTimeOutCounter=0;
-  uint32_t ulNotifiedValue;
-  xTaskNotifyWait( pdFALSE, 0xFFFFFFFU, &ulNotifiedValue, 200U );
-  if ( ulNotifiedValue == 0x55U )
-  {
-     vLCDBrigthInit();
-  }
+
+  if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
+    {
+          vLCDBrigthInit();
+         xEventGroupClearBits( xDATAAPIgetEventGroup(),    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT );
+     }
+
+
+
   temp_counter++;
   //Блок отрисовки экранов
   if ( temp_counter == 2U )
@@ -913,7 +916,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
   static uint8_t  ALD   = 0;
-  uint16_t        utemp;
+  static uint16_t        utemp;
   vStrCopy(Data," ");
   switch (ID)
   {
@@ -1032,12 +1035,46 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str( temp, Data, 0U );
      break;
     case OIL_PRESSURE:
-      eCHARTfunc(&oilSensorChart,  xADCGetSOP() ,   &temp);
-      fix16_to_str( temp, Data, 2U );
+
+      switch(xADCGetxOPChType())
+      {
+        case SENSOR_TYPE_RESISTIVE:
+            eCHARTfunc(&oilSensorChart,  xADCGetSOP() ,   &temp);
+            fix16_to_str( temp, Data, 2U );
+            strcat(Data," Бар");
+            break;
+        case SENSOR_TYPE_NORMAL_OPEN:
+        case SENSOR_TYPE_NORMAL_CLOSE:
+            if (eENGINEgetOilSensorState()==TRIGGER_SET)
+              vStrCopy(Data,"Активен");
+            else
+              vStrCopy(Data,"Не актив.");
+            break;
+        default:
+            Data[0]=0;
+            break;
+      }
       break;
+
     case  COOL_TEMP:
-      eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
-      fix16_to_str( temp, Data, 0U );
+      switch (xADCGetxCTChType())
+      {
+        case SENSOR_TYPE_RESISTIVE:
+            eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
+            fix16_to_str( temp, Data, 0U );
+            strcat(Data, " гр.С");
+            break;
+        case SENSOR_TYPE_NORMAL_OPEN:
+        case SENSOR_TYPE_NORMAL_CLOSE:
+            if (eENGINEgetCoolantSensorState()==TRIGGER_SET)
+              vStrCopy(Data,"Активен");
+            else
+              vStrCopy(Data,"Не актив.");
+            break;
+        default:
+           Data[0]=0;
+           break;
+      }
       break;
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );

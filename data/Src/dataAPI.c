@@ -38,7 +38,8 @@ void vDATAAPIsendEventAll ( DATA_API_REINIT message )
              DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT     |
              DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT |
              DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT    |
-             DATA_API_FLAG_FPI_TASK_CONFIG_REINIT;
+             DATA_API_FLAG_FPI_TASK_CONFIG_REINIT        |
+             DATA_API_FLAG_ADC_TASK_CONFIG_REINIT;
       xEventGroupSetBits( xDataApiEvents, mask );
       break;
     case DATA_API_REINIT_MAINTANCE:

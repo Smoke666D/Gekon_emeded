@@ -145,6 +145,7 @@ typedef enum
 /*
  * Функции API драйвера
  */
+SENSOR_TYPE xADCGetxOPChType(void);
 fix16_t xADCGetGENActivePower();
 fix16_t xADCGetGENReactivePower();
 fix16_t xADCGetGENRealPower();
@@ -183,5 +184,5 @@ void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 uint8_t uADCGetDCChError();
-
+SENSOR_TYPE xADCGetxCTChType(void);
 #endif /* INC_ADC_H_ */

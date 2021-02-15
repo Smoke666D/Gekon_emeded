@@ -840,11 +840,15 @@ void vStrCopy(char * dest, char * source)
 
 void vStrAdd(char * dest, char * source)
 {
-   uint8_t i,k=0;
+   uint8_t i,k=0,F=0;
    for (i=0;i<100;i++)
    {
-     if ( dest[i] == 0) k=i;
-     if ( k!=0 )
+     if ( (dest[i] == 0) && (F==0))
+     {
+       k=i;
+       F=1;
+     }
+     if ( F!=0 )
      {
        dest[i]=source[i-k];
        if (source[i-k]==0) break;
@@ -1048,7 +1052,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case FUEL_LEVEL:
       eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
       fix16_to_str( temp, Data, 0U );
-      vStrAdd(Data," %");
+      vStrAdd(Data,"%");
      break;
     case OIL_PRESSURE:
 
@@ -1078,7 +1082,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         case SENSOR_TYPE_RESISTIVE:
             eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
             fix16_to_str( temp, Data, 0U );
-            vStrAdd(Data, " гр.С");
+            vStrAdd(Data," гр.С");
             break;
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
@@ -1094,7 +1098,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );
-      vStrAdd(Data," В");
+      vStrAdd(Data,"В");
       break;
     case NET_L1_LINE_V:
     case NET_L2_LINE_V:

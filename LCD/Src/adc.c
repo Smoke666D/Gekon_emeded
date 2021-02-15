@@ -368,7 +368,6 @@ void vADCNetDataUpdate()
 void vADCGeneratorDataUpdate()
 {
   EventBits_t GenFlag;
-  uint16_t tempdata;
   fix16_t temp;
   GenFlag = xEventGroupGetBits(xADCEvent);
   if (GenFlag & GEN_UPDATE)
@@ -400,7 +399,7 @@ void vADCGeneratorDataUpdate()
     //Вычисление значения токов
     //Пересчет данных с АЦП в значения тока на шутнирующих резисторах и применяем коофицент трансформации для токовых измирительных трасформатров
 
-     temp = fix16_mul(xLCurCoof,xTransCoof);
+    temp = fix16_mul(xLCurCoof,xTransCoof);
     GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(xGEN_F1_CUR, temp);//fix16_mul(xGEN_F1_CUR, xLCurCoof  );
     GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, temp);//fix16_mul(xGEN_F3_CUR, xLCurCoof  );
     GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(xGEN_F3_CUR, temp);
@@ -461,9 +460,6 @@ void vADCGeneratorDataUpdate()
     temp = fix16_mul(GENERATOR_DATA[GEN_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_REAL_POWER],temp);
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_REAL_POWER]);
-
-
-
 
   }
 }
@@ -608,14 +604,9 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
       break;
     case 0U:
-
-
-
-
       //Переводим в наряжние на канале АЦП
       uCSD = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
-
       uSFL = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
       uSOP = GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
@@ -1103,13 +1094,20 @@ void vDecNetural(int16_t * data)
 #define MAX_ZERO_POINT 20
 #define FASE_DETECT_HISTERESIS  30
 
-uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP)
+
+
+
+
+uint8_t vADCFindFreq(int16_t * data, uint16_t * count, uint8_t off, int16_t AMP)
 {
-  uint8_t AMP_DELTA = 15;
-  uint8_t FD =  15;//5;
-  uint8_t F1=0,F2=0;
+  uint8_t AMP_DELTA = 15,
+                 FD = 15,
+                 F1 = 0,
+                 F2 = 0,
+                 CNT = 0,
+                 index = 0,
+                 res =ADC_OK;
   uint16_t tt=0;
-  uint8_t CNT=0,index = 0,res =ADC_ERROR;
   uint16_t PER[MAX_ZERO_POINT];
 
   vADCSetFreqDetectParam(AMP,&AMP_DELTA,&FD);
@@ -1139,25 +1137,18 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count,uint8_t off, int16_t AMP)
         if (index> MAX_ZERO_POINT) break;
     }
   }
-
-  if ((index > 2) && (index <5))
+  tt =0;
+  if (index>1)
   {
-   tt =0;
-   for (uint8_t i =1;i<index;i++)
-   {
-     tt =tt+ + PER[i]-PER[i-1];
-   }
-   tt = (tt/(index-1))*2;
-   *count = tt;
-    res = ADC_OK;
+    for (uint8_t i =1;i<index;i++)
+    {
+      tt =tt+ + PER[i]-PER[i-1];
+    }
+    tt = (tt/(index-1))*2;
   }
-  else
-  {
-    *count = ADC_FRAME_SIZE;
-    if (index < 3) res = HIGH_FREQ;
-    if (index > 4) res = LOW_FREQ;
-
-  }
+  *count = tt;
+  if (index < 3) res = HIGH_FREQ;
+  if (index > 4) res = LOW_FREQ;
   return res;
 }
 
@@ -1252,11 +1243,11 @@ uint8_t vADCGetADC3Data()
 #define COS_DATA_COUNT  10
 static int16_t CosBuffer[COS_DATA_COUNT][2];
 static uint8_t uCosCount =0;
-
+static xADCGenDetectType uFreqPresent=NO_FREQ;
 
 uint8_t vADCGetADC12Data()
 {
-  uint16_t result=ADC_ERROR;
+  uint8_t result=ADC_ERROR;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   int16_t iMax =0;
   fix16_t fix_temp=0;
@@ -1274,10 +1265,23 @@ uint8_t vADCGetADC12Data()
         xGEN_FREQ =  fix16_mul(xGEN_FREQ,fix16_from_int(10));
         iMax=xADCMax((int16_t *) &ADC2_IN_Buffer, 2, uCurPeriod, &DF1 ,4);
         xGEN_F1_VDD= xADCRMS((int16_t *)&ADC2_IN_Buffer, 2, uCurPeriod,4 );
+        uFreqPresent =  FREQ_DETECTED;
+      }
+      else
+      {
+        if (uCurPeriod!=0)
+        {
+          if  ( (ADC2Freq / uCurPeriod ) >  MIN_PRESENT_FREQ )
+          {
+            uFreqPresent =  FREQ_DETECTED;
+          }
+        }
+        uCurPeriod = ADC_FRAME_SIZE;
       }
   }
   else
   {
+    uFreqPresent = NO_FREQ;
     uGenFaseRotation = NO_ROTATION;
     xGEN_F1_VDD =0;
     xGEN_F2_VDD =0;
@@ -1383,6 +1387,17 @@ uint8_t vADCGetADC12Data()
 
    xEventGroupSetBits( xADCEvent, GEN_UPDATE);
   return result;
+
+}
+
+
+/*
+ *
+ *
+ */
+xADCGenDetectType vADCGetGenFreqPres( void )
+{
+  return uFreqPresent;
 
 }
 

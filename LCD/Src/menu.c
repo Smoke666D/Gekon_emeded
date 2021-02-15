@@ -838,6 +838,26 @@ void vStrCopy(char * dest, char * source)
 
 }
 
+void vStrAdd(char * dest, char * source)
+{
+   uint8_t i,k=0,F=0;
+   for (i=0;i<100;i++)
+   {
+     if ( (dest[i] == 0) && (F==0))
+     {
+       k=i;
+       F=1;
+     }
+     if ( F!=0 )
+     {
+       dest[i]=source[i-k];
+       if (source[i-k]==0) break;
+     }
+   }
+   if (i==100) dest[i]=0;
+   return;
+}
+
 static uint8_t  StringShift   = 0,
                 StringShift1   = 0,
                 BufferAlarm   = 0,
@@ -1030,9 +1050,9 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
       break;
     case FUEL_LEVEL:
-
       eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
       fix16_to_str( temp, Data, 0U );
+      vStrAdd(Data,"%");
      break;
     case OIL_PRESSURE:
 
@@ -1041,7 +1061,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         case SENSOR_TYPE_RESISTIVE:
             eCHARTfunc(&oilSensorChart,  xADCGetSOP() ,   &temp);
             fix16_to_str( temp, Data, 2U );
-            strcat(Data," Бар");
+            vStrAdd(Data," Бар");
             break;
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
@@ -1062,7 +1082,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         case SENSOR_TYPE_RESISTIVE:
             eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
             fix16_to_str( temp, Data, 0U );
-            strcat(Data, " гр.С");
+            vStrAdd(Data," гр.С");
             break;
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
@@ -1078,6 +1098,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );
+      vStrAdd(Data,"В");
       break;
     case NET_L1_LINE_V:
     case NET_L2_LINE_V:
@@ -1092,19 +1113,25 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case GEN_L2_FASE_V:
     case GEN_L3_FASE_V:
       fix16_to_str(  xADCGetREG(ID), Data, 0U );
+      vStrAdd(Data," В");
       break;
     case NET_FREQ :
     case GEN_FREQ :
+      fix16_to_str(  xADCGetREG(ID), Data, 2U );
+      vStrAdd(Data," Гц");
+      break;
     case GEN_L1_CUR:
     case GEN_L2_CUR:
     case GEN_L3_CUR:
-       fix16_to_str(  xADCGetREG(ID), Data, 2U );
+      fix16_to_str(  xADCGetREG(ID), Data, 2U );
+      vStrAdd(Data," А");
        break;
    case GEN_L1_REAL_POWER:
    case GEN_L2_REAL_POWER:
    case GEN_L3_REAL_POWER:
    case GEN_REAL_POWER:
      fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+     vStrAdd(Data," кВт");
      break;
     case NET_ROTATION:
     case GEN_ROTATION:

@@ -464,15 +464,25 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   #if ( DEBUG_SERIAL_STATUS > 0U )
     char buffer[10U] = { 0U };
   #endif
-  if ( ( starter.startCrit.critGenFreqEnb > 0U ) && ( freq >= starter.startCrit.critGenFreqLevel ) )
+  if ( starter.startCrit.critGenFreqEnb > 0U  )
   {
-    res = 1U;
-    #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSSerial( ">>Engine          : Started by generator frequency: " );
-      fix16_to_str( freq, buffer, 2U );
-      vSYSSerial( buffer );
-      vSYSSerial( "\r\n" );
-    #endif
+    if ( vADCGetGenFreqPres() == FREQ_DETECTED )
+    {
+      res = 1U;
+      #if ( DEBUG_SERIAL_STATUS > 0U )
+        vSYSSerial( ">>Engine          : Started by generator frequency: LOW\r\n" );
+      #endif
+    }
+    if ( freq >= starter.startCrit.critGenFreqLevel )
+    {
+      res = 1U;
+      #if ( DEBUG_SERIAL_STATUS > 0U )
+        vSYSSerial( ">>Engine          : Started by generator frequency: " );
+        fix16_to_str( freq, buffer, 2U );
+        vSYSSerial( buffer );
+        vSYSSerial( "\r\n" );
+      #endif
+    }
   }
   if ( ( starter.startCrit.critOilPressEnb > 0U ) && ( pressure >= starter.startCrit.critOilPressLevel ) )
   {

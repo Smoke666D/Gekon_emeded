@@ -108,6 +108,7 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );
 static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
 static uint8_t        starterFinish                                    = 0U;
 static uint8_t        blockTimerFinish                                 = 0U;
+static fix16_t        currentSpeed                                     = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -238,7 +239,11 @@ fix16_t fCOOLANTprocess ( void )
     vALARMcheck( &coolant.alarm, value );
     if ( coolant.alarm.error.status == ALARM_STATUS_IDLE )
     {
-      vALARMcheck( &coolant.preAlarm, value );
+      vALARMcheck( &coolant.electroAlarm, value );
+      if ( coolant.electroAlarm.error.status == ALARM_STATUS_IDLE )
+      {
+        vALARMcheck( &coolant.preAlarm, value );
+      }
     }
     vRELAYautoProces( &coolant.heater, value );
     vRELAYautoProces( &coolant.cooler, value );
@@ -279,10 +284,15 @@ fix16_t fFUELprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fSPEEDfromFreq ( fix16_t freq )
+{
+  return fix16_div( fix16_mul( freq, fix60 ), speed.polePairs ); /* RPM */
+}
+/*----------------------------------------------------------------------------*/
 fix16_t fSPEEDprocess ( void )
 {
   fix16_t value = 0U;
-  if ( speed.enb > 0U )
+  if ( speed.enb == PERMISSION_ENABLE )
   {
     value = speed.get();
     vALARMcheck( &speed.hightAlarm, value );
@@ -765,55 +775,69 @@ void vENGINEdataInit ( void )
 
   if ( coolant.temp.type == SENSOR_TYPE_NONE )
   {
-    coolant.temp.cutout.enb    = PERMISSION_DISABLE;
-    coolant.alarm.error.enb    = PERMISSION_DISABLE;
-    coolant.preAlarm.error.enb = PERMISSION_DISABLE;
+    coolant.temp.cutout.enb        = PERMISSION_DISABLE;
+    coolant.alarm.error.enb        = PERMISSION_DISABLE;
+    coolant.electroAlarm.error.enb = PERMISSION_DISABLE;
+    coolant.preAlarm.error.enb     = PERMISSION_DISABLE;
   }
   else if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
   {
-    coolant.temp.cutout.enb    = getBitMap( &coolantTempSetup, FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR );
-    coolant.alarm.error.enb    = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ALARM_ENB_ADR      );
-    coolant.preAlarm.error.enb = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_PRE_ALARM_ENB_ADR  );
+    coolant.temp.cutout.enb        = getBitMap( &coolantTempSetup, FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR    );
+    coolant.alarm.error.enb        = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ALARM_ENB_ADR         );
+    coolant.electroAlarm.error.enb = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ELECTRO_ALARM_ENB_ADR );
+    coolant.preAlarm.error.enb     = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_PRE_ALARM_ENB_ADR     );
   }
   else
   {
-    coolant.temp.cutout.enb    = PERMISSION_DISABLE;
-    coolant.alarm.error.enb    = PERMISSION_ENABLE;
-    coolant.preAlarm.error.enb = PERMISSION_DISABLE;
+    coolant.temp.cutout.enb        = PERMISSION_DISABLE;
+    coolant.alarm.error.enb        = PERMISSION_ENABLE;
+    coolant.electroAlarm.error.enb = PERMISSION_DISABLE;
+    coolant.preAlarm.error.enb     = PERMISSION_DISABLE;
   }
 
-  coolant.alarm.error.active          = PERMISSION_ENABLE;
-  coolant.alarm.type                  = ALARM_LEVEL_HIGHT;
-  coolant.alarm.level                 = getValue( &coolantHightTempAlarmLevel );
-  coolant.alarm.timer.delay           = 0U;
-  coolant.alarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
-  coolant.alarm.error.event.type      = EVENT_ENGINE_HIGHT_TEMP;
-  coolant.alarm.error.event.action    = ACTION_EMERGENCY_STOP;
-  coolant.alarm.error.ack             = PERMISSION_DISABLE;
-  coolant.alarm.error.trig            = TRIGGER_IDLE;
-  coolant.alarm.error.status          = ALARM_STATUS_IDLE;
+  coolant.alarm.error.active              = PERMISSION_ENABLE;
+  coolant.alarm.type                      = ALARM_LEVEL_HIGHT;
+  coolant.alarm.level                     = getValue( &coolantHightTempAlarmLevel );
+  coolant.alarm.timer.delay               = 0U;
+  coolant.alarm.timer.id                  = LOGIC_DEFAULT_TIMER_ID;
+  coolant.alarm.error.event.type          = EVENT_ENGINE_HIGHT_TEMP;
+  coolant.alarm.error.event.action        = ACTION_EMERGENCY_STOP;
+  coolant.alarm.error.ack                 = PERMISSION_DISABLE;
+  coolant.alarm.error.trig                = TRIGGER_IDLE;
+  coolant.alarm.error.status              = ALARM_STATUS_IDLE;
 
-  coolant.preAlarm.error.active       = PERMISSION_ENABLE;
-  coolant.preAlarm.type               = ALARM_LEVEL_HIGHT;
-  coolant.preAlarm.level              = getValue( &coolantHightTempPreAlarmLevel );
-  coolant.preAlarm.timer.delay        = 0U;
-  coolant.preAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  coolant.preAlarm.error.ack          = PERMISSION_ENABLE;
-  coolant.preAlarm.error.event.type   = EVENT_ENGINE_HIGHT_TEMP;
-  coolant.preAlarm.error.event.action = ACTION_WARNING;
-  coolant.preAlarm.error.trig         = TRIGGER_IDLE;
-  coolant.preAlarm.error.status       = ALARM_STATUS_IDLE;
+  coolant.electroAlarm.error.active       = PERMISSION_ENABLE;
+  coolant.electroAlarm.type               = ALARM_LEVEL_HIGHT;
+  coolant.electroAlarm.level              = getValue( &coolantHightTempElectroAlarmLevel );
+  coolant.electroAlarm.timer.delay        = 0U;
+  coolant.electroAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
+  coolant.electroAlarm.error.ack          = PERMISSION_ENABLE;
+  coolant.electroAlarm.error.event.type   = EVENT_ENGINE_HIGHT_TEMP;
+  coolant.electroAlarm.error.event.action = ACTION_PLAN_STOP_AND_BAN_START;
+  coolant.electroAlarm.error.trig         = TRIGGER_IDLE;
+  coolant.electroAlarm.error.status       = ALARM_STATUS_IDLE;
 
-  coolant.heater.relay.enb            = getBitMap( &coolantTempSetup, COOLANT_TEMP_HEATER_ENB_ADR );
-  coolant.heater.onLevel              = getValue( &coolantTempHeaterOnLevel );
-  coolant.heater.offLevel             = getValue( &coolantTempHeaterOffLevel );
-  coolant.heater.relay.set            = vFPOsetHeater;
-  coolant.heater.relay.status         = RELAY_OFF;
-  coolant.cooler.relay.enb            = getBitMap( &coolantTempSetup, COOLANT_TEMP_COOLER_ENB_ADR );
-  coolant.cooler.onLevel              = getValue( &coolantTempCoolerOnLevel );
-  coolant.cooler.offLevel             = getValue( &coolantTempCoolerOffLevel );
-  coolant.cooler.relay.set            = vFPOsetCooler;
-  coolant.cooler.relay.status         = RELAY_OFF;
+  coolant.preAlarm.error.active           = PERMISSION_ENABLE;
+  coolant.preAlarm.type                   = ALARM_LEVEL_HIGHT;
+  coolant.preAlarm.level                  = getValue( &coolantHightTempPreAlarmLevel );
+  coolant.preAlarm.timer.delay            = 0U;
+  coolant.preAlarm.timer.id               = LOGIC_DEFAULT_TIMER_ID;
+  coolant.preAlarm.error.ack              = PERMISSION_ENABLE;
+  coolant.preAlarm.error.event.type       = EVENT_ENGINE_HIGHT_TEMP;
+  coolant.preAlarm.error.event.action     = ACTION_WARNING;
+  coolant.preAlarm.error.trig             = TRIGGER_IDLE;
+  coolant.preAlarm.error.status           = ALARM_STATUS_IDLE;
+
+  coolant.heater.relay.enb    = getBitMap( &coolantTempSetup, COOLANT_TEMP_HEATER_ENB_ADR );
+  coolant.heater.onLevel      = getValue( &coolantTempHeaterOnLevel );
+  coolant.heater.offLevel     = getValue( &coolantTempHeaterOffLevel );
+  coolant.heater.relay.set    = vFPOsetHeater;
+  coolant.heater.relay.status = RELAY_OFF;
+  coolant.cooler.relay.enb    = getBitMap( &coolantTempSetup, COOLANT_TEMP_COOLER_ENB_ADR );
+  coolant.cooler.onLevel      = getValue( &coolantTempCoolerOnLevel );
+  coolant.cooler.offLevel     = getValue( &coolantTempCoolerOffLevel );
+  coolant.cooler.relay.set    = vFPOsetCooler;
+  coolant.cooler.relay.status = RELAY_OFF;
   /*--------------------------------------------------------------*/
   preHeater.relay.enb    = getBitMap( &engineSetup, ENGINE_PRE_HEAT_ENB_ADR );
   preHeater.active       = PERMISSION_DISABLE;
@@ -1017,9 +1041,10 @@ void vENGINEdataInit ( void )
   engine.startError.status       = ALARM_STATUS_IDLE;
   engine.startError.trig         = TRIGGER_IDLE;
   /*--------------------------------------------------------------*/
-  speed.enb    = getBitMap( &speedSetup, SPEED_ENB_ADR );
-  speed.status = SENSOR_STATUS_NORMAL;
-  speed.get    = fVRgetSpeed;
+  speed.enb       = getBitMap( &speedSetup, SPEED_ENB_ADR );
+  speed.status    = SENSOR_STATUS_NORMAL;
+  speed.get       = fVRgetSpeed;
+  speed.polePairs = getValue( &genPoleQuantity );
 
   speed.lowAlarm.error.enb            = getBitMap( &speedSetup, SPEED_LOW_ALARM_ENB_ADR );
   speed.lowAlarm.error.active         = PERMISSION_DISABLE;
@@ -1151,11 +1176,13 @@ void vENGINEdataReInit ( void )
   coolant.temp.cutout.enb = getBitMap( &coolantTempSetup, COOLANT_TEMP_OPEN_CIRCUIT_ALARM_ENB_ADR );
   if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
   {
-    coolant.alarm.error.enb    = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ALARM_ENB_ADR );
-    coolant.alarm.type         = ALARM_LEVEL_HIGHT;
-    coolant.alarm.level        = getValue( &coolantHightTempAlarmLevel );
-    coolant.preAlarm.error.enb = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_PRE_ALARM_ENB_ADR );
-    coolant.preAlarm.level     = getValue( &coolantHightTempPreAlarmLevel );
+    coolant.alarm.error.enb        = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ALARM_ENB_ADR );
+    coolant.alarm.type             = ALARM_LEVEL_HIGHT;
+    coolant.alarm.level            = getValue( &coolantHightTempAlarmLevel );
+    coolant.electroAlarm.error.enb = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ELECTRO_ALARM_ENB_ADR );
+    coolant.electroAlarm.level     = getValue( &coolantHightTempElectroAlarmLevel );
+    coolant.preAlarm.error.enb     = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_PRE_ALARM_ENB_ADR );
+    coolant.preAlarm.level         = getValue( &coolantHightTempPreAlarmLevel );
   }
   else
   {
@@ -1228,6 +1255,7 @@ void vENGINEdataReInit ( void )
   speed.lowAlarm.error.enb = getBitMap( &speedSetup, SPEED_LOW_ALARM_ENB_ADR );
   speed.lowAlarm.level     = getValue( &speedLowAlarmLevel );
   speed.hightAlarm.level   = getValue( &speedHightAlarmLevel );
+  speed.polePairs          = ( uint8_t )( genPoleQuantity.value[0U] );
   /*--------------------------------------------------------------*/
   stopSolenoid.relay.enb   = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
   stopSolenoid.timer.delay = getValue( configReg[TIMER_SOLENOID_HOLD_ADR] );
@@ -1274,21 +1302,22 @@ void vENGINEresetAlarms ( void )
 {
   //vERRORreset( &charger.error.error );
   //vERRORreset( &charger.hightPreAlarm.error );
-  vERRORreset( &speed.hightAlarm.error   );
-  vERRORreset( &speed.lowAlarm.error     );
-  vERRORreset( &battery.hightAlarm.error );
-  vERRORreset( &battery.lowAlarm.error   );
-  vERRORreset( &fuel.hightAlarm.error    );
-  vERRORreset( &fuel.hightPreAlarm.error );
-  vERRORreset( &fuel.lowAlarm.error      );
-  vERRORreset( &fuel.lowPreAlarm.error   );
-  vERRORreset( &coolant.alarm.error      );
-  vERRORreset( &coolant.preAlarm.error   );
-  vERRORreset( &oil.alarm.error          );
-  vERRORreset( &oil.preAlarm.error       );
-  vERRORreset( &engine.stopError         );
-  vERRORreset( &engine.startError        );
-  vERRORreset( &engine.sensorCommonError );
+  vERRORreset( &speed.hightAlarm.error     );
+  vERRORreset( &speed.lowAlarm.error       );
+  vERRORreset( &battery.hightAlarm.error   );
+  vERRORreset( &battery.lowAlarm.error     );
+  vERRORreset( &fuel.hightAlarm.error      );
+  vERRORreset( &fuel.hightPreAlarm.error   );
+  vERRORreset( &fuel.lowAlarm.error        );
+  vERRORreset( &fuel.lowPreAlarm.error     );
+  vERRORreset( &coolant.alarm.error        );
+  vERRORreset( &coolant.electroAlarm.error );
+  vERRORreset( &coolant.preAlarm.error     );
+  vERRORreset( &oil.alarm.error            );
+  vERRORreset( &oil.preAlarm.error         );
+  vERRORreset( &engine.stopError           );
+  vERRORreset( &engine.startError          );
+  vERRORreset( &engine.sensorCommonError   );
   engine.banStart = PERMISSION_DISABLE;
   return;
 }
@@ -1357,14 +1386,19 @@ TRIGGER_STATE eENGINEgetCoolantSensorState ( void )
   return coolant.alarm.error.trig;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fENGINEspeedGet ( void )
+{
+  return currentSpeed;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
 {
   fix16_t         oilVal      = 0U;
   fix16_t         coolantVal  = 0U;
-  fix16_t         speedVal    = 0U;
   fix16_t         chargerVal  = 0U;
+  fix16_t         genFreqVal  = 0U;
   SYSTEM_TIMER    commonTimer = { 0U };
   ENGINE_COMMAND  inputCmd    = ENGINE_CMD_NONE;
   SYSTEM_EVENT    event       = { 0U };
@@ -1466,17 +1500,24 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     /*------------------------- Process inputs -------------------------*/
     /*------------------------------------------------------------------*/
-    oilVal     = fOILprocess();
-    coolantVal = fCOOLANTprocess();
+    oilVal       = fOILprocess();
+    coolantVal   = fCOOLANTprocess();
     fFUELprocess();
-    speedVal   = fSPEEDprocess();
+    currentSpeed = fSPEEDprocess();
     fBATTERYprocess();
+    genFreqVal   = xADCGetGENLFreq();
+
+    if ( speed.enb == PERMISSION_DISABLE )
+    {
+      currentSpeed = fSPEEDfromFreq( genFreqVal );
+    }
+
     //vERRORcheck( &engine.sensorCommonError, eSENSORcheckCutout( SENSOR_CHANNEL_COMMON ) );
     //chargerVal = fCHARGERprocess( PERMISSION_DISABLE );
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/
     /*------------------------------------------------------------------*/
-    vERRORcheck( &engine.stopError, !( uENGINEisStop( fELECTROgetMaxGenVoltage(), xADCGetGENLFreq(), oilVal, speedVal )) );
+    vERRORcheck( &engine.stopError, !( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, currentSpeed ) ) );
     vERRORcheck( &engine.startError, 1U );
     /*------------------------------------------------------------------*/
     /*--------------------- Statistic calculation ----------------------*/
@@ -1558,7 +1599,7 @@ void vENGINEtask ( void* argument )
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_CRANKING:
-              if ( uENGINEisWork( xADCGetGENLFreq(), oilVal, chargerVal, speedVal ) > 0U )
+              if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
               {
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;
@@ -1741,7 +1782,7 @@ void vENGINEtask ( void* argument )
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
               }
-              if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), xADCGetGENLFreq(), oilVal, speedVal ) > 0U )
+              if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, currentSpeed ) > 0U )
               {
                 vLOGICresetTimer( &commonTimer );
                 planStop.status = STOP_OK;

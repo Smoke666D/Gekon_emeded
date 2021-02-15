@@ -1303,7 +1303,6 @@ void StartDefaultTask(void *argument)
   {
     osDelay( 10U );
   }
-  osDelay( 6000U );                           /* Delay ADC valid data ready*/
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */

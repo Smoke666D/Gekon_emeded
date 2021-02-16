@@ -473,7 +473,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
         vSYSSerial( ">>Engine          : Started by generator frequency: LOW\r\n" );
       #endif
     }
-    if ( freq >= starter.startCrit.critGenFreqLevel )
+    if ( ( freq >= starter.startCrit.critGenFreqLevel ) && ( res == 0U ) )
     {
       res = 1U;
       #if ( DEBUG_SERIAL_STATUS > 0U )

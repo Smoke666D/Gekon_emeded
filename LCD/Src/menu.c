@@ -1100,6 +1100,10 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str( xADCGetVDD(), Data, 2U );
       vStrAdd(Data,"В");
       break;
+    case IN_CAC:
+      fix16_to_str( xADCGetCAC(), Data, 2U );
+      vStrAdd(Data,"В");
+      break;
     case NET_L1_LINE_V:
     case NET_L2_LINE_V:
     case NET_L3_LINE_V:

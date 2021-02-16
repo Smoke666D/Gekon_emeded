@@ -50,7 +50,7 @@ extern ADC_HandleTypeDef hadc3;
 
 
 static uint16_t uVDD =0;  //Значение АЦП канала PowInMCU (измерение напряжения питания)
-
+static uint16_t uCAC =0;
 static uint16_t uCSD =0;
  //Напряжение АЦП канала Common Analog Sens (общий провод датчиков)
 static uint16_t uCAS =0;
@@ -126,6 +126,19 @@ fix16_t xADCGetVDD()
  //Вычитаем падение на диоде
   xVDD = fix16_sub( xVDD, VT4 );
   return xVDD;
+}
+
+
+fix16_t xADCGetCAC()
+{
+  fix16_t xCAC =0;
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
+  //Пересчитываем его в реальное напяжение.
+  xCAC = fix16_mul( fix16_from_int( uCAC ),  xVDD_CF );
+  //Вычитаем падение на диоде
+  // xVDD = fix16_sub( xVDD, VT4 );
+  return xCAC;
+
 }
 
 fix16_t xADCGetSOP()
@@ -610,6 +623,8 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       uSFL = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
       //Усредняем сырые значения АЦП
       uSOP = GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
+      //Усредняем сырые значения АЦП
+      uCAC = GetAverVDD( 8U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
       //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
       osDelay(10);

@@ -2207,14 +2207,13 @@ eConfigReg starterStopSpeedLevel =
    .value = starterStopSpeedLevelValue,
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap batteryAlarmsBitMap[4U] = 
+const eConfigBitMap batteryAlarmsBitMap[3U] = 
 {
    { 1U, 0U },     // batteryUnderVoltageEnb
    { 2U, 1U },     // batteryOverVoltageEnb
-   { 4U, 2U },     // batteryChargeShutdownEnb
-   { 8U, 3U },     // batteryChargeWarningEnb
+   { 4U, 2U },     // batteryChargeAlarmEnb
 };
-uint16_t batteryAlarmsValue[1U] = { 15U };
+uint16_t batteryAlarmsValue[1U] = { 7U };
 const eConfigAttributes batteryAlarmsAtrib =
 {
    .adr        = 109U,
@@ -2224,7 +2223,7 @@ const eConfigAttributes batteryAlarmsAtrib =
    .units      = {0x0020U, 0x0020U, 0x0020U, 0x0020U},
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 4U,
+   .bitMapSize = 3U,
    .bitMap     = batteryAlarmsBitMap
 };
 eConfigReg batteryAlarms =
@@ -2309,8 +2308,8 @@ eConfigReg batteryOverVoltageDelay =
    .value = batteryOverVoltageDelayValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t batteryChargeShutdownLevelValue[1U] = { 40U };
-const eConfigAttributes batteryChargeShutdownLevelAtrib =
+uint16_t batteryChargeAlarmLevelValue[1U] = { 40U };
+const eConfigAttributes batteryChargeAlarmLevelAtrib =
 {
    .adr        = 114U,
    .scale      = -1,
@@ -2322,14 +2321,14 @@ const eConfigAttributes batteryChargeShutdownLevelAtrib =
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
-eConfigReg batteryChargeShutdownLevel =
+eConfigReg batteryChargeAlarmLevel =
 {
-   .atrib = &batteryChargeShutdownLevelAtrib,
-   .value = batteryChargeShutdownLevelValue,
+   .atrib = &batteryChargeAlarmLevelAtrib,
+   .value = batteryChargeAlarmLevelValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t batteryChargeShutdownDelayValue[1U] = { 5U };
-const eConfigAttributes batteryChargeShutdownDelayAtrib =
+uint16_t batteryChargeAlarmDelayValue[1U] = { 5U };
+const eConfigAttributes batteryChargeAlarmDelayAtrib =
 {
    .adr        = 115U,
    .scale      = 0U,
@@ -2341,48 +2340,10 @@ const eConfigAttributes batteryChargeShutdownDelayAtrib =
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
-eConfigReg batteryChargeShutdownDelay =
+eConfigReg batteryChargeAlarmDelay =
 {
-   .atrib = &batteryChargeShutdownDelayAtrib,
-   .value = batteryChargeShutdownDelayValue,
-};
-/*----------------------------------------------------------------*/
-uint16_t batteryChargeWarningLevelValue[1U] = { 60U };
-const eConfigAttributes batteryChargeWarningLevelAtrib =
-{
-   .adr        = 116U,
-   .scale      = -1,
-   .min        = 1U,
-   .max        = 390U,
-   .units      = {0xd092U, 0x0020U, 0x0020U, 0x0020U},
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg batteryChargeWarningLevel =
-{
-   .atrib = &batteryChargeWarningLevelAtrib,
-   .value = batteryChargeWarningLevelValue,
-};
-/*----------------------------------------------------------------*/
-uint16_t batteryChargeWarningDelayValue[1U] = { 5U };
-const eConfigAttributes batteryChargeWarningDelayAtrib =
-{
-   .adr        = 117U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 3600U,
-   .units      = {0xd181U, 0xd0b5U, 0xd0baU, 0x0020U},
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg batteryChargeWarningDelay =
-{
-   .atrib = &batteryChargeWarningDelayAtrib,
-   .value = batteryChargeWarningDelayValue,
+   .atrib = &batteryChargeAlarmDelayAtrib,
+   .value = batteryChargeAlarmDelayValue,
 };
 /*----------------------------------------------------------------*/
 const eConfigBitMap maintenanceAlarmsBitMap[6U] = 
@@ -2397,7 +2358,7 @@ const eConfigBitMap maintenanceAlarmsBitMap[6U] =
 uint16_t maintenanceAlarmsValue[1U] = { 42U };
 const eConfigAttributes maintenanceAlarmsAtrib =
 {
-   .adr        = 118U,
+   .adr        = 116U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 63U,
@@ -2416,7 +2377,7 @@ eConfigReg maintenanceAlarms =
 uint16_t maintenanceAlarmOilTimeValue[1U] = { 10U };
 const eConfigAttributes maintenanceAlarmOilTimeAtrib =
 {
-   .adr        = 119U,
+   .adr        = 117U,
    .scale      = 0U,
    .min        = 10U,
    .max        = 5000U,
@@ -2435,7 +2396,7 @@ eConfigReg maintenanceAlarmOilTime =
 uint16_t maintenanceAlarmAirTimeValue[1U] = { 10U };
 const eConfigAttributes maintenanceAlarmAirTimeAtrib =
 {
-   .adr        = 120U,
+   .adr        = 118U,
    .scale      = 0U,
    .min        = 10U,
    .max        = 5000U,
@@ -2454,7 +2415,7 @@ eConfigReg maintenanceAlarmAirTime =
 uint16_t maintenanceAlarmFuelTimeValue[1U] = { 10U };
 const eConfigAttributes maintenanceAlarmFuelTimeAtrib =
 {
-   .adr        = 121U,
+   .adr        = 119U,
    .scale      = 0U,
    .min        = 10U,
    .max        = 5000U,
@@ -2478,7 +2439,7 @@ const eConfigBitMap logSetupBitMap[2U] =
 uint16_t logSetupValue[1U] = { 3U };
 const eConfigAttributes logSetupAtrib =
 {
-   .adr        = 122U,
+   .adr        = 120U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 65535U,
@@ -2514,7 +2475,7 @@ const eConfigBitMap recordSetupBitMap[14U] =
 uint16_t recordSetupValue[1U] = { 1U };
 const eConfigAttributes recordSetupAtrib =
 {
-   .adr        = 123U,
+   .adr        = 121U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 65535U,
@@ -2533,7 +2494,7 @@ eConfigReg recordSetup =
 uint16_t recordIntervalValue[1U] = { 1000U };
 const eConfigAttributes recordIntervalAtrib =
 {
-   .adr        = 124U,
+   .adr        = 122U,
    .scale      = -1,
    .min        = 1U,
    .max        = 36000U,
@@ -2550,6 +2511,6 @@ eConfigReg recordInterval =
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* const configReg[SETTING_REGISTER_NUMBER]  = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &hysteresisLevel, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempElectroAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &speedSetup, &speedToothNumber, &speedLowAlarmLevel, &speedHightAlarmLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &doabType, &docdType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerGenBreakerTripPulse, &timerGenBreakerClosePulse, &timerMainsBreakerTripPulse, &timerMainsBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genCurrentTrasformRatioLevel, &genPoleQuantity, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &starterStopSetup, &starterStopGenFreqLevel, &starterStopOilPressureLevel, &starterStopChargeAlternatorLevel, &starterStopSpeedLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeShutdownLevel, &batteryChargeShutdownDelay, &batteryChargeWarningLevel, &batteryChargeWarningDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime, &logSetup, &recordSetup, &recordInterval};
-const char*       configDictionary[SETTING_REGISTER_NUMBER] = { "Версия контроллера", "Версия прошивки", "Серийный номер", "Яркость дисплея", "Контрастность дисплея", "Время переходя в спящий режим", "Величина гизтерезиса", "", "Настройки давления масла", "Аварийный уровень двления масла", "Предупредительный уровень давления масла", "Настройки температуры ОЖ", "Аварийный уровень температуры ОЖ", "Плановой остановки уровень температуры ОЖ", "Предупредительный уровень температуры ОЖ ", "Уровень отключения нагревателя ОЖ", "Уровень включения нагревателя ОЖ", "Уровень отключения охладителя ОЖ", "Уровень включения нагревателя ОЖ", "Настройки уровня топлива", "Нижний аварийный уровень топлива", "Задержка нижнего аварийного сигнала уровня топлива", "Нижний предупредительный уровень топлива", "Задержка нижнего предупредительного сигнала уровня топлива", "Верхний предупредительный уровень топлива", "Задержка верхнего предупредительного сигнала уровня топлива", "Верхний аварийный уровень топлива", "Задержка аерхнего аварийного сигнала уровня топлива", "Уровень включения подкачки топлива", "Уровень выключения подкачки топлива", "Настройки оборотов двигателя", "Количество зубьев маховика", "Нижний аварийный уровень оборотов двигателя", "Верхний аварийный уровень оборотов двигателя", "Настройки цифрового входа А", "Задержка", "Сообщение", "Настройки цифрового входа B", "Задержка", "Сообщение", "Настройки цифрового входа C", "Задержка", "Сообщение", "Настройки цифрового входа D", "Задержка", "Сообщение", "Настройки цифровых выходов", "Функция цифровых выходов A и B", "Функция цифровых выходов C и D", "Функция цифровых выходов E и F", "Коммутационные скачки сети", "Задержка запуска", "Время пркрутки стартера", "Пауза между прокрутками стартера", "Время работы на холостых оборотах", "Задержка перехода на номинальные обороты", "Время блокировки контроля параметров при старте", "Время прогрева", "Пауза между переключениями", "Длина импульса отключения генераторного автомата", "Длина импульса включения генераторного автомата", "Длина импульса отключения сетевого автомата", "Длина импульса включения сетевого автомата", "Задержка останова", "Время охлаждения", "Время охлаждения на холостых оборотах", "Время работы стопового соленоида", "Задержка сигнала «Сбой останова»", "Коммутационные скачки параметров генератора", "Настройки генератора", "Номинальная активная мощность генератора", "Номинальная реактивная мощность генеартора", "Номинальная полная мощность генератора", "Номинальная частота генератора", "Первичный ток трансформатора", "Полная номинальная нагрузка", "Коэффициент трансформатора тока", "Количество полюсов генератора", "Настройки событий генератора", "Нижний аварийный уровень напряжения генератора", "Нижний предупредтельный уровень напряжения генератора", "Верхний предупредительный уровень напряжения генератора", "Верхний аварийный уровень напряжения генератора", "Нижний аварийный уровень частоты генератора", "Нижний предупредительный уровень частоты генератора", "Верхний предупредительный уровень частоты генератора", "Верхний аварийный уровень частоты генератора", "Тепловая защита генератора", "Токовая отсечка генератора", "Верхний аварийный уровень тока генератора", "Задержка верхнего аваарийного сигнала тревоги тока генератора", "Уровень защиты от перегрузки генератора", "Задержка срабатывания защиты от перегрузки генератора", "Уровень допустимого перекоса фаз генератора", "Задержка срабатывания защиты перекоса фаз генератора", "Настройки сети", "Настройки событий сети", "Нижний аварийный уровень напряжения сети", "Верхний аварийный уровень напряжения сети", "Нижний аварийный уровень частоты сети", "Верхний аварийный уровень частоты сети", "Настройки двигателя", "Уровень включения свечей накаливания", "Длительность работы свечей накаливания", "Настройки стартера", "Отключить стартер по частоте генератора", "Давление масла отключения стартера", "Напряжение зарядного генератора отключения стартаера", "Обороты двигателя отключения стартера", "Настройки событий АКБ", "Нижний аварийный уровень напряжения АКБ", "Задержка нижнего аварийного сигнала напряжения АКБ", "Верхний аварийный уровень напряжения АКБ ", "Задержка верхнего аварийного сигнала напряжения АКБ", "Уровень аварийного сигнала зарядного генератора", "Задержка аварийного сигнала зарядного генератора", "Уровень предупредительного сигнала зарядного генератора", "Задержка предупредительного сигнала зарядного генератора", "Настройки событий ТО", "Периодв срабатывания ТО масло", "Периодв срабатывания ТО воздух", "Периодв срабатывания ТО топливо", "Настройки журнала", "Настройки измерений", "Интервал времени между измерениями"};
+eConfigReg* const configReg[SETTING_REGISTER_NUMBER]  = { &versionController, &versionFirmware, &serialNumber, &displayBrightnesLevel, &displayContarstLevel, &displaySleepDelay, &hysteresisLevel, &moduleSetup, &oilPressureSetup, &oilPressureAlarmLevel, &oilPressurePreAlarmLevel, &coolantTempSetup, &coolantHightTempAlarmLevel, &coolantHightTempElectroAlarmLevel, &coolantHightTempPreAlarmLevel, &coolantTempHeaterOffLevel, &coolantTempHeaterOnLevel, &coolantTempCoolerOffLevel, &coolantTempCoolerOnLevel, &fuelLevelSetup, &fuelLevelLowAlarmLevel, &fuelLevelLowAlarmDelay, &fuelLevelLowPreAlarmLevel, &fuelLevelLowPreAlarmDelay, &fuelLevelHightPreAlarmLevel, &fuelLevelHightPreAlarmDelay, &fuelLevelHightAlarmLevel, &fuelLevelHightAlarmDelay, &fuelPumpOnLevel, &fuelPumpOffLevel, &speedSetup, &speedToothNumber, &speedLowAlarmLevel, &speedHightAlarmLevel, &diaSetup, &diaDelay, &diaMessage, &dibSetup, &dibDelay, &dibMessage, &dicSetup, &dicDelay, &dicMessage, &didSetup, &didDelay, &didMessage, &doSetup, &doabType, &docdType, &doefType, &timerMainsTransientDelay, &timerStartDelay, &timerCranking, &timerCrankDelay, &timerStartupIdleTime, &timerNominalRPMDelay, &timerSafetyOnDelay, &timerWarming, &timerTransferDelay, &timerGenBreakerTripPulse, &timerGenBreakerClosePulse, &timerMainsBreakerTripPulse, &timerMainsBreakerClosePulse, &timerReturnDelay, &timerCooling, &timerCoolingIdle, &timerSolenoidHold, &timerFailStopDelay, &timerGenTransientDelay, &genSetup, &genRatedActivePowerLevel, &genRatedReactivePowerLevel, &genRatedApparentPowerLevel, &genRatedFrequencyLevel, &genCurrentPrimaryLevel, &genCurrentFullLoadRatingLevel, &genCurrentTrasformRatioLevel, &genPoleQuantity, &genAlarms, &genUnderVoltageAlarmLevel, &genUnderVoltagePreAlarmLevel, &genOverVoltagePreAlarmLevel, &genOverVoltageAlarmLevel, &genUnderFrequencyAlarmLevel, &genUnderFrequencyPreAlarmLevel, &genOverFrequencyPreAlarmLevel, &genOverFrequencyAlarmLevel, &genOverCurrentThermalProtectionLevel, &genOverCurrentCutoffLevel, &genOverCurrentAlarmLevel, &genOverCurrentAlarmDelay, &genCurrentOverloadProtectionLevel, &genCurrentOverloadProtectionDelay, &genCurrentOverPhaseImbalanceLevel, &genCurrentOverPhaseImbalanceDelay, &mainsSetup, &mainsAlarms, &mainsUnderVoltageAlarmLevel, &mainsOverVoltageAlarmLevel, &mainsUnderFrequencyAlarmLevel, &mainsOverFrequencyAlarmLevel, &engineSetup, &enginePreHeatLevel, &enginePreHeatDelay, &starterStopSetup, &starterStopGenFreqLevel, &starterStopOilPressureLevel, &starterStopChargeAlternatorLevel, &starterStopSpeedLevel, &batteryAlarms, &batteryUnderVoltageLevel, &batteryUnderVoltageDelay, &batteryOverVoltageLevel, &batteryOverVoltageDelay, &batteryChargeAlarmLevel, &batteryChargeAlarmDelay, &maintenanceAlarms, &maintenanceAlarmOilTime, &maintenanceAlarmAirTime, &maintenanceAlarmFuelTime, &logSetup, &recordSetup, &recordInterval};
+const char*       configDictionary[SETTING_REGISTER_NUMBER] = { "Версия контроллера", "Версия прошивки", "Серийный номер", "Яркость дисплея", "Контрастность дисплея", "Время переходя в спящий режим", "Величина гизтерезиса", "", "Настройки давления масла", "Аварийный уровень двления масла", "Предупредительный уровень давления масла", "Настройки температуры ОЖ", "Аварийный уровень температуры ОЖ", "Плановой остановки уровень температуры ОЖ", "Предупредительный уровень температуры ОЖ ", "Уровень отключения нагревателя ОЖ", "Уровень включения нагревателя ОЖ", "Уровень отключения охладителя ОЖ", "Уровень включения нагревателя ОЖ", "Настройки уровня топлива", "Нижний аварийный уровень топлива", "Задержка нижнего аварийного сигнала уровня топлива", "Нижний предупредительный уровень топлива", "Задержка нижнего предупредительного сигнала уровня топлива", "Верхний предупредительный уровень топлива", "Задержка верхнего предупредительного сигнала уровня топлива", "Верхний аварийный уровень топлива", "Задержка аерхнего аварийного сигнала уровня топлива", "Уровень включения подкачки топлива", "Уровень выключения подкачки топлива", "Настройки оборотов двигателя", "Количество зубьев маховика", "Нижний аварийный уровень оборотов двигателя", "Верхний аварийный уровень оборотов двигателя", "Настройки цифрового входа А", "Задержка", "Сообщение", "Настройки цифрового входа B", "Задержка", "Сообщение", "Настройки цифрового входа C", "Задержка", "Сообщение", "Настройки цифрового входа D", "Задержка", "Сообщение", "Настройки цифровых выходов", "Функция цифровых выходов A и B", "Функция цифровых выходов C и D", "Функция цифровых выходов E и F", "Коммутационные скачки сети", "Задержка запуска", "Время пркрутки стартера", "Пауза между прокрутками стартера", "Время работы на холостых оборотах", "Задержка перехода на номинальные обороты", "Время блокировки контроля параметров при старте", "Время прогрева", "Пауза между переключениями", "Длина импульса отключения генераторного автомата", "Длина импульса включения генераторного автомата", "Длина импульса отключения сетевого автомата", "Длина импульса включения сетевого автомата", "Задержка останова", "Время охлаждения", "Время охлаждения на холостых оборотах", "Время работы стопового соленоида", "Задержка сигнала «Сбой останова»", "Коммутационные скачки параметров генератора", "Настройки генератора", "Номинальная активная мощность генератора", "Номинальная реактивная мощность генеартора", "Номинальная полная мощность генератора", "Номинальная частота генератора", "Первичный ток трансформатора", "Полная номинальная нагрузка", "Коэффициент трансформатора тока", "Количество полюсов генератора", "Настройки событий генератора", "Нижний аварийный уровень напряжения генератора", "Нижний предупредтельный уровень напряжения генератора", "Верхний предупредительный уровень напряжения генератора", "Верхний аварийный уровень напряжения генератора", "Нижний аварийный уровень частоты генератора", "Нижний предупредительный уровень частоты генератора", "Верхний предупредительный уровень частоты генератора", "Верхний аварийный уровень частоты генератора", "Тепловая защита генератора", "Токовая отсечка генератора", "Верхний аварийный уровень тока генератора", "Задержка верхнего аваарийного сигнала тревоги тока генератора", "Уровень защиты от перегрузки генератора", "Задержка срабатывания защиты от перегрузки генератора", "Уровень допустимого перекоса фаз генератора", "Задержка срабатывания защиты перекоса фаз генератора", "Настройки сети", "Настройки событий сети", "Нижний аварийный уровень напряжения сети", "Верхний аварийный уровень напряжения сети", "Нижний аварийный уровень частоты сети", "Верхний аварийный уровень частоты сети", "Настройки двигателя", "Уровень включения свечей накаливания", "Длительность работы свечей накаливания", "Настройки стартера", "Отключить стартер по частоте генератора", "Давление масла отключения стартера", "Напряжение зарядного генератора отключения стартаера", "Обороты двигателя отключения стартера", "Настройки событий АКБ", "Нижний аварийный уровень напряжения АКБ", "Задержка нижнего аварийного сигнала напряжения АКБ", "Верхний аварийный уровень напряжения АКБ ", "Задержка верхнего аварийного сигнала напряжения АКБ", "Уровень аварийного сигнала зарядного генератора", "Задержка аварийного сигнала зарядного генератора", "Настройки событий ТО", "Периодв срабатывания ТО масло", "Периодв срабатывания ТО воздух", "Периодв срабатывания ТО топливо", "Настройки журнала", "Настройки измерений", "Интервал времени между измерениями"};
 const fix16_t     scaleMulArray[CONFIG_SCALE_NUM] = { 655, 6554, 65536 };

@@ -112,6 +112,7 @@
 #define CANC           6U
 
 
+
 #define STAR           0x01U
 #define TRIANGLE       0x02U
 #define ONE_FASE       0x00U
@@ -161,7 +162,7 @@ fix16_t xADCGetGENL1RealPower();
 fix16_t xADCGetGENL2RealPower();
 fix16_t xADCGetGENL3RealPower();
 
-
+fix16_t xADCGetCAC();
 fix16_t xADCGetVDD();              // Функция возращает наряжения АКБ.
 fix16_t xADCGetSOP();
 fix16_t xADCGetSCT();

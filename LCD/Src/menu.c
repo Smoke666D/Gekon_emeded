@@ -174,7 +174,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         }
         else
         {
-          pCurObject = &menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5U];
+          pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5U];
           vExitCurObject();
         }
         break;
@@ -188,13 +188,12 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         break;
     }
   }
-  else if ( key == KEY_STOP_BREAK )
-  {
-    uSettingScreen = 0U;
-  }
   else
   {
-
+    if ( key==  (KEY_STOP_BREAK) )
+    {
+      uSettingScreen = 0U;
+    }
   }
   return;
 }
@@ -343,7 +342,7 @@ void vMenuTask ( void )
   //Блок отрисовки экранов
   if ( temp_counter == 2U )
   {
-    vDrawObject( pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets );
+    vDrawObject( ( xScreenObjet * )pCurrMenu->pHomeMenu[pCurrMenu->pCurrIndex].pScreenCurObjets );
     vLCDRedraw();
     temp_counter = 0U;
   }
@@ -1098,6 +1097,10 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
     case  IN_VDD:
       fix16_to_str( xADCGetVDD(), Data, 2U );
+      vStrAdd(Data,"В");
+      break;
+    case IN_CAC:
+      fix16_to_str( xADCGetCAC(), Data, 2U );
       vStrAdd(Data,"В");
       break;
     case NET_L1_LINE_V:

@@ -119,8 +119,8 @@ void Error_Handler(void);
 #define AIN_GEN_PH2_GPIO_Port GPIOB
 #define AIN_GEN_PH1_Pin GPIO_PIN_1
 #define AIN_GEN_PH1_GPIO_Port GPIOB
-#define CHARG_ALTER_ON_Pin GPIO_PIN_2
-#define CHARG_ALTER_ON_GPIO_Port GPIOB
+#define CHARG_ON_Pin GPIO_PIN_2
+#define CHARG_ON_GPIO_Port GPIOB
 #define ANALOG_SWITCH_Pin GPIO_PIN_11
 #define ANALOG_SWITCH_GPIO_Port GPIOF
 #define DIN_OFFSET_Pin GPIO_PIN_12

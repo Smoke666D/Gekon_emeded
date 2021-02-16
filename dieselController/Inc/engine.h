@@ -111,7 +111,6 @@ typedef enum
 {
   CHARGER_STATUS_IDLE,
   CHARGER_STATUS_STARTUP,
-  CHARGER_STATUS_IMPULSE,
   CHARGER_STATUS_DELAY,
   CHARGER_STATUS_MEASURING,
   CHARGER_STATUS_ERROR,
@@ -177,16 +176,13 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION        enb       : 1U;
-  CHARGER_STATUS    status    : 3U;
-  uint8_t           attempts;
-  uint8_t           iteration;
+  PERMISSION        enb    : 1U;
+  PERMISSION        start  : 1U;
+  CHARGER_STATUS    status : 3U;
   getValueCallBack  get;
   RELAY_DEVICE      relay;
   SYSTEM_TIMER      timer;
-  fix16_t           setpoint;
-  ERROR_TYPE        error;
-  ALARM_TYPE        warning;
+  ALARM_TYPE        alarm;
 } CHARGER_TYPE;
 
 typedef struct __packed

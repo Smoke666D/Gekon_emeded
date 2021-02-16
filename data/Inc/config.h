@@ -10,12 +10,12 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
 #define   MAX_BIT_MAP_LENGTH           14U
-#define   SETTING_REGISTER_NUMBER      125U
+#define   SETTING_REGISTER_NUMBER      123U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
 #define   CONFIG_MAX_SIZE              83U     // bytes
-#define   CONFIG_TOTAL_SIZE            505U   // bytes
+#define   CONFIG_TOTAL_SIZE            499U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )
@@ -192,17 +192,15 @@ typedef struct __packed
 #define   BATTERY_UNDER_VOLTAGE_DELAY_ADR                        111U
 #define   BATTERY_OVER_VOLTAGE_LEVEL_ADR                         112U
 #define   BATTERY_OVER_VOLTAGE_DELAY_ADR                         113U
-#define   BATTERY_CHARGE_SHUTDOWN_LEVEL_ADR                      114U
-#define   BATTERY_CHARGE_SHUTDOWN_DELAY_ADR                      115U
-#define   BATTERY_CHARGE_WARNING_LEVEL_ADR                       116U
-#define   BATTERY_CHARGE_WARNING_DELAY_ADR                       117U
-#define   MAINTENANCE_ALARMS_ADR                                 118U
-#define   MAINTENANCE_ALARM_OIL_TIME_ADR                         119U
-#define   MAINTENANCE_ALARM_AIR_TIME_ADR                         120U
-#define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        121U
-#define   LOG_SETUP_ADR                                          122U
-#define   RECORD_SETUP_ADR                                       123U
-#define   RECORD_INTERVAL_ADR                                    124U
+#define   BATTERY_CHARGE_ALARM_LEVEL_ADR                         114U
+#define   BATTERY_CHARGE_ALARM_DELAY_ADR                         115U
+#define   MAINTENANCE_ALARMS_ADR                                 116U
+#define   MAINTENANCE_ALARM_OIL_TIME_ADR                         117U
+#define   MAINTENANCE_ALARM_AIR_TIME_ADR                         118U
+#define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        119U
+#define   LOG_SETUP_ADR                                          120U
+#define   RECORD_SETUP_ADR                                       121U
+#define   RECORD_INTERVAL_ADR                                    122U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   MODULE_TYPE_ADR                              0U
 #define   ALARM_ALL_BLOCK_ADR                          1U
@@ -282,8 +280,7 @@ typedef struct __packed
 #define   STARTER_STOP_SPEED_ENB_ADR                   3U
 #define   BATTERY_UNDER_VOLTAGE_ENB_ADR                0U
 #define   BATTERY_OVER_VOLTAGE_ENB_ADR                 1U
-#define   BATTERY_CHARGE_SHUTDOWN_ENB_ADR              2U
-#define   BATTERY_CHARGE_WARNING_ENB_ADR               3U
+#define   BATTERY_CHARGE_ALARM_ENB_ADR                 2U
 #define   MAINTENANCE_ALARM_OIL_ENB_ADR                0U
 #define   MAINTENANCE_ALARM_OIL_ACTION_ADR             1U
 #define   MAINTENANCE_ALARM_AIR_ENB_ADR                2U
@@ -421,10 +418,8 @@ extern eConfigReg batteryUnderVoltageLevel;
 extern eConfigReg batteryUnderVoltageDelay;
 extern eConfigReg batteryOverVoltageLevel;
 extern eConfigReg batteryOverVoltageDelay;
-extern eConfigReg batteryChargeShutdownLevel;
-extern eConfigReg batteryChargeShutdownDelay;
-extern eConfigReg batteryChargeWarningLevel;
-extern eConfigReg batteryChargeWarningDelay;
+extern eConfigReg batteryChargeAlarmLevel;
+extern eConfigReg batteryChargeAlarmDelay;
 extern eConfigReg maintenanceAlarms;
 extern eConfigReg maintenanceAlarmOilTime;
 extern eConfigReg maintenanceAlarmAirTime;

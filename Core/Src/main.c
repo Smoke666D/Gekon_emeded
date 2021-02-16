@@ -51,6 +51,7 @@
 #include "controller.h"
 #include "alarm.h"
 #include "measurement.h"
+#include "charger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1156,7 +1157,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
+  HAL_GPIO_WritePin(GPIOB, CHARG_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -1209,7 +1210,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : CHARG_ALTER_ON_Pin POUT_A_Pin POUT_B_Pin LD3_Pin
                            LED2_Pin EEPROM_NSS_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
+  GPIO_InitStruct.Pin = CHARG_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -1307,6 +1308,7 @@ void StartDefaultTask(void *argument)
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
+  vCHARGERinit( CHARG_ON_GPIO_Port, CHARG_ON_Pin);
   vALARMinit();                               /* Activ error list initialization */
   vENGINEinit();                              /**/
   vELECTROinit( &htim12 );                    /**/

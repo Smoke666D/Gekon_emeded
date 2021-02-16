@@ -22,6 +22,7 @@
 #include "alarm.h"
 #include "debug.h"
 #include "lcd.h"
+#include "charger.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE           engine              = { 0U };
 static OIL_TYPE              oil                 = { 0U };
@@ -963,9 +964,9 @@ void vENGINEdataInit ( void )
   /*--------------------------------------------------------------*/
   charger.enb                      = PERMISSION_ENABLE;
   charger.status                   = CHARGER_STATUS_IDLE;
-  charger.get                      = getChargerInput;
+  charger.get                      = xADCGetCAC;
   charger.relay.enb                = PERMISSION_ENABLE;
-  charger.relay.set                = setChargerOutput;
+  charger.relay.set                = vCHARGERset;
   charger.relay.status             = RELAY_OFF;
   charger.timer.delay              = chargerImpulseDuration;
   charger.timer.id                 = LOGIC_DEFAULT_TIMER_ID;

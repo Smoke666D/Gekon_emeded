@@ -1106,6 +1106,7 @@ void vDecNetural(int16_t * data)
   return;
 }
 
+
 #define MAX_ZERO_POINT 20
 #define FASE_DETECT_HISTERESIS  30
 

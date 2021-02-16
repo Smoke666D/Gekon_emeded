@@ -1559,7 +1559,6 @@ void vENGINEtask ( void* argument )
               oil.preAlarm.error.active          = PERMISSION_DISABLE;
               battery.hightAlarm.error.active    = PERMISSION_DISABLE;
               battery.lowAlarm.error.active      = PERMISSION_DISABLE;
-              //charger.alarm.error.active         = PERMISSION_DISABLE;
               engine.status                      = ENGINE_STATUS_BUSY_STARTING;
               vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
               vLCD_BrigthOFF();
@@ -1583,11 +1582,22 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_READY:
-              starter.iteration++;
-              starter.status = STARTER_CRANKING;
-              starter.set( RELAY_ON );
-              commonTimer.delay = starter.crankingDelay;
-              vLOGICstartTimer( &commonTimer );
+              if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
+              {
+                vLCD_BrigthOn();
+                starterFinish     = 1U;
+                starter.status    = STARTER_CONTROL_BLOCK;
+                commonTimer.delay = starter.blockDelay;
+                vLOGICstartTimer( &commonTimer );
+              }
+              else
+              {
+                starter.iteration++;
+                starter.status    = STARTER_CRANKING;
+                commonTimer.delay = starter.crankingDelay;
+                starter.set( RELAY_ON );
+                vLOGICstartTimer( &commonTimer );
+              }
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_CRANKING:
@@ -1642,7 +1652,6 @@ void vENGINEtask ( void* argument )
                 battery.hightAlarm.error.active    = PERMISSION_ENABLE;
                 battery.lowAlarm.error.active      = PERMISSION_ENABLE;
                 charger.start                      = PERMISSION_ENABLE;
-                //charger.alarm.error.active    = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS );
                 vLOGICprintStarterStatus( starter.status );
               }

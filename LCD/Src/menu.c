@@ -1188,13 +1188,6 @@ void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       Data[3]=0;
       break;
 
-    case 2:
-      Data[0]='1';
-      Data[1]='0';
-      Data[2]='0';
-      Data[3]=0;
-      break;
-
     default:
       Data[0]='1';
       Data[1]='0';

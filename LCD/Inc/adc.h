@@ -20,6 +20,7 @@
 #include "fix16.h"
 #include "stdlib.h"
 #include "engine.h"
+#include "electro.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U
@@ -113,9 +114,7 @@
 
 
 
-#define STAR           0x01U
-#define TRIANGLE       0x02U
-#define ONE_FASE       0x00U
+
 
 
 #define DC_SIZE        50U

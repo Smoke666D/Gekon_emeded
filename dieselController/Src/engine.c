@@ -464,7 +464,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   #if ( DEBUG_SERIAL_STATUS > 0U )
     char buffer[10U] = { 0U };
   #endif
-  if ( starter.startCrit.critGenFreqEnb > 0U  )
+  if ( starter.startCrit.critGenFreqEnb == PERMISSION_ENABLE )
   {
     if ( vADCGetGenFreqPres() == FREQ_DETECTED )
     {
@@ -484,7 +484,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
       #endif
     }
   }
-  if ( ( starter.startCrit.critOilPressEnb > 0U ) && ( pressure >= starter.startCrit.critOilPressLevel ) )
+  if ( ( starter.startCrit.critOilPressEnb == PERMISSION_ENABLE ) && ( pressure >= starter.startCrit.critOilPressLevel ) )
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
@@ -494,7 +494,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
       vSYSSerial( "\r\n" );
     #endif
   }
-  if ( ( starter.startCrit.critChargeEnb > 0U ) && ( voltage >= starter.startCrit.critChargeLevel ) )
+  if ( ( starter.startCrit.critChargeEnb == PERMISSION_ENABLE ) && ( voltage >= starter.startCrit.critChargeLevel ) )
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
@@ -504,7 +504,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
       vSYSSerial( "\r\n" );
     #endif
   }
-  if ( ( starter.startCrit.critSpeedEnb > 0U ) && ( speed >= starter.startCrit.critSpeedLevel ) )
+  if ( ( starter.startCrit.critSpeedEnb == PERMISSION_ENABLE ) && ( speed >= starter.startCrit.critSpeedLevel ) )
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )

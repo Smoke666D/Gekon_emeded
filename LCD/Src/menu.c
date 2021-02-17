@@ -912,11 +912,14 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
      {
         StartArray[39]=0U;
      }
-     if ( ScrollDelay >VIEW_DELAY)
+     if ( ScrollDelay >=VIEW_DELAY)
      {
         *shift=*shift+1;
         if ((*shift) >= (utemp-38U))
-        *shift=0;
+        {
+          *shift=0;
+          ScrollDelay =0;
+        }
      }
   }
   else

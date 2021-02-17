@@ -1088,6 +1088,10 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
               {
                 res = DATA_API_STAT_EEPROM_ERROR;
               }
+              else
+              {
+                logCash.size = 0U;
+              }
             }
             xSemaphoreGive( xSemaphore );
           }

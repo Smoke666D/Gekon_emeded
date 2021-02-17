@@ -279,6 +279,8 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         if  ((key_ready & SET_MENU_READY)!=0)
         {
             //Переход в меню
+            pCurrMenu = &xSettingsMenu;
+            pCurrMenu->pCurrIndex = 0U;
         }
       }
       break;
@@ -337,7 +339,7 @@ void vMenuTask ( void )
      }
 
 
-
+  osDelay(100);
   temp_counter++;
   //Блок отрисовки экранов
   if ( temp_counter == 2U )
@@ -931,6 +933,8 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
  * !!!Важно.Для кооректого исполнения комманд, первой должна обязатаельнос вывполнятся команда ALARM_COUNT или EVENT_COUNT
  * В связи с тем, что функция писалась под конкретную сруктуру вывода в меню, для сокращения обращений к памяти, текущая запись кэшируется при выволненении команды ALARM_COUNT или EVENT_COUNT
  */
+
+
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
@@ -944,10 +948,10 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
       if (utemp >0)
       {
-         if (++ALD>12)
+         if (++ALD>BLINK_TIME)
          {
            vStrCopy(Data,"О");
-           if (ALD ==24)
+           if (ALD ==(BLINK_TIME*2))
            ALD=0;
          }
       }
@@ -1116,8 +1120,13 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
       {
         Data[0]=0;
-        break;
       }
+      else
+      {
+        fix16_to_str(  xADCGetREG(ID), Data, 0U );
+        vStrAdd(Data," В");
+      }
+      break;
     case NET_L1_FASE_V:
     case GEN_L1_LINE_V:
     case NET_L1_LINE_V:

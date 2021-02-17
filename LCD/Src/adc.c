@@ -83,7 +83,7 @@ static ELECTRO_SCHEME xNetWiring  =ELECTRO_SCHEME_START;
 static uint16_t uCosFiPeriod =0;
 static uint16_t uCosFiMax =0;
 static fix16_t  xTransCoof =0;
-fix16_t  GENERATOR_DATA[35]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
 
@@ -111,6 +111,12 @@ SENSOR_TYPE xADCGetxOPChType(void)
 SENSOR_TYPE xADCGetxCTChType(void)
 {
  return xCTChType;
+
+}
+
+ELECTRO_SCHEME xADCGetScheme(void)
+{
+  return xNetWiring;
 
 }
 
@@ -281,6 +287,25 @@ fix16_t xADCGetGENRealPower()
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_REAL_POWER];
 }
+
+fix16_t xADCGetGENL1ActivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L1_APER_POWER];
+}
+
+fix16_t xADCGetGENL2ActivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L2_APER_POWER];
+}
+
+fix16_t xADCGetGENL3ActivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L3_APER_POWER];
+}
+
 
 fix16_t xADCGetGENL1RealPower()
 {
@@ -472,6 +497,23 @@ void vADCGeneratorDataUpdate()
     temp = fix16_mul(GENERATOR_DATA[GEN_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_REAL_POWER],temp);
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_REAL_POWER]);
+
+
+    GENERATOR_DATA[GEN_AVER_V] = GENERATOR_DATA[GEN_L1_LINE_V];
+    GENERATOR_DATA[GEN_AVER_A] = GENERATOR_DATA[GEN_L1_CUR];
+    GENERATOR_DATA[GEN_AVER_P] = GENERATOR_DATA[GEN_L1_APER_POWER];
+
+    if (xNetWiring != ELECTRO_SCHEME_SINGLE_PHASE)
+    {
+      GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L2_LINE_V]);
+      GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L3_LINE_V]);
+      GENERATOR_DATA[GEN_AVER_V] = fix16_div(GENERATOR_DATA[GEN_AVER_V],x3);
+
+      GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L2_CUR]);
+      GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L3_CUR]);
+      GENERATOR_DATA[GEN_AVER_A] = fix16_div(GENERATOR_DATA[GEN_AVER_A],x3);
+    }
+
 
   }
 }

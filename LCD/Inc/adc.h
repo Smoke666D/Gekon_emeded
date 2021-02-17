@@ -20,6 +20,7 @@
 #include "fix16.h"
 #include "stdlib.h"
 #include "engine.h"
+#include "electro.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U
@@ -84,7 +85,9 @@
 #define NET_L2_LINE_V       33
 #define NET_L3_FASE_V       34
 #define NET_L3_LINE_V       35
-
+#define GEN_AVER_V          36
+#define GEN_AVER_A          37
+#define GEN_AVER_P          38
 
 /*
  * Номиналы резисторов
@@ -113,9 +116,7 @@
 
 
 
-#define STAR           0x01U
-#define TRIANGLE       0x02U
-#define ONE_FASE       0x00U
+
 
 
 #define DC_SIZE        50U
@@ -161,6 +162,10 @@ fix16_t xADCGetGENRealPower();
 fix16_t xADCGetGENL1RealPower();
 fix16_t xADCGetGENL2RealPower();
 fix16_t xADCGetGENL3RealPower();
+fix16_t xADCGetGENL1ActivePower();
+fix16_t xADCGetGENL2ActivePower();
+fix16_t xADCGetGENL3ActivePower();
+
 
 fix16_t xADCGetCAC();
 fix16_t xADCGetVDD();              // Функция возращает наряжения АКБ.
@@ -195,5 +200,5 @@ void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 uint8_t uADCGetDCChError();
 SENSOR_TYPE xADCGetxCTChType(void);
 xADCGenDetectType vADCGetGenFreqPres( void );
-
+ELECTRO_SCHEME xADCGetScheme(void);
 #endif /* INC_ADC_H_ */

@@ -24,6 +24,8 @@
 #define RIGTH_ALIGN         2U
 #define LEFT_ALIGN          3U
 #define NO_ALIGN            0U
+
+#define BLINK_TIME  2
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
 #define KEY_UP_BREAK        up_key | BRAKECODE //1U
 #define KEY_UP              up_key | MAKECODE //2U

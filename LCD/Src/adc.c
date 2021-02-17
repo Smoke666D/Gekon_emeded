@@ -79,11 +79,11 @@ static uint32_t ADC2Freq =10000;
 static uint8_t uNetFaseRotation = NO_ROTATION;
 static uint8_t uGenFaseRotation = NO_ROTATION;
 static fix16_t xCosFi =0;
-static uint8_t xNetWiring  =STAR;
+static ELECTRO_SCHEME xNetWiring  =ELECTRO_SCHEME_START;
 static uint16_t uCosFiPeriod =0;
 static uint16_t uCosFiMax =0;
 static fix16_t  xTransCoof =0;
-fix16_t  GENERATOR_DATA[35]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
 
@@ -114,6 +114,12 @@ SENSOR_TYPE xADCGetxCTChType(void)
 
 }
 
+ELECTRO_SCHEME xADCGetScheme(void)
+{
+  return xNetWiring;
+
+}
+
 /*
  *  Функция возращает наряжения АКБ.
  */
@@ -135,8 +141,7 @@ fix16_t xADCGetCAC()
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   //Пересчитываем его в реальное напяжение.
   xCAC = fix16_mul( fix16_from_int( uCAC ),  xVDD_CF );
-  //Вычитаем падение на диоде
-  // xVDD = fix16_sub( xVDD, VT4 );
+
   return xCAC;
 
 }
@@ -283,6 +288,25 @@ fix16_t xADCGetGENRealPower()
   return GENERATOR_DATA[GEN_REAL_POWER];
 }
 
+fix16_t xADCGetGENL1ActivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L1_APER_POWER];
+}
+
+fix16_t xADCGetGENL2ActivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L2_APER_POWER];
+}
+
+fix16_t xADCGetGENL3ActivePower()
+{
+  vADCGeneratorDataUpdate();
+  return GENERATOR_DATA[GEN_L3_APER_POWER];
+}
+
+
 fix16_t xADCGetGENL1RealPower()
 {
   vADCGeneratorDataUpdate();
@@ -361,7 +385,7 @@ void vADCNetDataUpdate()
     GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
 
 
-    if (xNetWiring==STAR)
+    if (xNetWiring==ELECTRO_SCHEME_START)
        {
          GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(xNET_F1_VDD, fix16_sqrt(x3 ));
          GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(xNET_F2_VDD, fix16_sqrt(x3 ));
@@ -394,7 +418,7 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_L2_FASE_V] =fix16_mul(xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
     GENERATOR_DATA[GEN_L3_FASE_V] =fix16_mul(xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
     //Вычисление линений значений напряжения
-    if (xNetWiring==STAR)
+    if (xNetWiring==ELECTRO_SCHEME_START)
     {
       GENERATOR_DATA[GEN_L1_LINE_V]=fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V], fix16_sqrt(x3 ));
       GENERATOR_DATA[GEN_L2_LINE_V]=fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V], fix16_sqrt(x3 ));
@@ -474,6 +498,23 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_REAL_POWER],temp);
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_REAL_POWER]);
 
+
+    GENERATOR_DATA[GEN_AVER_V] = GENERATOR_DATA[GEN_L1_LINE_V];
+    GENERATOR_DATA[GEN_AVER_A] = GENERATOR_DATA[GEN_L1_CUR];
+    GENERATOR_DATA[GEN_AVER_P] = GENERATOR_DATA[GEN_L1_APER_POWER];
+
+    if (xNetWiring != ELECTRO_SCHEME_SINGLE_PHASE)
+    {
+      GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L2_LINE_V]);
+      GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L3_LINE_V]);
+      GENERATOR_DATA[GEN_AVER_V] = fix16_div(GENERATOR_DATA[GEN_AVER_V],x3);
+
+      GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L2_CUR]);
+      GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L3_CUR]);
+      GENERATOR_DATA[GEN_AVER_A] = fix16_div(GENERATOR_DATA[GEN_AVER_A],x3);
+    }
+
+
   }
 }
 
@@ -497,7 +538,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       uTemp = GetAverVDD( 3U, DC_SIZE, 4,(int16_t *)&ADC1_IN_Buffer );
       xADC_TEMP = fix16_sub(  fix16_from_float(uTemp*3.3/4095U), fix16_from_float( 0.76 ) );
       xADC_TEMP = fix16_div( xADC_TEMP, fix16_from_float(0.0025) );
-      xADC_TEMP = fix16_add(xADC_TEMP, fix16_from_int( 25 ) );
+      xADC_TEMP = fix16_add( xADC_TEMP, fix16_from_int( 25 ) );
       //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
       uADCError = 0U;
       if ( ( uCSA - uCAS ) <= DELTA )
@@ -934,6 +975,10 @@ void vADCConfigInit(void)
 
             eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);  //считываем коофицент трансформамции
             xTransCoof = fix16_from_int(tempdata);
+
+            eDATAAPIconfigValue(DATA_API_CMD_READ, GEN_SETUP_ADR ,&bitmask);
+            eDATAAPIconfigAtrib (DATA_API_CMD_READ, GEN_SETUP_ADR, &atrib );
+            xNetWiring  = (bitmask  & atrib.bitMap[GEN_AC_SYS_ADR ].mask) >>atrib.bitMap[GEN_AC_SYS_ADR ].shift;
            break;
          }
 
@@ -944,8 +989,6 @@ void vADCConfigInit(void)
 
 void vADCInit(void)
 {
-
-
 
       HAL_GPIO_WritePin( ON_INPOW_GPIO_Port,ON_INPOW_Pin, GPIO_PIN_SET );
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
@@ -964,7 +1007,6 @@ void vADCInit(void)
       hadc1.DMA_Handle->XferErrorCallback = ADC_DMAErro;
       ADC_VALID_DATA =0;
       vADCConfigInit();
-
 
 }
 
@@ -1394,7 +1436,7 @@ uint8_t vADCGetADC12Data()
    else
    {
      //Если по каким-то причинам мы не можем в текущий момент расчитать значение частоты напрежения генератора, то считаем ток арефмечтический исходя из максимального значения
-     fix_temp =    fix16_sqrt(fix16_from_int(2));
+     fix_temp =    fix16_sqrt( fix16_from_int(2) );
      xGEN_F1_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 )), fix_temp );
      xGEN_F2_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 1, uCurPeriod, &DF3,3 )), fix_temp );
      xGEN_F3_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 2, uCurPeriod, &DF3,3 )), fix_temp );
@@ -1427,7 +1469,6 @@ fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc )
   for (uint16_t i=0;i<size*cc;i=i+cc)
   {
     sum =sum+ source[i+off]*source[i+off];
-
   }
   sum =sum/size;
   return fix16_from_int (sqrt(sum));

@@ -79,7 +79,7 @@ static uint32_t ADC2Freq =10000;
 static uint8_t uNetFaseRotation = NO_ROTATION;
 static uint8_t uGenFaseRotation = NO_ROTATION;
 static fix16_t xCosFi =0;
-static ELECTRO_SCHEME xNetWiring  =ELECTRO_SCHEME_START;
+static ELECTRO_SCHEME xNetWiring  =ELECTRO_SCHEME_STAR;
 static uint16_t uCosFiPeriod =0;
 static uint16_t uCosFiMax =0;
 static fix16_t  xTransCoof =0;
@@ -385,7 +385,7 @@ void vADCNetDataUpdate()
     GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
 
 
-    if (xNetWiring==ELECTRO_SCHEME_START)
+    if (xNetWiring==ELECTRO_SCHEME_STAR)
        {
          GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(xNET_F1_VDD, fix16_sqrt(x3 ));
          GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(xNET_F2_VDD, fix16_sqrt(x3 ));
@@ -418,7 +418,7 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_L2_FASE_V] =fix16_mul(xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
     GENERATOR_DATA[GEN_L3_FASE_V] =fix16_mul(xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
     //Вычисление линений значений напряжения
-    if (xNetWiring==ELECTRO_SCHEME_START)
+    if (xNetWiring==ELECTRO_SCHEME_STAR)
     {
       GENERATOR_DATA[GEN_L1_LINE_V]=fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V], fix16_sqrt(x3 ));
       GENERATOR_DATA[GEN_L2_LINE_V]=fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V], fix16_sqrt(x3 ));

@@ -165,10 +165,16 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
       vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON );
       controller.state = CONTROLLER_STATUS_ALARM;
       vENGINEsendCmd( ENGINE_CMD_EMEGENCY_STOP );
+      vELECTROsendCmd( ELECTRO_CMD_LOAD_MAINS );
       vFPOsetGenReady( RELAY_OFF );
       vFPOsetAlarm( RELAY_ON );
       vFPOsetReadyToStart( RELAY_OFF );
       vFPOsetDpsReady( RELAY_OFF );
+      eLOGaddRecord( &record );
+      break;
+
+    case ACTION_SHUTDOWN:
+      vELECTROsendCmd( ELECTRO_CMD_LOAD_MAINS );
       eLOGaddRecord( &record );
       break;
 

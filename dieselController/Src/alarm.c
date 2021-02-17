@@ -89,49 +89,52 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
       break;
     case ERROR_LIST_CMD_ACK:
       /*------------------- ACK -------------------*/
-      if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+      if ( activeErrorList.counter > 0U )
       {
-        for ( i=0U; i<activeErrorList.counter; i++ )
+        if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
         {
-          if ( ( activeErrorList.array[i].event.type   == record->event.type   ) &&
-               ( activeErrorList.array[i].event.action == record->event.action ) )
+          for ( i=0U; i<activeErrorList.counter; i++ )
           {
-            number = i;
-            break;
+            if ( ( activeErrorList.array[i].event.type   == record->event.type   ) &&
+                 ( activeErrorList.array[i].event.action == record->event.action ) )
+            {
+              number = i;
+              break;
+            }
           }
-        }
-        for ( i=number; i<activeErrorList.counter; i++ )
-        {
-          activeErrorList.array[i] = activeErrorList.array[i + 1U];
-        }
-        if ( activeErrorList.counter > 0U )
-        {
-          activeErrorList.counter--;
-        }
-        /*------------- Check warnings --------------*/
-        warningCounter = 0U;
-        for ( i=0U; i<activeErrorList.counter; i++ )
-        {
-          if ( vALARMisWarning( activeErrorList.array[i] ) > 0U )
+          for ( i=number; i<activeErrorList.counter; i++ )
           {
-            warningCounter++;
+            activeErrorList.array[i] = activeErrorList.array[i + 1U];
           }
-        }
-        /*------------- Check status ----------------*/
-        if ( activeErrorList.counter > 0U )
-        {
-          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
-          if ( warningCounter > 0U )
+          if ( number < activeErrorList.counter )
           {
-            vFPOsetWarning( RELAY_ON );
+            activeErrorList.counter--;
           }
+          /*------------- Check warnings --------------*/
+          warningCounter = 0U;
+          for ( i=0U; i<activeErrorList.counter; i++ )
+          {
+            if ( vALARMisWarning( activeErrorList.array[i] ) > 0U )
+            {
+              warningCounter++;
+            }
+          }
+          /*------------- Check status ----------------*/
+          if ( activeErrorList.counter > 0U )
+          {
+            activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
+            if ( warningCounter > 0U )
+            {
+              vFPOsetWarning( RELAY_ON );
+            }
+          }
+          else
+          {
+            activeErrorList.status = ERROR_LIST_STATUS_EMPTY;
+            vFPOsetWarning( RELAY_OFF );
+          }
+          xSemaphoreGive( xAELsemaphore );
         }
-        else
-        {
-          activeErrorList.status = ERROR_LIST_STATUS_EMPTY;
-          vFPOsetWarning( RELAY_OFF );
-        }
-        xSemaphoreGive( xAELsemaphore );
       }
       break;
     case ERROR_LIST_CMD_COUNTER:
@@ -215,10 +218,13 @@ void vERRORrelax ( ERROR_TYPE* error )
 void vERRORtriggering ( ERROR_TYPE* error )
 {
   LOG_RECORD_TYPE record   = { 0U };
-  vSYSeventSend( error->event, &record );
-  if ( uALARMisForList( &error->event ) > 0U )
+  if ( error->ignor == PERMISSION_DISABLE )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+    vSYSeventSend( error->event, &record );
+    if ( uALARMisForList( &error->event ) > 0U )
+    {
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+    }
   }
   error->trig = TRIGGER_SET;
   return;
@@ -237,6 +243,13 @@ void vERRORreset ( ERROR_TYPE* error )
 {
   error->trig   = TRIGGER_IDLE;
   error->status = ALARM_STATUS_IDLE;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vALARMreset ( ALARM_TYPE* alarm )
+{
+  vLOGICresetTimer( &alarm->timer );
+  vERRORreset( &alarm->error );
   return;
 }
 /*-----------------------------------------------------------------------------------------*/

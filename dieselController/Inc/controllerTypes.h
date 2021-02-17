@@ -20,11 +20,11 @@
 #define  LOG_SIZE                   255U
 #define  LOG_RECORD_SIZE            6U
 #define  LOGIC_TIMER_STEP           100U  /* ms */
-#define  LOGIC_COUNTERS_SIZE        10U
+#define  LOGIC_COUNTERS_SIZE        16U
 #define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
 #define  LOG_TYPES_SIZE             39U
-#define  LOG_ACTION_SIZE            8U
+#define  LOG_ACTION_SIZE            9U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
 #define  SYS_TIMER_SEMAPHORE_DELAY  200U
@@ -47,7 +47,7 @@
 #define  FUEL_SENSOR_SOURCE         xADCGetSFL
 #define  COOLANT_SENSOR_SOURCE      xADCGetSCT
 /*------------------------ Types ---------------------------------------*/
-typedef  uint8_t timerID_t;
+typedef  uint16_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/
 extern const char*   logTypesDictionary[LOG_TYPES_SIZE];

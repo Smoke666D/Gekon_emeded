@@ -20,7 +20,7 @@
 #include "fix16.h"
 #include "stdlib.h"
 #include "engine.h"
-#include "electro.h"
+#include "controllerTypes.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U

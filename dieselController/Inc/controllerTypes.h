@@ -56,6 +56,13 @@ extern const fix16_t fix100U;
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
+  ELECTRO_SCHEME_STAR,
+  ELECTRO_SCHEME_TRIANGLE,
+  ELECTRO_SCHEME_SINGLE_PHASE,
+} ELECTRO_SCHEME;
+
+typedef enum
+{
   DATA_API_REINIT_CONFIG,
   DATA_API_REINIT_MAINTANCE,
 } DATA_API_REINIT;
@@ -75,11 +82,12 @@ typedef enum
   ACTION_NONE,                    /* 0 */
   ACTION_WARNING,                 /* 1 */
   ACTION_EMERGENCY_STOP,          /* 2 */
-  ACTION_PLAN_STOP,               /* 3 */
-  ACTION_PLAN_STOP_AND_BAN_START, /* 4 */
-  ACTION_BAN_START,               /* 5 */
-  ACTION_AUTO_START,              /* 6 */
-  ACTION_AUTO_STOP,               /* 7 */
+  ACTION_SHUTDOWN,                /* 3 */
+  ACTION_PLAN_STOP,               /* 4 */
+  ACTION_PLAN_STOP_AND_BAN_START, /* 5 */
+  ACTION_BAN_START,               /* 6 */
+  ACTION_AUTO_START,              /* 7 */
+  ACTION_AUTO_STOP,               /* 8 */
 } SYSTEM_ACTION;
 
 typedef enum
@@ -106,9 +114,9 @@ typedef enum
   EVENT_GENERATOR_LOW_FREQUENCY,    /* 19 WARNING & EMERGENCY_STOP */
   EVENT_GENERATOR_HIGHT_FREQUENCY,  /* 20 WARNING & EMERGENCY_STOP */
   EVENT_PHASE_IMBALANCE,            /* 21 EMERGENCY_STOP */
-  EVENT_OVER_CURRENT,               /* 22 PLAN_STOP */
-  EVENT_OVER_POWER,                 /* 23 PLAN_STOP */
-  EVENT_SHORT_CIRCUIT,              /* 24 PLAN_STOP */
+  EVENT_OVER_CURRENT,               /* 22 WARNING & SHUTDOWN | EMERGENCY_STOP */
+  EVENT_OVER_POWER,                 /* 23 SHUTDOWN | EMERGENCY_STOP */
+  EVENT_SHORT_CIRCUIT,              /* 24 SHUTDOWN | EMERGENCY_STOP */
   EVENT_MAINS_LOW_VOLTAGE,          /* 25 WARNING */
   EVENT_MAINS_HIGHT_VOLTAGE,        /* 26 WARNING */
   EVENT_MAINS_LOW_FREQUENCY,        /* 27 WARNING */

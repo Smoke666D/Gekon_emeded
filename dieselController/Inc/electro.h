@@ -25,13 +25,6 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  ELECTRO_SCHEME_STAR,
-  ELECTRO_SCHEME_TRIANGLE,
-  ELECTRO_SCHEME_SINGLE_PHASE,
-} ELECTRO_SCHEME;
-
-typedef enum
-{
   ELECTRO_STATUS_IDLE,
   ELECTRO_STATUS_LOAD,
 } ELECTRO_STATUS;
@@ -86,7 +79,6 @@ typedef struct __packed
 {
   getValueCallBack  getVoltage;
   getValueCallBack  getCurrent;
-  getValueCallBack  getPower;
 } ELECTRO_CHANNEL;
 
 typedef struct __packed
@@ -98,16 +90,10 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  fix16_t primary;
-  fix16_t nominal;
-} RATING_CURRENT;
-
-typedef struct __packed
-{
-  POWER_TYPE     power;
-  fix16_t        cosFi;
-  fix16_t        freq;
-  RATING_CURRENT current;
+  POWER_TYPE power;
+  fix16_t    cosFi;
+  fix16_t    freq;
+  fix16_t    current;
 } GENERATOR_RATING;
 
 typedef struct __packed
@@ -138,10 +124,13 @@ typedef struct __packed
 {
   PERMISSION         enb    : 1U;
   ELECTRO_STATUS     state  : 1U;
+  SYSTEM_TIMER       timer;
+  /*----------- DATA -----------*/
   GENERATOR_RATING   rating;
+  /*---------- INPUT -----------*/
+  getValueCallBack   getPower;
   ELECTRO_CHANNEL    line[GENERATOR_LINE_NUMBER];
   getValueCallBack   getFreq;
-  SYSTEM_TIMER       timer;
   /*---------- ALARMS ----------*/
   ALARM_TYPE         lowVoltageAlarm;
   ALARM_TYPE         lowVoltagePreAlarm;
@@ -151,8 +140,9 @@ typedef struct __packed
   ALARM_TYPE         lowFreqPreAlarm;
   ALARM_TYPE         hightFreqAlarm;
   ALARM_TYPE         hightFreqPreAlarm;
-  ALARM_TYPE         overloadAlarm;
-  ALARM_TYPE         phaseImbalanceAlarm;
+  ALARM_TYPE         powerAlarm;            /* Power protection */
+  ALARM_TYPE         phaseImbalanceAlarm;   /* Phase imbalance protection */
+  ALARM_TYPE         currentWarningAlarm;   /* Simple level alarm */
   CURRENT_ALARM_TYPE currentAlarm;
   /*---------- OUTPUT ----------*/
   RELAY_DEVICE       relay;

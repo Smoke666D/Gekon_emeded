@@ -21,7 +21,9 @@ const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",
     "Предупреждение",
     "Аварийная остановка",
+    "Отключение",
     "Плановая остановка",
+    "Остановка до устранения ошибки",
     "Запрет следующего старта",
     "Автостарт",
     "Автостоп"
@@ -115,6 +117,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "NONE",
     "WARNING",
     "EMERGENCY_STOP",
+    "SHUTDOWN",
     "PLAN_STOP",
     "PLAN_STOP_AND_BAN_START",
     "BAN_START",

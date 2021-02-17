@@ -279,6 +279,8 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         if  ((key_ready & SET_MENU_READY)!=0)
         {
             //Переход в меню
+            pCurrMenu = &xSettingsMenu;
+            pCurrMenu->pCurrIndex = 0U;
         }
       }
       break;
@@ -337,7 +339,7 @@ void vMenuTask ( void )
      }
 
 
-
+  osDelay(100);
   temp_counter++;
   //Блок отрисовки экранов
   if ( temp_counter == 2U )
@@ -910,11 +912,14 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
      {
         StartArray[39]=0U;
      }
-     if ( ScrollDelay >VIEW_DELAY)
+     if ( ScrollDelay >=VIEW_DELAY)
      {
         *shift=*shift+1;
         if ((*shift) >= (utemp-38U))
-        *shift=0;
+        {
+          *shift=0;
+          ScrollDelay =0;
+        }
      }
   }
   else
@@ -931,6 +936,8 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
  * !!!Важно.Для кооректого исполнения комманд, первой должна обязатаельнос вывполнятся команда ALARM_COUNT или EVENT_COUNT
  * В связи с тем, что функция писалась под конкретную сруктуру вывода в меню, для сокращения обращений к памяти, текущая запись кэшируется при выволненении команды ALARM_COUNT или EVENT_COUNT
  */
+
+
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
@@ -944,12 +951,14 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
       if (utemp >0)
       {
-         if (++ALD>1)
+         if (++ALD>BLINK_TIME)
          {
            vStrCopy(Data,"О");
+           if (ALD ==(BLINK_TIME*2))
            ALD=0;
          }
       }
+
       break;
     case ALARM_COUNT:
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
@@ -1103,18 +1112,29 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str( xADCGetCAC(), Data, 2U );
       vStrAdd(Data,"В");
       break;
-    case NET_L1_LINE_V:
     case NET_L2_LINE_V:
     case NET_L3_LINE_V:
-    case NET_L1_FASE_V:
     case NET_L2_FASE_V:
     case NET_L3_FASE_V:
-    case GEN_L1_LINE_V:
     case GEN_L2_LINE_V:
     case GEN_L3_LINE_V:
-    case GEN_L1_FASE_V:
     case GEN_L2_FASE_V:
     case GEN_L3_FASE_V:
+      if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
+      {
+        Data[0]=0;
+      }
+      else
+      {
+        fix16_to_str(  xADCGetREG(ID), Data, 0U );
+        vStrAdd(Data," В");
+      }
+      break;
+    case NET_L1_FASE_V:
+    case GEN_L1_LINE_V:
+    case NET_L1_LINE_V:
+    case GEN_L1_FASE_V:
+    case GEN_AVER_V:
       fix16_to_str(  xADCGetREG(ID), Data, 0U );
       vStrAdd(Data," В");
       break;
@@ -1123,21 +1143,40 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str(  xADCGetREG(ID), Data, 2U );
       vStrAdd(Data," Гц");
       break;
-    case GEN_L1_CUR:
+
     case GEN_L2_CUR:
     case GEN_L3_CUR:
+        if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
+        {
+              Data[0]=0;
+              break;
+         }
+    case GEN_L1_CUR:
+    case GEN_AVER_A:
       fix16_to_str(  xADCGetREG(ID), Data, 2U );
       vStrAdd(Data," А");
        break;
-   case GEN_L1_REAL_POWER:
-   case GEN_L2_REAL_POWER:
-   case GEN_L3_REAL_POWER:
-   case GEN_REAL_POWER:
+
+
+   case GEN_L2_APER_POWER:
+   case GEN_L3_APER_POWER:
+       if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
+          {
+                Data[0]=0;
+                break;
+           }
+   case GEN_REACTIVE_POWER:
+   case GEN_L1_APER_POWER:
      fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
      vStrAdd(Data," кВт");
      break;
     case NET_ROTATION:
     case GEN_ROTATION:
+         if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
+         {
+             Data[0]=0;
+             break;
+         }
         if (ID ==NET_ROTATION)
           utempdata=uADCGetNetFaseRotation();
         else
@@ -1176,31 +1215,4 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 }
 
 
-void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  switch ( ID )
-  {
 
-    case 4:
-      Data[0]='4';
-      Data[1]='0';
-      Data[2]='0';
-      Data[3]=0;
-      break;
-
-    case 2:
-      Data[0]='1';
-      Data[1]='0';
-      Data[2]='0';
-      Data[3]=0;
-      break;
-
-    default:
-      Data[0]='1';
-      Data[1]='0';
-      Data[2]='0';
-      Data[3]=0;
-      break;
-  }
-  return;
-}

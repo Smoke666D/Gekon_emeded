@@ -1294,23 +1294,23 @@ void vENGINEdataReInit ( void )
 /*----------------------------------------------------------------------------*/
 void vENGINEresetAlarms ( void )
 {
-  vERRORreset( &charger.alarm.error        );
-  vERRORreset( &speed.hightAlarm.error     );
-  vERRORreset( &speed.lowAlarm.error       );
-  vERRORreset( &battery.hightAlarm.error   );
-  vERRORreset( &battery.lowAlarm.error     );
-  vERRORreset( &fuel.hightAlarm.error      );
-  vERRORreset( &fuel.hightPreAlarm.error   );
-  vERRORreset( &fuel.lowAlarm.error        );
-  vERRORreset( &fuel.lowPreAlarm.error     );
-  vERRORreset( &coolant.alarm.error        );
-  vERRORreset( &coolant.electroAlarm.error );
-  vERRORreset( &coolant.preAlarm.error     );
-  vERRORreset( &oil.alarm.error            );
-  vERRORreset( &oil.preAlarm.error         );
-  vERRORreset( &engine.stopError           );
-  vERRORreset( &engine.startError          );
-  vERRORreset( &engine.sensorCommonError   );
+  vALARMreset( &charger.alarm            );
+  vALARMreset( &speed.hightAlarm         );
+  vALARMreset( &speed.lowAlarm           );
+  vALARMreset( &battery.hightAlarm       );
+  vALARMreset( &battery.lowAlarm         );
+  vALARMreset( &fuel.hightAlarm          );
+  vALARMreset( &fuel.hightPreAlarm       );
+  vALARMreset( &fuel.lowAlarm            );
+  vALARMreset( &fuel.lowPreAlarm         );
+  vALARMreset( &coolant.alarm            );
+  vALARMreset( &coolant.electroAlarm     );
+  vALARMreset( &coolant.preAlarm         );
+  vALARMreset( &oil.alarm                );
+  vALARMreset( &oil.preAlarm             );
+  vERRORreset( &engine.stopError         );
+  vERRORreset( &engine.startError        );
+  vERRORreset( &engine.sensorCommonError );
   engine.banStart = PERMISSION_DISABLE;
   return;
 }
@@ -1899,9 +1899,6 @@ void vENGINEtask ( void* argument )
         oil.alarm.error.active    = PERMISSION_DISABLE;
         oil.preAlarm.error.active = PERMISSION_DISABLE;
         charger.start             = PERMISSION_DISABLE;
-        vLOGICresetTimer( &commonTimer );
-        maintence.timer.id        = LOGIC_DEFAULT_TIMER_ID;
-        //commonTimer.id            = LOGIC_DEFAULT_TIMER_ID;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/
@@ -1916,6 +1913,9 @@ void vENGINEtask ( void* argument )
         speed.lowAlarm.error.active = PERMISSION_DISABLE;
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
+        vLOGICresetTimer( &commonTimer     );
+        vLOGICresetTimer( &maintence.timer );
+        vLOGICresetTimer( &charger.timer   );
         engine.cmd               = ENGINE_CMD_NONE;
         engine.startError.active = PERMISSION_DISABLE;
         engine.stopError.active  = PERMISSION_ENABLE;

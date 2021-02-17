@@ -35,6 +35,7 @@ typedef struct __packed
 void              vALARMinit ( void );
 void              vALARMreInit ( void );
 void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
+void              vALARMreset ( ALARM_TYPE* alarm );
 void              vERRORreset ( ERROR_TYPE* error );
 void              vERRORcheck ( ERROR_TYPE* error, uint8_t flag );
 void              vERRORrelax ( ERROR_TYPE* error );

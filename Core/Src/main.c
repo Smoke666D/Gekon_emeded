@@ -1304,7 +1304,7 @@ void StartDefaultTask(void *argument)
   {
     osDelay( 10U );
   }
-  osDelay( 1000U );
+  osDelay( 1100U );
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */

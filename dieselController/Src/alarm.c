@@ -104,7 +104,10 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
         {
           activeErrorList.array[i] = activeErrorList.array[i + 1U];
         }
-        activeErrorList.counter--;
+        if ( activeErrorList.counter > 0U )
+        {
+          activeErrorList.counter--;
+        }
         /*------------- Check warnings --------------*/
         warningCounter = 0U;
         for ( i=0U; i<activeErrorList.counter; i++ )
@@ -196,13 +199,16 @@ uint8_t uALARMisForList ( SYSTEM_EVENT* event )
 void vERRORrelax ( ERROR_TYPE* error )
 {
   LOG_RECORD_TYPE rec = { 0U };
-  rec.event = error->event;
-  if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( &error->event ) > 0U ) )
+  if ( error->trig != TRIGGER_IDLE )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, &rec, NULL );
+    rec.event = error->event;
+    if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( &error->event ) > 0U ) )
+    {
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, &rec, NULL );
+    }
+    error->status = ALARM_STATUS_IDLE;
+    error->trig   = TRIGGER_IDLE;
   }
-  error->status = ALARM_STATUS_IDLE;
-  error->trig   = TRIGGER_IDLE;
   return;
 }
 /*-----------------------------------------------------------------------------------------*/

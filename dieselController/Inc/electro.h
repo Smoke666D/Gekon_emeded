@@ -25,7 +25,7 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  ELECTRO_SCHEME_START,
+  ELECTRO_SCHEME_STAR,
   ELECTRO_SCHEME_TRIANGLE,
   ELECTRO_SCHEME_SINGLE_PHASE,
 } ELECTRO_SCHEME;

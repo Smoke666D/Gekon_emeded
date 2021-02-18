@@ -31,6 +31,9 @@ static uint8_t Header[]       = { 0U, 1U, CENTER_ALIGN };
 static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN};
 static uint8_t LeftText[]     = { 0U, 1U, LEFT_ALIGN };
 static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam3[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam4[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam5[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  = { 0U, 1U, CENTER_ALIGN, 0U };
 
@@ -275,17 +278,27 @@ static xScreenObjet  const SettingsScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
-  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText," ",NULL,0U},
   {0U,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsNumber, 0U},
   {0U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsUnit, 0U},
-  {1U,FONT_SIZE*5U, LINE1+6U,40U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData, 0U},
-};
+  {0U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData, 0U},
+  {0U,FONT_SIZE*1U, LINE1+6U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetSettingsBitData, 16U},
+  {0U,FONT_SIZE*2U, LINE1+6U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetSettingsBitData, 15U},
+  {0U,FONT_SIZE*3U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 14U},
+  {0U,FONT_SIZE*4U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 13U},
+  {0U,FONT_SIZE*5U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 12U},
+  {0U,FONT_SIZE*6U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 11U},
+  {0U,FONT_SIZE*7U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 10U},
+  {0U,FONT_SIZE*8U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 9U},
+  {0U,FONT_SIZE*9U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 8U},
+  {0U,FONT_SIZE*10U,LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 7U},
+  {0U,FONT_SIZE*11U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 6U},
+  {0U,FONT_SIZE*12U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 5U},
+  {0U,FONT_SIZE*13U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 4U},
+  {0U,FONT_SIZE*14U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 3U},
+  {0U,FONT_SIZE*15U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 2U},
+  {1U,FONT_SIZE*16U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 1U},
 
 
-static xScreenObjet const SettingsMainScreen[]=
-{
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКИ",NULL,0U},
-  {1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
 };
 
 static xScreenObjet const xYesNoScreen[]=

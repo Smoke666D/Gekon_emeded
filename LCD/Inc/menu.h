@@ -17,6 +17,7 @@
 #include "alarm.h"
 #include "controllerTypes.h"
 #include "string.h"
+#include "utils.h"
 
 /*------------------------ Define --------------------------------------*/
 #define SET_PARAMETR_SCREEN 0U
@@ -42,7 +43,7 @@
 
 
 #define MAX_SCREEN_COUNT    3U
-#define MAX_SCREEN_OBJECT   20U
+#define MAX_SCREEN_OBJECT   25U
 #define XRESULURION         128U
 #define YRESOLUTION         64U
 #define FONT_TYPE           ( u8g2_font_6x13_t_cyrillic )
@@ -155,5 +156,6 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
 void EventScreenKeyCallBack( xScreenSetObject* menu, char key );
 void xInfoScreenCallBack( xScreenSetObject * menu, char key );
 void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
+void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

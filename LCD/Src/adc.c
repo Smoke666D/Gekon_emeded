@@ -20,7 +20,7 @@ volatile int16_t            ADC2_IN_Buffer[ADC_FRAME_SIZE*ADC2_CHANNELS] = { 0U 
 volatile int16_t            ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS] = { 0U };   //ADC3 input data buffer
 static   uint16_t           ADCDATA[8U]                                  = { 0U };
 static   uint8_t            ADC_VALID_DATA                               =  0;
-
+static   float              MIN_PRESENT_FREQ  =20.0;
 
 
 uint8_t  vADCGetADC3Data();
@@ -973,12 +973,19 @@ void vADCConfigInit(void)
             eDATAAPIconfigAtrib (DATA_API_CMD_READ, FUEL_LEVEL_SETUP_ADR , &atrib );
             xFLChType = (bitmask  & atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].shift;
 
-            eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);  //считываем коофицент трансформамции
-            xTransCoof = fix16_from_int(tempdata);
+            //считываем коофицент трансформамции
+            eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);
+            xTransCoof = fix16_from_float(tempdata);
 
+            //Считываем уставку типа включения генератора
             eDATAAPIconfigValue(DATA_API_CMD_READ, GEN_SETUP_ADR ,&bitmask);
             eDATAAPIconfigAtrib (DATA_API_CMD_READ, GEN_SETUP_ADR, &atrib );
             xNetWiring  = (bitmask  & atrib.bitMap[GEN_AC_SYS_ADR ].mask) >>atrib.bitMap[GEN_AC_SYS_ADR ].shift;
+
+            //Считываем уставку минимальной частоты отключения стартера
+            eDATAAPIconfigValue(DATA_API_CMD_READ,  STARTER_STOP_GEN_FREQ_LEVEL_ADR  ,(uint16_t*)&tempdata);
+            eDATAAPIconfigAtrib (DATA_API_CMD_READ, STARTER_STOP_GEN_FREQ_LEVEL_ADR, &atrib );
+            MIN_PRESENT_FREQ =fxParToFloat(tempdata, atrib.scale);
            break;
          }
 
@@ -999,9 +1006,9 @@ void vADCInit(void)
       hadc3.DMA_Handle->XferCpltCallback =ADC_DMAConv;
       hadc2.DMA_Handle->XferCpltCallback =ADC_DMAConv;
       hadc1.DMA_Handle->XferCpltCallback =ADC_DMAConv;
-      hadc3.DMA_Handle->XferHalfCpltCallback = NULL;//ADC_DMAHalfConvCplt;
-      hadc2.DMA_Handle->XferHalfCpltCallback = NULL;//ADC_DMAHalfConvCplt;
-      hadc1.DMA_Handle->XferHalfCpltCallback = NULL;//ADC_DMAHalfConvCplt;
+      hadc3.DMA_Handle->XferHalfCpltCallback = NULL;
+      hadc2.DMA_Handle->XferHalfCpltCallback = NULL;
+      hadc1.DMA_Handle->XferHalfCpltCallback = NULL;
       hadc3.DMA_Handle->XferErrorCallback = ADC_DMAErro;
       hadc2.DMA_Handle->XferErrorCallback = ADC_DMAErro;
       hadc1.DMA_Handle->XferErrorCallback = ADC_DMAErro;

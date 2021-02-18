@@ -21,6 +21,7 @@
 #include "stdlib.h"
 #include "engine.h"
 #include "controllerTypes.h"
+#include "utils.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U
@@ -96,7 +97,7 @@
 #define RCSHUNT         0.01  //Сопротивление шунтирующих резисторов токовых входов
 #define OPTRANSCOOF     20    //Коофециент усиления операционного усилителя на  токовых входах
 #define VRef            3.3
-#define MIN_PRESENT_FREQ 20.0
+
 
 
 #define R118_R122      104.7

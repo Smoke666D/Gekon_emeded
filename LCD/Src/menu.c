@@ -10,10 +10,10 @@
 #include "keyboard.h"
 #include "menu_data.h"
 #include "controllerTypes.h"
-#include "adc.h"
 #include "stdio.h"
 #include "server.h"
 #include "engine.h"
+
 /*------------------------ Define -------------------------------------------------------------------*/
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
@@ -49,7 +49,6 @@ xScreenSetObject xYesNoMenu =
   0U,
   ( void* )&xYesNoScreenKeyCallBack,
 };
-
 
 
 
@@ -569,112 +568,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
 }
 
 
-void vUCTOSTRING ( uint8_t * str, uint8_t data )
-{
-  uint8_t fb = 0U;
-  uint8_t i  = 0U;
-  uint8_t DD = 100U;
-  for ( uint8_t k=0U; k<3U; k++ )
-  {
-    if ( fb > 0U )
-    {
-      str[i++] = data / ( DD ) + '0';
-    }
-    else
-    {
-      if ( ( data / DD ) > 0U )
-	    {
-	      str[i++] = data / ( DD ) + '0';
-	      fb       = 1U;
-	    }
-      data = data % ( DD );
-      DD   = DD / 10U;
-    }
-  }
-  if ( i == 0U )
-  {
-    str[i++] = '0';
-  }
-  str[i] = 0U;
-  return;
-}
 
-void vITOSTRING ( uint8_t * str, uint16_t data )
-{
-  uint8_t  fb = 0U;
-  uint8_t  i  = 0U;
-  uint16_t DD = 10000U;
-  for ( uint8_t k=0U; k<5U; k++ )
-  {
-    if ( fb > 0U )
-    {
-      str[i++] = data / ( DD ) + '0';
-    }
-    else
-    {
-      if ( ( data / DD ) > 0U )
-      {
-        str[i++] = data / ( DD ) + '0';
-        fb       = 1U;
-      }
-      data = data % ( DD );
-      DD   = DD / 10U;
-    }
-  }
-  str[i] = 0U;
-  return;
-}
-/*
- * Функция преобразования безнакового в строку
- */
-void vUToStr( uint8_t* str, uint16_t data, signed char scale )
-{
-  uint8_t     fb     = 0U;
-  uint8_t     i      = 0U;
-  uint16_t    DD     = 10000U;
-  signed char offset = 0U;
-  uint8_t     point  = 0U;
-  offset = scale;
-  if ( offset & 0x80 )
-  {
-    offset = 1U;
-    point  = 1U;
-  }
-  for ( uint8_t k=0U; k<(5U + offset); k++ )
-  {
-    if ( ( point == 0U ) && ( k >= 5U ) )  //Если scael был больше 0, то нужно домножить число, фактический добавить в вывод 0
-    {
-      str[i++] = '0';
-    }
-    else
-    {
-      if ( ( point == 1U ) && ( k == ( 6U + scale ) ) )
-      {
-        str[i++] = '.';
-      }
-      else
-      {
-        if ( ( point ==1U ) && ( k == ( 5 + scale ) ) && ( fb == 0U ) )
-        {
-          fb = 1U;
-        }
-        if ( ( fb == 1U ) || ( k == ( 5U + scale - 1U ) ) )
-        {
-          str[i++] = data / ( DD ) + '0';
-        }
-        else if ( ( data / DD ) > 0U )
-        {
-          str[i++] = data / ( DD ) + '0';
-          fb       = 1U;
-        }
-        data = data % ( DD );
-        DD   = DD / 10U;
-      }
-    }
-  }
-  str[i] = 0U;
-  return;
-}
 
 
 void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
@@ -712,6 +606,31 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   }
   return;
 }
+
+
+void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  eConfigAttributes xAtrib                  = { 0U };
+  uint16_t          buff                    =  0U;
+  switch ( cmd )
+  {
+    case  mREAD:
+      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+      if ( xAtrib.bitMapSize != 0U )
+      {
+        eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &buff );
+
+        Data[0]=((buff>>(ID-1)) & 0x01)+'0';
+        Data[1]=0;
+      }
+      else
+        Data[0]=0;
+      break;
+    default:
+      break;
+  }
+}
+
 
 void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -826,38 +745,7 @@ char cHexToChar(uint8_t data)
 
 
 
-void vStrCopy(char * dest, char * source)
-{
-  uint8_t i;
-  for (i=0;i<100;i++)
-  {
-    dest[i]=source[i];
-    if (source[i]==0) break;
-  }
-  if (i==100) dest[i]=0;
-  return;
 
-}
-
-void vStrAdd(char * dest, char * source)
-{
-   uint8_t i,k=0,F=0;
-   for (i=0;i<100;i++)
-   {
-     if ( (dest[i] == 0) && (F==0))
-     {
-       k=i;
-       F=1;
-     }
-     if ( F!=0 )
-     {
-       dest[i]=source[i-k];
-       if (source[i-k]==0) break;
-     }
-   }
-   if (i==100) dest[i]=0;
-   return;
-}
 
 static uint8_t  StringShift   = 0,
                 StringShift1   = 0,
@@ -1149,8 +1037,13 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
         {
               Data[0]=0;
-              break;
          }
+        else
+        {
+          fix16_to_str(  xADCGetREG(ID), Data, 2U );
+           vStrAdd(Data," А");
+        }
+        break;
     case GEN_L1_CUR:
     case GEN_AVER_A:
       fix16_to_str(  xADCGetREG(ID), Data, 2U );

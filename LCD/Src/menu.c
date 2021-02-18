@@ -111,7 +111,7 @@ static uint8_t uSettingScreen = 0U;
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
 
-  if ( uSettingScreen == 0U )
+  if ( uSettingScreen == 0x03 )
   {
     switch ( key )
     {
@@ -189,9 +189,15 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
   }
   else
   {
-    if ( key==  (KEY_STOP_BREAK) )
+    //Обработка клавиш начинается только после того, как будут отпущены клавиши UP и BREAK
+    switch (key)
     {
-      uSettingScreen = 0U;
+      case KEY_STOP_BREAK:
+        uSettingScreen |= 0x01;
+        break;
+      case  KEY_UP_BREAK:
+        uSettingScreen |= 0x02;
+        break;
     }
   }
   return;
@@ -283,7 +289,6 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         }
       }
       break;
-
     case KEY_AUTO:
       if (( key_ready & AUTO_KEY_READY)==0U)
       {
@@ -558,7 +563,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
         default:
            break;
       }
-      if ( pScreenObjects[i].last > 0U )
+      if ( pScreenObjects[i].last == LAST_OBJECT )
       {
     	  break;
       }
@@ -619,7 +624,6 @@ void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       if ( xAtrib.bitMapSize != 0U )
       {
         eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &buff );
-
         Data[0]=((buff>>(ID-1)) & 0x01)+'0';
         Data[1]=0;
       }
@@ -743,10 +747,6 @@ char cHexToChar(uint8_t data)
 
 
 
-
-
-
-
 static uint8_t  StringShift   = 0,
                 StringShift1   = 0,
                 BufferAlarm   = 0,
@@ -846,7 +846,6 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            ALD=0;
          }
       }
-
       break;
     case ALARM_COUNT:
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);

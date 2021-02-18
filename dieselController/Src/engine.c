@@ -293,14 +293,11 @@ fix16_t fSPEEDfromFreq ( fix16_t freq )
 fix16_t fSPEEDprocess ( void )
 {
   fix16_t value = 0U;
-  if ( speed.enb == PERMISSION_ENABLE )
+  value = speed.get();
+  vALARMcheck( &speed.hightAlarm, value );
+  if ( speed.hightAlarm.error.status == ALARM_STATUS_IDLE )
   {
-    value = speed.get();
-    vALARMcheck( &speed.hightAlarm, value );
-    if ( speed.hightAlarm.error.status == ALARM_STATUS_IDLE )
-    {
-      vALARMcheck( &speed.lowAlarm, value );
-    }
+    vALARMcheck( &speed.lowAlarm, value );
   }
   return value;
 }
@@ -1496,12 +1493,15 @@ void vENGINEtask ( void* argument )
     oilVal       = fOILprocess();
     coolantVal   = fCOOLANTprocess();
     fFUELprocess();
-    currentSpeed = fSPEEDprocess();
     chargerVal   = fCHARGERprocess();
     fBATTERYprocess();
     genFreqVal   = xADCGetGENLFreq();
 
-    if ( speed.enb == PERMISSION_DISABLE )
+    if ( speed.enb == PERMISSION_ENABLE )
+    {
+      currentSpeed = fSPEEDprocess();
+    }
+    else
     {
       currentSpeed = fSPEEDfromFreq( genFreqVal );
     }
@@ -1913,9 +1913,11 @@ void vENGINEtask ( void* argument )
         speed.lowAlarm.error.active = PERMISSION_DISABLE;
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
-        vLOGICresetTimer( &commonTimer     );
-        vLOGICresetTimer( &maintence.timer );
-        vLOGICresetTimer( &charger.timer   );
+        vLOGICresetTimer( &commonTimer        );
+        vLOGICresetTimer( &maintence.timer    );
+        vLOGICresetTimer( &charger.timer      );
+        vLOGICresetTimer( &preHeater.timer    );
+        vLOGICresetTimer( &stopSolenoid.timer );
         engine.cmd               = ENGINE_CMD_NONE;
         engine.startError.active = PERMISSION_DISABLE;
         engine.stopError.active  = PERMISSION_ENABLE;

@@ -993,8 +993,12 @@ void vELECTROtask ( void* argument )
         vALARMreset( &generator.powerAlarm           );
         vALARMreset( &generator.phaseImbalanceAlarm  );
         vALARMreset( &generator.currentWarningAlarm  );
-        vLOGICresetTimer( &generator.timer );
-        vLOGICresetTimer( &electro.timer   );
+        vLOGICresetTimer( &generator.timer           );
+        vLOGICresetTimer( &electro.timer             );
+        vLOGICresetTimer( &generator.relayOn.timer   );
+        vLOGICresetTimer( &generator.relayOff.timer  );
+        vLOGICresetTimer( &mains.relayOn.timer       );
+        vLOGICresetTimer( &mains.relayOff.timer      );
         vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
         electro.alarmState = ELECTRO_ALARM_STATUS_STOP;
         electro.cmd        = ELECTRO_CMD_NONE;

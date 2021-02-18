@@ -123,6 +123,7 @@ typedef struct __packed
   SENSOR_TYPE       type    : 3U;
   SENSOR_STATUS     status  : 2U;
   SENSOR_CHANNEL    channel : 2U;
+  TRIGGER_STATE     trig    : 1U; /* Only for DI mode*/
   eChartData*       chart;
   getValueCallBack  get;
   ERROR_TYPE        cutout;
@@ -262,6 +263,7 @@ PERMISSION    eENGINEisStartBan ( void );
 ENGINE_STATUS eENGINEgetEngineStatus ( void );
 TRIGGER_STATE eENGINEgetOilSensorState ( void );
 TRIGGER_STATE eENGINEgetCoolantSensorState ( void );
+TRIGGER_STATE eENGINEgetFuelSensorState ( void );
 fix16_t       fENGINEspeedGet ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

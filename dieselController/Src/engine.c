@@ -127,12 +127,12 @@ void setChargerOutput ( RELAY_STATUS status )
   return;
 }
 /*----------------------------------------------------------------------------*/
-uint8_t uENGINEisSensorCutout ( fix16_t value )
+TRIGGER_STATE uENGINEisSensorCutout ( fix16_t value )
 {
-  uint8_t res = 0U;
+  TRIGGER_STATE res = TRIGGER_IDLE;
   if ( value >= sensorCutoutLevel )
   {
-    res = 1U;
+    res = TRIGGER_SET;
   }
   return res;
 }
@@ -196,6 +196,16 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
           break;
       }
     }
+    else if ( sensor->type == SENSOR_TYPE_NORMAL_OPEN )
+    {
+      sensor->trig   = !uENGINEisSensorCutout( *value );
+      sensor->status = SENSOR_STATUS_NORMAL;
+    }
+    else if ( sensor->type == SENSOR_TYPE_NORMAL_CLOSE )
+    {
+      sensor->trig   = uENGINEisSensorCutout( *value );
+      sensor->status = SENSOR_STATUS_NORMAL;
+    }
     else
     {
       sensor->status = SENSOR_STATUS_NORMAL;
@@ -216,13 +226,9 @@ fix16_t fOILprocess ( void )
       vALARMcheck( &oil.preAlarm, value );
     }
   }
-  else if ( oil.pressure.type == SENSOR_TYPE_NORMAL_OPEN )
+  else if ( ( oil.pressure.type == SENSOR_TYPE_NORMAL_OPEN ) || ( oil.pressure.type == SENSOR_TYPE_NORMAL_CLOSE ) )
   {
-    vERRORcheck( &oil.alarm.error, ( uENGINEisSensorCutout( value ) ) );
-  }
-  else if ( oil.pressure.type == SENSOR_TYPE_NORMAL_CLOSE )
-  {
-    vERRORcheck( &oil.alarm.error, !( uENGINEisSensorCutout( value ) ) );
+    vERRORcheck( &oil.alarm.error, oil.pressure.trig );
   }
   else
   {
@@ -249,13 +255,9 @@ fix16_t fCOOLANTprocess ( void )
     vRELAYautoProces( &coolant.heater, value );
     vRELAYautoProces( &coolant.cooler, value );
   }
-  else if ( coolant.temp.type == SENSOR_TYPE_NORMAL_OPEN )
+  else if ( ( coolant.temp.type == SENSOR_TYPE_NORMAL_OPEN ) || ( coolant.temp.type == SENSOR_TYPE_NORMAL_CLOSE ) )
   {
-    vERRORcheck( &coolant.alarm.error, ( uENGINEisSensorCutout( value ) ) );
-  }
-  else if ( coolant.temp.type == SENSOR_TYPE_NORMAL_CLOSE )
-  {
-    vERRORcheck( &coolant.alarm.error, !( uENGINEisSensorCutout( value ) ) );
+    vERRORcheck( &coolant.alarm.error, coolant.temp.trig );
   }
   else
   {
@@ -268,7 +270,7 @@ fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  if ( fuel.level.type != SENSOR_TYPE_NONE )
+  if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
   {
     vALARMcheck( &fuel.lowAlarm, value );
     if ( fuel.lowAlarm.error.status == ALARM_STATUS_IDLE )
@@ -281,6 +283,14 @@ fix16_t fFUELprocess ( void )
       vALARMcheck( &fuel.hightPreAlarm, value );
     }
     vRELAYautoProces( &fuel.booster, value );
+  }
+  else if ( ( fuel.level.type == SENSOR_TYPE_NORMAL_OPEN ) || ( fuel.level.type == SENSOR_TYPE_NORMAL_CLOSE ) )
+  {
+    vERRORcheck( &fuel.lowAlarm.error, fuel.level.trig );
+  }
+  else
+  {
+
   }
   return value;
 }
@@ -511,7 +521,7 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   return res;
 }
 /*----------------------------------------------------------------------------*/
-uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, fix16_t speed  )
+uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, TRIGGER_STATE oilTrig, fix16_t speed  )
 {
   uint8_t oilRes = 0U;
   uint8_t res    = 0U;
@@ -524,13 +534,13 @@ uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, fix16_t
         oilRes = 1U;
         break;
       case SENSOR_TYPE_NORMAL_OPEN:
-        if ( pressure >= dryContactTrigLevel )
+        if ( oilTrig == TRIGGER_SET )
         {
           oilRes = 1U;
         }
         break;
      case SENSOR_TYPE_NORMAL_CLOSE:
-        if ( pressure <= dryContactTrigLevel )
+        if ( TRIGGER_SET == TRIGGER_SET )
         {
           oilRes = 1U;
         }
@@ -719,6 +729,7 @@ void vENGINEdataInit ( void )
   oil.pressure.type                = getBitMap( &oilPressureSetup, OIL_PRESSURE_SENSOR_TYPE_ADR );
   oil.pressure.chart               = &oilSensorChart;
   oil.pressure.get                 = OIL_SENSOR_SOURCE;
+  oil.pressure.trig                = TRIGGER_IDLE;
   oil.pressure.cutout.active       = PERMISSION_ENABLE;
   oil.pressure.cutout.status       = ALARM_STATUS_IDLE;
   oil.pressure.cutout.ack          = PERMISSION_DISABLE;
@@ -769,6 +780,7 @@ void vENGINEdataInit ( void )
   coolant.temp.type                = getBitMap( &coolantTempSetup, COOLANT_TEMP_SENSOR_TYPE_ADR );
   coolant.temp.chart               = &coolantSensorChart;
   coolant.temp.get                 = COOLANT_SENSOR_SOURCE;
+  coolant.temp.trig                = TRIGGER_IDLE;
   coolant.temp.cutout.active       = PERMISSION_ENABLE;
   coolant.temp.cutout.ack          = PERMISSION_DISABLE;
   coolant.temp.cutout.event.action = ACTION_EMERGENCY_STOP;
@@ -855,6 +867,7 @@ void vENGINEdataInit ( void )
   fuel.level.channel              = SENSOR_CHANNEL_FUEL;
   fuel.level.chart                = &fuelSensorChart;
   fuel.level.get                  = FUEL_SENSOR_SOURCE;
+  fuel.level.trig                 = TRIGGER_IDLE;
   fuel.level.cutout.active        = PERMISSION_ENABLE;
   fuel.level.cutout.status        = ALARM_STATUS_IDLE;
   fuel.level.cutout.ack           = PERMISSION_ENABLE;
@@ -863,7 +876,15 @@ void vENGINEdataInit ( void )
   fuel.level.cutout.trig          = TRIGGER_IDLE;
   fuel.level.status               = SENSOR_STATUS_NORMAL;
 
-  if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
+  if ( fuel.level.type == SENSOR_TYPE_NONE )
+  {
+    fuel.level.cutout.enb        = PERMISSION_DISABLE;
+    fuel.lowAlarm.error.enb      = PERMISSION_DISABLE;
+    fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
+    fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
+    fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
+  }
+  else if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
   {
     fuel.level.cutout.enb        = getBitMap( &fuelLevelSetup, FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR );
     fuel.lowAlarm.error.enb      = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_ALARM_ENB_ADR );
@@ -874,7 +895,7 @@ void vENGINEdataInit ( void )
   else
   {
     fuel.level.cutout.enb        = PERMISSION_DISABLE;
-    fuel.lowAlarm.error.enb      = PERMISSION_DISABLE;
+    fuel.lowAlarm.error.enb      = PERMISSION_ENABLE;
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
@@ -1194,8 +1215,17 @@ void vENGINEdataReInit ( void )
   preHeater.timer.delay = getValue( &enginePreHeatDelay );
   /*--------------------------------------------------------------*/
   fuel.level.type                = getBitMap( &fuelLevelSetup, FUEL_LEVEL_SENSOR_TYPE_ADR );
+  fuel.level.channel             = SENSOR_CHANNEL_FUEL;
   fuel.level.cutout.enb          = getBitMap( &fuelLevelSetup, FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR );
-  fuel.lowAlarm.error.enb        = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_ALARM_ENB_ADR );
+  if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
+  {
+    fuel.lowAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_ALARM_ENB_ADR );
+  }
+  else
+  {
+    fuel.lowAlarm.error.enb = PERMISSION_ENABLE;
+  }
+
   fuel.lowAlarm.level            = getValue( &fuelLevelLowAlarmLevel );
   fuel.lowAlarm.timer.delay      = getValue( &fuelLevelLowAlarmDelay );
   fuel.lowPreAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR );
@@ -1368,12 +1398,17 @@ PERMISSION eENGINEisStartBan ( void )
 /*----------------------------------------------------------------------------*/
 TRIGGER_STATE eENGINEgetOilSensorState ( void )
 {
-  return oil.alarm.error.trig;
+  return oil.pressure.trig;
 }
 /*----------------------------------------------------------------------------*/
 TRIGGER_STATE eENGINEgetCoolantSensorState ( void )
 {
-  return coolant.alarm.error.trig;
+  return coolant.temp.trig;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eENGINEgetFuelSensorState ( void )
+{
+  return fuel.level.trig;
 }
 /*----------------------------------------------------------------------------*/
 fix16_t fENGINEspeedGet ( void )
@@ -1511,7 +1546,7 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/
     /*------------------------------------------------------------------*/
-    vERRORcheck( &engine.stopError, !( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, currentSpeed ) ) );
+    vERRORcheck( &engine.stopError, !( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) ) );
     vERRORcheck( &engine.startError, 1U );
     /*------------------------------------------------------------------*/
     /*--------------------- Statistic calculation ----------------------*/
@@ -1787,7 +1822,7 @@ void vENGINEtask ( void* argument )
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
               }
-              if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, currentSpeed ) > 0U )
+              if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) > 0U )
               {
                 vLOGICresetTimer( &commonTimer );
                 planStop.status = STOP_OK;

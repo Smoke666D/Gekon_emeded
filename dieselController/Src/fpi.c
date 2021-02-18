@@ -264,6 +264,7 @@ void vFPIreset ( void )
         fpis[i].level = FPI_LEVEL_LOW;
         fpis[i].state = FPI_IDLE;
       }
+      vLOGICresetTimer( &fpis[i].timer );
     }
     xSemaphoreGive( xFPIsemaphore );
   }

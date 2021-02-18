@@ -157,7 +157,6 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
       {
         eLOGaddRecord( &record );
       }
-      vFPOsetWarning( RELAY_ON );
       break;
 
     case ACTION_EMERGENCY_STOP:
@@ -509,6 +508,8 @@ void vCONTROLLERresetAlarm ( void )
     controller.mode = CONTROLLER_MODE_MANUAL;
     vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
     vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
+    vLOGICresetTimer( &controller.timer );
+
     vCONTROLLERprintStatus();
   }
   return;

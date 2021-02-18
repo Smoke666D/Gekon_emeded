@@ -126,11 +126,14 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
   };
 #endif
 /*-------------------------------- Variables ---------------------------------*/
-static uint8_t   eventBuffer[ EVENT_QUEUE_LENGTH * sizeof( LOG_RECORD_TYPE ) ] = { 0U };
-static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                              = { 0U };
-static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                             = { 0U };
-static timerID_t aciveCounters                                                 = 0U;
-static timerID_t activeNumber                                                  = 0U;
+static uint8_t   eventBuffer[EVENT_QUEUE_LENGTH * sizeof( LOG_RECORD_TYPE )] = { 0U };
+static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                            = { 0U };
+static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                           = { 0U };
+static timerID_t aciveCounters                                               = 0U;
+static timerID_t activeNumber                                                = 0U;
+#ifdef DEBUG
+static char timerNames[LOGIC_COUNTERS_SIZE][TIMER_NAME_LENGTH] = { 0U };
+#endif
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -211,28 +214,60 @@ void vLOGICtimerHandler ( void )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
+uint8_t uLOGICisTimerActive ( SYSTEM_TIMER timer )
 {
-  TIMER_ERROR stat = TIMER_OK;
-  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_from_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
-  uint8_t     i    = 0U;
+  uint8_t res = 0U;
+  if ( timer.id < LOGIC_COUNTERS_SIZE )
+  {
+    res = 1U;
+  }
+  return res;
+}
+/*-----------------------------------------------------------------------------------------*/
+TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer, char* name )
+{
+  TIMER_ERROR stat         = TIMER_OK;
+  uint16_t    inc          = 0U;
+  uint8_t     i            = 0U;
+  uint8_t     j            = 0U;
+  uint8_t     alreadyExist = 0U;
 
   if ( activeNumber < LOGIC_COUNTERS_SIZE )
   {
-    for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+    inc = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_from_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
+    /*-----------------------------------------*/
+    if ( timer->id > LOGIC_COUNTERS_SIZE )
     {
-      if ( ( aciveCounters & ( 1U << i ) ) == 0U )
+      for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
       {
-        break;
+        if ( ( aciveCounters & ( 1U << i ) ) == 0U )
+        {
+          break;
+        }
       }
+      timer->id = i;
     }
-    timer->id = i;
+    else
+    {
+      alreadyExist = 1U;
+    }
+    /*-----------------------------------------*/
     if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {
+      #ifdef DEBUG
+        for ( j=0U; j<TIMER_NAME_LENGTH; j++ )
+        {
+          timerNames[i][j] = name[j];
+        }
+        timerNames[i][TIMER_NAME_LENGTH - 1U] = 0x00U;
+      #endif
       targetArray[timer->id]  = inc;
       counterArray[timer->id] = 0U;
-      aciveCounters          |= 1U << timer->id;
-      activeNumber++;
+      if ( alreadyExist == 0U )
+      {
+        aciveCounters          |= 1U << timer->id;
+        activeNumber++;
+      }
       xSemaphoreGive( xSYSTIMERsemaphore );
     }
     else
@@ -275,6 +310,19 @@ TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER* timer ) /* Проверить ст�
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
+void vLOGICresetAllTimers ( void )
+{
+  uint8_t i = 0U;
+  aciveCounters = 0U;
+  activeNumber  = 0U;
+  for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+  {
+    targetArray[i]  = 0U;
+    counterArray[i] = 0U;
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 uint8_t uLOGICisTimer ( SYSTEM_TIMER* timer )
 {
   uint8_t res = 0U;
@@ -293,6 +341,39 @@ uint8_t uLOGICisTimer ( SYSTEM_TIMER* timer )
     res = 1U;
   }
   return res;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vLOGICprintActiveTimers ( void )
+{
+  uint8_t i          = 0U;
+  char    buffer[3U] = { 0U };
+  #ifdef DEBUG
+  if ( ( activeNumber == 0U ) && ( aciveCounters == 0U ) )
+  {
+    vLOGICprintDebug( ">>************************\r\n" );
+    vLOGICprintDebug( ">>No active timers \r\n" );
+    vLOGICprintDebug( ">>************************\r\n" );
+  }
+  else
+  {
+    vLOGICprintDebug( ">>************************\r\n" );
+    sprintf( buffer,  "%d", activeNumber );
+    vLOGICprintDebug( ">>There are " );
+    vLOGICprintDebug( buffer );
+    vLOGICprintDebug( " active timers\r\n" );
+    for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+    {
+      if ( ( aciveCounters & ( 1U << i ) ) > 0U )
+      {
+        vLOGICprintDebug( ">>" );
+        vLOGICprintDebug( timerNames[i] );
+        vLOGICprintDebug( "\r\n" );
+      }
+    }
+    vLOGICprintDebug( ">>************************\r\n" );
+  }
+  #endif
+  return;
 }
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerCallback ( void )
@@ -394,7 +475,7 @@ void vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device )
       case RELAY_DELAY_IDLE:
         if ( device->triger > 0U )
         {
-          vLOGICstartTimer( &device->timer );
+          vLOGICstartTimer( &device->timer, "Relay device        " );
           device->relay.set( RELAY_ON );
           device->relay.status = RELAY_ON;
           device->status       = RELAY_DELAY_WORK;
@@ -444,7 +525,7 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
       if ( ( device->relay.status == RELAY_ON ) && ( device->status != RELAY_IMPULSE_START ) )
       {
         device->status = RELAY_IMPULSE_START;
-        vLOGICstartTimer( &device->timer );
+        vLOGICstartTimer( &device->timer, "Relay device        " );
       }
       if ( ( device->status == RELAY_IMPULSE_START ) && ( uLOGICisTimer( &device->timer ) > 0U ) )
       {

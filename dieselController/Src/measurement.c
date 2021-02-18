@@ -214,7 +214,7 @@ void vMEASUREMENTtask ( void* argument )
           vLOGICprintDebug( ">>Measurement     : Status start\r\n" );
           if ( measurement.counter < measurement.size )
           {
-            vLOGICstartTimer( &measurement.timer );
+            vLOGICstartTimer( &measurement.timer, "Measurement timer   " );
             measurement.state = MEASURMENT_STATE_WAIT;
           }
           else
@@ -255,7 +255,7 @@ void vMEASUREMENTtask ( void* argument )
             }
             else
             {
-              vLOGICstartTimer( &measurement.timer );
+              vLOGICstartTimer( &measurement.timer, "Measurement timer   " );
               measurement.counter++;
               measurement.state = MEASURMENT_STATE_WAIT;
             }

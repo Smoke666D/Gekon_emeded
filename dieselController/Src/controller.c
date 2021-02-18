@@ -227,7 +227,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       if ( delayOnStart == PERMISSION_ENABLE )
       {
         controller.timer.delay = controller.stopDelay;
-        vLOGICstartTimer( &controller.timer );
+        vLOGICstartTimer( &controller.timer, "Controller timer    " );
         stopState = CONTROLLER_TURNING_START_DELAY;
         vLOGICprintDebug( ">>Plan stop       : Delay trigger\r\n" );
       }
@@ -302,7 +302,7 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
         if ( delayOnStart == PERMISSION_ENABLE )
         {
           controller.timer.delay = controller.startDelay;
-          vLOGICstartTimer( &controller.timer );
+          vLOGICstartTimer( &controller.timer, "Controller timer    " );
           startState = CONTROLLER_TURNING_START_DELAY;
           vLOGICprintDebug( ">>Autostart       : Delay trigger\r\n" );
         }
@@ -509,7 +509,7 @@ void vCONTROLLERresetAlarm ( void )
     vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
     vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
     vLOGICresetTimer( &controller.timer );
-
+    vLOGICprintActiveTimers();
     vCONTROLLERprintStatus();
   }
   return;

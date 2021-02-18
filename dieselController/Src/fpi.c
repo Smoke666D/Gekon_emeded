@@ -326,7 +326,7 @@ void vFPITask ( void* argument )
               if ( vFPIgetTrig( &fpis[i] ) > 0U )
               {
                 fpis[i].state = FPI_TRIGGERED;
-                vLOGICstartTimer( &fpis[i].timer );
+                vLOGICstartTimer( &fpis[i].timer, "FPI timer           " );
               }
               break;
             case FPI_TRIGGERED:

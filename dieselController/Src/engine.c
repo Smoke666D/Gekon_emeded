@@ -326,7 +326,7 @@ fix16_t fCHARGERprocess ( void )
           if ( charger.get() < charger.alarm.level )
           {
             charger.relay.set( RELAY_ON );
-            vLOGICstartTimer( &charger.timer );
+            vLOGICstartTimer( &charger.timer, "Charger timer       " );
             charger.status = CHARGER_STATUS_DELAY;
           }
           else
@@ -381,7 +381,7 @@ void vENGINEmileageProcess ( void )
     switch ( maintence.status )
     {
       case MAINTENCE_STATUS_STOP:
-        vLOGICstartTimer( &maintence.timer );
+        vLOGICstartTimer( &maintence.timer, "Maintence timer     " );
         maintence.status = MAINTENCE_STATUS_RUN;
         break;
       case MAINTENCE_STATUS_RUN:
@@ -396,7 +396,7 @@ void vENGINEmileageProcess ( void )
           }
           else
           {
-            vLOGICstartTimer( &maintence.timer );
+            vLOGICstartTimer( &maintence.timer, "Maintence timer     " );
           }
           eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
         }
@@ -431,7 +431,7 @@ void vENGINEmileageProcess ( void )
         {
           eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
         }
-        vLOGICstartTimer( &maintence.timer );
+        vLOGICstartTimer( &maintence.timer, "Maintence timer     " );
         maintence.status = MAINTENCE_STATUS_RUN;
         break;
       default:
@@ -1392,6 +1392,7 @@ void vENGINEtask ( void* argument )
   SYSTEM_TIMER    commonTimer = { 0U };
   ENGINE_COMMAND  inputCmd    = ENGINE_CMD_NONE;
   SYSTEM_EVENT    event       = { 0U };
+  commonTimer.id = LOGIC_DEFAULT_TIMER_ID;
   for (;;)
   {
     /*------------------------------------------------------------------*/
@@ -1564,7 +1565,7 @@ void vENGINEtask ( void* argument )
               vLCD_BrigthOFF();
               vRELAYset( &fuel.pump, RELAY_ON );
               commonTimer.delay = fuelPrePumpingDelay;
-              vLOGICstartTimer( &commonTimer );
+              vLOGICstartTimer( &commonTimer, "Common engine timer " );
               if ( starter.idlingDelay != 0U )
               {
                 vRELAYset( &idleRelay, RELAY_ON );
@@ -1588,7 +1589,7 @@ void vENGINEtask ( void* argument )
                 starterFinish     = 1U;
                 starter.status    = STARTER_CONTROL_BLOCK;
                 commonTimer.delay = starter.blockDelay;
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
               }
               else
               {
@@ -1596,7 +1597,7 @@ void vENGINEtask ( void* argument )
                 starter.status    = STARTER_CRANKING;
                 commonTimer.delay = starter.crankingDelay;
                 starter.set( RELAY_ON );
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
               }
               vLOGICprintStarterStatus( starter.status );
               break;
@@ -1609,7 +1610,7 @@ void vENGINEtask ( void* argument )
                 vLCD_BrigthOn();
                 vLOGICresetTimer( &commonTimer );
                 commonTimer.delay = starter.blockDelay;
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vLOGICprintStarterStatus( starter.status );
               }
               if ( uLOGICisTimer( &commonTimer ) > 0U )
@@ -1619,7 +1620,7 @@ void vENGINEtask ( void* argument )
                 {
                   starter.status = STARTER_CRANK_DELAY;
                   commonTimer.delay = starter.crankDelay;
-                  vLOGICstartTimer( &commonTimer );
+                  vLOGICstartTimer( &commonTimer, "Common engine timer " );
                   vLOGICprintStarterStatus( starter.status );
                 }
                 else
@@ -1643,7 +1644,7 @@ void vENGINEtask ( void* argument )
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 commonTimer.delay = starter.idlingDelay;
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 starter.status                     = STARTER_IDLE_WORK;
                 blockTimerFinish                   = 1U;
                 speed.hightAlarm.error.active      = PERMISSION_ENABLE;
@@ -1661,7 +1662,7 @@ void vENGINEtask ( void* argument )
               {
                 vRELAYset( &idleRelay, RELAY_OFF );
                 commonTimer.delay = starter.nominalDelay;
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 starter.status = STARTER_MOVE_TO_NOMINAL;
                 vLOGICprintStarterStatus( starter.status );
               }
@@ -1670,7 +1671,7 @@ void vENGINEtask ( void* argument )
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 commonTimer.delay = starter.warmingDelay;
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 starter.status              = STARTER_WARMING;
                 speed.lowAlarm.error.active = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_IDLE_ALARMS );
@@ -1739,7 +1740,7 @@ void vENGINEtask ( void* argument )
               charger.start   = PERMISSION_DISABLE;
               vFPOsetGenReady( RELAY_OFF );
               commonTimer.delay = planStop.coolingDelay;
-              vLOGICstartTimer( &commonTimer );
+              vLOGICstartTimer( &commonTimer, "Common engine timer " );
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_COOLDOWN:
@@ -1760,7 +1761,7 @@ void vENGINEtask ( void* argument )
                 commonTimer.delay           = planStop.coolingIdleDelay;
                 speed.lowAlarm.error.active = PERMISSION_DISABLE;
                 planStop.status             = STOP_IDLE_COOLDOWN;
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vLOGICprintPlanStopStatus( planStop.status );
               }
               break;
@@ -1775,7 +1776,7 @@ void vENGINEtask ( void* argument )
                 commonTimer.delay = planStop.processDelay;
                 planStop.status   = STOP_PROCESSING;
                 vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
-                vLOGICstartTimer( &commonTimer );
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vLOGICprintPlanStopStatus( planStop.status );
               }
               break;
@@ -1857,7 +1858,7 @@ void vENGINEtask ( void* argument )
             vRELAYset( &idleRelay, RELAY_OFF );
             vLOGICprintEngineStatus( engine.status );
             commonTimer.delay = starter.nominalDelay;
-            vLOGICstartTimer( &commonTimer );
+            vLOGICstartTimer( &commonTimer, "Common engine timer " );
             engine.status = ENGINE_STATUS_WORK_GOTO_NOMINAL;
             break;
           case ENGINE_STATUS_WORK_GOTO_NOMINAL:

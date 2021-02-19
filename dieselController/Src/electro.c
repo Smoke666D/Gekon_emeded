@@ -125,7 +125,7 @@ void vELECTROpowerUsageProcessing ( void )
   {
     if ( uLOGICisTimer( &generator.timer ) > 0U )
     {
-      vLOGICstartTimer( &generator.timer );
+      vLOGICstartTimer( &generator.timer, "Generator timer     " );
       eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
       eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
       eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
@@ -155,6 +155,10 @@ void vELECTROpowerUsageProcessing ( void )
         eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
       }
     }
+  }
+  else
+  {
+    vLOGICresetTimer( &generator.timer );
   }
   return;
 }
@@ -791,7 +795,7 @@ void vELECTROtask ( void* argument )
             case ELECTRO_PROC_STATUS_DISCONNECT:
               if ( generator.relayOff.status == RELAY_DELAY_IDLE )
               {
-                vLOGICstartTimer( &electro.timer );
+                vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state   = ELECTRO_PROC_STATUS_CONNECT;
                 vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
               }
@@ -830,14 +834,13 @@ void vELECTROtask ( void* argument )
             case ELECTRO_PROC_STATUS_IDLE:
               vRELAYset( &mains.relay, RELAY_OFF );
               vRELAYdelayTrig( &mains.relayOff );
-              vLOGICstartTimer( &electro.timer );
               electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
               vLOGICprintDebug( ">>Electro         : Disconnect mains\r\n" );
               break;
             case ELECTRO_PROC_STATUS_DISCONNECT:
               if ( mains.relayOff.status == RELAY_DELAY_IDLE )
               {
-                vLOGICstartTimer( &electro.timer );
+                vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state = ELECTRO_PROC_STATUS_CONNECT;
                 vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
               }
@@ -993,8 +996,12 @@ void vELECTROtask ( void* argument )
         vALARMreset( &generator.powerAlarm           );
         vALARMreset( &generator.phaseImbalanceAlarm  );
         vALARMreset( &generator.currentWarningAlarm  );
-        vLOGICresetTimer( &generator.timer );
-        vLOGICresetTimer( &electro.timer   );
+        vLOGICresetTimer( &generator.timer           );
+        vLOGICresetTimer( &electro.timer             );
+        vLOGICresetTimer( &generator.relayOn.timer   );
+        vLOGICresetTimer( &generator.relayOff.timer  );
+        vLOGICresetTimer( &mains.relayOn.timer       );
+        vLOGICresetTimer( &mains.relayOff.timer      );
         vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
         electro.alarmState = ELECTRO_ALARM_STATUS_STOP;
         electro.cmd        = ELECTRO_CMD_NONE;

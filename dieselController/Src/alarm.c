@@ -341,7 +341,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
           }
           else
           {
-            vLOGICstartTimer( &alarm->timer );
+            vLOGICstartTimer( &alarm->timer, "Alarm timer         " );
           }
         }
         break;

@@ -21,6 +21,7 @@
 #define  LOG_RECORD_SIZE            6U
 #define  LOGIC_TIMER_STEP           100U  /* ms */
 #define  LOGIC_COUNTERS_SIZE        16U
+#define  TIMER_NAME_LENGTH          20U
 #define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
 #define  LOG_TYPES_SIZE             39U
@@ -300,9 +301,12 @@ void              vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );
 void              vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val );
 void              vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
 void              vLOGICtimerHandler ( void );
-TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer );
+uint8_t           uLOGICisTimerActive ( SYSTEM_TIMER timer );
+TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer, char* name );
 uint8_t           uLOGICisTimer ( SYSTEM_TIMER* timer );
 TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER* timer );
+void              vLOGICresetAllTimers ( void );
+void              vLOGICprintActiveTimers ( void );
 void              vLOGICtimerCallback ( void );
 void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
 void              vLOGICprintEvent ( SYSTEM_EVENT event );

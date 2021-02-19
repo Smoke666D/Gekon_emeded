@@ -945,9 +945,24 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
       break;
     case FUEL_LEVEL:
-      eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
-      fix16_to_str( temp, Data, 0U );
-      vStrAdd(Data,"%");
+      switch (xADCGetFLChType())
+      {
+         case SENSOR_TYPE_RESISTIVE:
+            eCHARTfunc(&fuelSensorChart,  xADCGetSFL() ,   &temp);
+            fix16_to_str( temp, Data, 0U );
+            vStrAdd(Data,"%");;
+            break;
+         case SENSOR_TYPE_NORMAL_OPEN:
+         case SENSOR_TYPE_NORMAL_CLOSE:
+             if (eENGINEgetFuelSensorState()==TRIGGER_SET)
+                vStrCopy(Data,"Активен");
+              else
+                vStrCopy(Data,"Не актив.");
+             break;
+          default:
+            Data[0]=0;
+            break;
+       }
      break;
     case OIL_PRESSURE:
 

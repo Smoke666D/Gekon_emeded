@@ -102,6 +102,13 @@ static const fix16_t  xVDD_CF         = F16 (VDD_CF);
  *
  */
 
+SENSOR_TYPE xADCGetFLChType(void)
+{
+ return  xFLChType;
+
+}
+
+
 SENSOR_TYPE xADCGetxOPChType(void)
 {
  return xOPChType;

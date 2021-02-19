@@ -156,6 +156,7 @@ typedef enum
 /*
  * Функции API драйвера
  */
+SENSOR_TYPE xADCGetFLChType(void);
 SENSOR_TYPE xADCGetxOPChType(void);
 fix16_t xADCGetGENActivePower();
 fix16_t xADCGetGENReactivePower();

@@ -34,8 +34,8 @@ static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam3[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam4[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam5[]   = { 0U, 1U, LEFT_ALIGN, 0U };
-static uint8_t InputParam1[]  = { 0U, 1U, CENTER_ALIGN, 1U };
-static uint8_t InputParam2[]  = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam1[]  =  { 0U, 1U, CENTER_ALIGN, 1U };
+static uint8_t InputParam2[]  =  { 0U, 1U, CENTER_ALIGN, 0U };
 
 
 

@@ -27,6 +27,9 @@
 #define NO_ALIGN            0U
 
 #define BLINK_TIME  2
+#define BITMAP   3
+#define NUMBER   2
+
 
 #define LAST_OBJECT  1U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */

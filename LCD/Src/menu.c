@@ -93,16 +93,14 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
  */
 void vExitCurObject ( void )
 {
-  if ( ucActiveObject != NO_SELECT_D )
+
+  pCurObject->ObjectParamert[3U] = 0U;
+  if ( ucActiveObject == CHANGE_D )
   {
-  	pCurObject->ObjectParamert[3U] = 0U;
-  	if ( ucActiveObject == CHANGE_D )
-  	{
   	  xYesNoMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
   	  pCurrMenu = &xYesNoMenu;
-  	}
-  	ucActiveObject = NO_SELECT_D;
   }
+  ucActiveObject = NO_SELECT_D;
   return;
 }
 
@@ -111,196 +109,147 @@ static uint8_t uCurrentObject = 0;
 
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
-
-
-/*  switch (uDataType)
-  {
-    case BITMAP:
-
-
-      break;
-    case NUMBER:
-
-
-
-      break;
-
-
-  }
-  */
-
-
-
-
   uint16_t data =0;
-  if (ucActiveObject == NO_SELECT_D)
-  {
-     for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
-     {
-       if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
-           break;
-       if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
-       {
-         uCurrentObject = i;
-         break;
-       }
-     }
-
-  }
   if ( uSettingScreen == 0x03 )
   {
-    switch ( key )
+    if ( ( ucActiveObject !=NO_SELECT_D) && (uDataType == BITMAP))
     {
-      case KEY_STOP:
-        if  ( ( ucActiveObject == NO_SELECT_D ) &&  ( uiSetting >= 1U ) )
+        switch (key)
         {
-          uiSetting--;
-        }
-        if ( ucActiveObject != NO_SELECT_D )
-        {
-          ucActiveObject = CHANGE_D;
-          switch (uDataType)
-          {
-            case 2:eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
-                   break;
-            case 3:
-            default:
+          case KEY_STOP:
+                  ucActiveObject = CHANGE_D;
                   eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
                   if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
-                  {
-                    data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                  }
+                      data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
                   else
-                  {
-                    data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                  }
+                     data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
                   eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
-              break;
-          }
+                  break;
 
-        }
-        break;
-      case KEY_START:
-        if ( ( ucActiveObject == NO_SELECT_D ) && ( uiSetting <= ( SETTING_REGISTER_NUMBER - 2U ) ) )
-        {
-          uiSetting++;
-        }
-        if ( ucActiveObject != NO_SELECT_D )
-        {
-          ucActiveObject = CHANGE_D;
+             break;
+          case KEY_START:
+                   ucActiveObject = CHANGE_D;
+                   eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
+                   if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
+                       data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                   else
+                     data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                   eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
 
-          switch (uDataType)
-                    {
-                      case 2:eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
-                             break;
-                      case 3:
-                      default:
-                            eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
-                            if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
-                            {
-                              data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                            }
-                            else
-                            {
-                              data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                            }
-                            eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
-                        break;
-                    }
-
-        }
-        break;
-      case KEY_DOWN_BREAK:
-
-        if ( ( ucActiveObject == NO_SELECT_D) && ( uiSetting >= 10U ) )
-        {
-          uiSetting -= 10U;
-        }
-        if ( ucActiveObject != NO_SELECT_D )
-        {
-          switch (uDataType)
-          {
-            case 2:
-              ucActiveObject = CHANGE_D;
-              for ( uint8_t i=0U; i<10U; i++ )
-              {
-                eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
-              }
-              break;
-            case 3:
-              for (uint8_t i=uCurrentObject-1; i>0;i--)
-              {
-                   if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                 break;
+          case KEY_DOWN_BREAK:
+                   for (uint8_t i=uCurrentObject-1; i>0;i--)
                    {
-                          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
-                          uCurrentObject = i;
-                          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
-                          break;
+                      if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                      {
+                           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+                           uCurrentObject = i;
+                           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+                           break;
+                      }
                    }
-              }
+                 break;
+          case KEY_UP_BREAK:
+                   for (uint8_t i=(uCurrentObject+1); i<MAX_SCREEN_OBJECT;i++)
+                   {
+                      if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
+                                   break;
+                      if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                      {
+                            menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+                            uCurrentObject = i;
+                            menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+                            break;
+                        }
+                   }
+                  break;
+          case KEY_AUTO:
+                 pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
+                 vExitCurObject();
+                 return;
+          default:
               break;
-            default:
-              break;
-          }
         }
-        break;
-      case KEY_UP_BREAK:
-        if ( ( ucActiveObject == NO_SELECT_D)  && ( uiSetting <= ( SETTING_REGISTER_NUMBER - 12U ) ) )
-        {
-          uiSetting += 10U;
-        }
-        if ( ucActiveObject != NO_SELECT_D )
-        {
-          switch (uDataType)
-          {
-            case 2:
-              ucActiveObject = CHANGE_D;
-              for ( uint8_t i=0U; i<10U; i++ )
-              {
+      }
+  if ((uDataType ==  NUMBER) && ( ucActiveObject !=NO_SELECT_D))
+  {
+     switch (key)
+    {
+         case KEY_STOP:
+                ucActiveObject = CHANGE_D;
+                eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
+                break;
+         case KEY_START:
+                ucActiveObject = CHANGE_D;
                 eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
-              }
-              break;
-            case 3:
-              for (uint8_t i=(uCurrentObject+1); i<MAX_SCREEN_OBJECT;i++)
-              {
-                 if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
-                         break;
-                 if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
-                  {
-                       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
-                       uCurrentObject = i;
-                       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
-                       break;
-                     }
-                  }
-              break;
-            default:
-              break;
-
-          }
-        }
-        break;
-      case KEY_AUTO:
-        if ( ucActiveObject == NO_SELECT_D )
-        {
-          ucActiveObject = SELECT_D;
-          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
-        }
-        else
-        {
-          pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
-          vExitCurObject();
-        }
-        break;
-      case KEY_EXIT:
-        pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-        vExitCurObject();
-        DownScreen = 0U;
-        uiSetting  = 0U;
-        break;
-      default:
-        break;
+                break;
+         case KEY_DOWN_BREAK:
+               ucActiveObject = CHANGE_D;
+               for ( uint8_t i=0U; i<10U; i++ )
+               {
+                  eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
+               }
+               break;
+         case KEY_UP_BREAK:
+               ucActiveObject = CHANGE_D;
+               for ( uint8_t i=0U; i<10U; i++ )
+               {
+                  eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
+               }
+               break;
+         case KEY_AUTO:
+               pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
+               vExitCurObject();
+               return;
+         default:
+           break;
+       }
     }
+    //Обащя навигация, в не зависимости от типа данных
+       if ( ucActiveObject == NO_SELECT_D )
+       {
+             switch(key)
+             {
+               case KEY_STOP:
+                  if ( uiSetting >= 1U )
+                      uiSetting--;
+                  break;
+               case KEY_START:
+                  if ( uiSetting <= ( SETTING_REGISTER_NUMBER - 2U ) )
+                     uiSetting++;
+                  break;
+               case KEY_DOWN_BREAK:
+                  if ( uiSetting >= 10U )
+                     uiSetting -= 10U;
+                  break;
+               case KEY_UP_BREAK:
+                  if (  uiSetting <= ( SETTING_REGISTER_NUMBER - 12U )  )
+                        uiSetting += 10U;
+                  break;
+               case KEY_AUTO:
+                 ucActiveObject = SELECT_D;
+                 for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
+                 {
+                    if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
+                         break;
+                    if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                    {
+                           uCurrentObject = i;
+                           break;
+                    }
+                 }
+                 menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+                 break;
+               case KEY_EXIT:
+                 pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+                 vExitCurObject();
+                 DownScreen = 0U;
+                 uiSetting  = 0U;
+                 break;
+               default:
+                break;
+             }
+       }
   }
   else
   {
@@ -308,10 +257,12 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
     switch (key)
     {
       case KEY_STOP_BREAK:
-        uSettingScreen |= 0x01;
-        break;
+         uSettingScreen |= 0x01;
+         break;
       case  KEY_UP_BREAK:
-        uSettingScreen |= 0x02;
+         uSettingScreen |= 0x02;
+        break;
+      default:
         break;
     }
   }

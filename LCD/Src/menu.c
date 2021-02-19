@@ -38,7 +38,7 @@ static uint8_t           EXIT_KEY_F       = 0U;
 static char TempArray[70];
 static uint8_t uDataType =0;
 static uint16_t uCurrentAlarm =0;
-
+static uint8_t password[] = {0,0,0,0};
 /*----------------------- Functions -----------------------------------------------------------------*/
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key );
 /*----------------------- Structures ----------------------------------------------------------------*/
@@ -106,12 +106,20 @@ void vExitCurObject ( void )
 
 static uint8_t uSettingScreen = 0U;
 static uint8_t uCurrentObject = 0;
+static uint8_t uPassowordCorrect = 0;
 
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
   uint16_t data =0;
   if ( uSettingScreen == 0x03 )
   {
+    if (key == (KEY_EXIT))
+    {
+      pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+      DownScreen = 0U;
+      uiSetting  = 0U;
+      eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
+    }
     if ( ( ucActiveObject !=NO_SELECT_D) && (uDataType == BITMAP))
     {
         switch (key)
@@ -206,69 +214,106 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
        }
     }
     //Обащя навигация, в не зависимости от типа данных
-       if ( ucActiveObject == NO_SELECT_D )
+    if ( ucActiveObject == NO_SELECT_D )
+    {
+        switch(key)
        {
-             switch(key)
-             {
-               case KEY_STOP:
-                  if ( uiSetting >= 1U )
-                      uiSetting--;
-                  break;
-               case KEY_START:
-                  if ( uiSetting <= ( SETTING_REGISTER_NUMBER - 2U ) )
-                     uiSetting++;
-                  break;
-               case KEY_DOWN_BREAK:
-                  if ( uiSetting >= 10U )
-                     uiSetting -= 10U;
-                  break;
-               case KEY_UP_BREAK:
-                  if (  uiSetting <= ( SETTING_REGISTER_NUMBER - 12U )  )
-                        uiSetting += 10U;
-                  break;
-               case KEY_AUTO:
-                 ucActiveObject = SELECT_D;
-                 for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
-                 {
-                    if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
+           case KEY_STOP:
+            if ( uiSetting >= 1U )
+                   uiSetting--;
+            break;
+          case KEY_START:
+            if ( uiSetting <= ( SETTING_REGISTER_NUMBER - 2U ) )
+                  uiSetting++;
+            break;
+          case KEY_DOWN_BREAK:
+            if ( uiSetting >= 10U )
+                uiSetting -= 10U;
+            break;
+          case KEY_UP_BREAK:
+            if (  uiSetting <= ( SETTING_REGISTER_NUMBER - 12U )  )
+                uiSetting += 10U;
+            break;
+          case KEY_AUTO:
+            ucActiveObject = SELECT_D;
+            for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
+            {
+                if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
                          break;
-                    if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
-                    {
-                           uCurrentObject = i;
-                           break;
-                    }
-                 }
-                 menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
-                 break;
-               case KEY_EXIT:
-                 pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-                 vExitCurObject();
-                 DownScreen = 0U;
-                 uiSetting  = 0U;
-                 break;
-               default:
-                break;
+                if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                {
+                    uCurrentObject = i;
+                    break;
+                }
              }
+             menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+             break;
+           default:
+             break;
+         }
        }
   }
   else
   {
     //Обработка клавиш начинается только после того, как будут отпущены клавиши UP и BREAK
-    switch (key)
+    uPassowordCorrect = 0;
+    password[0] = 0;
+    password[1] = 0;
+    password[2] = 0;
+    password[3] = 0;
+    if (key == (KEY_STOP_BREAK))
     {
-      case KEY_STOP_BREAK:
-         uSettingScreen |= 0x01;
-         break;
-      case  KEY_UP_BREAK:
-         uSettingScreen |= 0x02;
-        break;
-      default:
-        break;
+      uSettingScreen |= 0x01;
+    }
+    if (key == (KEY_UP_BREAK))
+    {
+      uSettingScreen |= 0x02;
     }
   }
   return;
 }
 
+static uint8_t CurPassDigitSelect = 0;
+
+void xPasswordScreenCallBack ( xScreenSetObject* menu, char key )
+{
+
+   if  ( (key== KEY_STOP) && (CurPassDigitSelect < 3))
+   {
+     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+     CurPassDigitSelect++;
+     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
+   }
+   if  ( (key==KEY_START) && (CurPassDigitSelect > 0))
+   {
+     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+     CurPassDigitSelect--;
+     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
+   }
+   if ((key == KEY_START) && ( password[CurPassDigitSelect] < 9 ))
+   {
+     password[CurPassDigitSelect]++;
+   }
+   if ((key == KEY_STOP) && ( password[CurPassDigitSelect] > 0 ))
+   {
+     password[CurPassDigitSelect]--;
+   }
+   if ((key == KEY_AUTO) || (key ==KEY_EXIT))
+   {
+     if (((password[0]*1000 + password[1]*100 + password[2]*10 + password[0]) == systemPassword.data) && (key == KEY_AUTO))
+       uPassowordCorrect = 1;
+     else
+       uPassowordCorrect = 0;
+      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
+      pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
+      if (key == KEY_EXIT)
+      {
+         pCurrMenu->pFunc( pCurrMenu, key );
+      }
+   }
+
+}
 
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -403,12 +448,10 @@ void vMenuTask ( void )
   static uint8_t uTimeOutCounter=0;
 
   if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
-    {
-         vLCDBrigthInit();
-         xEventGroupClearBits( xDATAAPIgetEventGroup(),    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT );
-     }
-
-
+  {
+     vLCDBrigthInit();
+     xEventGroupClearBits( xDATAAPIgetEventGroup(),    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT );
+  }
   osDelay(100);
   temp_counter++;
   //Блок отрисовки экранов
@@ -475,8 +518,8 @@ void vMenuTask ( void )
       if ( TempEvent.KeyCode == time_out )
       {
           uTimeOutCounter=1;
-          pCurrMenu = &xMainMenu;
           pCurrMenu->pCurrIndex = 0U;
+          pCurrMenu = &xMainMenu;
           vLCDSetLedBrigth(1);
       }
       else
@@ -637,8 +680,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
   }
   return;
 }
-
-
 
 
 
@@ -960,8 +1001,11 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
  return;
 }
 
-
-
+void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  Data[0]=password[ID-1]+'0';
+  Data[1]=0;
+}
 
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {

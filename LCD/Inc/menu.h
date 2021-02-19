@@ -33,17 +33,17 @@
 
 #define LAST_OBJECT  1U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
-#define KEY_UP_BREAK        up_key | BRAKECODE //1U
-#define KEY_UP              up_key | MAKECODE //2U
-#define KEY_DOWN_BREAK      down_key | BRAKECODE //3U
-#define KEY_DOWN            down_key | MAKECODE  //4U
-#define KEY_STOP            stop_key | MAKECODE  //5U
-#define KEY_STOP_BREAK      stop_key | BRAKECODE // 6U
-#define KEY_AUTO            auto_key | MAKECODE  //9U
-#define KEY_AUTO_BREAK      auto_key | BRAKECODE//7U
-#define KEY_START           start_key | MAKECODE //10U
-#define KEY_START_BREAK     start_key | BRAKECODE// 8U
-#define KEY_EXIT            time_out | MAKECODE  //11U
+#define KEY_UP_BREAK        (up_key | BRAKECODE) //1U
+#define KEY_UP              (up_key | MAKECODE) //2U
+#define KEY_DOWN_BREAK      (down_key | BRAKECODE) //3U
+#define KEY_DOWN            (down_key | MAKECODE)  //4U
+#define KEY_STOP            (stop_key | MAKECODE)  //5U
+#define KEY_STOP_BREAK      (stop_key | BRAKECODE) // 6U
+#define KEY_AUTO            (auto_key | MAKECODE)  //9U
+#define KEY_AUTO_BREAK      (auto_key | BRAKECODE)//7U
+#define KEY_START           (start_key | MAKECODE) //10U
+#define KEY_START_BREAK     (start_key | BRAKECODE)// 8U
+#define KEY_EXIT            (time_out | MAKECODE)  //11U
 
 
 
@@ -151,6 +151,8 @@ void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vUToStr(uint8_t * str, uint16_t data, signed char scale);
 void vMenuMessageInit( osThreadId_t xmainprocess );
 void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
@@ -158,9 +160,10 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
+void xPasswordScreenCallBack ( xScreenSetObject* menu, char key );
 void EventScreenKeyCallBack( xScreenSetObject* menu, char key );
 void xInfoScreenCallBack( xScreenSetObject * menu, char key );
-void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
-void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void xInputScreenKeyCallBack( xScreenSetObject * menu, char key )
+;
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

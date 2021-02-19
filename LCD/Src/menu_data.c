@@ -48,6 +48,7 @@ static uint8_t InputParam15[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam16[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam17[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam18[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam19[]   = { 0U, 1U, LEFT_ALIGN, 1U };
 static uint8_t InputParam1[]  =  { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  =  { 0U, 1U, CENTER_ALIGN, 0U };
 
@@ -324,6 +325,18 @@ static xScreenObjet const xYesNoScreen[]=
   {1U,FONT_SIZE*13U,LINE2,30U,LINE4_HIGTH,DATA_STRING,InputParam2,"  НЕТ  ",NULL,0U},
 };
 
+static xScreenObjet const xPasswordScreen[]=
+{
+  {0U,FONT_SIZE*3U ,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam19,NULL,(void*)&vGetPasswordData,1U},
+  {0U,FONT_SIZE*7U ,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam2,NULL,(void*)&vGetPasswordData,2U},
+  {0U,FONT_SIZE*10U,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,(void*)&vGetPasswordData,3U},
+  {0U,FONT_SIZE*13U,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam4,NULL,(void*)&vGetPasswordData,4U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Пароль",NULL,0U},
+  {1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
+
+};
+
+
 
 xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
@@ -394,6 +407,12 @@ xScreenType   xYesNoScreens[SETTINGS_MENU_COUNT]=
   { xYesNoScreen, &xMainMenu, NULL,  0U, 0U},
 };
 
+xScreenType   xPasswordScreens[PASSWORD_MENU_COUNT]=
+{
+  { xPasswordScreen, &xMainMenu, NULL,  0U, 0U},
+};
+
+
 
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -462,4 +481,12 @@ xScreenSetObject xAlarmMenu =
   ( ALARM_MENU_COUNT - 1U ),
   0U,
   ( void* )&xInfoScreenCallBack,
+};
+
+xScreenSetObject xPasswordMenu =
+{
+  xPasswordScreens,
+  ( PASSWORD_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xPasswordScreenCallBack,
 };

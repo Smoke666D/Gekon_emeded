@@ -144,9 +144,9 @@ void vKeyboardTask( void const * argument )
     if ( KeyNorPressTimeOut >= (displaySleepDelay.value[0] * (KEY_TIME_OUT / ( KEY_PEREOD / portTICK_RATE_MS ) ) ) )
     {
       KeyNorPressTimeOut = 0U;
-      TEvent.KeyCode     = time_out;
-      TEvent.Status      = MAKECODE;
-      xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
+     // TEvent.KeyCode     = time_out;
+    //  TEvent.Status      = MAKECODE;
+    //  xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
       //	 vMenuStop(cKeyDelay);
       cKeyDelay++;
     }

@@ -36,7 +36,7 @@ static uint16_t          uiSetting        = 3U;
 static uint8_t           ucActiveObject   = NO_SELECT_D;
 static uint8_t           EXIT_KEY_F       = 0U;
 static char TempArray[70];
-
+static uint8_t uDataType =0;
 static uint16_t uCurrentAlarm =0;
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -107,10 +107,46 @@ void vExitCurObject ( void )
 }
 
 static uint8_t uSettingScreen = 0U;
+static uint8_t uCurrentObject = 0;
 
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
 
+
+/*  switch (uDataType)
+  {
+    case BITMAP:
+
+
+      break;
+    case NUMBER:
+
+
+
+      break;
+
+
+  }
+  */
+
+
+
+
+  uint16_t data =0;
+  if (ucActiveObject == NO_SELECT_D)
+  {
+     for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
+     {
+       if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
+           break;
+       if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+       {
+         uCurrentObject = i;
+         break;
+       }
+     }
+
+  }
   if ( uSettingScreen == 0x03 )
   {
     switch ( key )
@@ -123,7 +159,25 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         if ( ucActiveObject != NO_SELECT_D )
         {
           ucActiveObject = CHANGE_D;
-          eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
+          switch (uDataType)
+          {
+            case 2:eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
+                   break;
+            case 3:
+            default:
+                  eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
+                  if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
+                  {
+                    data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                  }
+                  else
+                  {
+                    data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                  }
+                  eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
+              break;
+          }
+
         }
         break;
       case KEY_START:
@@ -134,20 +188,59 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         if ( ucActiveObject != NO_SELECT_D )
         {
           ucActiveObject = CHANGE_D;
-          eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
+
+          switch (uDataType)
+                    {
+                      case 2:eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
+                             break;
+                      case 3:
+                      default:
+                            eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
+                            if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
+                            {
+                              data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                            }
+                            else
+                            {
+                              data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                            }
+                            eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
+                        break;
+                    }
+
         }
         break;
       case KEY_DOWN_BREAK:
+
         if ( ( ucActiveObject == NO_SELECT_D) && ( uiSetting >= 10U ) )
         {
           uiSetting -= 10U;
         }
         if ( ucActiveObject != NO_SELECT_D )
         {
-          ucActiveObject = CHANGE_D;
-          for ( uint8_t i=0U; i<10U; i++ )
+          switch (uDataType)
           {
-            eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
+            case 2:
+              ucActiveObject = CHANGE_D;
+              for ( uint8_t i=0U; i<10U; i++ )
+              {
+                eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
+              }
+              break;
+            case 3:
+              for (uint8_t i=uCurrentObject-1; i>0;i--)
+              {
+                   if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                   {
+                          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+                          uCurrentObject = i;
+                          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+                          break;
+                   }
+              }
+              break;
+            default:
+              break;
           }
         }
         break;
@@ -158,10 +251,32 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         }
         if ( ucActiveObject != NO_SELECT_D )
         {
-          ucActiveObject = CHANGE_D;
-          for ( uint8_t i=0U; i<10U; i++ )
+          switch (uDataType)
           {
-            eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
+            case 2:
+              ucActiveObject = CHANGE_D;
+              for ( uint8_t i=0U; i<10U; i++ )
+              {
+                eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
+              }
+              break;
+            case 3:
+              for (uint8_t i=(uCurrentObject+1); i<MAX_SCREEN_OBJECT;i++)
+              {
+                 if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
+                         break;
+                 if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                  {
+                       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+                       uCurrentObject = i;
+                       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+                       break;
+                     }
+                  }
+              break;
+            default:
+              break;
+
           }
         }
         break;
@@ -169,11 +284,11 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         if ( ucActiveObject == NO_SELECT_D )
         {
           ucActiveObject = SELECT_D;
-          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5U].ObjectParamert[3U] = 1U;
+          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
         }
         else
         {
-          pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[5U];
+          pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
           vExitCurObject();
         }
         break;
@@ -338,7 +453,7 @@ void vMenuTask ( void )
 
   if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
     {
-          vLCDBrigthInit();
+         vLCDBrigthInit();
          xEventGroupClearBits( xDATAAPIgetEventGroup(),    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT );
      }
 
@@ -613,6 +728,7 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 }
 
 
+
 void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   eConfigAttributes xAtrib                  = { 0U };
@@ -626,6 +742,7 @@ void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &buff );
         Data[0]=((buff>>(ID-1)) & 0x01)+'0';
         Data[1]=0;
+        uDataType = 3;
       }
       else
         Data[0]=0;
@@ -634,6 +751,7 @@ void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
   }
 }
+
 
 
 void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
@@ -657,6 +775,7 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             case 'U':
               eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
               vUToStr ( ( uint8_t* )Data, buff, scale );
+              uDataType = 2;
               break;
             case 'S':
               eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &sbuff );

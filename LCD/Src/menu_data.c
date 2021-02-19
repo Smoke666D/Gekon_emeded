@@ -34,6 +34,20 @@ static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam3[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam4[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam5[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam6[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam7[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam8[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam9[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+
+static uint8_t InputParam10[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam11[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam12[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam13[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam14[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam15[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam16[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam17[]   = { 0U, 1U, LEFT_ALIGN, 0U };
+static uint8_t InputParam18[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam1[]  =  { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  =  { 0U, 1U, CENTER_ALIGN, 0U };
 
@@ -278,26 +292,27 @@ static xScreenObjet  const SettingsScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
-  {0U,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsNumber, 0U},
-  {0U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsUnit, 0U},
-  {0U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData, 0U},
-  {0U,FONT_SIZE*1U, LINE1+6U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetSettingsBitData, 16U},
-  {0U,FONT_SIZE*2U, LINE1+6U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetSettingsBitData, 15U},
-  {0U,FONT_SIZE*3U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 14U},
-  {0U,FONT_SIZE*4U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 13U},
-  {0U,FONT_SIZE*5U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 12U},
-  {0U,FONT_SIZE*6U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 11U},
-  {0U,FONT_SIZE*7U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 10U},
-  {0U,FONT_SIZE*8U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 9U},
-  {0U,FONT_SIZE*9U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 8U},
-  {0U,FONT_SIZE*10U,LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 7U},
-  {0U,FONT_SIZE*11U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 6U},
-  {0U,FONT_SIZE*12U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 5U},
-  {0U,FONT_SIZE*13U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 4U},
-  {0U,FONT_SIZE*14U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 3U},
-  {0U,FONT_SIZE*15U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 2U},
-  {LAST_OBJECT,FONT_SIZE*16U, LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsBitData, 1U},
 
+
+  {3U,FONT_SIZE*1U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetSettingsBitData, 16U},
+  {3U,FONT_SIZE*2U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetSettingsBitData, 15U},
+  {3U,FONT_SIZE*3U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam5,NULL,(void*)&vGetSettingsBitData, 14U},
+  {3U,FONT_SIZE*4U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam6,NULL,(void*)&vGetSettingsBitData, 13U},
+  {3U,FONT_SIZE*5U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam7,NULL,(void*)&vGetSettingsBitData, 12U},
+  {3U,FONT_SIZE*6U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam8,NULL,(void*)&vGetSettingsBitData, 11U},
+  {3U,FONT_SIZE*7U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam9,NULL,(void*)&vGetSettingsBitData, 10U},
+  {3U,FONT_SIZE*8U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam10,NULL,(void*)&vGetSettingsBitData, 9U},
+  {3U,FONT_SIZE*9U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam11,NULL,(void*)&vGetSettingsBitData, 8U},
+  {3U,FONT_SIZE*10U,LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam12,NULL,(void*)&vGetSettingsBitData, 7U},
+  {3U,FONT_SIZE*11U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam13,NULL,(void*)&vGetSettingsBitData, 6U},
+  {3U,FONT_SIZE*12U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam14,NULL,(void*)&vGetSettingsBitData, 5U},
+  {3U,FONT_SIZE*13U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam15,NULL,(void*)&vGetSettingsBitData, 4U},
+  {3U,FONT_SIZE*14U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam16,NULL,(void*)&vGetSettingsBitData, 3U},
+  {3U,FONT_SIZE*15U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam17,NULL,(void*)&vGetSettingsBitData, 2U},
+  {3U,FONT_SIZE*16U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam18,NULL,(void*)&vGetSettingsBitData, 1U},
+  {2U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsUnit, 0U},
+  {2U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData, 0U},
+  {1,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsNumber, 0U},
 
 };
 

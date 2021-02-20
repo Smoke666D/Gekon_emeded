@@ -336,6 +336,12 @@ static xScreenObjet const xPasswordScreen[]=
 
 };
 
+static xScreenObjet const xMessageScreen[]=
+{
+  {1U,FONT_SIZE*1U ,LINE2,100U,LINE4_HIGTH,HW_DATA,Header,NULL,(void*)&vGetMessageData,1U},
+};
+
+
 
 
 xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
@@ -412,7 +418,10 @@ xScreenType   xPasswordScreens[PASSWORD_MENU_COUNT]=
   { xPasswordScreen, &xMainMenu, NULL,  0U, 0U},
 };
 
-
+xScreenType   xMessageScreens[MESSAGE_MENU_COUNT]=
+{
+  { xMessageScreen, &xMainMenu, NULL,  0U, 0U},
+};
 
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -489,4 +498,13 @@ xScreenSetObject xPasswordMenu =
   ( PASSWORD_MENU_COUNT - 1U ),
   0U,
   ( void* )&xPasswordScreenCallBack,
+};
+
+
+xScreenSetObject xMessageMenu =
+{
+  xMessageScreens,
+  ( MESSAGE_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xMessageScreenCallBack,
 };

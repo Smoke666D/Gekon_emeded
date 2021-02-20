@@ -252,7 +252,6 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
             }
             else
             {
-
               xPasswordMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
               pCurrMenu = &xPasswordMenu;
             }
@@ -274,7 +273,6 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
     {
       uSettingScreen = 0x01;
     }
-
   }
   return;
 }
@@ -400,13 +398,15 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_STOP, eSetBits );
         if  ((key_ready & SET_MENU_READY)!=0)
         {
-            //Переход в меню
+
+          //Переход в меню
             pCurrMenu = &xSettingsMenu;
             pCurrMenu->pCurrIndex = 0U;
         }
       }
       break;
     case KEY_AUTO:
+    //  vMenuMessageShow("123456789123");
       if (( key_ready & AUTO_KEY_READY)==0U)
       {
         key_ready |=AUTO_KEY_READY;
@@ -726,6 +726,45 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 }
 
 
+static uint8_t MessageData[17];
+
+void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  Data[0]=0;
+  vStrCopy(Data,&MessageData[0]);
+}
+
+
+void xMessageScreenCallBack ( xScreenSetObject* menu, char key )
+{
+  static uint8_t key_press =0;
+  if (key!=0)
+  {
+    if (key_press == 0)
+    {
+      key_press =1;
+    }
+    else
+    {
+      key_press = 0;
+      vMenuMessageHide();
+    }
+  }
+
+}
+
+void vMenuMessageShow(uint8_t * mes)
+{
+  xMessageMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
+  pCurrMenu = &xMessageMenu;
+  pCurrMenu->pCurrIndex = 0U;
+  vStrCopy(MessageData,mes);
+}
+
+void vMenuMessageHide(void)
+{
+    pCurrMenu = xMessageMenu.pHomeMenu[0U].pUpScreenSet;
+}
 
 void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {

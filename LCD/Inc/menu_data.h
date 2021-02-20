@@ -23,6 +23,7 @@
 #define ABOUT_MENU_COUNT       3U
 #define ALARM_MENU_COUNT       1U
 #define PASSWORD_MENU_COUNT    1U
+#define MESSAGE_MENU_COUNT     1U
 
  extern xScreenType   xEventScreens[EVENT_MENU_COUNT];
  extern xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT];
@@ -46,5 +47,5 @@
  extern xScreenSetObject xNetMenu;
  extern xScreenSetObject xSettingsMenu;
  extern xScreenSetObject xPasswordMenu;
-
+ extern xScreenSetObject xMessageMenu;
 #endif /* INC_MENU_DATA_H_ */

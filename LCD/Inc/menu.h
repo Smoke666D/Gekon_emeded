@@ -156,6 +156,7 @@ void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vUToStr(uint8_t * str, uint16_t data, signed char scale);
 void vMenuMessageInit( osThreadId_t xmainprocess );
 void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
@@ -163,7 +164,9 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
 void xPasswordScreenCallBack ( xScreenSetObject* menu, char key );
 void EventScreenKeyCallBack( xScreenSetObject* menu, char key );
 void xInfoScreenCallBack( xScreenSetObject * menu, char key );
-void xInputScreenKeyCallBack( xScreenSetObject * menu, char key )
-;
+void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
+void xMessageScreenCallBack ( xScreenSetObject* menu, char key );
+void vMenuMessageShow(uint8_t * mes);
+void vMenuMessageHide(void);
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

@@ -270,7 +270,7 @@ fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
+  if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
   {
     vALARMcheck( &fuel.lowAlarm, value );
     if ( fuel.lowAlarm.error.status == ALARM_STATUS_IDLE )

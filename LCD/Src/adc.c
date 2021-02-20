@@ -387,9 +387,9 @@ void vADCNetDataUpdate()
 
     if (xNetWiring==ELECTRO_SCHEME_STAR)
        {
-         GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(xNET_F1_VDD, fix16_sqrt(x3 ));
-         GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(xNET_F2_VDD, fix16_sqrt(x3 ));
-         GENERATOR_DATA[NET_L3_LINE_V]=fix16_mul(xNET_F3_VDD, fix16_sqrt(x3 ));
+         GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul( GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt(x3 ));
+         GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul( GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt(x3 ));
+         GENERATOR_DATA[NET_L3_LINE_V]=fix16_mul( GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt(x3 ));
        }
        else
        {

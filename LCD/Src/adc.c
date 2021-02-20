@@ -96,25 +96,30 @@ static const fix16_t  xLCurCoof       = F16 (( VRef /4095)/(RCSHUNT * OPTRANSCOO
 static const fix16_t  xMinus1         = F16 (-1.0);
 static const fix16_t  x3              = F16 (3);
 static const fix16_t  xVDD_CF         = F16 (VDD_CF);
-
+static const fix16_t  MIN_CUR         = F16 (1.0);
 /*
  * API функции
  *
  */
 
+
+/*
+ *  Функция возвращает тип канала урвоня топлива
+ */
 SENSOR_TYPE xADCGetFLChType(void)
 {
  return  xFLChType;
-
 }
-
-
+/*
+ *  Функция возвращает тип канала давления масла
+ */
 SENSOR_TYPE xADCGetxOPChType(void)
 {
  return xOPChType;
-
 }
-
+/*
+ *  Функция возвращает тип канала температуры охлаждающей жидкости масла
+ */
 SENSOR_TYPE xADCGetxCTChType(void)
 {
  return xCTChType;
@@ -394,9 +399,9 @@ void vADCNetDataUpdate()
 
     if (xNetWiring==ELECTRO_SCHEME_STAR)
        {
-         GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(xNET_F1_VDD, fix16_sqrt(x3 ));
-         GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(xNET_F2_VDD, fix16_sqrt(x3 ));
-         GENERATOR_DATA[NET_L3_LINE_V]=fix16_mul(xNET_F3_VDD, fix16_sqrt(x3 ));
+         GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt(x3 ));
+         GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt(x3 ));
+         GENERATOR_DATA[NET_L3_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt(x3 ));
        }
        else
        {
@@ -438,20 +443,21 @@ void vADCGeneratorDataUpdate()
       GENERATOR_DATA[GEN_L3_LINE_V] =GENERATOR_DATA[GEN_L3_FASE_V];
     }
 
-    xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
-//    genCurrentTrasformRatioLevel
+
     //Вычисление значения токов
     //Пересчет данных с АЦП в значения тока на шутнирующих резисторах и применяем коофицент трансформации для токовых измирительных трасформатров
-
     temp = fix16_mul(xLCurCoof,xTransCoof);
-    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(xGEN_F1_CUR, temp);//fix16_mul(xGEN_F1_CUR, xLCurCoof  );
-    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, temp);//fix16_mul(xGEN_F3_CUR, xLCurCoof  );
+
+    xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
+
+    GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(xGEN_F1_CUR, temp);
+    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, temp);
     GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(xGEN_F3_CUR, temp);
-    if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
+    if (GENERATOR_DATA[GEN_L1_CUR] < MIN_CUR  )
         GENERATOR_DATA[GEN_L1_CUR] = 0;
-    if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
+    if (GENERATOR_DATA[GEN_L2_CUR] < MIN_CUR  )
         GENERATOR_DATA[GEN_L2_CUR] = 0;
-    if (fix16_to_float(GENERATOR_DATA[GEN_L1_CUR]) <1.0 )
+    if (GENERATOR_DATA[GEN_L2_CUR] < MIN_CUR  )
         GENERATOR_DATA[GEN_L3_CUR] = 0;
 
     //Расчзет косинуса Фм
@@ -492,7 +498,6 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_L3_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_L3_REAL_POWER]);
 
     //Расчет полной мощности
-
     GENERATOR_DATA[GEN_REACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L2_REAC_POWER]);
     GENERATOR_DATA[GEN_REACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_REACTIVE_POWER]);
 
@@ -540,8 +545,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
     case 1U:
       uVDD = GetAverVDD( 4U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer  );   //Получем среднение заничение АЦП канала питания
       uCSA = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );    //Усредняем сырые значения АЦП
-      uCAS = GetAverVDD( 6U, DC_SIZE, 9,(int16_t *)&ADC3_IN_Buffer );   //Усредняем сырые значения АЦП канала CommonAnalogSensor
-
+      uCAS = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );   //Усредняем сырые значения АЦП канала CommonAnalogSensor
       uTemp = GetAverVDD( 3U, DC_SIZE, 4,(int16_t *)&ADC1_IN_Buffer );
       xADC_TEMP = fix16_sub(  fix16_from_float(uTemp*3.3/4095U), fix16_from_float( 0.76 ) );
       xADC_TEMP = fix16_div( xADC_TEMP, fix16_from_float(0.0025) );
@@ -559,7 +563,6 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       {
         //Усредняем сырые значения АЦП
         uSCT = GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
-
         switch (xCTChType)
         {
            case SENSOR_TYPE_RESISTIVE:

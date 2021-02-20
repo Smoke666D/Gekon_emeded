@@ -192,9 +192,9 @@ static xScreenObjet const NetMainScreen[]=
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1-N - ",NULL,0U},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2-N - ",NULL,0U},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3-N - ",NULL,0U},
-  {0U,FONT_SIZE*7U,LINE1+6U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L1_FASE_V},
-  {0U,FONT_SIZE*7U,LINE2+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L2_FASE_V},
-  {0U,FONT_SIZE*7U,LINE3+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L3_FASE_V},
+  {0U,FONT_SIZE*7U,LINE1+6U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L1_LINE_V},
+  {0U,FONT_SIZE*7U,LINE2+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L2_LINE_V},
+  {0U,FONT_SIZE*7U,LINE3+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L3_LINE_V},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
@@ -205,9 +205,9 @@ static xScreenObjet const Net1Screen[]=
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1-L2 - ",NULL,0U},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2-L3 - ",NULL,0U},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3-L1 - ",NULL,0U},
-  {0U,FONT_SIZE*8U,LINE1+6U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L1_LINE_V},
-  {0U,FONT_SIZE*8U,LINE2+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L2_LINE_V},
-  {0U,FONT_SIZE*8U,LINE3+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L3_LINE_V},
+  {0U,FONT_SIZE*8U,LINE1+6U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L1_FASE_V},
+  {0U,FONT_SIZE*8U,LINE2+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L2_FASE_V},
+  {0U,FONT_SIZE*8U,LINE3+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,NET_L3_FASE_V},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
@@ -342,19 +342,15 @@ static xScreenObjet const xMessageScreen[]=
 };
 
 
-
-
 xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
-  {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
-  {InfoMainScreen,&xMainMenu,&xAboutMenu,0U,0U},
+  {StatusMainScreen,NULL,NULL,0U,0U},
   {AlarmMainScreen,&xMainMenu,&xAlarmMenu,0U,0U},
-  {EventMainScreen,&xMainMenu,&xEventMenu,0U,0U},
+  {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
   {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
   {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
-  {StatusMainScreen,NULL,NULL,0U,0U},
-
-
+  {EventMainScreen,&xMainMenu,&xEventMenu,0U,0U},
+  {InfoMainScreen,&xMainMenu,&xAboutMenu,0U,0U},
 };
 
 xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=

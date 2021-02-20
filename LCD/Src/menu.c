@@ -305,9 +305,13 @@ void xPasswordScreenCallBack ( xScreenSetObject* menu, char key )
    if ((key == KEY_AUTO) || (key ==KEY_EXIT))
    {
      if (((password[0]*1000 + password[1]*100 + password[2]*10 + password[0]) == systemPassword.data) && (key == KEY_AUTO))
+     {
        uPassowordCorrect = 1;
+     }
      else
+     {
        uPassowordCorrect = 0;
+     }
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
       pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;

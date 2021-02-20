@@ -327,10 +327,10 @@ static xScreenObjet const xYesNoScreen[]=
 
 static xScreenObjet const xPasswordScreen[]=
 {
-  {0U,FONT_SIZE*3U ,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam19,NULL,(void*)&vGetPasswordData,1U},
-  {0U,FONT_SIZE*7U ,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam2,NULL,(void*)&vGetPasswordData,2U},
-  {0U,FONT_SIZE*10U,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,(void*)&vGetPasswordData,3U},
-  {0U,FONT_SIZE*13U,LINE2,30U,LINE4_HIGTH,INPUT_HW_DATA,InputParam4,NULL,(void*)&vGetPasswordData,4U},
+  {0U,FONT_SIZE*3U ,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam19,NULL,(void*)&vGetPasswordData,1U},
+  {0U,FONT_SIZE*7U ,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam2,NULL,(void*)&vGetPasswordData,2U},
+  {0U,FONT_SIZE*10U,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,(void*)&vGetPasswordData,3U},
+  {0U,FONT_SIZE*13U,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam4,NULL,(void*)&vGetPasswordData,4U},
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Пароль",NULL,0U},
   {1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
 

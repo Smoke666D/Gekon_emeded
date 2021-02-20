@@ -111,7 +111,7 @@ static uint8_t uPassowordCorrect = 0;
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
   uint16_t data =0;
-  if ( uSettingScreen == 0x03 )
+  if ( uSettingScreen == 0x01 )
   {
     if (key == (KEY_EXIT))
     {
@@ -235,9 +235,11 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                 uiSetting += 10U;
             break;
           case KEY_AUTO:
-            ucActiveObject = SELECT_D;
-            for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
+            if ((uPassowordCorrect) || (systemPassword.status == PASSWORD_RESET))
             {
+              ucActiveObject = SELECT_D;
+              for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
+              {
                 if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
                          break;
                 if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
@@ -245,8 +247,15 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                     uCurrentObject = i;
                     break;
                 }
-             }
-             menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+              }
+              menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+            }
+            else
+            {
+
+              xPasswordMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
+              pCurrMenu = &xPasswordMenu;
+            }
              break;
            default:
              break;
@@ -263,12 +272,9 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
     password[3] = 0;
     if (key == (KEY_STOP_BREAK))
     {
-      uSettingScreen |= 0x01;
+      uSettingScreen = 0x01;
     }
-    if (key == (KEY_UP_BREAK))
-    {
-      uSettingScreen |= 0x02;
-    }
+
   }
   return;
 }
@@ -278,23 +284,23 @@ static uint8_t CurPassDigitSelect = 0;
 void xPasswordScreenCallBack ( xScreenSetObject* menu, char key )
 {
 
-   if  ( (key== KEY_STOP) && (CurPassDigitSelect < 3))
+   if  ( (key== KEY_START) && (CurPassDigitSelect < 3))
    {
      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
      CurPassDigitSelect++;
      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
    }
-   if  ( (key==KEY_START) && (CurPassDigitSelect > 0))
+   if  ( (key==KEY_STOP) && (CurPassDigitSelect > 0))
    {
      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
      CurPassDigitSelect--;
      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
    }
-   if ((key == KEY_START) && ( password[CurPassDigitSelect] < 9 ))
+   if ((key == KEY_UP) && ( password[CurPassDigitSelect] < 9 ))
    {
      password[CurPassDigitSelect]++;
    }
-   if ((key == KEY_STOP) && ( password[CurPassDigitSelect] > 0 ))
+   if ((key == KEY_DOWN) && ( password[CurPassDigitSelect] > 0 ))
    {
      password[CurPassDigitSelect]--;
    }

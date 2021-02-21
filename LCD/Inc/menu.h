@@ -110,6 +110,12 @@ typedef enum
   HW_DATA,
   INPUT_HW_DATA,
 } OBJECT_TYPE;
+
+typedef enum
+{
+  NO_ALARM,
+  ALARM,
+} ALRAM_FLAG;
 /*---------------------------- Structures --------------------------------------*/
 typedef struct __packed
 {

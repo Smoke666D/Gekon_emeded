@@ -293,27 +293,25 @@ static xScreenObjet  const SettingsScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
-
-
-  {3U,FONT_SIZE*1U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetSettingsBitData, 16U},
-  {3U,FONT_SIZE*2U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetSettingsBitData, 15U},
-  {3U,FONT_SIZE*3U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam5,NULL,(void*)&vGetSettingsBitData, 14U},
-  {3U,FONT_SIZE*4U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam6,NULL,(void*)&vGetSettingsBitData, 13U},
-  {3U,FONT_SIZE*5U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam7,NULL,(void*)&vGetSettingsBitData, 12U},
-  {3U,FONT_SIZE*6U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam8,NULL,(void*)&vGetSettingsBitData, 11U},
-  {3U,FONT_SIZE*7U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam9,NULL,(void*)&vGetSettingsBitData, 10U},
-  {3U,FONT_SIZE*8U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam10,NULL,(void*)&vGetSettingsBitData, 9U},
-  {3U,FONT_SIZE*9U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam11,NULL,(void*)&vGetSettingsBitData, 8U},
-  {3U,FONT_SIZE*10U,LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam12,NULL,(void*)&vGetSettingsBitData, 7U},
-  {3U,FONT_SIZE*11U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam13,NULL,(void*)&vGetSettingsBitData, 6U},
-  {3U,FONT_SIZE*12U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam14,NULL,(void*)&vGetSettingsBitData, 5U},
-  {3U,FONT_SIZE*13U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam15,NULL,(void*)&vGetSettingsBitData, 4U},
-  {3U,FONT_SIZE*14U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam16,NULL,(void*)&vGetSettingsBitData, 3U},
-  {3U,FONT_SIZE*15U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam17,NULL,(void*)&vGetSettingsBitData, 2U},
-  {3U,FONT_SIZE*16U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam18,NULL,(void*)&vGetSettingsBitData, 1U},
-  {2U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsUnit, 0U},
-  {2U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH, INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData, 0U},
-  {1,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsNumber, 0U},
+  {3U,FONT_SIZE*1U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetSettingsBitData, 16U},
+  {3U,FONT_SIZE*2U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetSettingsBitData, 15U},
+  {3U,FONT_SIZE*3U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam5,NULL,(void*)&vGetSettingsBitData, 14U},
+  {3U,FONT_SIZE*4U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam6,NULL,(void*)&vGetSettingsBitData, 13U},
+  {3U,FONT_SIZE*6U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam7,NULL,(void*)&vGetSettingsBitData, 12U},
+  {3U,FONT_SIZE*7U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam8,NULL,(void*)&vGetSettingsBitData, 11U},
+  {3U,FONT_SIZE*8U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam9,NULL,(void*)&vGetSettingsBitData, 10U},
+  {3U,FONT_SIZE*9U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam10,NULL,(void*)&vGetSettingsBitData, 9U},
+  {3U,FONT_SIZE*11U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam11,NULL,(void*)&vGetSettingsBitData, 8U},
+  {3U,FONT_SIZE*12U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam12,NULL,(void*)&vGetSettingsBitData, 7U},
+  {3U,FONT_SIZE*13U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam13,NULL,(void*)&vGetSettingsBitData, 6U},
+  {3U,FONT_SIZE*14U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam14,NULL,(void*)&vGetSettingsBitData, 5U},
+  {3U,FONT_SIZE*16U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam15,NULL,(void*)&vGetSettingsBitData, 4U},
+  {3U,FONT_SIZE*17U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam16,NULL,(void*)&vGetSettingsBitData, 3U},
+  {3U,FONT_SIZE*18U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam17,NULL,(void*)&vGetSettingsBitData, 2U},
+  {3U,FONT_SIZE*19U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam18,NULL,(void*)&vGetSettingsBitData, 1U},
+  {2U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsUnit,      0U},
+  {2U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH,  INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,      0U},
+  {1,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsNumber,    0U},
 
 };
 
@@ -341,66 +339,66 @@ static xScreenObjet const xMessageScreen[]=
   {1U,FONT_SIZE*1U ,LINE2,100U,LINE4_HIGTH,HW_DATA,Header,NULL,(void*)&vGetMessageData,1U},
 };
 
-
+//Описание экранов главонго меню
 xScreenType  xScreensLev1[MENU_LEVEL1_COUNT]=
 {
-  {StatusMainScreen,NULL,NULL,0U,0U},
-  {AlarmMainScreen,&xMainMenu,&xAlarmMenu,0U,0U},
-  {EngineMainScreen,&xMainMenu,&xEngineMenu,0U,0U},
-  {GeneratorMainScreen,&xMainMenu,&xGeneratorMenu,0U,0U},
-  {NetMainScreen,&xMainMenu,&xNetMenu,0U,0U},
-  {EventMainScreen,&xMainMenu,&xEventMenu,0U,0U},
-  {InfoMainScreen,&xMainMenu,&xAboutMenu,0U,0U},
+  {StatusMainScreen,   &xMainMenu, NULL           ,0U,0U},
+  {AlarmMainScreen,    &xMainMenu, &xAlarmMenu    ,0U,0U},
+  {EngineMainScreen,   &xMainMenu, &xEngineMenu   ,0U,0U},
+  {GeneratorMainScreen,&xMainMenu, &xGeneratorMenu,0U,0U},
+  {NetMainScreen,      &xMainMenu, &xNetMenu      ,0U,0U},
+  {EventMainScreen,    &xMainMenu, &xEventMenu    ,0U,0U},
+  {InfoMainScreen,     &xMainMenu, &xAboutMenu    ,0U,0U},
 };
-
+//Описание вложеных экранов двигателя
 xScreenType  xEngineScreens[ENGINE_MENU_COUNT]=
 {
-  {Engine1Screen,&xMainMenu,NULL,0U,0U},
-  {Engine2Screen,&xMainMenu,NULL,0U,0U},
-  {EngineMainScreen,(void*)&xMainMenu,NULL,0U,0U},
+  {Engine1Screen,     &xMainMenu, NULL, 0U, 0U},
+  {Engine2Screen,     &xMainMenu, NULL, 0U, 0U},
+  {EngineMainScreen,  &xMainMenu, NULL, 0U, 0U},
 };
 
 xScreenType xGeneratorScreens[GENERATOR_MENU_COUNT]=
 {
-  {Generator1Screen,&xMainMenu,NULL,0U,0U},
-  {Generator2Screen,&xMainMenu,NULL,0U,0U},
-  {Generator3Screen,&xMainMenu,NULL,0U,0U},
-  {Generator4Screen,&xMainMenu,NULL,0U,0U},
-  {Generator5Screen,&xMainMenu,NULL,0U,0U},
-  {Generator6Screen,&xMainMenu,NULL,0U,0U},
-  {GeneratorMainScreen,(void*)&xGeneratorMenu,NULL,0U,0U},
+  {Generator1Screen,    &xMainMenu, NULL, 0U, 0U},
+  {Generator2Screen,    &xMainMenu, NULL, 0U, 0U},
+  {Generator3Screen,    &xMainMenu, NULL, 0U, 0U},
+  {Generator4Screen,    &xMainMenu, NULL, 0U, 0U},
+  {Generator5Screen,    &xMainMenu, NULL, 0U, 0U},
+  {Generator6Screen,    &xMainMenu, NULL, 0U, 0U},
+  {GeneratorMainScreen, &xMainMenu, NULL, 0U, 0U},
 };
 
 xScreenType xNetScreens[NET_MENU_COUNT]=
 {
-  { Net1Screen, &xMainMenu, NULL,  0U, 0U},
-  { Net2Screen, &xMainMenu, NULL,  0U, 0U },
-  { NetMainScreen, (void*)&xMainMenu, NULL,  0U, 0U},
+  { Net1Screen,       &xMainMenu, NULL,  0U, 0U},
+  { Net2Screen,       &xMainMenu, NULL,  0U, 0U},
+  { NetMainScreen,    &xMainMenu, NULL,  0U, 0U},
 };
 
 
 xScreenType  xAlarmScreens[ALARM_MENU_COUNT]=
 {
-  {AlarmMainScreen,&xMainMenu,NULL,0U,0U},
+  {AlarmMainScreen,   &xMainMenu, NULL, 0U, 0U},
 };
 
 xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
 {
-  { SettingsScreen, (void*)&xMainMenu, NULL,  0U, 0U},
+  { SettingsScreen, &xMainMenu, NULL,  0U, 0U},
 };
 
 
 xScreenType  xAboutScreens[ABOUT_MENU_COUNT]=
 {
-  {LinkMainScreen,&xMainMenu,NULL,0U,0U},
-  {SerialNumberScreen,&xMainMenu,NULL,0U,0U},
-  {InfoMainScreen,&xMainMenu,NULL,0U,0U},
+  {LinkMainScreen,      &xMainMenu, NULL, 0U, 0U},
+  {SerialNumberScreen,  &xMainMenu, NULL, 0U, 0U},
+  {InfoMainScreen,      &xMainMenu, NULL, 0U, 0U},
 };
 
 
 xScreenType   xEventScreens[EVENT_MENU_COUNT]=
 {
-  {EventMainScreen, &xMainMenu, NULL,  0U, 0U},
+  {EventMainScreen, &xMainMenu, NULL, 0U, 0U},
 };
 
 

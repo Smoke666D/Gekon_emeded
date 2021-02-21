@@ -19,6 +19,7 @@
 #define SELECT_D      1U
 #define CHANGE_D      2U
 #define VIEW_DELAY    10U
+
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2             = NULL;
 static osThreadId_t      xProccesToNotify = NULL;
@@ -26,6 +27,7 @@ static KeyEvent          TempEvent        = { 0U };
 static KeyEvent          BufferEvent      = { 0U };
 static uint8_t           temp_counter     = 0U;
 static xScreenSetObject* pCurrMenu        = NULL;
+static xScreenSetObject* pHomeMenu        = NULL;
 static xScreenObjet*     pCurObject       = NULL;
 static uint8_t           DownScreen       = 0U;
 static QueueHandle_t     pKeyboard        = NULL;
@@ -35,10 +37,13 @@ static uint8_t           Blink            = 0U;
 static uint16_t          uiSetting        = 3U;
 static uint8_t           ucActiveObject   = NO_SELECT_D;
 static uint8_t           EXIT_KEY_F       = 0U;
-static char TempArray[70];
-static uint8_t uDataType =0;
-static uint16_t uCurrentAlarm =0;
-static uint8_t password[] = {0,0,0,0};
+static char              TempArray[70];
+static uint8_t           uDataType        = 0U;
+static uint16_t          uCurrentAlarm    = 0U;
+static uint8_t           password[]       = { 0U, 0U, 0U ,0U };
+static ALRAM_FLAG        xAlarmFlag       = NO_ALARM;
+
+
 /*----------------------- Functions -----------------------------------------------------------------*/
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key );
 /*----------------------- Structures ----------------------------------------------------------------*/
@@ -81,6 +86,13 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
         }
         eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
         pCurrMenu = xYesNoMenu.pHomeMenu[0U].pUpScreenSet;
+        break;
+      case KEY_EXIT:  // Если прилетела команда выход, что также может быть и таймаутом,
+                      // выходим каскадом в предидущие меню
+        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] =1U;
+        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3U].ObjectParamert[3U] =0U;
+        eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
+        //pCurrMenu = xYesNoMenu.pHomeMenu[0U].pUpScreenSet;
         break;
       default:
         break;
@@ -335,7 +347,6 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
 
   switch ( key )
   {
-
     case KEY_UP:
       key_ready|= SET_MENU_READY;
       break;
@@ -359,7 +370,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         pMenu->pCurrIndex++;
       }
       uCurrentAlarm =0;
-      key_ready&= ~SET_MENU_READY;
+      key_ready &= ~SET_MENU_READY;
       break;
     case KEY_DOWN_BREAK:
         //Если нажата клавиша вниз, проверяем флаг, сигнализурующий что мы листаем
@@ -392,9 +403,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
             }
         }
        break;
-    case KEY_EXIT:
-      DownScreen     = 0U;
-    break;
+
     case KEY_STOP:
       if ((key_ready & STOP_KEY_READY )==0U)
       {
@@ -402,7 +411,6 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_STOP, eSetBits );
         if  ((key_ready & SET_MENU_READY)!=0)
         {
-
           //Переход в меню
             pCurrMenu = &xSettingsMenu;
             pCurrMenu->pCurrIndex = 0U;
@@ -410,7 +418,6 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       }
       break;
     case KEY_AUTO:
-    //  vMenuMessageShow("123456789123");
       if (( key_ready & AUTO_KEY_READY)==0U)
       {
         key_ready |=AUTO_KEY_READY;
@@ -432,6 +439,9 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       break;
     case KEY_STOP_BREAK:
       key_ready &=  ~STOP_KEY_READY;
+      break;
+    case KEY_EXIT:
+        DownScreen     = 0U;
       break;
     default:
       break;
@@ -525,12 +535,21 @@ void vMenuTask ( void )
     if ( key > 0U )
     {
       pCurrMenu->pFunc( pCurrMenu, key );
+      //Если возник таймаут гашения экрана.
       if ( TempEvent.KeyCode == time_out )
       {
+        if (xAlarmFlag == NO_ALARM)
+        {
           uTimeOutCounter=1;
           pCurrMenu->pCurrIndex = 0U;
           pCurrMenu = &xMainMenu;
           vLCDSetLedBrigth(1);
+        }
+        else
+        {
+
+
+        }
       }
       else
       {
@@ -985,12 +1004,11 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
  * В связи с тем, что функция писалась под конкретную сруктуру вывода в меню, для сокращения обращений к памяти, текущая запись кэшируется при выволненении команды ALARM_COUNT или EVENT_COUNT
  */
 
-
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
-  static uint8_t  ALD   = 0;
-  static uint16_t        utemp;
+  static uint8_t          ALD   = 0;
+  static uint16_t         utemp;
   vStrCopy(Data," ");
   switch (ID)
   {
@@ -999,12 +1017,17 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
       if (utemp >0)
       {
+         xAlarmFlag = ALARM;
          if (++ALD>BLINK_TIME)
          {
            vStrCopy(Data,"О");
            if (ALD ==(BLINK_TIME*2))
            ALD=0;
          }
+      }
+      else
+      {
+        xAlarmFlag = NO_ALARM;
       }
       break;
     case ALARM_COUNT:

@@ -88,6 +88,7 @@ typedef struct __packed
   /* Logic */
   FPO_FUNCTION   function : 5U;
   FPO_POLARITY   polarity : 1U;
+  TRIGGER_STATE  state    : 1U;
 } FPO;
 
 typedef struct __packed
@@ -96,28 +97,29 @@ typedef struct __packed
   uint16_t       pin;    /* Pin number */
 } FPO_DIS;
 /*----------------------- Functions ------------------------------------*/
-void    vFPOinit ( const FPO_INIT* init );
-void    vFPOdataInit ( void );
-uint8_t uFPOisEnable ( FPO_FUNCTION fun );
-void    vFPOsetPump ( RELAY_STATUS stat );
-void    vFPOsetBooster ( RELAY_STATUS stat );
-void    vFPOsetPreheater ( RELAY_STATUS stat );
-void    vFPOsetCooler ( RELAY_STATUS stat );
-void    vFPOsetHeater ( RELAY_STATUS stat );
-void    vFPOsetStarter( RELAY_STATUS stat );
-void    vFPOsetStopSolenoid ( RELAY_STATUS stat );
-void    vFPOsetIdle ( RELAY_STATUS stat );
-void    vFPOsetGenSw ( RELAY_STATUS stat );
-void    vFPOsetGenOnImp ( RELAY_STATUS stat );
-void    vFPOsetGenOffImp ( RELAY_STATUS stat );
-void    vFPOsetMainsSw ( RELAY_STATUS stat );
-void    vFPOsetMainsOnImp ( RELAY_STATUS stat );
-void    vFPOsetMainsOffImp ( RELAY_STATUS stat );
-void    vFPOsetWarning ( RELAY_STATUS stat );
-void    vFPOsetMainsFail ( RELAY_STATUS stat );
-void    vFPOsetAlarm ( RELAY_STATUS stat );
-void    vFPOsetGenReady ( RELAY_STATUS stat );
-void    vFPOsetReadyToStart ( RELAY_STATUS stat );
-void    vFPOsetDpsReady ( RELAY_STATUS stat );
+void          vFPOinit ( const FPO_INIT* init );
+void          vFPOdataInit ( void );
+uint8_t       uFPOisEnable ( FPO_FUNCTION fun );
+void          vFPOsetPump ( RELAY_STATUS stat );
+void          vFPOsetBooster ( RELAY_STATUS stat );
+void          vFPOsetPreheater ( RELAY_STATUS stat );
+void          vFPOsetCooler ( RELAY_STATUS stat );
+void          vFPOsetHeater ( RELAY_STATUS stat );
+void          vFPOsetStarter( RELAY_STATUS stat );
+void          vFPOsetStopSolenoid ( RELAY_STATUS stat );
+void          vFPOsetIdle ( RELAY_STATUS stat );
+void          vFPOsetGenSw ( RELAY_STATUS stat );
+void          vFPOsetGenOnImp ( RELAY_STATUS stat );
+void          vFPOsetGenOffImp ( RELAY_STATUS stat );
+void          vFPOsetMainsSw ( RELAY_STATUS stat );
+void          vFPOsetMainsOnImp ( RELAY_STATUS stat );
+void          vFPOsetMainsOffImp ( RELAY_STATUS stat );
+void          vFPOsetWarning ( RELAY_STATUS stat );
+void          vFPOsetMainsFail ( RELAY_STATUS stat );
+void          vFPOsetAlarm ( RELAY_STATUS stat );
+void          vFPOsetGenReady ( RELAY_STATUS stat );
+void          vFPOsetReadyToStart ( RELAY_STATUS stat );
+void          vFPOsetDpsReady ( RELAY_STATUS stat );
+TRIGGER_STATE eFPOgetState ( uint8_t n );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FPO_H_ */

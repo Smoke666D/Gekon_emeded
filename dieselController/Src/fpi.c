@@ -136,7 +136,7 @@ void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* d
 /*----------------------------------------------------------------------------*/
 void vFPIcheckReset ( FPI* fpi )
 {
-  if ( vFPIgetTrig( fpi ) == 0U )
+  if ( vFPIgetTrig( fpi ) == TRIGGER_IDLE )
   {
     vLOGICresetTimer( &fpi->timer );
     fpi->state = FPI_IDLE;
@@ -296,6 +296,16 @@ void vFPIsetBlock ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPIgetState ( uint8_t n )
+{
+  TRIGGER_STATE res = TRIGGER_IDLE;
+  if ( ( fpis[n].state == FPI_TRIGGERED ) && ( n < FPI_NUMBER ) )
+  {
+    res = TRIGGER_SET;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
 void vFPITask ( void* argument )
 {
   FPI_EVENT event = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
@@ -323,7 +333,7 @@ void vFPITask ( void* argument )
               }
               break;
             case FPI_IDLE:
-              if ( vFPIgetTrig( &fpis[i] ) > 0U )
+              if ( vFPIgetTrig( &fpis[i] ) == TRIGGER_SET )
               {
                 fpis[i].state = FPI_TRIGGERED;
                 vLOGICstartTimer( &fpis[i].timer, "FPI timer           " );

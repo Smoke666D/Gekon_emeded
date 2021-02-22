@@ -124,6 +124,7 @@ void          vFPIreset ( void );
 void          vFPIprint ( FPI_FUNCTION function, const char* str );
 QueueHandle_t pFPIgetQueue ( void );
 void          vFPIsetBlock ( void );
+TRIGGER_STATE eFPIgetState ( uint8_t n );
 FPI_LEVEL     eFPIcheckLevel ( FPI_FUNCTION function );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FPI_H_ */

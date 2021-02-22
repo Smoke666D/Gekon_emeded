@@ -53,10 +53,6 @@ static uint8_t InputParam1[]  =  { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  =  { 0U, 1U, CENTER_ALIGN, 0U };
 
 
-
-extern void vGetTestData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-
-//
 static xScreenObjet const EngineMainScreen[]=
 {
   { 0U, LEFT_OFFSET, LINE1, 0U, 0U,                          TEXT_STRING, LeftText, "ДВИГАТЕЛЬ - Сводные", NULL, 0U },
@@ -502,3 +498,13 @@ xScreenSetObject xMessageMenu =
   0U,
   ( void* )&xMessageScreenCallBack,
 };
+
+
+xScreenSetObject xYesNoMenu =
+{
+  xYesNoScreens,
+  ( YESNO_MENU_COUNT - 1U ),
+  0U,
+  ( void* )&xYesNoScreenKeyCallBack,
+};
+

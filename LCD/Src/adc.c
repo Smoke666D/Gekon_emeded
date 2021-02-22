@@ -279,7 +279,6 @@ fix16_t xADCGetCOSFi()
 {
   xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
   return xCosFi;
-
 }
 
 fix16_t xADCGetGENActivePower()
@@ -525,8 +524,6 @@ void vADCGeneratorDataUpdate()
       GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L3_CUR]);
       GENERATOR_DATA[GEN_AVER_A] = fix16_div(GENERATOR_DATA[GEN_AVER_A],x3);
     }
-
-
   }
 }
 

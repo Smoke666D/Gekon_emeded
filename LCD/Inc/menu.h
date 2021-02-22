@@ -20,16 +20,20 @@
 #include "utils.h"
 
 /*------------------------ Define --------------------------------------*/
-#define SET_PARAMETR_SCREEN 0U
-#define CENTER_ALIGN        1U
-#define RIGTH_ALIGN         2U
-#define LEFT_ALIGN          3U
-#define NO_ALIGN            0U
+#define   SET_PARAMETR_SCREEN 0U
+#define   CENTER_ALIGN        1U
+#define   RIGTH_ALIGN         2U
+#define   LEFT_ALIGN          3U
+#define   NO_ALIGN            0U
 
-#define BLINK_TIME  2
-#define BITMAP   3
-#define NUMBER   2
+#define   BLINK_TIME          2U
+#define   BITMAP              3U
+#define   NUMBER              2U
+#define   HOME_MENU           0U
+#define   ALARM_MENU          1U
 
+#define   FIRST_VALID_SETTING 3U
+#define   FIRST_SETTING       1U
 
 #define LAST_OBJECT  1U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
@@ -113,9 +117,9 @@ typedef enum
 
 typedef enum
 {
-  NO_ALARM,
-  ALARM,
-} ALRAM_FLAG;
+  FLAG_RESET,
+  FLAG_SET,
+} FLAG;
 /*---------------------------- Structures --------------------------------------*/
 typedef struct __packed
 {
@@ -159,20 +163,25 @@ void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-void vUToStr(uint8_t * str, uint16_t data, signed char scale);
 void vMenuMessageInit( osThreadId_t xmainprocess );
 void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
-void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
-void xPasswordScreenCallBack ( xScreenSetObject* menu, char key );
-void EventScreenKeyCallBack( xScreenSetObject* menu, char key );
-void xInfoScreenCallBack( xScreenSetObject * menu, char key );
-void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
-void xMessageScreenCallBack ( xScreenSetObject* menu, char key );
-void vMenuMessageShow(uint8_t * mes);
+
+
+//Обработчики нажатий клавиш
+void xYesNoScreenKeyCallBack    ( xScreenSetObject * menu, char key );
+void xSettingsScreenKeyCallBack ( xScreenSetObject * menu, char key );
+void xPasswordScreenCallBack    ( xScreenSetObject * menu, char key );
+void EventScreenKeyCallBack     ( xScreenSetObject * menu, char key );
+void xInfoScreenCallBack        ( xScreenSetObject * menu, char key );
+void xInputScreenKeyCallBack    ( xScreenSetObject * menu, char key );
+void xMessageScreenCallBack     ( xScreenSetObject * menu, char key );
+
+
+void vMenuMessageShow(char * mes);
 void vMenuMessageHide(void);
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

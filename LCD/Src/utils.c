@@ -59,7 +59,7 @@ float fxParToFloat(uint16_t data, int8_t scale)
 /*
  * Функция преобразования безнакового в строку
  */
-void vUToStr( uint8_t* str, uint16_t data, signed char scale )
+/*void vUToStr( uint8_t* str, uint16_t data, signed char scale )
 {
   uint8_t     fb     = 0U;
   uint8_t     i      = 0U;
@@ -106,6 +106,56 @@ void vUToStr( uint8_t* str, uint16_t data, signed char scale )
   }
   str[i] = 0U;
   return;
+}
+*/
+void vUToStr( char* str, uint16_t data, signed char scale )
+{
+
+  uint8_t     i      = 0U;
+  uint16_t    DD     = 10000U;
+  signed char offset = 0U;
+  FLAG        fPoint = FLAG_RESET;
+  FLAG        fB     = FLAG_RESET;
+  if ( scale < 0U )
+  {
+    offset = 1U;
+    fPoint  = FLAG_SET;
+  }
+  for ( uint8_t k = 0U; k < (5U + offset); k++ )
+  {
+      if ( ( fPoint == FLAG_SET ) && ( k == ( 5U + scale ) ) )
+      {
+        str[i++] = '.';
+      }
+      else
+      {
+        if ( ( fPoint == FLAG_SET ) && ( k == ( 5U + scale - 1 ) ))
+        {
+          fB = FLAG_SET;
+        }
+
+        if  ( fB == FLAG_SET )
+        {
+          str[i++] = data / ( DD ) + '0';
+        }
+        else
+        {
+          if ( ( data / DD ) > 0U )
+          {
+            str[i++] = data / ( DD ) + '0';
+            fB       = FLAG_SET;
+          }
+        }
+        data = data % ( DD );
+        DD   = DD / 10U;
+      }
+
+  }
+  str[i] = 0U;
+  return;
+
+
+
 }
 
 

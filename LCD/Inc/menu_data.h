@@ -48,4 +48,5 @@
  extern xScreenSetObject xSettingsMenu;
  extern xScreenSetObject xPasswordMenu;
  extern xScreenSetObject xMessageMenu;
+ extern xScreenSetObject xYesNoMenu;
 #endif /* INC_MENU_DATA_H_ */

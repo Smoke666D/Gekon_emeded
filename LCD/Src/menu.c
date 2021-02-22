@@ -27,33 +27,28 @@ static KeyEvent          TempEvent        = { 0U };
 static KeyEvent          BufferEvent      = { 0U };
 static uint8_t           temp_counter     = 0U;
 static xScreenSetObject* pCurrMenu        = NULL;
-static xScreenSetObject* pHomeMenu        = NULL;
 static xScreenObjet*     pCurObject       = NULL;
-static uint8_t           DownScreen       = 0U;
 static QueueHandle_t     pKeyboard        = NULL;
 static uint8_t           key              = 0U;
 static xScreenObjet*     pCurDrawScreen   = NULL;
 static uint8_t           Blink            = 0U;
-static uint16_t          uiSetting        = 3U;
+static uint16_t          uiSetting        = FIRST_SETTING ;
 static uint8_t           ucActiveObject   = NO_SELECT_D;
 static uint8_t           EXIT_KEY_F       = 0U;
 static char              TempArray[70];
 static uint8_t           uDataType        = 0U;
 static uint16_t          uCurrentAlarm    = 0U;
 static uint8_t           password[]       = { 0U, 0U, 0U ,0U };
-static ALRAM_FLAG        xAlarmFlag       = NO_ALARM;
+static FLAG              fAlarmFlag       = FLAG_RESET;
+static FLAG              fDownScreen      = FLAG_RESET;
+static uint8_t           uCurrentObject   = 0U;
+static FLAG              fPassowordCorrect= FLAG_RESET;
 
 
 /*----------------------- Functions -----------------------------------------------------------------*/
-void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key );
+
+void vMenuGotoAlarmScreen( void);
 /*----------------------- Structures ----------------------------------------------------------------*/
-xScreenSetObject xYesNoMenu =
-{
-  xYesNoScreens,
-  ( YESNO_MENU_COUNT - 1U ),
-  0U,
-  ( void* )&xYesNoScreenKeyCallBack,
-};
 
 
 
@@ -92,7 +87,6 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
         menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] =1U;
         menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3U].ObjectParamert[3U] =0U;
         eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
-        //pCurrMenu = xYesNoMenu.pHomeMenu[0U].pUpScreenSet;
         break;
       default:
         break;
@@ -100,43 +94,30 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
   return;
 }
 
-/*
- *  Функция обработки экрана подтверждения
- */
-void vExitCurObject ( void )
-{
 
-  pCurObject->ObjectParamert[3U] = 0U;
-  if ( ucActiveObject == CHANGE_D )
-  {
-  	  xYesNoMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
-  	  pCurrMenu = &xYesNoMenu;
-  }
-  ucActiveObject = NO_SELECT_D;
-  return;
-}
-
-static uint8_t uSettingScreen = 0U;
-static uint8_t uCurrentObject = 0;
-static uint8_t uPassowordCorrect = 0;
 
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
+  static FLAG              fFirstEnter   = FLAG_SET;
   uint16_t data =0;
-  if ( uSettingScreen == 0x01 )
+  if ( fFirstEnter == FLAG_RESET )
   {
     if (key == (KEY_EXIT))
     {
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
-      DownScreen = 0U;
-      uiSetting  = 0U;
-      eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
+      fDownScreen = FLAG_RESET;
+      fFirstEnter = FLAG_SET;
+      if (uiSetting >= FIRST_VALID_SETTING)
+      {
+        eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
+      }
+      uiSetting  = FIRST_SETTING ;
     }
     if ( ( ucActiveObject !=NO_SELECT_D) && (uDataType == BITMAP))
     {
         switch (key)
         {
-          case KEY_STOP:
+          case KEY_DOWN_BREAK:
                   ucActiveObject = CHANGE_D;
                   eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
                   if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
@@ -147,7 +128,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                   break;
 
              break;
-          case KEY_START:
+          case KEY_UP_BREAK:
                    ucActiveObject = CHANGE_D;
                    eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
                    if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
@@ -157,7 +138,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                    eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
 
                  break;
-          case KEY_DOWN_BREAK:
+          case KEY_STOP:
                    for (uint8_t i=uCurrentObject-1; i>0;i--)
                    {
                       if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
@@ -169,7 +150,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                       }
                    }
                  break;
-          case KEY_UP_BREAK:
+          case KEY_START:
                    for (uint8_t i=(uCurrentObject+1); i<MAX_SCREEN_OBJECT;i++)
                    {
                       if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
@@ -247,7 +228,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                 uiSetting += 10U;
             break;
           case KEY_AUTO:
-            if ((uPassowordCorrect) || (systemPassword.status == PASSWORD_RESET))
+            if ((fPassowordCorrect == FLAG_SET) || (systemPassword.status == PASSWORD_RESET))
             {
               ucActiveObject = SELECT_D;
               for (uint8_t i=0; i<MAX_SCREEN_OBJECT;i++)
@@ -276,14 +257,14 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
   else
   {
     //Обработка клавиш начинается только после того, как будут отпущены клавиши UP и BREAK
-    uPassowordCorrect = 0;
+    fPassowordCorrect = FLAG_RESET;
     password[0] = 0;
     password[1] = 0;
     password[2] = 0;
     password[3] = 0;
     if (key == (KEY_STOP_BREAK))
     {
-      uSettingScreen = 0x01;
+      fFirstEnter = FLAG_RESET;
     }
   }
   return;
@@ -318,18 +299,18 @@ void xPasswordScreenCallBack ( xScreenSetObject* menu, char key )
    {
      if (((password[0]*1000 + password[1]*100 + password[2]*10 + password[0]) == systemPassword.data) && (key == KEY_AUTO))
      {
-       uPassowordCorrect = 1;
+       fPassowordCorrect = FLAG_SET;
      }
      else
      {
-       uPassowordCorrect = 0;
+       fPassowordCorrect = FLAG_SET;
      }
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
       pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
       if (key == KEY_EXIT)
       {
-         pCurrMenu->pFunc( pCurrMenu, key );
+         pCurrMenu->pFunc( pCurrMenu, KEY_EXIT );
       }
    }
 
@@ -343,7 +324,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
 {
   uint8_t           index = menu->pCurrIndex;
   xScreenSetObject* pMenu = menu;
-  static  uint8_t key_ready =0;
+  static  uint8_t   key_ready =0;
 
   switch ( key )
   {
@@ -352,9 +333,9 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       break;
     case KEY_UP_BREAK:
       //Смотрим, не находимся ли мы в экранах нижнего уровня
-      if ( DownScreen > 0U )
+      if ( fDownScreen == FLAG_SET )
       {
-        DownScreen = 0U;
+        fDownScreen = FLAG_RESET;
         if ( menu->pHomeMenu[index].pUpScreenSet != NULL )
         {
           pCurrMenu = menu->pHomeMenu[index].pUpScreenSet;
@@ -381,12 +362,12 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
         }
         else
         {
-            if ( DownScreen == 0U )
+            if ( fDownScreen == FLAG_RESET )
             {
               if ( menu->pHomeMenu[index].pDownScreenSet != NULL )
               {
                 pCurrMenu             = menu->pHomeMenu[index].pDownScreenSet;
-                DownScreen            = 1U;
+                fDownScreen            = FLAG_SET;
                 pCurrMenu->pCurrIndex = 0U;
               }
             }
@@ -403,7 +384,6 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
             }
         }
        break;
-
     case KEY_STOP:
       if ((key_ready & STOP_KEY_READY )==0U)
       {
@@ -441,13 +421,30 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       key_ready &=  ~STOP_KEY_READY;
       break;
     case KEY_EXIT:
-        DownScreen     = 0U;
+      fDownScreen   = FLAG_RESET;
       break;
     default:
       break;
   }
   return;
 }
+
+/*
+ *  Функция обработки экрана подтверждения
+ */
+void vExitCurObject ( void )
+{
+
+  pCurObject->ObjectParamert[3U] = 0U;
+  if ( ucActiveObject == CHANGE_D )
+  {
+      xYesNoMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
+      pCurrMenu = &xYesNoMenu;
+  }
+  ucActiveObject = NO_SELECT_D;
+  return;
+}
+
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuInit ( u8g2_t* temp )
 {
@@ -465,7 +462,7 @@ void vMenuMessageInit ( osThreadId_t xmainprocess )
 void vMenuTask ( void )
 {
     //Блок обработки нажатий на клавиши
-  static uint8_t uTimeOutCounter=0;
+  static FLAG xTimeOutFlag = FLAG_RESET;
 
   if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
   {
@@ -538,24 +535,23 @@ void vMenuTask ( void )
       //Если возник таймаут гашения экрана.
       if ( TempEvent.KeyCode == time_out )
       {
-        if (xAlarmFlag == NO_ALARM)
+        if (fAlarmFlag == FLAG_RESET)
         {
-          uTimeOutCounter=1;
-          pCurrMenu->pCurrIndex = 0U;
           pCurrMenu = &xMainMenu;
+          xTimeOutFlag = FLAG_SET;
+          pCurrMenu->pCurrIndex = HOME_MENU;
           vLCDSetLedBrigth(1);
         }
         else
         {
-
-
+          vMenuGotoAlarmScreen();
         }
       }
       else
       {
-        if (uTimeOutCounter)
+        if (xTimeOutFlag == FLAG_SET)
         {
-           uTimeOutCounter =0;
+           xTimeOutFlag =FLAG_RESET;
            vLCDBrigthInit();
         }
       }
@@ -563,6 +559,14 @@ void vMenuTask ( void )
   }
   return;
 }
+
+void vMenuGotoAlarmScreen( void)
+{
+      pCurrMenu->pCurrIndex = ALARM_MENU;
+      vLCDBrigthInit();
+      return;
+}
+
 /*---------------------------------------------------------------------------------------------------*/
 void vDrawObject( xScreenObjet * pScreenObjects)
 {
@@ -711,7 +715,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
 }
 
 
-
 void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   eConfigAttributes xAtrib                  = { 0U };
@@ -749,45 +752,7 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 }
 
 
-static uint8_t MessageData[17];
 
-void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  Data[0]=0;
-  vStrCopy(Data,&MessageData[0]);
-}
-
-
-void xMessageScreenCallBack ( xScreenSetObject* menu, char key )
-{
-  static uint8_t key_press =0;
-  if (key!=0)
-  {
-    if (key_press == 0)
-    {
-      key_press =1;
-    }
-    else
-    {
-      key_press = 0;
-      vMenuMessageHide();
-    }
-  }
-
-}
-
-void vMenuMessageShow(uint8_t * mes)
-{
-  xMessageMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
-  pCurrMenu = &xMessageMenu;
-  pCurrMenu->pCurrIndex = 0U;
-  vStrCopy(MessageData,mes);
-}
-
-void vMenuMessageHide(void)
-{
-    pCurrMenu = xMessageMenu.pHomeMenu[0U].pUpScreenSet;
-}
 
 void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -812,8 +777,6 @@ void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   }
 }
 
-
-
 void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   eConfigAttributes xAtrib                  = { 0U };
@@ -834,7 +797,7 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
           {
             case 'U':
               eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
-              vUToStr ( ( uint8_t* )Data, buff, scale );
+              vUToStr ( Data, buff, scale );
               uDataType = 2;
               break;
             case 'S':
@@ -1009,16 +972,21 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   static LOG_RECORD_TYPE  xrecord;
   static uint8_t          ALD   = 0;
   static uint16_t         utemp;
+
   vStrCopy(Data," ");
   switch (ID)
   {
     case ALARM_STATUS:
-      //Комадна вывода статуса в правом углу экрана
-      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);
-      if (utemp >0)
+      //Это команда объекта, выводящего статус в угулу экрана, помимо этого, объект контролирует возниконвение алармов
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER,&xrecord,(uint8_t *)&utemp);    //Полосучаем кол-во актвиных алармов
+      if (utemp >0)   //Если есть активные алармы
       {
-         xAlarmFlag = ALARM;
-         if (++ALD>BLINK_TIME)
+         if ( fAlarmFlag == FLAG_RESET ) //И если их до этого не было, т.е. аларм возник прямо сейчас
+         {
+             fAlarmFlag = FLAG_SET;     //Ставим флаг
+             pCurrMenu->pFunc( pCurrMenu, KEY_EXIT ); //И отпраляем в текущуе меню команды выхода, переход на экран алармов осуществет обработчик текущего меню
+         }
+         if ( ++ALD>BLINK_TIME )
          {
            vStrCopy(Data,"О");
            if (ALD ==(BLINK_TIME*2))
@@ -1027,7 +995,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       }
       else
       {
-        xAlarmFlag = NO_ALARM;
+        fAlarmFlag = FLAG_RESET;
       }
       break;
     case ALARM_COUNT:
@@ -1091,8 +1059,8 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&ATR);
       if (ATR.len ==1 )
       {
-             eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,(uint16_t*)&tt);
-             sprintf(Data,"%i.%i",tt[0]/1000,tt[0]%1000);
+          eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,(uint16_t*)&tt);
+          sprintf(Data,"%i.%i",tt[0]/1000,tt[0]%1000);
       }
       break;
     case SW_VER:
@@ -1106,14 +1074,14 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case SERIAL_L:
       eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR, (uint16_t*)&tt);
       for (uint8_t i=0;i<3;i++)
-               {
-                 Data[i*6]  = cHexToChar((tt[i]>>12)  & 0x0F );
-                 Data[i*6+1]= cHexToChar((tt[i]>>8)   & 0xF);
-                 Data[i*6+2]= ':';
-                 Data[i*6+3]= cHexToChar((tt[i]>>4)   & 0xF);
-                 Data[i*6+4]= cHexToChar((tt[i])      & 0xF);
-                 Data[i*6+5]=':';
-               }
+      {
+           Data[i*6]  = cHexToChar((tt[i]>>12)  & 0x0F );
+           Data[i*6+1]= cHexToChar((tt[i]>>8)   & 0xF);
+           Data[i*6+2]= ':';
+           Data[i*6+3]= cHexToChar((tt[i]>>4)   & 0xF);
+           Data[i*6+4]= cHexToChar((tt[i])      & 0xF);
+           Data[i*6+5]=':';
+      }
       Data[17]=0;
       break;
     case SERIAL_H:
@@ -1308,5 +1276,46 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
  return;
 }
 
+/*
+ *  Вывод пользовательского сообщения на экран
+ */
+static char MessageData[17];
 
+void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  Data[0]=0;
+  vStrCopy(Data,MessageData);
+}
+
+
+void xMessageScreenCallBack ( xScreenSetObject* menu, char key )
+{
+  static FLAG fKey = FLAG_RESET;
+  if (key!=0)
+  {
+    if (fKey == FLAG_RESET )
+    {
+      fKey = FLAG_SET;
+    }
+    else
+    {
+      fKey = FLAG_RESET;
+      vMenuMessageHide();
+    }
+  }
+
+}
+
+void vMenuMessageShow(char * mes)
+{
+  xMessageMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
+  pCurrMenu = &xMessageMenu;
+  pCurrMenu->pCurrIndex = 0U;
+  vStrCopy(MessageData,mes);
+}
+
+void vMenuMessageHide(void)
+{
+    pCurrMenu = xMessageMenu.pHomeMenu[0U].pUpScreenSet;
+}
 

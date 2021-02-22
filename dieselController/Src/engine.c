@@ -1393,6 +1393,16 @@ ENGINE_STATUS eENGINEgetEngineStatus ( void )
   return engine.status;
 }
 /*----------------------------------------------------------------------------*/
+STARTER_STATUS eENGINEgetStarterStatus ( void )
+{
+  return starter.status;
+}
+/*----------------------------------------------------------------------------*/
+PLAN_STOP_STATUS eENGINEgetPlanStopStatus ( void )
+{
+  return planStop.status;
+}
+/*----------------------------------------------------------------------------*/
 PERMISSION eENGINEisStartBan ( void )
 {
   return engine.banStart;

@@ -40,14 +40,11 @@ static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
 static StaticQueue_t         xEngineCommandQueue = { 0U };
 static QueueHandle_t         pEngineCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t fix60                  = F16( 60U );
-static const fix16_t dryContactTrigLevel    = F16( 0x7FFFU );
-static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION );
-static const fix16_t oilTrashhold           = F16( 0.015 );
-static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );
-static const fix16_t fuelPrePumpingDelay    = F16( 1 );
-
-
+static const fix16_t fix60                  = F16( 60U );                      /* --- */
+static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION ); /* sec */
+static const fix16_t oilTrashhold           = F16( 0.015 );                    /* Bar */
+static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );      /* Ohm */
+static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /* sec */
 #if ( DEBUG_SERIAL_STATUS > 0U )
   static const char* cSensorTypes[5U] =
   {
@@ -107,8 +104,8 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );
 #endif
 /*-------------------------------- Variables ---------------------------------*/
 static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
-static uint8_t        starterFinish                                    = 0U;
-static uint8_t        blockTimerFinish                                 = 0U;
+static TRIGGER_STATE  starterFinish                                    = TRIGGER_IDLE;
+static TRIGGER_STATE  blockTimerFinish                                 = TRIGGER_IDLE;
 static fix16_t        currentSpeed                                     = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
@@ -270,7 +267,7 @@ fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
+  if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
   {
     vALARMcheck( &fuel.lowAlarm, value );
     if ( fuel.lowAlarm.error.status == ALARM_STATUS_IDLE )
@@ -1381,12 +1378,12 @@ QueueHandle_t pENGINEgetCommandQueue ( void )
   return pEngineCommandQueue;
 }
 /*----------------------------------------------------------------------------*/
-uint8_t uENGINEisStarterScrollFinish ( void )
+TRIGGER_STATE uENGINEisStarterScrollFinish ( void )
 {
   return starterFinish;
 }
 /*----------------------------------------------------------------------------*/
-uint8_t uENGINEisBlockTimerFinish ( void )
+TRIGGER_STATE uENGINEisBlockTimerFinish ( void )
 {
   return blockTimerFinish;
 }
@@ -1593,7 +1590,6 @@ void vENGINEtask ( void* argument )
               vRELAYimpulseReset( &preHeater );
               engine.stopError.active            = PERMISSION_DISABLE;
               preHeater.active                   = PERMISSION_DISABLE;
-              starterFinish                      = 0U;
               speed.lowAlarm.error.active        = PERMISSION_DISABLE;
               speed.hightAlarm.error.active      = PERMISSION_DISABLE;
               oil.alarm.error.active             = PERMISSION_DISABLE;
@@ -1626,7 +1622,7 @@ void vENGINEtask ( void* argument )
               if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
               {
                 vLCD_BrigthOn();
-                starterFinish     = 1U;
+                starterFinish     = TRIGGER_SET;
                 starter.status    = STARTER_CONTROL_BLOCK;
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
@@ -1686,7 +1682,7 @@ void vENGINEtask ( void* argument )
                 commonTimer.delay = starter.idlingDelay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 starter.status                     = STARTER_IDLE_WORK;
-                blockTimerFinish                   = 1U;
+                blockTimerFinish                   = TRIGGER_SET;
                 speed.hightAlarm.error.active      = PERMISSION_ENABLE;
                 oil.alarm.error.active             = PERMISSION_ENABLE;
                 oil.preAlarm.error.active          = PERMISSION_ENABLE;
@@ -1736,6 +1732,8 @@ void vENGINEtask ( void* argument )
               engine.startError.active = PERMISSION_ENABLE;
               charger.start            = PERMISSION_DISABLE;
               starter.iteration        = 0U;
+              blockTimerFinish         = TRIGGER_IDLE;
+              starterFinish            = TRIGGER_IDLE;
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_OK:
@@ -1836,18 +1834,22 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STOP_FAIL:
-              engine.status   = ENGINE_STATUS_FAIL_STOPPING;
-              engine.cmd      = ENGINE_CMD_NONE;
-              planStop.status = STOP_IDLE;
-              event.action    = ACTION_EMERGENCY_STOP;
-              event.type      = EVENT_STOP_FAIL;
+              engine.status    = ENGINE_STATUS_FAIL_STOPPING;
+              engine.cmd       = ENGINE_CMD_NONE;
+              planStop.status  = STOP_IDLE;
+              event.action     = ACTION_EMERGENCY_STOP;
+              event.type       = EVENT_STOP_FAIL;
+              blockTimerFinish = TRIGGER_IDLE;
+              starterFinish    = TRIGGER_IDLE;
               vSYSeventSend( event, NULL );
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_OK:
-              engine.status               = ENGINE_STATUS_IDLE;
-              engine.cmd                  = ENGINE_CMD_NONE;
-              planStop.status             = STOP_IDLE;
+              engine.status    = ENGINE_STATUS_IDLE;
+              engine.cmd       = ENGINE_CMD_NONE;
+              planStop.status  = STOP_IDLE;
+              blockTimerFinish = TRIGGER_IDLE;
+              starterFinish    = TRIGGER_IDLE;
               vFPOsetReadyToStart( RELAY_ON );
               vLOGICprintPlanStopStatus( planStop.status );
               event.action = ACTION_NONE;
@@ -1940,6 +1942,8 @@ void vENGINEtask ( void* argument )
         oil.alarm.error.active    = PERMISSION_DISABLE;
         oil.preAlarm.error.active = PERMISSION_DISABLE;
         charger.start             = PERMISSION_DISABLE;
+        blockTimerFinish          = TRIGGER_IDLE;
+        starterFinish             = TRIGGER_IDLE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/
@@ -1962,6 +1966,8 @@ void vENGINEtask ( void* argument )
         engine.cmd               = ENGINE_CMD_NONE;
         engine.startError.active = PERMISSION_DISABLE;
         engine.stopError.active  = PERMISSION_ENABLE;
+        blockTimerFinish         = TRIGGER_IDLE;
+        starterFinish            = TRIGGER_IDLE;
         break;
       /*----------------------------------------------------------------------------------------*/
       /*--------------------------------- ENGINE BAN START -------------------------------------*/

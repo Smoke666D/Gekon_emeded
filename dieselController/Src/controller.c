@@ -19,6 +19,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "event_groups.h"
 #include "queue.h"
 #include "engine.h"
 #include "config.h"
@@ -27,7 +28,8 @@
 #include "fpi.h"
 #include "menu.h"
 #include "journal.h"
-#include "alarm.H"
+#include "alarm.h"
+#include "dataAPI.h"
 /*-------------------------------- Structures --------------------------------*/
 CONTROLLER_INIT controllerGPIO = { 0U };
 CONTROLLER_TYPE controller     = { 0U };
@@ -515,7 +517,7 @@ void vCONTROLLERresetAlarm ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-/*----------------------- PABLICK --------------------------------------------*/
+/*----------------------- PUBLICC --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERinit ( const CONTROLLER_INIT* init )
 {

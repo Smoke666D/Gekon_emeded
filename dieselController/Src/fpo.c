@@ -124,7 +124,12 @@ void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat )
     if ( ( ( stat == RELAY_ON  ) && ( fpo->polarity == FPO_POL_NORMAL_OPEN  ) ) ||
          ( ( stat == RELAY_OFF ) && ( fpo->polarity == FPO_POL_NORMAL_CLOSE ) ) )
     {
-      cmd = GPIO_PIN_SET;
+      cmd        = GPIO_PIN_SET;
+      fpo->state = TRIGGER_SET;
+    }
+    else
+    {
+      fpo->state = TRIGGER_IDLE;
     }
     HAL_GPIO_WritePin( fpo->port, fpo->pin, cmd );
   }
@@ -147,6 +152,16 @@ void vFPOprintSetup ( void )
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetState ( uint8_t n )
+{
+  TRIGGER_STATE res = TRIGGER_IDLE;
+  if ( n < FPO_NUMBER )
+  {
+    res = fpos[n].state;
+  }
+  return res;
+}
 /*----------------------------------------------------------------------------*/
 uint8_t uFPOisEnable ( FPO_FUNCTION fun )
 {

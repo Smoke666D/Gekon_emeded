@@ -23,16 +23,16 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  FPI_FUN_NONE,               /* 0  Не использовать */
-  FPI_FUN_USER,               /* 1  Пользовательская */
-  FPI_FUN_ALARM_RESET,        /* 2  Сброс аварийного сигнала */
-  FPI_FUN_OIL_LOW_PRESSURE,   /* 3  Датчик давления масла */
-  FPI_FUN_HIGHT_ENGINE_TEMP,  /* 4  Высокая температура двигателя */
-  FPI_FUN_LOW_FUEL,           /* 5  Сигнал низкого уровня топлива */
+  FPI_FUN_NONE,               /* 0  Не использовать                   */
+  FPI_FUN_USER,               /* 1  Пользовательская                  */
+  FPI_FUN_ALARM_RESET,        /* 2  Сброс аварийного сигнала          */
+  FPI_FUN_OIL_LOW_PRESSURE,   /* 3  Датчик давления масла             */
+  FPI_FUN_HIGHT_ENGINE_TEMP,  /* 4  Высокая температура двигателя     */
+  FPI_FUN_LOW_FUEL,           /* 5  Сигнал низкого уровня топлива     */
   FPI_FUN_REMOTE_START,       /* 6  Дистанционный запуск без нагрузки */
-  FPI_FUN_IDLING,             /* 7  Работа на холостом ходу */
-  FPI_FUN_BAN_AUTO_START,     /* 8  Запрет автоматического запуска */
-  FPI_FUN_BAN_GEN_LOAD,       /* 9  Запрет нагрузки генератора */
+  FPI_FUN_IDLING,             /* 7  Работа на холостом ходу           */
+  FPI_FUN_BAN_AUTO_START,     /* 8  Запрет автоматического запуска    */
+  FPI_FUN_BAN_GEN_LOAD,       /* 9  Запрет нагрузки генератора        */
   FPI_FUN_BAN_AUTO_SHUTDOWN,  /* 10 Запрет автоматического останова при восстановлении параметров сети */
 } FPI_FUNCTION;
 
@@ -44,17 +44,16 @@ typedef enum
 
 typedef enum
 {
-  FPI_LEVEL_LOW,
+  FPI_LEVEL_LOW  = 0x00U,
   FPI_LEVEL_HIGH,
 } FPI_LEVEL;
 
 typedef enum
 {
   FPI_ACT_EMERGENCY_STOP,      /* 0 Аварийный останов */
-  FPI_ACT_LOAD_SHUTDOWN,       /* 1 Отключение нагрузки */
+  FPI_ACT_SHUTDOWN,       /* 1 Отключение нагрузки */
   FPI_ACT_WARNING,             /* 2 Предупреждение */
-  FPI_ACT_MESSAGE,             /* 3 Индикация */
-  FPI_ACT_NONE,                /* 4 Действие в соответсвии с основной программой*/
+  FPI_ACT_NONE,                /* 3 Действие в соответсвии с основной программой*/
 } FPI_ACTION;
 
 typedef enum
@@ -67,21 +66,17 @@ typedef enum
 
 typedef enum
 {
-  FPI_BLOCK,
   FPI_IDLE,
   FPI_TRIGGERED,
-  FPI_ARMED,
-  FPI_FINISH,
 } FPI_STATE;
 /*----------------------- Callbacks ------------------------------------*/
-typedef uint8_t ( *armingCallBack )( void ); /* Stream call back type */
+typedef TRIGGER_STATE ( *armingCallBack )( void ); /* Stream call back type */
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
   FPI_LEVEL    level    : 1U;
   FPI_FUNCTION function : 4U;
-  FPI_ACTION   action   : 3U;
-  uint16_t*    message;
+  uint8_t      number;
 } FPI_EVENT;
 
 typedef struct __packed
@@ -92,11 +87,12 @@ typedef struct __packed
   /* Logic */
   FPI_POLARITY    polarity : 1U;                    /* Polarity of triggering */
   FPI_FUNCTION    function : 4U;                    /* Meaning of the input */
-  FPI_ACTION      action   : 3U;                    /* What to do on trig */
   FPI_ARMING      arming   : 2U;                    /* Condition of triggering */
   FPI_LEVEL       level    : 1U;                    /* Current level */
-  FPI_STATE       state    : 3U;                    /* Condition of the FPI */
+  FPI_STATE       state    : 2U;                    /* Condition of the FPI */
+  TRIGGER_STATE   trigger   : 1U;
   uint16_t        message[FPI_USER_MESSAGE_LENGTH]; /* User string message to the display */
+  ERROR_TYPE      userError;                        /* Error for user function */
   /* Callbacks */
   armingCallBack  getArming;                        /* Function check condition of triggering */
   /* System */
@@ -119,11 +115,14 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t fpiHandle;
 /*----------------------- Functions ------------------------------------*/
-void          vFPIinit ( const FPI_INIT* init );
-void          vFPIreset ( void );
-void          vFPIprint ( FPI_FUNCTION function, const char* str );
-QueueHandle_t pFPIgetQueue ( void );
-void          vFPIsetBlock ( void );
-FPI_LEVEL     eFPIcheckLevel ( FPI_FUNCTION function );
+void              vFPIinit ( const FPI_INIT* init );
+void              vFPIreset ( void );
+void              vFPIprint ( FPI_FUNCTION function, const char* str );
+QueueHandle_t     pFPIgetQueue ( void );
+void              vFPIsetBlock ( void );
+TRIGGER_STATE     eFPIgetState ( uint8_t n );
+uint16_t*         uFPIgetMessage ( uint8_t n );
+SYSTEM_EVENT_TYPE eFPIgetUserEventType ( uint8_t n );
+FPI_LEVEL         eFPIcheckLevel ( FPI_FUNCTION function );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FPI_H_ */

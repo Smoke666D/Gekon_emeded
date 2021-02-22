@@ -19,12 +19,13 @@
 #include "engine.h"
 #include "controllerTypes.h"
 #include "dataAPI.h"
+#include "alarm.h"
 /*-------------------------------- Structures --------------------------------*/
 static QueueHandle_t     pFPIQueue     = NULL;
 static StaticQueue_t     xFPIQueue     = { 0U };
 static SemaphoreHandle_t xFPIsemaphore = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
+static const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
 {
   FPI_FUN_NONE,
   FPI_FUN_USER,
@@ -38,7 +39,28 @@ const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
   FPI_FUN_BAN_GEN_LOAD,
   FPI_FUN_BAN_AUTO_SHUTDOWN
 };
-const char* cFPIfunctionNames[FPI_FUNCTION_NUM] =
+static const SYSTEM_EVENT_TYPE eFPIuserEventTypeList[FPI_NUMBER] =
+{
+  EVENT_USER_FUNCTION_A,
+  EVENT_USER_FUNCTION_B,
+  EVENT_USER_FUNCTION_C,
+  EVENT_USER_FUNCTION_D,
+};
+static const eConfigReg* pFPIregConfig[FPI_NUMBER] =
+{
+  &diaSetup,
+  &dibSetup,
+  &dicSetup,
+  &didSetup
+};
+static const eConfigReg* pFPIregDelay[FPI_NUMBER] =
+{
+  &diaDelay,
+  &dibDelay,
+  &dicDelay,
+  &didDelay,
+};
+static const char* cFPIfunctionNames[FPI_FUNCTION_NUM] =
 {
   "NONE",
   "USER",
@@ -52,7 +74,7 @@ const char* cFPIfunctionNames[FPI_FUNCTION_NUM] =
   "BAN_GEN_LOAD",
   "BAN_AUTO_SHUTDOWN"
 };
-const char* cFPInames[FPI_NUMBER] =
+static const char* cFPInames[FPI_NUMBER] =
 {
   "A",
   "B",
@@ -65,18 +87,31 @@ static FPI     fpis[FPI_NUMBER]                         = { 0U };
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
-void    vFPITask ( void* argument );
+void vFPITask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-uint8_t uFPIarmingAlways ( void )
+TRIGGER_STATE uFPIarmingAlways ( void )
 {
-  return 0xFFU;
+  return TRIGGER_SET;
 }
 /*----------------------------------------------------------------------------*/
-uint8_t uFPIarmingNever ( void )
+TRIGGER_STATE uFPIarmingNever ( void )
 {
-  return 0x00U;
+  return TRIGGER_IDLE;
+}
+/*----------------------------------------------------------------------------*/
+FPI_LEVEL eFPIgetLevel ( const FPI* fpi )
+{
+  GPIO_PinState pinState = GPIO_PIN_RESET;
+  FPI_LEVEL     res      = FPI_LEVEL_LOW;
+  pinState = HAL_GPIO_ReadPin ( fpi->port, fpi->pin );
+  if ( ( ( fpi->polarity == FPI_POL_NORMAL_OPEN  ) && ( pinState == GPIO_PIN_RESET ) ) ||
+       ( ( fpi->polarity == FPI_POL_NORMAL_CLOSE ) && ( pinState == GPIO_PIN_SET   ) ) )
+  {
+    res = FPI_LEVEL_HIGH;
+  }
+  return res;
 }
 /*----------------------------------------------------------------------------*/
 /*
@@ -84,15 +119,12 @@ uint8_t uFPIarmingNever ( void )
  * input:  fpi - Freely Programmable Input structure
  * output: level of fpi
  */
-TRIGGER_STATE vFPIgetTrig ( FPI* fpi )
+TRIGGER_STATE eFPIgetTrig ( FPI* fpi )
 {
-  GPIO_PinState pinState = GPIO_PIN_RESET;
-  uint8_t       res      = TRIGGER_IDLE;
+  TRIGGER_STATE res      = TRIGGER_IDLE;
   if ( fpi->port != NULL )
   {
-    pinState = HAL_GPIO_ReadPin ( fpi->port, fpi->pin );
-    if ( ( ( fpi->polarity == FPI_POL_NORMAL_OPEN  ) && ( pinState == GPIO_PIN_RESET ) ) ||
-         ( ( fpi->polarity == FPI_POL_NORMAL_CLOSE ) && ( pinState == GPIO_PIN_SET   ) ) )
+    if ( eFPIgetLevel( fpi ) == FPI_LEVEL_HIGH )
     {
       res = TRIGGER_SET;
     }
@@ -117,26 +149,9 @@ TRIGGER_STATE vFPIgetTrig ( FPI* fpi )
   return res;
 }
 /*----------------------------------------------------------------------------*/
-/*
- * Read fpi data from configurations
- * input:  fpi      - Freely Programmable Input structure
- *         setupReg - configuration register of fpi
- *         delayReg - configuration register of fpi delay
- * output: none
- */
-void vFPIreadConfigs ( FPI* fpi, const eConfigReg* setupReg, const eConfigReg* delayReg )
-{
-  fpi->timer.delay = getUintValue( delayReg );
-  fpi->function    = eFPIfuncList[ getBitMap( setupReg, DIA_FUNCTION_ADR ) ];
-  fpi->polarity    = getBitMap( setupReg, DIA_POLARITY_ADR );
-  fpi->action      = getBitMap( setupReg, DIA_ACTION_ADR );
-  fpi->arming      = getBitMap( setupReg, DIA_ARMING_ADR );
-  return;
-}
-/*----------------------------------------------------------------------------*/
 void vFPIcheckReset ( FPI* fpi )
 {
-  if ( vFPIgetTrig( fpi ) == 0U )
+  if ( eFPIgetTrig( fpi ) == TRIGGER_IDLE )
   {
     vLOGICresetTimer( &fpi->timer );
     fpi->state = FPI_IDLE;
@@ -160,10 +175,75 @@ void vFPIprintSetup ( void )
 }
 void vFPIdataInit ( void )
 {
-  vFPIreadConfigs( &fpis[FPI_A], &diaSetup, &diaDelay );
-  vFPIreadConfigs( &fpis[FPI_B], &dibSetup, &dibDelay );
-  vFPIreadConfigs( &fpis[FPI_C], &dicSetup, &dicDelay );
-  vFPIreadConfigs( &fpis[FPI_D], &didSetup, &didDelay );
+  uint8_t    i     = 0U;
+  FPI_ACTION input = FPI_ACT_NONE;
+  for ( i=0U; i<FPI_NUMBER; i++ )
+    {
+      fpis[i].timer.delay = getValue( pFPIregDelay[i] );
+      fpis[i].function    = eFPIfuncList[ getBitMap( pFPIregConfig[i], DIA_FUNCTION_ADR ) ];
+      fpis[i].polarity    = getBitMap( pFPIregConfig[i], DIA_POLARITY_ADR );
+      fpis[i].arming      = getBitMap( pFPIregConfig[i], DIA_ARMING_ADR );
+      input = getBitMap( pFPIregConfig[i], DIA_ACTION_ADR );
+      switch ( input )
+      {
+        case FPI_ACT_EMERGENCY_STOP:
+          fpis[i].userError.event.action = ACTION_EMERGENCY_STOP;
+          break;
+        case FPI_ACT_SHUTDOWN:
+          fpis[i].userError.event.action = ACTION_SHUTDOWN;
+          break;
+        case FPI_ACT_WARNING:
+          fpis[i].userError.event.action = ACTION_WARNING;
+          break;
+        case FPI_ACT_NONE:
+          fpis[i].userError.event.action = ACTION_NONE;
+          break;
+        default:
+          fpis[i].userError.event.action = ACTION_NONE;
+          break;
+      }
+      switch ( fpis[i].arming )
+      {
+      case FRI_ARM_ALWAYS:
+        fpis[i].getArming = uFPIarmingAlways;
+        break;
+      case FPI_ARM_TIMER_STOP:
+        fpis[i].getArming = uENGINEisBlockTimerFinish;
+        break;
+      case FPI_ARM_STARTER_SCROLL_END:
+        fpis[i].getArming = uENGINEisStarterScrollFinish;
+        break;
+      case FRI_ARM_NEVER:
+        fpis[i].getArming = uFPIarmingNever;
+        break;
+      default:
+        fpis[i].getArming = uFPIarmingAlways;
+        break;
+      }
+      fpis[i].timer.id = LOGIC_DEFAULT_TIMER_ID; /* Reset timer ID */
+      fpis[i].state    = FPI_IDLE;               /* Toogle fpi to the start state */
+      fpis[i].level    = FPI_LEVEL_LOW;          /* Reset current level */
+      if ( fpis[i].function == FPI_FUN_USER )    /* Reset arming for non user functions */
+      {
+        fpis[i].userError.enb = PERMISSION_ENABLE;
+      }
+      else
+      {
+        fpis[i].userError.enb = PERMISSION_DISABLE;
+      }
+      fpis[i].userError.active = PERMISSION_ENABLE;
+      if ( fpis[i].userError.event.action == ACTION_WARNING )
+      {
+        fpis[i].userError.ack = PERMISSION_ENABLE;
+      }
+      else
+      {
+        fpis[i].userError.ack = PERMISSION_DISABLE;
+      }
+      fpis[i].userError.event.type = eFPIuserEventTypeList[i];
+      fpis[i].userError.trig       = TRIGGER_IDLE;
+      fpis[i].userError.status     = ALARM_STATUS_IDLE;
+    }
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -184,37 +264,6 @@ void vFPIinit ( const FPI_INIT* init )
   HAL_GPIO_WritePin( init->portCS, init->pinCS, GPIO_PIN_SET );
   /* Read parameters form memory */
   vFPIdataInit();
-  /* Logic part */
-  for ( i=0U; i<FPI_NUMBER; i++ )
-  {
-    fpis[i].timer.id = 0U;                    /* Reset timer ID */
-    fpis[i].state    = FPI_BLOCK;             /* Toogle fpi to the start state */
-    fpis[i].level    = FPI_LEVEL_LOW;         /* Reset current level */
-    if ( fpis[i].function != FPI_FUN_USER )   /* Reset arming for non user functions */
-    {
-      fpis[i].arming = FRI_ARM_ALWAYS;
-      fpis[i].action = FPI_ACT_NONE;
-    }
-    /* Setup callbacks */
-    switch ( fpis[i].arming )
-    {
-      case FRI_ARM_ALWAYS:
-        fpis[i].getArming = uFPIarmingAlways;
-        break;
-      case FPI_ARM_TIMER_STOP:
-        fpis[i].getArming = uENGINEisBlockTimerFinish;
-        break;
-      case FPI_ARM_STARTER_SCROLL_END:
-        fpis[i].getArming = uENGINEisStarterScrollFinish;
-        break;
-      case FRI_ARM_NEVER:
-        fpis[i].getArming = uFPIarmingNever;
-        break;
-      default:
-        fpis[i].getArming = uFPIarmingAlways;
-        break;
-    }
-  }
   /* Queue init */
   xFPIsemaphore = xSemaphoreCreateMutex();
   pFPIQueue     = xQueueCreateStatic( 16U, sizeof( FPI_EVENT ), eventBuffer, &xFPIQueue );
@@ -261,8 +310,9 @@ void vFPIreset ( void )
            ( fpis[i].function == FPI_FUN_HIGHT_ENGINE_TEMP ) ||
            ( fpis[i].function == FPI_FUN_LOW_FUEL          ) )
       {
-        fpis[i].level = FPI_LEVEL_LOW;
-        fpis[i].state = FPI_IDLE;
+        fpis[i].level   = FPI_LEVEL_LOW;
+        fpis[i].state   = FPI_IDLE;
+        fpis[i].trigger = TRIGGER_IDLE;
       }
       vLOGICresetTimer( &fpis[i].timer );
     }
@@ -290,15 +340,41 @@ void vFPIsetBlock ( void )
   }
   for ( i=0U; i<FPI_NUMBER; i++ )
   {
-    fpis[i].state = FPI_BLOCK;
+    fpis[i].state   = FPI_IDLE;
+    fpis[i].trigger = TRIGGER_IDLE;
   }
   xSemaphoreGive( xFPIsemaphore );
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPIgetState ( uint8_t n )
+{
+  TRIGGER_STATE res = TRIGGER_IDLE;
+  if ( n < FPI_NUMBER )
+  {
+    res = fpis[n].trigger;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+uint16_t* uFPIgetMessage ( uint8_t n )
+{
+  uint16_t* res = NULL;
+  if ( n < FPI_NUMBER )
+  {
+    res = fpis[n].message;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+SYSTEM_EVENT_TYPE eFPIgetUserEventType ( uint8_t n )
+{
+  return eFPIuserEventTypeList[n];
+}
+/*----------------------------------------------------------------------------*/
 void vFPITask ( void* argument )
 {
-  FPI_EVENT event = { FPI_LEVEL_LOW, FPI_FUN_NONE, FPI_ACT_NONE, NULL };
+  FPI_EVENT event = { 0U };
   uint8_t   i     = 0U;
   for (;;)
   {
@@ -316,17 +392,25 @@ void vFPITask ( void* argument )
         {
           switch ( fpis[i].state )
           {
-            case FPI_BLOCK:
-              if ( fpis[i].getArming() > 0U )
-              {
-                fpis[i].state = FPI_IDLE;
-              }
-              break;
             case FPI_IDLE:
-              if ( vFPIgetTrig( &fpis[i] ) > 0U )
+              if ( fpis[i].getArming() == TRIGGER_SET )
               {
-                fpis[i].state = FPI_TRIGGERED;
-                vLOGICstartTimer( &fpis[i].timer, "FPI timer           " );
+                if ( eFPIgetTrig( &fpis[i] ) == TRIGGER_SET )
+                {
+                  fpis[i].state = FPI_TRIGGERED;
+                  if ( fpis[i].level == FPI_LEVEL_LOW )
+                  {
+                    fpis[i].trigger = TRIGGER_IDLE;
+                  }
+                  else
+                  {
+                    vLOGICstartTimer( &fpis[i].timer, "FPI timer           " );
+                  }
+                }
+              }
+              else
+              {
+                fpis[i].trigger = TRIGGER_IDLE;
               }
               break;
             case FPI_TRIGGERED:
@@ -334,16 +418,29 @@ void vFPITask ( void* argument )
               {
                 event.level    = fpis[i].level;
                 event.function = fpis[i].function;
-                event.action   = fpis[i].action;
-                event.message  = fpis[i].message;
+                event.number   = i;
+                if ( fpis[i].level == FPI_LEVEL_HIGH )
+                {
+                  fpis[i].trigger = TRIGGER_SET;
+                }
                 fpis[i].state  = FPI_IDLE;
                 xQueueSend( pFPIQueue, &event, portMAX_DELAY );
               }
+              else if ( eFPIgetLevel( &fpis[i] ) != fpis[i].level )
+              {
+                vLOGICresetTimer( &fpis[i].timer );
+                fpis[i].state = FPI_IDLE;
+              }
+              else if ( fpis[i].getArming() == TRIGGER_IDLE )
+              {
+                fpis[i].state = FPI_IDLE;
+              }
               break;
             default:
-              fpis[i].state = FPI_BLOCK;
+              fpis[i].state = FPI_IDLE;
               break;
           }
+          vERRORcheck( &fpis[i].userError, fpis[i].trigger );
         }
       }
       xSemaphoreGive( xFPIsemaphore );

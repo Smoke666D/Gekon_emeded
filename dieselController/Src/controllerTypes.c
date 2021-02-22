@@ -110,7 +110,11 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "MAINS_FAIL",
     "INTERRUPTED_START",
     "INTERRUPTED_STOP",
-    "SENSOR_COMMON_ERROR"
+    "SENSOR_COMMON_ERROR",
+    "USER_FUNCTION_A",
+    "USER_FUNCTION_B",
+    "USER_FUNCTION_C",
+    "USER_FUNCTION_D",
   };
   const char* alarmActionStr[LOG_ACTION_SIZE] =
   {

@@ -9,6 +9,14 @@
 #include "utils.h"
 
 
+char cHexToChar(uint8_t data)
+{
+  if (data<10)
+     return data+'0';
+  else
+     return data-10 +'A';
+}
+
 
 void vStrCopy(char * dest, char * source)
 {
@@ -42,6 +50,7 @@ void vStrAdd(char * dest, char * source)
    if (i==100) dest[i]=0;
    return;
 }
+
 
 
 float fxParToFloat(uint16_t data, int8_t scale)
@@ -121,6 +130,69 @@ void vUToStr( char* str, uint16_t data, signed char scale )
     offset = 1U;
     fPoint  = FLAG_SET;
   }
+  for ( uint8_t k = 0U; k < (5U + offset); k++ )
+  {
+      if ( ( fPoint == FLAG_SET ) && ( k == ( 5U + scale ) ) )
+      {
+        str[i++] = '.';
+      }
+      else
+      {
+        if ( ( fPoint == FLAG_SET ) && ( k == ( 5U + scale - 1 ) ))
+        {
+          fB = FLAG_SET;
+        }
+
+        if  ( fB == FLAG_SET )
+        {
+          str[i++] = data / ( DD ) + '0';
+        }
+        else
+        {
+          if ( ( data / DD ) > 0U )
+          {
+            str[i++] = data / ( DD ) + '0';
+            fB       = FLAG_SET;
+          }
+        }
+        data = data % ( DD );
+        DD   = DD / 10U;
+      }
+
+  }
+  str[i] = 0U;
+  return;
+
+
+
+}
+
+void vIToStr( char* str, uint16_t num, signed char scale )
+{
+
+  uint8_t     i      = 0U;
+  uint16_t    DD     = 10000U;
+  int8_t      data   = 0;
+  signed char offset = 0U;
+  FLAG        fPoint = FLAG_RESET;
+  FLAG        fB     = FLAG_RESET;
+  if ( scale < 0U )
+  {
+    offset = 1U;
+    fPoint  = FLAG_SET;
+  }
+
+  if (num & 0x8000)
+  {
+     data = num & 0x7FFF;
+     str[i++] = '-';
+  }
+  else
+  {
+    data = num;
+  }
+
+
   for ( uint8_t k = 0U; k < (5U + offset); k++ )
   {
       if ( ( fPoint == FLAG_SET ) && ( k == ( 5U + scale ) ) )

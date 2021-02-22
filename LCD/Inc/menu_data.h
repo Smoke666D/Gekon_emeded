@@ -24,6 +24,7 @@
 #define ALARM_MENU_COUNT       1U
 #define PASSWORD_MENU_COUNT    1U
 #define MESSAGE_MENU_COUNT     1U
+#define LO                     1U
 
  extern xScreenType   xEventScreens[EVENT_MENU_COUNT];
  extern xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT];

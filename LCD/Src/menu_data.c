@@ -254,8 +254,8 @@ static xScreenObjet const InfoMainScreen[]=
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Версия прибора:",NULL,0U},
   {0U,LEFT_OFFSET,LINE2+3U,110U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,HW_VER},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"IP",NULL,0U},
-  {0U,FONT_SIZE*8U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vMenuGetData,IP_ADRESS},
-  {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
+  {0U,FONT_SIZE*8U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,IP_ADRESS},
+  {LO,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
 
@@ -265,15 +265,13 @@ static xScreenObjet const SerialNumberScreen[]=
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE1+6U,110U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,SERIAL_L},
   {0U,LEFT_OFFSET,LINE2+3U,110U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,SERIAL_H},
-  {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
+  {LO,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
 static xScreenObjet const LinkMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СВЯЗЬ Ethernet",NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Входы/выходы",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
-  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"IP ",NULL,0U},
-  {0U,FONT_SIZE*6U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vMenuGetData,IP_ADRESS},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
@@ -307,7 +305,7 @@ static xScreenObjet  const SettingsScreen[]=
   {3U,FONT_SIZE*19U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam18,NULL,(void*)&vGetSettingsBitData, 1U},
   {2U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsUnit,      0U},
   {2U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH,  INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,      0U},
-  {1,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsNumber,    0U},
+  {LO,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsNumber,    0U},
 
 };
 

@@ -95,10 +95,10 @@
 #define ENGINE_WTIME   84U
 #define COS_FI         85U
 #define IN_CAC         86U
+#define IP_ADRESS      87U
 
 
 
-#define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/
 
 
@@ -160,11 +160,9 @@ void vDrawObject( xScreenObjet* pScreenObjects );
 void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vMenuMessageInit( osThreadId_t xmainprocess );
-void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );

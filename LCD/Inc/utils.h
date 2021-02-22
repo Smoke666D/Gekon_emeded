@@ -11,9 +11,11 @@
 #include "main.h"
 #include "menu.h"
 
+char cHexToChar(uint8_t data);
 void vStrCopy(char * dest, char * source);
 void vStrAdd(char * dest, char * source);
 void vUToStr( char * str, uint16_t data, signed char scale );
+void vIToStr( char* str, uint16_t num, signed char scale );
 void vUCTOSTRING ( uint8_t * str, uint8_t data );
 void vITOSTRING ( uint8_t * str, uint16_t data );
 float fxParToFloat(uint16_t data, int8_t scale);

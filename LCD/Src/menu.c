@@ -153,7 +153,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
           case KEY_START:
                    for (uint8_t i=(uCurrentObject+1); i<MAX_SCREEN_OBJECT;i++)
                    {
-                      if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == 1)
+                      if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == LO)
                                    break;
                       if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
                       {
@@ -822,70 +822,12 @@ void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   if (cmd == mREAD)
   {
-    vUCTOSTRING( ( uint8_t* )Data, (uint8_t) uiSetting);
+    vUToStr(Data, uiSetting,0);
+    //vUCTOSTRING( ( uint8_t* )Data, (uint8_t) uiSetting);
   }
   return;
 }
 
-/*---------------------------------------------------------------------------------------------------*/
-void vGetStatusData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  uint16_t buff;
-  switch ( ID )
-  {
-    case DISPLAY_BRIGHTNES_LEVEL_ADR:
-      switch ( cmd )
-      {
-        case mREAD:
-
-	        eDATAAPIconfigValue( DATA_API_CMD_READ, displayBrightnesLevel.atrib->adr, &buff );
-          vUCTOSTRING( ( uint8_t* )Data, (uint8_t) buff );
-          break;
-        case mINC:
-          eDATAAPIconfigValue( DATA_API_CMD_INC, displayBrightnesLevel.atrib->adr, NULL );
-          vLCDBrigthInit();
-          break;
-        case mDEC:
-          eDATAAPIconfigValue( DATA_API_CMD_DEC, displayBrightnesLevel.atrib->adr, NULL );
-          vLCDBrigthInit();
-          break;
-        case mSAVE:
-          eDATAAPIconfigValue( DATA_API_CMD_SAVE, displayBrightnesLevel.atrib->adr, NULL );
-          break;
-        case mESC:
-          eDATAAPIconfigValue( DATA_API_CMD_LOAD, displayBrightnesLevel.atrib->adr, NULL );
-          vLCDBrigthInit();
-  	       break;
-        default:
-          break;
-      }
-      break;
-    default:
-      break;
-  }
-  return;
-}
-
-void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  switch ( IP_ADRESS )
-  {
-    case 1:
-      cSERVERgetStrIP( Data );
-      break;
-    default:
-      break;
-  }
-
-}
-
-char cHexToChar(uint8_t data)
-{
-  if (data<10)
-     return data+'0';
-  else
-     return data-10 +'A';
-}
 
 
 
@@ -1055,6 +997,9 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   eConfigAttributes ATR;
   switch (ID)
   {
+    case  IP_ADRESS:
+      cSERVERgetStrIP( Data );
+      break;
     case HW_VER:
       eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&ATR);
       if (ATR.len ==1 )
@@ -1119,7 +1064,6 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        }
      break;
     case OIL_PRESSURE:
-
       switch(xADCGetxOPChType())
       {
         case SENSOR_TYPE_RESISTIVE:
@@ -1217,15 +1161,18 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str(  xADCGetREG(ID), Data, 2U );
       vStrAdd(Data," А");
        break;
-
-
    case GEN_L2_APER_POWER:
    case GEN_L3_APER_POWER:
        if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
-          {
-                Data[0]=0;
-                break;
-           }
+       {
+           Data[0]=0;
+       }
+       else
+       {
+         fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+         vStrAdd(Data," кВт");
+       }
+       break;
    case GEN_REACTIVE_POWER:
    case GEN_L1_APER_POWER:
      fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );

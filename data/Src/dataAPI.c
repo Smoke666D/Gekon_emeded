@@ -330,6 +330,7 @@ void vDATAAPIlogInit ( void )
   {
     if ( eSTORAGEreadLogRecord( pointer, &record ) == EEPROM_OK )
     {
+      logCash.pointer = pointer;
       if ( record.time == 0U )
       {
         logCash.size = pointer;

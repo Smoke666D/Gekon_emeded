@@ -1161,8 +1161,8 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str(  xADCGetREG(ID), Data, 2U );
       vStrAdd(Data," А");
        break;
-   case GEN_L2_APER_POWER:
-   case GEN_L3_APER_POWER:
+   case GEN_L2_ACTIVE_POWER:
+   case GEN_L3_ACTIVE_POWER:
        if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
        {
            Data[0]=0;
@@ -1174,7 +1174,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        }
        break;
    case GEN_REACTIVE_POWER:
-   case GEN_L1_APER_POWER:
+   case GEN_L1_ACTIVE_POWER:
      fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
      vStrAdd(Data," кВт");
      break;

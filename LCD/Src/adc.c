@@ -79,9 +79,16 @@ static uint32_t ADC2Freq =10000;
 static uint8_t uNetFaseRotation = NO_ROTATION;
 static uint8_t uGenFaseRotation = NO_ROTATION;
 static fix16_t xCosFi =0;
+static fix16_t F2xCosFi =0;
+static fix16_t F3xCosFi =0;
 static ELECTRO_SCHEME xNetWiring  =ELECTRO_SCHEME_STAR;
 static uint16_t uCosFiPeriod =0;
 static uint16_t uCosFiMax =0;
+static uint16_t F2uCosFiPeriod =0;
+static uint16_t F2uCosFiMax =0;
+static uint16_t F3uCosFiPeriod =0;
+static uint16_t F3uCosFiMax =0;
+
 static fix16_t  xTransCoof =0;
 fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -302,19 +309,19 @@ fix16_t xADCGetGENRealPower()
 fix16_t xADCGetGENL1ActivePower()
 {
   vADCGeneratorDataUpdate();
-  return GENERATOR_DATA[GEN_L1_APER_POWER];
+  return GENERATOR_DATA[GEN_L1_ACTIVE_POWER];
 }
 
 fix16_t xADCGetGENL2ActivePower()
 {
   vADCGeneratorDataUpdate();
-  return GENERATOR_DATA[GEN_L2_APER_POWER];
+  return GENERATOR_DATA[GEN_L2_ACTIVE_POWER];
 }
 
 fix16_t xADCGetGENL3ActivePower()
 {
   vADCGeneratorDataUpdate();
-  return GENERATOR_DATA[GEN_L3_APER_POWER];
+  return GENERATOR_DATA[GEN_L3_ACTIVE_POWER];
 }
 
 
@@ -424,24 +431,35 @@ void vADCGeneratorDataUpdate()
 
     xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
     GENERATOR_DATA[GEN_FREQ] = xGEN_FREQ;
+
     //Вычисление фазных значений наряжений в вольтах
     GENERATOR_DATA[GEN_L1_FASE_V] =fix16_mul(xGEN_F1_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-    GENERATOR_DATA[GEN_L2_FASE_V] =fix16_mul(xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-    GENERATOR_DATA[GEN_L3_FASE_V] =fix16_mul(xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-    //Вычисление линений значений напряжения
-    if (xNetWiring==ELECTRO_SCHEME_STAR)
+    switch ( xNetWiring )
     {
-      GENERATOR_DATA[GEN_L1_LINE_V]=fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V], fix16_sqrt(x3 ));
-      GENERATOR_DATA[GEN_L2_LINE_V]=fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V], fix16_sqrt(x3 ));
-      GENERATOR_DATA[GEN_L3_LINE_V]=fix16_mul(GENERATOR_DATA[GEN_L3_FASE_V], fix16_sqrt(x3 ));
+      case ELECTRO_SCHEME_STAR:
+          GENERATOR_DATA[GEN_L2_FASE_V] =fix16_mul(xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L3_FASE_V] =fix16_mul(xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L1_LINE_V]= fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V], fix16_sqrt(x3 ));
+          GENERATOR_DATA[GEN_L2_LINE_V]= fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V], fix16_sqrt(x3 ));
+          GENERATOR_DATA[GEN_L3_LINE_V]= fix16_mul(GENERATOR_DATA[GEN_L3_FASE_V], fix16_sqrt(x3 ));
+          break;
+      case ELECTRO_SCHEME_TRIANGLE:
+          GENERATOR_DATA[GEN_L2_FASE_V] =fix16_mul(xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L3_FASE_V] =fix16_mul(xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L1_LINE_V] =GENERATOR_DATA[GEN_L1_FASE_V];
+          GENERATOR_DATA[GEN_L2_LINE_V] =GENERATOR_DATA[GEN_L2_FASE_V];
+          GENERATOR_DATA[GEN_L3_LINE_V] =GENERATOR_DATA[GEN_L3_FASE_V];
+          break;
+      case ELECTRO_SCHEME_SINGLE_PHASE:
+          GENERATOR_DATA[GEN_L2_FASE_V] =0;
+          GENERATOR_DATA[GEN_L3_FASE_V] =0;
+          GENERATOR_DATA[GEN_L1_LINE_V] =GENERATOR_DATA[GEN_L1_FASE_V];
+          GENERATOR_DATA[GEN_L2_LINE_V] =0;
+          GENERATOR_DATA[GEN_L3_LINE_V] =0;
+          break;
+      default:
+        break;
     }
-    else
-    {
-      GENERATOR_DATA[GEN_L1_LINE_V] =GENERATOR_DATA[GEN_L1_FASE_V];
-      GENERATOR_DATA[GEN_L2_LINE_V] =GENERATOR_DATA[GEN_L2_FASE_V];
-      GENERATOR_DATA[GEN_L3_LINE_V] =GENERATOR_DATA[GEN_L3_FASE_V];
-    }
-
 
     //Вычисление значения токов
     //Пересчет данных с АЦП в значения тока на шутнирующих резисторах и применяем коофицент трансформации для токовых измирительных трасформатров
@@ -450,58 +468,104 @@ void vADCGeneratorDataUpdate()
     xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
 
     GENERATOR_DATA[GEN_L1_CUR]  = fix16_mul(xGEN_F1_CUR, temp);
-    GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, temp);
-    GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(xGEN_F3_CUR, temp);
     if (GENERATOR_DATA[GEN_L1_CUR] < MIN_CUR  )
-        GENERATOR_DATA[GEN_L1_CUR] = 0;
-    if (GENERATOR_DATA[GEN_L2_CUR] < MIN_CUR  )
-        GENERATOR_DATA[GEN_L2_CUR] = 0;
-    if (GENERATOR_DATA[GEN_L2_CUR] < MIN_CUR  )
-        GENERATOR_DATA[GEN_L3_CUR] = 0;
+    {
+        GENERATOR_DATA[GEN_L1_CUR]          = 0;
+        GENERATOR_DATA[GEN_L1_ACTIVE_POWER] = 0;
+        GENERATOR_DATA[GEN_L1_REAC_POWER]   = 0;
+        GENERATOR_DATA[GEN_L1_REAL_POWER]   = 0;
+    }
+    else
+    {
+        //Расчзет косинуса Фм L1
+        xCosFi                              = fix16_div((fix16_t) 411774U,fix16_from_int(uCosFiPeriod));  // 2Pi/uCurPeriod
+        xCosFi                              = fix16_mul(fix16_from_int(uCosFiMax),xCosFi);
+        xCosFi                              = fix16_mul(fix16_cos(xCosFi),xMinus1);
+        //Расяет синуса Фи
+        temp                                = fix16_mul(xCosFi,xCosFi);
+        GENERATOR_DATA[GEN_L1_REAC_POWER]   = fix16_sqrt(fix16_sub(1,temp));
+        temp                                = fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V],GENERATOR_DATA[GEN_L1_CUR]);
+        GENERATOR_DATA[GEN_L1_ACTIVE_POWER] = fix16_mul(temp,xCosFi);
+        GENERATOR_DATA[GEN_L1_REAC_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L1_REAC_POWER],temp);
+        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_L1_REAC_POWER]);
+        temp                                = fix16_mul(GENERATOR_DATA[GEN_L1_ACTIVE_POWER],GENERATOR_DATA[GEN_L1_ACTIVE_POWER]);
+        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],temp);
+        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_sqrt(GENERATOR_DATA[GEN_L1_REAL_POWER]);
 
-    //Расчзет косинуса Фм
-    xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(uCosFiPeriod));  // 2Pi/uCurPeriod
-    xCosFi =fix16_mul(fix16_from_int(uCosFiMax),xCosFi);
-    xCosFi = fix16_mul(fix16_cos(xCosFi),xMinus1);
+    }
 
-    //Расяет синуса Фи
-    temp =fix16_mul(xCosFi,xCosFi);
-    temp =fix16_sub(1,temp);
-    GENERATOR_DATA[GEN_L1_REAC_POWER] =fix16_sqrt(temp);
-    GENERATOR_DATA[GEN_L2_REAC_POWER] =fix16_sqrt(temp);
-    GENERATOR_DATA[GEN_L3_REAC_POWER] =fix16_sqrt(temp);
-    temp =fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V],GENERATOR_DATA[GEN_L1_CUR]);
-    GENERATOR_DATA[GEN_L1_APER_POWER] =fix16_mul(temp,xCosFi);
-    GENERATOR_DATA[GEN_L1_REAC_POWER] =fix16_mul(GENERATOR_DATA[GEN_L1_REAC_POWER],temp);
-    temp =fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V],GENERATOR_DATA[GEN_L2_CUR]);
-    GENERATOR_DATA[GEN_L2_APER_POWER] =fix16_mul(temp,xCosFi);
-    GENERATOR_DATA[GEN_L2_REAC_POWER] =fix16_mul(GENERATOR_DATA[GEN_L2_REAC_POWER],temp);
-    temp =fix16_mul(GENERATOR_DATA[GEN_L3_FASE_V],GENERATOR_DATA[GEN_L3_CUR]);
-    GENERATOR_DATA[GEN_L3_APER_POWER] =fix16_mul(temp,xCosFi);
-    GENERATOR_DATA[GEN_L3_REAC_POWER] =fix16_mul(GENERATOR_DATA[GEN_L3_REAC_POWER],temp);
+    switch ( xNetWiring )
+    {
+      case ELECTRO_SCHEME_STAR:
+      case ELECTRO_SCHEME_TRIANGLE:
+        GENERATOR_DATA[GEN_L2_CUR]  = fix16_mul(xGEN_F2_CUR, temp);
+        GENERATOR_DATA[GEN_L3_CUR]  = fix16_mul(xGEN_F3_CUR, temp);
+        if (GENERATOR_DATA[GEN_L2_CUR] < MIN_CUR  )
+        {
+            GENERATOR_DATA[GEN_L2_CUR]          = 0;
+            GENERATOR_DATA[GEN_L2_ACTIVE_POWER] = 0;
+            GENERATOR_DATA[GEN_L2_REAC_POWER]   = 0;
+            GENERATOR_DATA[GEN_L2_REAL_POWER]   = 0;
+        }
+        else
+        {
+          //Расчзет косинуса Фм L2
+           F2xCosFi =fix16_div((fix16_t) 411774U,fix16_from_int(F2uCosFiPeriod));  // 2Pi/uCurPeriod
+           F2xCosFi =fix16_mul(fix16_from_int(F2uCosFiMax),F2xCosFi);
+           F2xCosFi = fix16_mul(fix16_cos(F2xCosFi),xMinus1);
+           temp                                = fix16_mul(F2xCosFi,F2xCosFi);
+           GENERATOR_DATA[GEN_L2_REAC_POWER]   = fix16_sqrt(fix16_sub(1,temp));
+           temp                                = fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V],GENERATOR_DATA[GEN_L2_CUR]);
+           GENERATOR_DATA[GEN_L2_ACTIVE_POWER] = fix16_mul(temp,F2xCosFi);
+           GENERATOR_DATA[GEN_L2_REAC_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L2_REAC_POWER],temp);
+           GENERATOR_DATA[GEN_L2_REAL_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L2_REAC_POWER],GENERATOR_DATA[GEN_L2_REAC_POWER]);
+           temp                                = fix16_mul(GENERATOR_DATA[GEN_L2_ACTIVE_POWER],GENERATOR_DATA[GEN_L2_ACTIVE_POWER]);
+           GENERATOR_DATA[GEN_L2_REAL_POWER]   = fix16_add(GENERATOR_DATA[GEN_L2_REAL_POWER],temp);
+           GENERATOR_DATA[GEN_L2_REAL_POWER]   = fix16_sqrt(GENERATOR_DATA[GEN_L2_REAL_POWER]);
+        }
+        if (GENERATOR_DATA[GEN_L3_CUR] < MIN_CUR  )
+        {
+            GENERATOR_DATA[GEN_L3_CUR]          = 0;
+            GENERATOR_DATA[GEN_L3_ACTIVE_POWER] = 0;
+            GENERATOR_DATA[GEN_L3_REAC_POWER]   = 0;
+            GENERATOR_DATA[GEN_L3_REAL_POWER]   = 0;
+        }
+        else
+        {
+          //Расчзет косинуса Фм L3
+          F3xCosFi = fix16_div((fix16_t) 411774U,fix16_from_int(F3uCosFiPeriod));  // 2Pi/uCurPeriod
+          F3xCosFi = fix16_mul(fix16_from_int(F3uCosFiMax),F3xCosFi);
+          F3xCosFi = fix16_mul(fix16_cos(F3xCosFi),xMinus1);
+          temp                                = fix16_mul(F3xCosFi,F3xCosFi);
+          GENERATOR_DATA[GEN_L3_REAC_POWER]   = fix16_sqrt( fix16_sub(1,temp));
+          temp                                = fix16_mul(GENERATOR_DATA[GEN_L3_FASE_V],GENERATOR_DATA[GEN_L3_CUR]);
+          GENERATOR_DATA[GEN_L3_ACTIVE_POWER] = fix16_mul(temp,F3xCosFi);
+          GENERATOR_DATA[GEN_L3_REAC_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L3_REAC_POWER],temp);
+          GENERATOR_DATA[GEN_L3_REAL_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L3_REAC_POWER]);
+          temp                                = fix16_mul(GENERATOR_DATA[GEN_L3_ACTIVE_POWER],GENERATOR_DATA[GEN_L3_ACTIVE_POWER]);
+          GENERATOR_DATA[GEN_L3_REAL_POWER]   = fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],temp);
+          GENERATOR_DATA[GEN_L3_REAL_POWER]   = fix16_sqrt(GENERATOR_DATA[GEN_L3_REAL_POWER]);
 
+        }
+        break;
+      case ELECTRO_SCHEME_SINGLE_PHASE:
+        GENERATOR_DATA[GEN_L2_CUR]          = 0;
+        GENERATOR_DATA[GEN_L3_CUR]          = 0;
+        GENERATOR_DATA[GEN_L2_ACTIVE_POWER] = 0;
+        GENERATOR_DATA[GEN_L3_ACTIVE_POWER] = 0;
+        GENERATOR_DATA[GEN_L2_REAC_POWER]   = 0;
+        GENERATOR_DATA[GEN_L3_REAC_POWER]   = 0;
+        break;
+      default:
+       break;
 
-    GENERATOR_DATA[GEN_L1_REAL_POWER] =fix16_mul(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_L1_REAC_POWER]);
-    temp = fix16_mul(GENERATOR_DATA[GEN_L1_APER_POWER],GENERATOR_DATA[GEN_L1_APER_POWER]);
-    GENERATOR_DATA[GEN_L1_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],temp);
-    GENERATOR_DATA[GEN_L1_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_L1_REAL_POWER]);
-
-    GENERATOR_DATA[GEN_L2_REAL_POWER] =fix16_mul(GENERATOR_DATA[GEN_L2_REAC_POWER],GENERATOR_DATA[GEN_L2_REAC_POWER]);
-    temp = fix16_mul(GENERATOR_DATA[GEN_L1_APER_POWER],GENERATOR_DATA[GEN_L2_APER_POWER]);
-    GENERATOR_DATA[GEN_L2_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_L2_REAL_POWER],temp);
-    GENERATOR_DATA[GEN_L2_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_L2_REAL_POWER]);
-
-    GENERATOR_DATA[GEN_L3_REAL_POWER] =fix16_mul(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L3_REAC_POWER]);
-    temp = fix16_mul(GENERATOR_DATA[GEN_L1_APER_POWER],GENERATOR_DATA[GEN_L3_APER_POWER]);
-    GENERATOR_DATA[GEN_L3_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],temp);
-    GENERATOR_DATA[GEN_L3_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_L3_REAL_POWER]);
-
+    }
     //Расчет полной мощности
     GENERATOR_DATA[GEN_REACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L2_REAC_POWER]);
     GENERATOR_DATA[GEN_REACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_REACTIVE_POWER]);
 
-    GENERATOR_DATA[GEN_ACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L3_APER_POWER],GENERATOR_DATA[GEN_L2_APER_POWER]);
-    GENERATOR_DATA[GEN_ACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L1_APER_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
+    GENERATOR_DATA[GEN_ACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L3_ACTIVE_POWER],GENERATOR_DATA[GEN_L2_ACTIVE_POWER]);
+    GENERATOR_DATA[GEN_ACTIVE_POWER]= fix16_add(GENERATOR_DATA[GEN_L1_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
 
 
     GENERATOR_DATA[GEN_REAL_POWER]= fix16_add(GENERATOR_DATA[GEN_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
@@ -509,21 +573,23 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_REAL_POWER],temp);
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_sqrt(GENERATOR_DATA[GEN_REAL_POWER]);
 
-
     GENERATOR_DATA[GEN_AVER_V] = GENERATOR_DATA[GEN_L1_LINE_V];
     GENERATOR_DATA[GEN_AVER_A] = GENERATOR_DATA[GEN_L1_CUR];
-    GENERATOR_DATA[GEN_AVER_P] = GENERATOR_DATA[GEN_L1_APER_POWER];
+    GENERATOR_DATA[GEN_AVER_P] = GENERATOR_DATA[GEN_L1_ACTIVE_POWER];
+
 
     if (xNetWiring != ELECTRO_SCHEME_SINGLE_PHASE)
     {
-      GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L2_LINE_V]);
-      GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L3_LINE_V]);
-      GENERATOR_DATA[GEN_AVER_V] = fix16_div(GENERATOR_DATA[GEN_AVER_V],x3);
+           GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L2_LINE_V]);
+           GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L3_LINE_V]);
+           GENERATOR_DATA[GEN_AVER_V] = fix16_div(GENERATOR_DATA[GEN_AVER_V],x3);
 
-      GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L2_CUR]);
-      GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L3_CUR]);
-      GENERATOR_DATA[GEN_AVER_A] = fix16_div(GENERATOR_DATA[GEN_AVER_A],x3);
-    }
+           GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L2_CUR]);
+           GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L3_CUR]);
+           GENERATOR_DATA[GEN_AVER_A] = fix16_div(GENERATOR_DATA[GEN_AVER_A],x3);
+   }
+
+
   }
 }
 
@@ -1314,12 +1380,15 @@ uint8_t vADCGetADC3Data()
 
 #define COS_DATA_COUNT  10
 static int16_t CosBuffer[COS_DATA_COUNT][2];
-static uint8_t uCosCount =0;
+static int16_t F2CosBuffer[COS_DATA_COUNT][2];
+static int16_t F3CosBuffer[COS_DATA_COUNT][2];
+static uint8_t uCosCount =0,F2uCosCount =0,F3uCosCount =0;
 static xADCGenDetectType uFreqPresent=NO_FREQ;
 
 uint8_t vADCGetADC12Data()
 {
   uint8_t result=ADC_ERROR;
+  uint8_t t;
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   int16_t iMax =0;
   fix16_t fix_temp=0;
@@ -1437,7 +1506,7 @@ uint8_t vADCGetADC12Data()
          uCosCount=0;
          iMax =0;
          uCosFiPeriod  =0;
-         for (uint8_t t=0;t<COS_DATA_COUNT;t++)
+         for (t=0;t<COS_DATA_COUNT;t++)
          {
            iMax = iMax+  CosBuffer[t][0];
            uCosFiPeriod = uCosFiPeriod  +CosBuffer[t][1];
@@ -1446,6 +1515,54 @@ uint8_t vADCGetADC12Data()
          uCosFiPeriod = uCosFiPeriod /COS_DATA_COUNT;
        }
      }
+
+     xADCMax((int16_t *) &ADC1_IN_Buffer, 1, uCurPeriod, &DF3,3 );//находим сдвиг относительно начал отсчета максимальной амплитуды тока
+     //Проверяем, что валидность максимумов тока и напряжения, сравнение FASE_DETECT_HISTERESIS позволяет отсечь систуацию, когда данные зафиксированы
+    //со сдвигом фазы окло 90 градусов. В этом случае в пероид пападают 2 мксимума.
+     if ( ((uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) && ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ) && (DF1 <= DF3))
+          {
+            // Делаем усреднение
+            F2CosBuffer[F2uCosCount][0] = DF3-DF1;
+            F2CosBuffer[F2uCosCount][1] = uCurPeriod;
+            F2uCosCount++;
+            if (F2uCosCount>=COS_DATA_COUNT)
+            {
+              F2uCosCount=0;
+              iMax =0;
+              F2uCosFiPeriod  =0;
+              for (t=0;t<COS_DATA_COUNT;t++)
+              {
+                iMax = iMax+  F2CosBuffer[t][0];
+                F2uCosFiPeriod = F2uCosFiPeriod  +F2CosBuffer[t][1];
+              }
+              F2uCosFiMax =  iMax/COS_DATA_COUNT;
+              F2uCosFiPeriod = F2uCosFiPeriod /COS_DATA_COUNT;
+            }
+          }
+
+          xADCMax((int16_t *) &ADC1_IN_Buffer, 2, uCurPeriod, &DF3,3 );//находим сдвиг относительно начал отсчета максимальной амплитуды тока
+          //Проверяем, что валидность максимумов тока и напряжения, сравнение FASE_DETECT_HISTERESIS позволяет отсечь систуацию, когда данные зафиксированы
+          //со сдвигом фазы окло 90 градусов. В этом случае в пероид пападают 2 мксимума.
+          if ( ((uCurPeriod - DF1 ) > FASE_DETECT_HISTERESIS ) && ((uCurPeriod - DF3 ) > FASE_DETECT_HISTERESIS ) && (DF1 <= DF3))
+          {
+             // Делаем усреднение
+             F3CosBuffer[F3uCosCount][0] = DF3-DF1;
+             F3CosBuffer[F3uCosCount][1] = uCurPeriod;
+             F3uCosCount++;
+             if (F3uCosCount>=COS_DATA_COUNT)
+             {
+               F3uCosCount=0;
+               iMax =0;
+               F3uCosFiPeriod  =0;
+               for (t=0;t<COS_DATA_COUNT;t++)
+               {
+                  iMax = iMax+  F3CosBuffer[t][0];
+                  F3uCosFiPeriod = F3uCosFiPeriod  +F3CosBuffer[t][1];
+               }
+               F3uCosFiMax =  iMax/COS_DATA_COUNT;
+               F3uCosFiPeriod = F3uCosFiPeriod /COS_DATA_COUNT;
+             }
+          }
    }
    else
    {

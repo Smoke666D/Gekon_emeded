@@ -306,7 +306,7 @@ USB_STATUS eUSBReportToTime ( const USB_REPORT* report )
     time.month = report->data[4U];
     time.day   = report->data[5U];
     time.wday  = report->data[6U];
-    if ( vRTCsetTime( &time ) != RTC_OK )
+    if ( eRTCsetTime( &time ) != RTC_OK )
     {
       res = USB_STATUS_STORAGE_ERROR;
     }

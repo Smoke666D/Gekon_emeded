@@ -294,7 +294,7 @@ fix16_t fFUELprocess ( void )
 /*----------------------------------------------------------------------------*/
 fix16_t fSPEEDfromFreq ( fix16_t freq )
 {
-  return fix16_div( fix16_mul( freq, fix60 ), speed.polePairs ); /* RPM */
+  return fix16_mul( fix16_div( freq, speed.polePairs ), fix60 ); /* RPM */
 }
 /*----------------------------------------------------------------------------*/
 fix16_t fSPEEDprocess ( void )

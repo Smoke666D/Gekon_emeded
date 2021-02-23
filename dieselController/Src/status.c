@@ -10,6 +10,25 @@
 #include "controller.h"
 /*-------------------------------- Structures --------------------------------*/
 /*--------------------------------- Constant ---------------------------------*/
+static const uint16_t deviceStatusDic[DEVICE_STATUS_NUMBER][DEVICE_STATUS_LENGTH] =
+{
+ /*________________*/
+  {' '}, /* 00 */
+  {' '}, /* 01 */
+  {' '}, /* 02 */
+  {' '}, /* 03 */
+  {' '}, /* 04 */
+  {' '}, /* 05 */
+  {' '}, /* 06 */
+  {' '}, /* 07 */
+  {' '}, /* 08 */
+  {' '}, /* 09 */
+  {' '}, /* 10 */
+  {' '}, /* 11 */
+  {' '}, /* 12 */
+  {' '}, /* 13 */
+  {' '} /* 14 */
+};
 /*-------------------------------- Variables ---------------------------------*/
 /*-------------------------------- External ----------------------------------*/
 /*-------------------------------- Functions ---------------------------------*/
@@ -33,12 +52,19 @@ PERMISSION eSTATUSisTimer ( DEVICE_STATUS status )
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLIC ---------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+uint16_t* uSTATUSgetString ( DEVICE_STATUS status )
+{
+  return &deviceStatusDic[status][0U];
+}
+
 void vSTATUSget ( DEVICE_STATUS* status, PERMISSION* timer, fix16_t time )
 {
   STARTER_STATUS   starter  = STARTER_IDLE;
   PLAN_STOP_STATUS planStop = STOP_IDLE;
   ENGINE_STATUS    engine   = eENGINEgetEngineStatus();
 
+
+  *timer = eSTATUSisTimer( *status );
   return;
 }
 /*----------------------------------------------------------------------------*/

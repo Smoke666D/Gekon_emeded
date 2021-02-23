@@ -412,7 +412,7 @@ EEPROM_STATUS eSTORAGEreadLogPointer ( uint16_t* pointer )
 {
   EEPROM_STATUS res      = EEPROM_OK;
   uint8_t       data[2U] = { 0U };
-  res = eEEPROMreadMemory( STORAGE_LOG_POINTER_ADR, data, 2U );
+  res = eEEPROMreadMemory( STORAGE_LOG_POINTER_ADR, data, STORAGE_LOG_POINTER_SIZE );
   if ( res == EEPROM_OK )
   {
     *pointer = ( ( ( uint16_t )data[0U] ) << 8U ) | ( ( uint16_t )data[1U] );
@@ -425,7 +425,7 @@ EEPROM_STATUS eSTORAGEwriteLogPointer ( uint16_t pointer )
   uint8_t data[2U] = { 0U };
   data[0U] = ( uint8_t )( pointer >> 8U );
   data[1U] = ( uint8_t )( pointer       );
-  return eEEPROMwriteMemory( STORAGE_LOG_POINTER_ADR, data, 2U );
+  return eEEPROMwriteMemory( STORAGE_LOG_POINTER_ADR, data, STORAGE_LOG_POINTER_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, const LOG_RECORD_TYPE* record )

@@ -691,7 +691,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         {
 	        if ( eRESTparsingTime( content, &time ) == REST_OK )
 	        {
-	          if ( vRTCsetTime( &time ) == RTC_OK )
+	          if ( eRTCsetTime( &time ) == RTC_OK )
 	          {
               response->contetntType  = HTTP_CONTENT_JSON;
               response->status        = HTTP_STATUS_OK;

@@ -57,6 +57,7 @@ typedef struct __packed
 {
   uint16_t        adr;
   uint16_t        size;
+  uint16_t        pointer;
   LOG_RECORD_TYPE record;
 } LOG_CASH_TYPE;
 /*------------------------ Functions -----------------------------------*/

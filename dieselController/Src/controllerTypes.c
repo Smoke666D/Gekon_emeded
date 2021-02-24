@@ -15,6 +15,7 @@
 static StaticQueue_t      xEventQueue;
 static QueueHandle_t      pEventQueue;
 static SemaphoreHandle_t  xSYSTIMERsemaphore = NULL;
+static DEVICE_INFO        deviceInfo         = { 0U };
 /*--------------------------------- Constant ---------------------------------*/
 const fix16_t fix100U = F16( 100U );
 const char* logActionsDictionary[LOG_ACTION_SIZE] = {
@@ -129,6 +130,25 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "AUTO_STOP"
   };
 #endif
+
+static const char* deviceStatusDic[DEVICE_STATUS_NUMBER] =
+{
+  "Загрузка...",        /* 00 */
+  "Готов к запуску",    /* 01 */
+  "Дистанционный пуск", /* 02 */
+  "Предпрогрев",        /* 03 */
+  "Работа стартера",    /* 04 */
+  "Пауза стартера",     /* 05 */
+  "Возбуждение",        /* 06 */
+  "Прогрев Х.Х.",       /* 07 */
+  "Прогрев",            /* 08 */
+  "В работе",           /* 09 */
+  "Охлаждение",         /* 10 */
+  "Охлаждение Х.Х.",    /* 11 */
+  "Останов",            /* 12 */
+  "Аварийный останов",  /* 13 */
+  "Запрет пуска"        /* 14 */
+};
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t   eventBuffer[EVENT_QUEUE_LENGTH * sizeof( LOG_RECORD_TYPE )] = { 0U };
 static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                            = { 0U };
@@ -143,10 +163,51 @@ static char timerNames[LOGIC_COUNTERS_SIZE][TIMER_NAME_LENGTH] = { 0U };
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-
-
+PERMISSION eSTATUSisTimer ( DEVICE_STATUS status )
+{
+  PERMISSION res = PERMISSION_ENABLE;
+  if ( ( status == DEVICE_STATUS_IDLE           ) ||
+       ( status == DEVICE_STATUS_READY_TO_START ) ||
+       ( status == DEVICE_STATUS_WORKING        ) ||
+       ( status == DEVICE_STATUS_EMERGENCY_STOP ) ||
+       ( status == DEVICE_STATUS_BAN_START      ) )
+  {
+    res = PERMISSION_DISABLE;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+void vSTATUScalcTime ( void )
+{
+  if ( deviceInfo.timerID < LOGIC_COUNTERS_SIZE )
+  {
+    deviceInfo.time = ( uint16_t )( ( targetArray[deviceInfo.timerID] - counterArray[deviceInfo.timerID] ) / 10U ); /* sec */
+  }
+  return;
+}
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const char* cSTATUSgetString ( DEVICE_STATUS status )
+{
+  return deviceStatusDic[status];
+}
+/*----------------------------------------------------------------------------*/
+void vSTATUSget ( DEVICE_INFO* info )
+{
+  vSTATUScalcTime();
+  *info = deviceInfo;
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vSTATUSsetup ( DEVICE_STATUS status, timerID_t id )
+{
+  deviceInfo.status  = status;
+  deviceInfo.timer   = eSTATUSisTimer( status );
+  deviceInfo.timerID = id;
+  vSTATUScalcTime();
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vLOGICprintTime ( uint32_t time )
 {
@@ -191,6 +252,7 @@ void vLOGICinit ( TIM_HandleTypeDef* tim )
   pEventQueue = xQueueCreateStatic( EVENT_QUEUE_LENGTH, sizeof( LOG_RECORD_TYPE ), eventBuffer, &xEventQueue );
   HAL_TIM_Base_Start_IT( tim );
   xSYSTIMERsemaphore = xSemaphoreCreateMutex();
+  deviceInfo.timerID = LOGIC_DEFAULT_TIMER_ID;
   return;
 }
 /*-----------------------------------------------------------------------------------------*/

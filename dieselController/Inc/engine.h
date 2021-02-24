@@ -77,6 +77,7 @@ typedef enum
 typedef enum
 {
   STARTER_IDLE,
+  STARTER_PREHEATING,
   STARTER_START_PREPARATION,
   STARTER_READY,
   STARTER_CRANKING,
@@ -102,10 +103,10 @@ typedef enum
 
 typedef enum
 {
-  EMERGENCY_STOP_IDLE,
-  EMERGENCY_STOP_PROCESSING,
-  EMERGENCY_STOP_END,
-} EMERGENCY_STOP_STATUS;
+  EMERGENCY_IDLE,
+  EMERGENCY_PROCESSING,
+  EMERGENCY_END,
+} EMERGENCY_STATUS;
 
 typedef enum
 {
@@ -261,16 +262,19 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t engineHandle;
 /*----------------------- Functions ------------------------------------*/
-void          vENGINEinit ( void );
-void          vENGINEsendCmd ( ENGINE_COMMAND cmd );
-QueueHandle_t pENGINEgetCommandQueue ( void );
-TRIGGER_STATE uENGINEisStarterScrollFinish ( void );
-TRIGGER_STATE uENGINEisBlockTimerFinish ( void );
-PERMISSION    eENGINEisStartBan ( void );
-ENGINE_STATUS eENGINEgetEngineStatus ( void );
-TRIGGER_STATE eENGINEgetOilSensorState ( void );
-TRIGGER_STATE eENGINEgetCoolantSensorState ( void );
-TRIGGER_STATE eENGINEgetFuelSensorState ( void );
-fix16_t       fENGINEspeedGet ( void );
+void             vENGINEinit ( void );
+void             vENGINEsendCmd ( ENGINE_COMMAND cmd );
+QueueHandle_t    pENGINEgetCommandQueue ( void );
+TRIGGER_STATE    uENGINEisStarterScrollFinish ( void );
+TRIGGER_STATE    uENGINEisBlockTimerFinish ( void );
+PERMISSION       eENGINEisStartBan ( void );
+ENGINE_STATUS    eENGINEgetEngineStatus ( void );
+STARTER_STATUS   eENGINEgetStarterStatus ( void );
+EMERGENCY_STATUS eENGINEgetEmergencyStatus ( void );
+PLAN_STOP_STATUS eENGINEgetPlanStopStatus ( void );
+TRIGGER_STATE    eENGINEgetOilSensorState ( void );
+TRIGGER_STATE    eENGINEgetCoolantSensorState ( void );
+TRIGGER_STATE    eENGINEgetFuelSensorState ( void );
+fix16_t          fENGINEspeedGet ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

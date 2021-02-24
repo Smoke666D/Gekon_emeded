@@ -47,6 +47,9 @@
 #define  OIL_SENSOR_SOURCE          xADCGetSOP
 #define  FUEL_SENSOR_SOURCE         xADCGetSFL
 #define  COOLANT_SENSOR_SOURCE      xADCGetSCT
+
+#define DEVICE_STATUS_NUMBER        15U
+#define DEVICE_STATUS_LENGTH        18U
 /*------------------------ Types ---------------------------------------*/
 typedef  uint16_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
@@ -216,11 +219,38 @@ typedef enum
   ERROR_LIST_CMD_ACK,
   ERROR_LIST_CMD_COUNTER,
 } ERROR_LIST_CMD;
+
+typedef enum
+{
+  DEVICE_STATUS_IDLE,            /* 00 0 Loading condition                 */
+  DEVICE_STATUS_READY_TO_START,  /* 01 0 Engine stop, ready to start       */
+  DEVICE_STATUS_START_DELAY,     /* 02 1 External start signal detected    */
+  DEVICE_STATUS_PREHEATING,      /* 03 1 Engine preheating                 */
+  DEVICE_STATUS_CRANKING,        /* 04 1 Engine cranking                   */
+  DEVICE_STATUS_CRANK_DELAY,     /* 05 1 Engine pause cranking             */
+  DEVICE_STATUS_CONTROL_BLOCK,   /* 06 1 Engine have started, block alarms */
+  DEVICE_STATUS_IDLE_WORK,       /* 07 1 Engine warming on idle speed      */
+  DEVICE_STATUS_WARMING,         /* 08 1 Engine warming on nominal speed   */
+  DEVICE_STATUS_WORKING,         /* 09 0 Engine work, generator ready      */
+  DEVICE_STATUS_COOLDOWN,        /* 10 1 Engine cool down on nominal speed */
+  DEVICE_STATUS_IDLE_COOLDOWN,   /* 11 1 Engine cool down on idle speed    */
+  DEVICE_STATUS_STOP_PROCESSING, /* 12 1 Waiting for engine stop           */
+  DEVICE_STATUS_EMERGENCY_STOP,  /* 13 0 Fatal error. Need to reset manual */
+  DEVICE_STATUS_BAN_START,       /* 14 0 Start is banned by error          */
+} DEVICE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 typedef uint16_t ( *getDataCallBack )( void );           /* Callback to get 2 byte data */
 typedef fix16_t  ( *getValueCallBack )( void );          /* Callback to get sensor value */
 typedef void     ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */
 /*----------------------- Structures -----------------------------------*/
+typedef struct __packed
+{
+  DEVICE_STATUS status;  /* device status     */
+  PERMISSION    timer;   /* enable or disable */
+  uint16_t      time;    /* sec               */
+  timerID_t     timerID; /* current timer id  */
+} DEVICE_INFO;
+
  typedef struct __packed
 {
   SYSTEM_ACTION      action;
@@ -296,25 +326,28 @@ extern const char* logTypesDictionary[LOG_TYPES_SIZE];
   extern const char* eventTypesStr[LOG_TYPES_SIZE];
 #endif
 /*----------------------- Functions ------------------------------------*/
-void              vLOGICinit ( TIM_HandleTypeDef* tim );
-QueueHandle_t     pLOGICgetEventQueue ( void );
-void              vRELAYset ( RELAY_DEVICE* relay, RELAY_STATUS status );
-void              vRELAYautoProces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
-void              vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device );
-void              vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );
-void              vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val );
-void              vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
-void              vLOGICtimerHandler ( void );
-uint8_t           uLOGICisTimerActive ( SYSTEM_TIMER timer );
-TIMER_ERROR       vLOGICstartTimer ( SYSTEM_TIMER* timer, char* name );
-uint8_t           uLOGICisTimer ( SYSTEM_TIMER* timer );
-TIMER_ERROR       vLOGICresetTimer ( SYSTEM_TIMER* timer );
-void              vLOGICresetAllTimers ( void );
-void              vLOGICprintActiveTimers ( void );
-void              vLOGICtimerCallback ( void );
-void              vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
-void              vLOGICprintEvent ( SYSTEM_EVENT event );
-void              vLOGICprintDebug ( const char* str );
-void              vLOGICprintLogRecord ( LOG_RECORD_TYPE record );
+const char*   cSTATUSgetString ( DEVICE_STATUS status );
+void          vSTATUSget ( DEVICE_INFO* info );
+void          vSTATUSsetup ( DEVICE_STATUS status, timerID_t id );
+void          vLOGICinit ( TIM_HandleTypeDef* tim );
+QueueHandle_t pLOGICgetEventQueue ( void );
+void          vRELAYset ( RELAY_DEVICE* relay, RELAY_STATUS status );
+void          vRELAYautoProces ( RELAY_AUTO_DEVICE* relay, fix16_t val );
+void          vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device );
+void          vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device );
+void          vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val );
+void          vRELAYimpulseReset ( RELAY_IMPULSE_DEVICE* device );
+void          vLOGICtimerHandler ( void );
+uint8_t       uLOGICisTimerActive ( SYSTEM_TIMER timer );
+TIMER_ERROR   vLOGICstartTimer ( SYSTEM_TIMER* timer, char* name );
+uint8_t       uLOGICisTimer ( SYSTEM_TIMER* timer );
+TIMER_ERROR   vLOGICresetTimer ( SYSTEM_TIMER* timer );
+void          vLOGICresetAllTimers ( void );
+void          vLOGICprintActiveTimers ( void );
+void          vLOGICtimerCallback ( void );
+void          vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
+void          vLOGICprintEvent ( SYSTEM_EVENT event );
+void          vLOGICprintDebug ( const char* str );
+void          vLOGICprintLogRecord ( LOG_RECORD_TYPE record );
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOGICTYPES_H_ */

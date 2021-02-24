@@ -146,15 +146,42 @@ static xScreenObjet const Generator3Screen[]=
 
 static xScreenObjet const Generator4Screen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - Мощность",NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - P Акт.",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1 -",NULL,0U},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2 -",NULL,0U},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3 -",NULL,0U},
-  {0U,FONT_SIZE*5U,LINE1+6U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L1_ACTIVE_POWER},
-  {0U,FONT_SIZE*5U,LINE2+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L2_ACTIVE_POWER},
-  {0U,FONT_SIZE*5U,LINE3+3U,40U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L3_ACTIVE_POWER},
+  {0U,FONT_SIZE*6U,LINE1+6U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L1_ACTIVE_POWER},
+  {0U,FONT_SIZE*6U,LINE2+3U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L2_ACTIVE_POWER},
+  {0U,FONT_SIZE*6U,LINE3+3U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L3_ACTIVE_POWER},
+  {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
+};
 
+
+static xScreenObjet const Generator7Screen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - P Реак.",NULL,0U},
+  {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1 -",NULL,0U},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2 -",NULL,0U},
+  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3 -",NULL,0U},
+  {0U,FONT_SIZE*6U,LINE1+6U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L1_REAC_POWER},
+  {0U,FONT_SIZE*6U,LINE2+3U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L2_REAC_POWER},
+  {0U,FONT_SIZE*6U,LINE3+3U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L3_REAC_POWER},
+  {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
+};
+
+
+static xScreenObjet const Generator8Screen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - P Полн.",NULL,0U},
+  {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"L1 -",NULL,0U},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"L2 -",NULL,0U},
+  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"L3 -",NULL,0U},
+  {0U,FONT_SIZE*6U,LINE1+6U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L1_REAL_POWER},
+  {0U,FONT_SIZE*6U,LINE2+3U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L2_REAL_POWER},
+  {0U,FONT_SIZE*6U,LINE3+3U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_L3_REAL_POWER},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
@@ -277,8 +304,18 @@ static xScreenObjet const LinkMainScreen[]=
 
 static xScreenObjet const StatusMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"СТАТУС",NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Состояние генератора",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
+  {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"12345678912345678:",NULL,0U},
+  {0U,FONT_SIZE*19U,LINE2,0U,0U,TEXT_STRING,LeftText,"12",NULL,0U},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"U= ",NULL,0U},
+  {0U,FONT_SIZE*4U,LINE2+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,GEN_AVER_V},
+  {0U,FONT_SIZE*9U,LINE3,0U,0U,TEXT_STRING,LeftText,"P= ",NULL,0U},
+  {0U,FONT_SIZE*15U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_REACTIVE_POWER},
+  {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"F= ",NULL,0U},
+  {0U,FONT_SIZE*7U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,GEN_FREQ},
+  {0U,FONT_SIZE*11U,LINE4,0U,0U,TEXT_STRING,LeftText,"I= ",NULL,0U},
+  {0U,FONT_SIZE*17U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,GEN_AVER_A},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
@@ -358,6 +395,8 @@ xScreenType xGeneratorScreens[GENERATOR_MENU_COUNT]=
   {Generator2Screen,    &xMainMenu, NULL, 0U, 0U},
   {Generator3Screen,    &xMainMenu, NULL, 0U, 0U},
   {Generator4Screen,    &xMainMenu, NULL, 0U, 0U},
+  {Generator7Screen,    &xMainMenu, NULL, 0U, 0U},
+  {Generator8Screen,    &xMainMenu, NULL, 0U, 0U},
   {Generator5Screen,    &xMainMenu, NULL, 0U, 0U},
   {Generator6Screen,    &xMainMenu, NULL, 0U, 0U},
   {GeneratorMainScreen, &xMainMenu, NULL, 0U, 0U},

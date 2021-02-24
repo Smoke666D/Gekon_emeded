@@ -16,7 +16,7 @@
 #define MENU_LEVEL1_COUNT      7U
 #define ENGINE_MENU_COUNT      3U
 #define NET_MENU_COUNT         3U
-#define GENERATOR_MENU_COUNT   7U
+#define GENERATOR_MENU_COUNT   9U
 #define SETTINGS_MENU_COUNT    1U
 #define YESNO_MENU_COUNT       1U
 #define EVENT_MENU_COUNT       1U

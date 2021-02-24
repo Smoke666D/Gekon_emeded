@@ -458,12 +458,16 @@ void vMenuMessageInit ( osThreadId_t xmainprocess )
 {
   xProccesToNotify = xmainprocess;
 }
+
+
+
+
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuTask ( void )
 {
     //Блок обработки нажатий на клавиши
-  static FLAG xTimeOutFlag = FLAG_RESET;
 
+  static FLAG xTimeOutFlag = FLAG_RESET;
   if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
   {
      vLCDBrigthInit();
@@ -538,9 +542,10 @@ void vMenuTask ( void )
         if (fAlarmFlag == FLAG_RESET)
         {
           pCurrMenu = &xMainMenu;
-          xTimeOutFlag = FLAG_SET;
-          pCurrMenu->pCurrIndex = HOME_MENU;
-          vLCDSetLedBrigth(1);
+           xTimeOutFlag = FLAG_SET;
+           pCurrMenu->pCurrIndex = HOME_MENU;
+           vLCDSetLedBrigth(1);
+
         }
         else
         {
@@ -926,6 +931,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
          if ( fAlarmFlag == FLAG_RESET ) //И если их до этого не было, т.е. аларм возник прямо сейчас
          {
              fAlarmFlag = FLAG_SET;     //Ставим флаг
+             vMenuGotoAlarmScreen();
              pCurrMenu->pFunc( pCurrMenu, KEY_EXIT ); //И отпраляем в текущуе меню команды выхода, переход на экран алармов осуществет обработчик текущего меню
          }
          if ( ++ALD>BLINK_TIME )
@@ -1161,6 +1167,38 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str(  xADCGetREG(ID), Data, 2U );
       vStrAdd(Data," А");
        break;
+    case GEN_L2_REAC_POWER:
+    case GEN_L3_REAC_POWER:
+    if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
+      {
+         Data[0]=0;
+      }
+       else
+       {
+             fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+             vStrAdd(Data," кВАр");
+        }
+        break;
+     case GEN_L1_REAC_POWER:
+         fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+         vStrAdd(Data," кВАр");
+         break;
+     case GEN_L2_REAL_POWER:
+     case GEN_L3_REAL_POWER:
+         if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
+           {
+              Data[0]=0;
+           }
+            else
+            {
+                  fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+                  vStrAdd(Data," кВА");
+             }
+             break;
+      case GEN_L1_REAL_POWER:
+              fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+              vStrAdd(Data," кВА");
+              break;
    case GEN_L2_ACTIVE_POWER:
    case GEN_L3_ACTIVE_POWER:
        if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)

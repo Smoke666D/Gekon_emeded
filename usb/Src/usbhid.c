@@ -432,8 +432,6 @@ USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
   uint8_t         i                          = 0U;
   uint8_t         length                     = 0U;
   uint16_t        valueBuf[MAX_VALUE_LENGTH] = { 0U };
-  int8_t          scale                      = 0U;
-  uint16_t        units[MAX_UNITS_LENGTH]    = { 0U };
   DATA_API_STATUS status                     = DATA_API_STAT_BUSY;
   /*------------- Length control --------------*/
   if ( report->adr < SETTING_REGISTER_NUMBER )
@@ -444,21 +442,16 @@ USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
       res = USB_STATUS_ERROR_LENGTH;
     }
     else {
-    /*----------- Configuration value -----------*/
+      /*----------- Configuration value -----------*/
       for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
       {
         valueBuf[i] = ( ( uint16_t )( report->data[count + ( 2U * i ) + 1U] ) << 8U ) |
                       ( ( uint16_t )( report->data[count + ( 2U * i )] ) );
       }
       count += 2U * configReg[report->adr]->atrib->len;
-    /*----------- Configuration scale -----------*/
-      scale = ( int8_t )( report->data[count] );
-      count++;
-    /*----------- Configuration units -----------*/
-      vDecodeURI( ( char* )( &report->data[count] ), units, MAX_UNITS_LENGTH );
       while ( status == DATA_API_STAT_BUSY )
       {
-        status = eDATAAPIconfig( DATA_API_CMD_WRITE, report->adr, valueBuf, &scale, units );
+        status = eDATAAPIconfig( DATA_API_CMD_WRITE, report->adr, valueBuf, NULL, NULL );
       }
       if ( status != DATA_API_STAT_OK )
       {
@@ -583,8 +576,6 @@ USB_STATUS eUSBreportToEWA ( const USB_REPORT* report )
   uint16_t        i             = 0;
   uint32_t        checkAdr      = 0U;
   uint8_t         checkData[4U] = { 0U };
-
-
   if ( report->length > 0U )
   {
     if ( ( ( report->length - index ) / USB_DATA_SIZE ) > 0U )

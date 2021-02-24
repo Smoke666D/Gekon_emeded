@@ -305,6 +305,7 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
         {
           controller.timer.delay = controller.startDelay;
           vLOGICstartTimer( &controller.timer, "Controller timer    " );
+          vSTATUSsetup( DEVICE_STATUS_START_DELAY, controller.timer.id );
           startState = CONTROLLER_TURNING_START_DELAY;
           vLOGICprintDebug( ">>Autostart       : Delay trigger\r\n" );
         }

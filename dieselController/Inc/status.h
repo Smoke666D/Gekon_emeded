@@ -19,11 +19,11 @@ typedef enum
   DEVICE_STATUS_IDLE,            /* 00 0 Loading condition                 */
   DEVICE_STATUS_READY_TO_START,  /* 01 0 Engine stop, ready to start       */
   DEVICE_STATUS_START_DELAY,     /* 02 1 External start signal detected    */
-  DEVICE_STATUS_CRANKING,        /* 03 1 Engine cranking                   */
-  DEVICE_STATUS_CRANK_DELAY,     /* 04 1 Engine pause cranking             */
-  DEVICE_STATUS_CONTROL_BLOCK,   /* 05 1 Engine have started, block alarms */
-  DEVICE_STATUS_IDLE_WORK,       /* 06 1 Engine warming on idle speed      */
-  DEVICE_STATUS_MOVE_TO_NOMINAL, /* 07 1 Engine go to nominal speed        */
+  DEVICE_STATUS_PREHEATING,      /* 03 1 Engine preheating                 */
+  DEVICE_STATUS_CRANKING,        /* 04 1 Engine cranking                   */
+  DEVICE_STATUS_CRANK_DELAY,     /* 05 1 Engine pause cranking             */
+  DEVICE_STATUS_CONTROL_BLOCK,   /* 06 1 Engine have started, block alarms */
+  DEVICE_STATUS_IDLE_WORK,       /* 07 1 Engine warming on idle speed      */
   DEVICE_STATUS_WARMING,         /* 08 1 Engine warming on nominal speed   */
   DEVICE_STATUS_WORKING,         /* 09 0 Engine work, generator ready      */
   DEVICE_STATUS_COOLDOWN,        /* 10 1 Engine cool down on nominal speed */
@@ -35,9 +35,15 @@ typedef enum
 
 /*----------------------- Callbacks ------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
+typedef struct __packed
+{
+  DEVICE_STATUS status;
+  PERMISSION    timer;
+  fix16_t       time;
+} DEVICE_INFO;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void      vSTATUSget ( DEVICE_STATUS* status, PERMISSION* timer, fix16_t time );
-uint16_t* uSTATUSgetString ( DEVICE_STATUS status );
+DEVICE_INFO vSTATUSget ( void );
+const char* uSTATUSgetString ( DEVICE_STATUS status );
 /*----------------------------------------------------------------------*/
 #endif /* INC_STATUS_H_ */

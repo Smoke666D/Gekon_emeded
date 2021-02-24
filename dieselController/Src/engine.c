@@ -1619,6 +1619,8 @@ void vENGINEtask ( void* argument )
               vLOGICprintStarterStatus( starter.status );
               starter.status                     = STARTER_START_PREPARATION;
               break;
+            case STARTER_PREHEATING:
+              break;
             case STARTER_START_PREPARATION:
               if ( ( eELECTROgetAlarmStatus()      == ELECTRO_ALARM_STATUS_START ) &&
                    ( uLOGICisTimer( &commonTimer ) >  0U                         ) )

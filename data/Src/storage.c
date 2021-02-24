@@ -213,30 +213,6 @@ EEPROM_STATUS eSTORAGEwriteCharts ( void )
   for ( i=0U; i<CHART_NUMBER; i++ )
   {
     size  = 0U;
-    len   = uFix16ToBlob( charts[i]->xmin, buffer );
-    res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-    size += len;
-    len   = uFix16ToBlob( charts[i]->xmax, buffer );
-    res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-    size += len;
-    len   = uFix16ToBlob( charts[i]->ymin, buffer );
-    res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-    size += len;
-    len   = uFix16ToBlob( charts[i]->ymax, buffer );
-    res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-    size += len;
-    for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
-    {
-      len   = uUint16ToBlob( charts[i]->xunit[j], buffer );
-      res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-      size += len;
-    }
-    for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
-    {
-      len  = uUint16ToBlob( charts[i]->yunit[j], buffer );
-      res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-      size += len;
-    }
     len   = uUint16ToBlob( charts[i]->size, buffer );
     res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
     size += len;
@@ -272,30 +248,6 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
     {
       size = 0U;
       adr++;
-      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-      len   = uBlobToFix16( &charts[i]->xmin, buffer );
-      size += len;
-      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-      len   = uBlobToFix16( &charts[i]->xmax, buffer );
-      size += len;
-      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-      len   = uBlobToFix16( &charts[i]->ymin, buffer );
-      size += len;
-      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-      len   = uBlobToFix16( &charts[i]->ymax, buffer );
-      size += len;
-      for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
-      {
-	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	      len   = uBlobToUint16( &charts[i]->xunit[j], buffer );
-	      size += len;
-      }
-      for ( j=0U; j<CHART_UNIT_LENGTH; j++ )
-      {
-	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	      len   = uBlobToUint16( &charts[i]->yunit[j], buffer );
-	      size += len;
-      }
       res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
       len   = uBlobToUint16( &charts[i]->size, buffer );
       size += len;

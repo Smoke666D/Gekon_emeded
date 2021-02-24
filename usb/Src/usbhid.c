@@ -20,11 +20,10 @@
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static uint8_t      outputBuffer[USB_REPORT_SIZE]             = { 0U };
-static uint8_t      inputBuffer[USB_REPORT_SIZE]              = { 0U };
-static char         strBuffer[( MAX_UNITS_LENGTH * 6U ) + 1U] = { 0U };
-static osThreadId_t usbHandle                                 = NULL;
-static AUTH_STATUS  usbAuthorization                          = AUTH_VOID;
+static uint8_t      outputBuffer[USB_REPORT_SIZE] = { 0U };
+static uint8_t      inputBuffer[USB_REPORT_SIZE]  = { 0U };
+static osThreadId_t usbHandle                     = NULL;
+static AUTH_STATUS  usbAuthorization              = AUTH_VOID;
 /*----------------------- Functions -----------------------------------------------------------------*/
 void     vUint32ToBytes ( uint32_t input, uint8_t* output );
 void     vUint16ToBytes ( uint16_t input, uint8_t* output );
@@ -186,48 +185,13 @@ void vUSBconfigToReport ( USB_REPORT* report, uint16_t adr )
  */
 void vUSBchartToReport ( uint16_t adr, USB_REPORT* report )
 {
-  uint8_t i     = 0U;
   uint8_t count = 0U;
-  uint8_t shift = 0U;
   /*-------------------------------------------*/
   report->cmd    = USB_REPORT_CMD_GET_CHART;
   report->dir    = USB_REPORT_DIR_OUTPUT;
   report->stat   = USB_REPORT_STATE_OK;
   report->adr    = adr;
   report->length = 18U + ( CHART_UNIT_LENGTH * 12U ) + ( 8U * charts[adr]->size );
-  /*--------------- Chart data ----------------*/
-  vUint32ToBytes( ( uint32_t )( charts[adr]->xmin ), &report->data[count] );
-  count += 4U;
-  vUint32ToBytes( ( uint32_t )( charts[adr]->xmax ), &report->data[count] );
-  count += 4U;
-  vUint32ToBytes( ( uint32_t )( charts[adr]->ymin ), &report->data[count] );
-  count += 4U;
-  vUint32ToBytes( ( uint32_t )( charts[adr]->ymax ), &report->data[count] );
-  count += 4U;
-  /*--------------- X unit --------------------*/
-  shift = uEncodeURI( charts[adr]->xunit, CHART_UNIT_LENGTH, strBuffer );
-  for ( i=0U; i<shift; i++ )
-  {
-    report->data[count] = ( uint8_t )( strBuffer[i] );
-    count++;
-  }
-  for ( i=shift; i<( CHART_UNIT_LENGTH * 6U ); i++ )
-  {
-    report->data[count] = 0U;
-    count++;
-  }
-  /*--------------- Y unit --------------------*/
-  shift = uEncodeURI( charts[adr]->yunit, CHART_UNIT_LENGTH, strBuffer );
-  for ( i=0U; i<shift; i++ )
-  {
-    report->data[count] = ( uint8_t )( strBuffer[i] );
-    count++;
-  }
-  for ( i=shift; i<( CHART_UNIT_LENGTH * 6U ); i++ )
-  {
-    report->data[count] = 0U;
-    count++;
-  }
   /*----------------- Size --------------------*/
   vUint16ToBytes( charts[adr]->size, &report->data[count] );
   count += 2U;
@@ -481,18 +445,6 @@ void vUSBparsingChart ( uint16_t adr, const uint8_t* data )
   {
 
   }
-  charts[adr]->xmin = *( fix16_t* )( &data[counter] );
-  counter   += 4U;
-  charts[adr]->xmax = *( fix16_t* )( &data[counter] );
-  counter   += 4U;
-  charts[adr]->ymin = *( fix16_t* )( &data[counter] );
-  counter   += 4U;
-  charts[adr]->ymax = *( fix16_t* )( &data[counter] );
-  counter   += 4U;
-  vDecodeURI( ( ( char* )( &data[counter] ) ), charts[adr]->xunit, CHART_UNIT_LENGTH );
-  counter   += CHART_UNIT_LENGTH * 6U;
-  vDecodeURI( ( ( char* )( &data[counter] ) ), charts[adr]->yunit, CHART_UNIT_LENGTH );
-  counter   += CHART_UNIT_LENGTH * 6U;
   charts[adr]->size = uBytesToUnit16( &data[counter] );
   counter   += 2U;
   xSemaphoreGive( xCHARTgetSemophore() );

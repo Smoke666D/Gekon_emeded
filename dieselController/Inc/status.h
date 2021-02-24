@@ -12,7 +12,7 @@
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 #define DEVICE_STATUS_NUMBER  15U
-#define DEVICE_STATUS_LENGTH  1U
+#define DEVICE_STATUS_LENGTH  18U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {

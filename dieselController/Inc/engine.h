@@ -103,10 +103,10 @@ typedef enum
 
 typedef enum
 {
-  EMERGENCY_STOP_IDLE,
-  EMERGENCY_STOP_PROCESSING,
-  EMERGENCY_STOP_END,
-} EMERGENCY_STOP_STATUS;
+  EMERGENCY_IDLE,
+  EMERGENCY_PROCESSING,
+  EMERGENCY_END,
+} EMERGENCY_STATUS;
 
 typedef enum
 {
@@ -270,6 +270,7 @@ TRIGGER_STATE    uENGINEisBlockTimerFinish ( void );
 PERMISSION       eENGINEisStartBan ( void );
 ENGINE_STATUS    eENGINEgetEngineStatus ( void );
 STARTER_STATUS   eENGINEgetStarterStatus ( void );
+EMERGENCY_STATUS eENGINEgetEmergencyStatus ( void );
 PLAN_STOP_STATUS eENGINEgetPlanStopStatus ( void );
 TRIGGER_STATE    eENGINEgetOilSensorState ( void );
 TRIGGER_STATE    eENGINEgetCoolantSensorState ( void );

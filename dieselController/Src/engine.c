@@ -39,7 +39,7 @@ static RELAY_DEVICE          idleRelay           = { 0U };
 static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
 static StaticQueue_t         xEngineCommandQueue = { 0U };
 static QueueHandle_t         pEngineCommandQueue = NULL;
-static EMERGENCY_STOP_STATUS emgencyStopStatus   = EMERGENCY_STOP_IDLE;
+static EMERGENCY_STATUS emgencyStopStatus   = EMERGENCY_IDLE;
 /*--------------------------------- Constant ---------------------------------*/
 static const fix16_t fix60                  = F16( 60U );                      /* --- */
 static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION ); /* sec */
@@ -725,7 +725,7 @@ void vLOGICprintPlanStopStatus ( PLAN_STOP_STATUS status )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vLOGICprintEmergencyStopStatus ( EMERGENCY_STOP_STATUS status )
+void vLOGICprintEmergencyStopStatus ( EMERGENCY_STATUS status )
 {
   #ifdef DEBUG
     vSYSSerial( ">>Emergency status: " );
@@ -1367,6 +1367,7 @@ void vENGINEinit ( void )
 {
   vENGINEdataInit();
   /*--------------------------------------------------------------*/
+  vSTATUSsetup( DEVICE_STATUS_READY_TO_START, LOGIC_DEFAULT_TIMER_ID );
   vFPOsetReadyToStart( RELAY_ON );
   /*--------------------------------------------------------------*/
   pEngineCommandQueue = xQueueCreateStatic( ENGINE_COMMAND_QUEUE_LENGTH,
@@ -1413,6 +1414,10 @@ ENGINE_STATUS eENGINEgetEngineStatus ( void )
 STARTER_STATUS eENGINEgetStarterStatus ( void )
 {
   return starter.status;
+}
+EMERGENCY_STATUS eENGINEgetEmergencyStatus ( void )
+{
+  return emgencyStopStatus;
 }
 /*----------------------------------------------------------------------------*/
 PLAN_STOP_STATUS eENGINEgetPlanStopStatus ( void )
@@ -1478,6 +1483,7 @@ void vENGINEtask ( void* argument )
         if ( inputCmd == ENGINE_CMD_BAN_START )
         {
           engine.banStart = PERMISSION_ENABLE;
+          vSTATUSsetup( DEVICE_STATUS_BAN_START, LOGIC_DEFAULT_TIMER_ID );
         }
         /*------------------- Long actions command ---------------------*/
         else
@@ -1491,6 +1497,7 @@ void vENGINEtask ( void* argument )
             case ENGINE_STATUS_EMERGENCY_STOP:
               if ( inputCmd == ENGINE_CMD_RESET_TO_IDLE )
               {
+                vSTATUSsetup( DEVICE_STATUS_EMERGENCY_STOP, LOGIC_DEFAULT_TIMER_ID );
                 engine.cmd = inputCmd;
                 vLOGICprintEngineCmd( engine.cmd );
               }
@@ -1584,11 +1591,12 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     /*-------------------- Engine ban start check ----------------------*/
     /*------------------------------------------------------------------*/
-    if (engine.banStart == PERMISSION_ENABLE )
+    if ( engine.banStart == PERMISSION_ENABLE )
     {
       if ( uENGINEisUnban() > 0U )
       {
         engine.banStart = PERMISSION_DISABLE;
+        vSTATUSsetup( DEVICE_STATUS_READY_TO_START, LOGIC_DEFAULT_TIMER_ID );
       }
     }
     /*------------------------------------------------------------------*/
@@ -1637,6 +1645,7 @@ void vENGINEtask ( void* argument )
               starter.status                     = STARTER_START_PREPARATION;
               break;
             case STARTER_PREHEATING:
+              vSTATUSsetup( DEVICE_STATUS_PREHEATING, commonTimer.id );
               break;
             case STARTER_START_PREPARATION:
               if ( ( eELECTROgetAlarmStatus()      == ELECTRO_ALARM_STATUS_START ) &&
@@ -1655,6 +1664,7 @@ void vENGINEtask ( void* argument )
                 starter.status    = STARTER_CONTROL_BLOCK;
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
+                vSTATUSsetup( DEVICE_STATUS_CONTROL_BLOCK, commonTimer.id );
               }
               else
               {
@@ -1663,6 +1673,7 @@ void vENGINEtask ( void* argument )
                 commonTimer.delay = starter.crankingDelay;
                 starter.set( RELAY_ON );
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
+                vSTATUSsetup( DEVICE_STATUS_CRANKING, commonTimer.id );
               }
               vLOGICprintStarterStatus( starter.status );
               break;
@@ -1677,6 +1688,7 @@ void vENGINEtask ( void* argument )
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vLOGICprintStarterStatus( starter.status );
+                vSTATUSsetup( DEVICE_STATUS_CONTROL_BLOCK, commonTimer.id );
               }
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
@@ -1687,6 +1699,7 @@ void vENGINEtask ( void* argument )
                   commonTimer.delay = starter.crankDelay;
                   vLOGICstartTimer( &commonTimer, "Common engine timer " );
                   vLOGICprintStarterStatus( starter.status );
+                  vSTATUSsetup( DEVICE_STATUS_CRANK_DELAY, commonTimer.id );
                 }
                 else
                 {
@@ -1720,6 +1733,7 @@ void vENGINEtask ( void* argument )
                 charger.start                      = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS );
                 vLOGICprintStarterStatus( starter.status );
+                vSTATUSsetup( DEVICE_STATUS_IDLE_WORK, commonTimer.id );
               }
               break;
             case STARTER_IDLE_WORK:
@@ -1741,6 +1755,7 @@ void vENGINEtask ( void* argument )
                 speed.lowAlarm.error.active = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_IDLE_ALARMS );
                 vLOGICprintStarterStatus( starter.status );
+                vSTATUSsetup( DEVICE_STATUS_WARMING, commonTimer.id );
               }
               break;
             case STARTER_WARMING:
@@ -1776,6 +1791,7 @@ void vENGINEtask ( void* argument )
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_START;
               vSYSeventSend( event, NULL );
+              vSTATUSsetup( DEVICE_STATUS_WORKING, LOGIC_DEFAULT_TIMER_ID );
               break;
             default:
               vLOGICresetTimer( &commonTimer );
@@ -1809,6 +1825,7 @@ void vENGINEtask ( void* argument )
               commonTimer.delay = planStop.coolingDelay;
               vLOGICstartTimer( &commonTimer, "Common engine timer " );
               vLOGICprintPlanStopStatus( planStop.status );
+              vSTATUSsetup( DEVICE_STATUS_COOLDOWN, commonTimer.id );
               break;
             case STOP_COOLDOWN:
               if ( uLOGICisTimer( &commonTimer ) > 0U )
@@ -1830,6 +1847,7 @@ void vENGINEtask ( void* argument )
                 planStop.status             = STOP_IDLE_COOLDOWN;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vLOGICprintPlanStopStatus( planStop.status );
+                vSTATUSsetup( DEVICE_STATUS_IDLE_COOLDOWN, commonTimer.id );
               }
               break;
             case STOP_IDLE_COOLDOWN:
@@ -1845,6 +1863,7 @@ void vENGINEtask ( void* argument )
                 vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vLOGICprintPlanStopStatus( planStop.status );
+                vSTATUSsetup( DEVICE_STATUS_STOP_PROCESSING, commonTimer.id );
               }
               break;
             case STOP_PROCESSING:
@@ -1884,6 +1903,14 @@ void vENGINEtask ( void* argument )
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_STOP;
               vSYSeventSend( event, NULL );
+              if ( engine.banStart == PERMISSION_ENABLE )
+              {
+                vSTATUSsetup( DEVICE_STATUS_BAN_START, LOGIC_DEFAULT_TIMER_ID );
+              }
+              else
+              {
+                vSTATUSsetup( DEVICE_STATUS_READY_TO_START, LOGIC_DEFAULT_TIMER_ID );
+              }
               break;
             default:
               vLOGICresetTimer( &commonTimer );
@@ -1955,7 +1982,7 @@ void vENGINEtask ( void* argument )
       case ENGINE_CMD_EMEGENCY_STOP:
         switch ( emgencyStopStatus )
         {
-          case EMERGENCY_STOP_IDLE:
+          case EMERGENCY_IDLE:
             vLOGICprintEmergencyStopStatus( emgencyStopStatus );
             vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
             starter.set( RELAY_OFF );
@@ -1976,31 +2003,33 @@ void vENGINEtask ( void* argument )
             charger.start             = PERMISSION_DISABLE;
             blockTimerFinish          = TRIGGER_IDLE;
             starterFinish             = TRIGGER_IDLE;
-            emgencyStopStatus         = EMERGENCY_STOP_PROCESSING;
+            emgencyStopStatus         = EMERGENCY_PROCESSING;
             vLOGICresetTimer( &commonTimer );
             commonTimer.delay = planStop.processDelay;
             vLOGICstartTimer( &commonTimer, "Common engine timer " );
             vLOGICprintEmergencyStopStatus( emgencyStopStatus );
+            vSTATUSsetup( DEVICE_STATUS_STOP_PROCESSING, commonTimer.id );
             break;
-          case EMERGENCY_STOP_PROCESSING:
+          case EMERGENCY_PROCESSING:
             if ( uLOGICisTimer( &commonTimer ) > 0U )
             {
-              emgencyStopStatus = EMERGENCY_STOP_END;
+              emgencyStopStatus = EMERGENCY_END;
             }
             if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) > 0U )
             {
               vLOGICresetTimer( &commonTimer );
-              emgencyStopStatus = EMERGENCY_STOP_END;
+              emgencyStopStatus = EMERGENCY_END;
             }
             break;
-          case EMERGENCY_STOP_END:
+          case EMERGENCY_END:
+            vSTATUSsetup( DEVICE_STATUS_EMERGENCY_STOP, LOGIC_DEFAULT_TIMER_ID );
             vLOGICprintEmergencyStopStatus( emgencyStopStatus );
-            emgencyStopStatus       = EMERGENCY_STOP_IDLE;
+            emgencyStopStatus       = EMERGENCY_IDLE;
             engine.cmd              = ENGINE_CMD_NONE;
             engine.stopError.active = PERMISSION_ENABLE;
             break;
           default:
-            emgencyStopStatus = EMERGENCY_STOP_IDLE;
+            emgencyStopStatus = EMERGENCY_IDLE;
             break;
         }
         break;
@@ -2016,6 +2045,7 @@ void vENGINEtask ( void* argument )
         vRELAYset( &stopSolenoid.relay, RELAY_OFF );
         speed.lowAlarm.error.active = PERMISSION_DISABLE;
         vFPOsetReadyToStart( RELAY_ON );
+        vSTATUSsetup( DEVICE_STATUS_READY_TO_START, LOGIC_DEFAULT_TIMER_ID );
         vFPOsetGenReady( RELAY_OFF );
         vLOGICresetTimer( &commonTimer        );
         vLOGICresetTimer( &maintence.timer    );
@@ -2033,6 +2063,7 @@ void vENGINEtask ( void* argument )
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_BAN_START:
         engine.banStart = PERMISSION_ENABLE;
+        vSTATUSsetup( DEVICE_STATUS_BAN_START, LOGIC_DEFAULT_TIMER_ID );
         break;
       /*----------------------------------------------------------------------------------------*/
       /*----------------------------------------------------------------------------------------*/

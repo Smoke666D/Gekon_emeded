@@ -26,7 +26,8 @@ static char         strBuffer[( MAX_UNITS_LENGTH * 6U ) + 1U] = { 0U };
 static osThreadId_t usbHandle                                 = NULL;
 static AUTH_STATUS  usbAuthorization                          = AUTH_VOID;
 /*----------------------- Functions -----------------------------------------------------------------*/
-
+void vUint32ToBytes ( uint32_t input, uint8_t* output );
+void vUint16ToBytes ( uint16_t input, uint8_t* output );
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -38,6 +39,7 @@ void vUint32ToBytes ( uint32_t input, uint8_t* output )
   output[3U] = ( uint8_t )( ( input ) >> 24U );
   return;
 }
+/*---------------------------------------------------------------------------------------------------*/
 void vUint16ToBytes ( uint16_t input, uint8_t* output )
 {
   output[0U] = ( uint8_t )( input );
@@ -88,7 +90,6 @@ USBD_StatusTypeDef eUSBwrite ( uint8_t* data )
 void vUSBtimeToReport ( USB_REPORT* report, uint16_t adr )
 {
   RTC_TIME time;
-
   eRTCgetTime( &time );
   report->stat     = USB_REPORT_STATE_OK;
   report->adr      = 0U;
@@ -107,19 +108,16 @@ void vUSBfreeDataToReport ( USB_REPORT* report, uint16_t adr )
 {
   report->stat     = USB_REPORT_STATE_OK;
   report->length   = 2U;
-  report->data[0U] = ( uint8_t )( *freeDataArray[adr]       );
-  report->data[1U] = ( uint8_t )( *freeDataArray[adr] >> 8U );
+  vUint16ToBytes( *freeDataArray[adr], report->data );
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
 {
   LOG_RECORD_TYPE record = { 0U };
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
-
   report->stat   = USB_REPORT_STATE_BAD_REQ;
   report->length = 6U;
-
   while ( status == DATA_API_STAT_BUSY )
   {
     status = eDATAAPIlog( DATA_API_CMD_LOAD, &adr, &record );
@@ -127,10 +125,7 @@ void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
   if ( status == DATA_API_STAT_OK )
   {
     report->stat     = USB_REPORT_STATE_OK;
-    report->data[0U] = ( uint8_t )( record.time         );
-    report->data[1U] = ( uint8_t )( record.time >> 8U   );
-    report->data[2U] = ( uint8_t )( record.time >> 16U  );
-    report->data[3U] = ( uint8_t )( record.time >> 24U  );
+    vUint32ToBytes( record.time, report->data );
     report->data[4U] = ( uint8_t )( record.event.type   );
     report->data[5U] = ( uint8_t )( record.event.action );
   }

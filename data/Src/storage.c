@@ -486,7 +486,7 @@ EEPROM_STATUS eSTORAGEreadFreeData ( FREE_DATA_ADR n )
   res = eEEPROMreadMemory( ( STORAGE_FREE_DATA_ADR + 2 * n ), data, 2U );
   if ( res == EEPROM_OK )
   {
-    *freeDataArray[n] = ( ( ( uint16_t )data[0U] ) << 8U ) | ( ( uint16_t )data[0U] );
+    *freeDataArray[n] = ( ( ( uint16_t )data[1U] ) << 8U ) | ( ( uint16_t )data[0U] );
   }
   return res;
 }

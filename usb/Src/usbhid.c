@@ -200,7 +200,7 @@ void vUSBchartToReport ( uint16_t adr, USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void eUSBdotToReport ( const eChartData* chart, uint16_t adr, USB_REPORT* report )
+void vUSBdotToReport ( const eChartData* chart, uint16_t adr, USB_REPORT* report )
 {
   report->cmd    = USB_REPORT_CMD_GET_CHART;
   report->dir    = USB_REPORT_DIR_OUTPUT;
@@ -212,53 +212,17 @@ void eUSBdotToReport ( const eChartData* chart, uint16_t adr, USB_REPORT* report
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBchartDotsToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report )
+USB_STATUS eUSBreportToDot ( eChartData* chart, const USB_REPORT* report )
 {
-  USB_STATUS     res           = USB_STATUS_DONE;
-  uint8_t        i             = 0U;
-  uint8_t        count         = 0U;
-  uint8_t        length        = 0U;
-  uint8_t        size          = 0U;
-  static uint8_t currentChart  = 0xFFU;
-  static uint8_t lastDotNumber = 0U;
-  /*-------------------------------------------*/
-  report->cmd  = USB_REPORT_CMD_GET_CHART;
-  report->dir  = USB_REPORT_DIR_OUTPUT;
-  report->stat = USB_REPORT_STATE_OK;
-  report->adr  = adr;
-  /*----------- Recalculation size ------------*/
-  if ( currentChart != adr )
+  USB_STATUS res = USB_STATUS_DONE;
+  if ( report->length == sizeof( eChartDot ) )
   {
-    currentChart   = adr;
-    lastDotNumber  = 0U;
-  }
-  if ( lastDotNumber >= chart->size )
-  {
-    res          = USB_STATUS_DONE;
-    currentChart = 0xFFU;
+    chart->dots[report->adr].x = *( fix16_t* )( &report->data[0U] );
+    chart->dots[report->adr].y = *( fix16_t* )( &report->data[4U] );
   }
   else
   {
-    res    = USB_STATUS_CONT;
-    length = charts[adr]->size - lastDotNumber;
-    if ( length < USB_DATA_SIZE )
-    {
-      size = length;
-    }
-    else
-    {
-      size = length - ( USB_DATA_SIZE * ( uint8_t )( charts[adr]->size / USB_DATA_SIZE ) );
-    }
-  /*----------------- Dots --------------------*/
-    for ( i=0U; i<size; i++ )
-    {
-      vUint32ToBytes( ( uint32_t )( chart->dots[lastDotNumber + i].x ), &report->data[count] );
-      count += 4U;
-      vUint32ToBytes( ( uint32_t )( chart->dots[lastDotNumber + i].y ), &report->data[count] );
-      count += 4U;
-    }
-    lastDotNumber += size;
-  /*-------------------------------------------*/
+    res = USB_STATUS_ERROR_LENGTH;
   }
   return res;
 }
@@ -268,7 +232,7 @@ USB_STATUS eUSBreportToTime ( const USB_REPORT* report )
   USB_STATUS res  = USB_STATUS_DONE;
   RTC_TIME   time;
   /*------------- Length control --------------*/
-  if ( report->length >= sizeof( RTC_TIME ) )
+  if ( report->length == sizeof( RTC_TIME ) )
   {
     time.hour  = report->data[0U];
     time.min   = report->data[1U];
@@ -294,7 +258,7 @@ USB_STATUS eUSBreportToPassword ( const USB_REPORT* report )
   USB_STATUS      res    = USB_STATUS_DONE;
   PASSWORD_TYPE   pass   = { 0U };
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
-  if ( report->length >= PASSWORD_SIZE )
+  if ( report->length == PASSWORD_SIZE )
   {
     pass.status = report->data[0U];
     pass.data   = uBytesToUnit16( &report->data[1U] );
@@ -336,7 +300,7 @@ USB_STATUS eUSBcheckupPassword ( const USB_REPORT* report )
   uint16_t        input  = 0U;
   PASSWORD_TYPE   pass   = { 0U };
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
-  if ( report->length >= 2U )
+  if ( report->length == 2U )
   {
     input = uBytesToUnit16( &report->data[0U] );
     while ( status == DATA_API_STAT_BUSY )
@@ -372,7 +336,7 @@ USB_STATUS eUSBreportToFreeData ( const USB_REPORT* report )
   USB_STATUS      res    = USB_STATUS_DONE;
   uint16_t        value  = 0U;
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
-  if ( report->length >= 2U )
+  if ( report->length == 2U )
   {
     if ( report->adr <= FREE_DATA_SIZE )
     {
@@ -422,11 +386,8 @@ USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {
     length = ( configReg[report->adr]->atrib->len * 2U ) + 1U + ( MAX_UNITS_LENGTH * 6U );
-    if ( length < report->length )
+    if ( length == report->length )
     {
-      res = USB_STATUS_ERROR_LENGTH;
-    }
-    else {
       /*----------- Configuration value -----------*/
       for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
       {
@@ -442,6 +403,11 @@ USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
         res = USB_STATUS_STORAGE_ERROR;
       }
     }
+    else
+    {
+      res = USB_STATUS_ERROR_LENGTH;
+    }
+
   }
   else
   {
@@ -1021,11 +987,19 @@ void vStartUsbTask ( void *argument )
           vUSBget( &report, eUSBreportToConfig );
           break;
         case USB_REPORT_CMD_GET_CHART:
-          vUSBsendChart( &report );
+          //vUSBsendChart( &report );
+          vUSBsend( &report, vUSBchartToReport );
           break;
         case USB_REPORT_CMD_PUT_CHART:
           vUSBget( &report, eUSBreportToChart );
           break;
+        case USB_REPORT_CMD_GET_DOT:
+          vUSBsend( &report, vUSBdotToReport );
+          break;
+        case USB_REPORT_CMD_PUT_DOT:
+          vUSBget( &report, eUSBreportToDot );
+          break;
+
         case USB_REPORT_CMD_PUT_EWA:
           vUSBget( &report, eUSBreportToEWA );
           break;

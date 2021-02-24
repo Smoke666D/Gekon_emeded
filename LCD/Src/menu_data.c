@@ -304,7 +304,8 @@ static xScreenObjet const LinkMainScreen[]=
 
 static xScreenObjet const StatusMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Состояние генератора",NULL,0U},
+
+  {0U,LEFT_OFFSET,LINE1-12U,110U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetDataForMenu,TIME_DATE},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"12345678912345678:",NULL,0U},
   {0U,FONT_SIZE*19U,LINE2,0U,0U,TEXT_STRING,LeftText,"12",NULL,0U},

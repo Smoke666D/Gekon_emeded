@@ -20,5 +20,5 @@ void vUCTOSTRING ( uint8_t * str, uint8_t data );
 void vITOSTRING ( uint8_t * str, uint16_t data );
 float fxParToFloat(uint16_t data, int8_t scale);
 void vBitmapToString(uint8_t * dest, uint16_t bitmap);
-
+void vUNToStr( char* str, uint16_t data, uint8_t scale );
 #endif /* INC_UTILS_H_ */

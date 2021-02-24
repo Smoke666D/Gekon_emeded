@@ -163,9 +163,34 @@ void vUToStr( char* str, uint16_t data, signed char scale )
   str[i] = 0U;
   return;
 
+}
 
+
+void vUNToStr( char* str, uint16_t num, uint8_t scale )
+{
+
+  uint8_t     i      = 0U;
+  uint16_t    DD     = 1U;
+  uint16_t    data = num;
+  for (i =0; i<scale;i++)
+  {
+    DD= DD*10U;
+  }
+  data = data % (DD);
+
+  for ( i = 0U; i < scale; i++ )
+  {
+        DD   = DD / 10U;
+        str[i] = data / ( DD ) + '0';
+        data = data % ( DD );
+  }
+  str[i] = 0U;
+  return;
 
 }
+
+
+
 
 void vIToStr( char* str, uint16_t num, signed char scale )
 {

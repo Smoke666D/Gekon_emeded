@@ -13,6 +13,7 @@
 #include "data_type.h"
 #include "dataAPI.h"
 #include "adc.h"
+#include "RTC.H"
 #include "journal.h"
 #include "alarm.h"
 #include "controllerTypes.h"
@@ -96,6 +97,7 @@
 #define COS_FI         85U
 #define IN_CAC         86U
 #define IP_ADRESS      87U
+#define TIME_DATE      88U
 
 
 

@@ -919,6 +919,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   static LOG_RECORD_TYPE  xrecord;
   static uint8_t          ALD   = 0;
   static uint16_t         utemp;
+  char   TS[6];
 
   vStrCopy(Data," ");
   switch (ID)
@@ -960,7 +961,22 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case CURRENT_EVENT_TIME:
       if (uCurrentAlarm < BufAlarmCount)
       {
-        sprintf(Data,"%i.%i.%i  %.2i:%.2i:%.2i",(int)GET_LOG_DAY( xrecord.time ),(int)GET_LOG_MONTH( xrecord.time ) ,(int) LOG_START_YEAR + (int)GET_LOG_YEAR(xrecord.time)  ,(int)GET_LOG_HOUR(xrecord.time) ,(int)GET_LOG_MIN( xrecord.time ),(int)GET_LOG_SEC( xrecord.time ) );
+            vUNToStr( Data, (int)GET_LOG_DAY( xrecord.time ),2);
+            vStrAdd(Data,":");
+            vUNToStr( TS, (int)GET_LOG_MONTH( xrecord.time ),2);
+            vStrAdd(Data,TS);
+            vStrAdd(Data,":");
+            vUNToStr( TS,(int) LOG_START_YEAR + (int)GET_LOG_YEAR(xrecord.time) ,2);
+            vStrAdd(Data,TS);
+            vStrAdd(Data,"  ");
+            vUNToStr( TS, (int)GET_LOG_HOUR(xrecord.time),2);
+            vStrAdd(Data,TS);
+            vStrAdd(Data,":");
+            vUNToStr( TS, (int)GET_LOG_MIN( xrecord.time ),2);
+            vStrAdd(Data,TS);
+            vStrAdd(Data,":");
+            vUNToStr( TS, (int)GET_LOG_SEC( xrecord.time ) ,2);
+            vStrAdd(Data,TS);
       }
       break;
     case CURRENT_ALARM_T:
@@ -1000,9 +1016,28 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   fix16_t temp;
   uint16_t utempdata;
   uint16_t tt[6]={0,0,0,0,0,0};
+  char TS[6];
   eConfigAttributes ATR;
+  RTC_TIME time;
   switch (ID)
   {
+    case  TIME_DATE:
+
+      vRTCgetCashTime (&time );
+      vUNToStr( Data, time.day,2);
+      vStrAdd(Data,":");
+      vUNToStr( TS, time.month,2);
+      vStrAdd(Data,TS);
+      vStrAdd(Data,":");
+      vUNToStr( TS, time.year,2);
+      vStrAdd(Data,TS);
+      vStrAdd(Data,"  ");
+      vUNToStr( TS, time.hour,2);
+      vStrAdd(Data,TS);
+      vStrAdd(Data,":");
+      vUNToStr( TS, time.min,2);
+      vStrAdd(Data,TS);
+      break;
     case  IP_ADRESS:
       cSERVERgetStrIP( Data );
       break;

@@ -202,7 +202,7 @@ static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout1(SPI_HandleTypeDef *hspi,
       }
     }
   }
-
+  return HAL_OK;
 }
 
 static void SPI_DMATransmit(DMA_HandleTypeDef *hdma)

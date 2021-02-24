@@ -24,7 +24,6 @@ static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
 static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, start_key ,auto_key };
 static unsigned long KeyNorPressTimeOut                         = 0U;
 static unsigned long KEY_TIME_OUT                               = 1000U;
-static char          cKeyDelay                                  = 0U;
 uint8_t              KeyboardBuffer[ 16U * sizeof( KeyEvent ) ] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
 void vSetupKeyboard( void )
@@ -45,7 +44,6 @@ void vKeyboardInit(  uint32_t message )
   switch ( message )
   {
     case KEY_ON_MESSAGE:
-      cKeyDelay = 0U;
       xQueueReset( pKeyboardQueue );
       xEventGroupSetBits( pxKeyStatusFLag, KEY_READY );
       break;
@@ -147,8 +145,6 @@ void vKeyboardTask( void const * argument )
       TEvent.KeyCode     = time_out;
       TEvent.Status      = MAKECODE;
       xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-      //	 vMenuStop(cKeyDelay);
-      cKeyDelay++;
     }
   }
   return;

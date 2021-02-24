@@ -13,36 +13,49 @@
 #include "data_type.h"
 #include "dataAPI.h"
 #include "adc.h"
+#include "RTC.H"
 #include "journal.h"
+#include "fpi.h"
+#include "fpo.h"
 #include "alarm.h"
 #include "controllerTypes.h"
 #include "string.h"
+#include "utils.h"
 
 /*------------------------ Define --------------------------------------*/
-#define SET_PARAMETR_SCREEN 0U
-#define CENTER_ALIGN        1U
-#define RIGTH_ALIGN         2U
-#define LEFT_ALIGN          3U
-#define NO_ALIGN            0U
+#define   SET_PARAMETR_SCREEN 0U
+#define   CENTER_ALIGN        1U
+#define   RIGTH_ALIGN         2U
+#define   LEFT_ALIGN          3U
+#define   NO_ALIGN            0U
 
-#define BLINK_TIME  2
+#define   BLINK_TIME          2U
+#define   BITMAP              3U
+#define   NUMBER              2U
+#define   HOME_MENU           0U
+#define   ALARM_MENU          1U
+
+#define   FIRST_VALID_SETTING 3U
+#define   FIRST_SETTING       1U
+
+#define LAST_OBJECT  1U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
-#define KEY_UP_BREAK        up_key | BRAKECODE //1U
-#define KEY_UP              up_key | MAKECODE //2U
-#define KEY_DOWN_BREAK      down_key | BRAKECODE //3U
-#define KEY_DOWN            down_key | MAKECODE  //4U
-#define KEY_STOP            stop_key | MAKECODE  //5U
-#define KEY_STOP_BREAK      stop_key | BRAKECODE // 6U
-#define KEY_AUTO            auto_key | MAKECODE  //9U
-#define KEY_AUTO_BREAK      auto_key | BRAKECODE//7U
-#define KEY_START           start_key | MAKECODE //10U
-#define KEY_START_BREAK     start_key | BRAKECODE// 8U
-#define KEY_EXIT            time_out | MAKECODE  //11U
+#define KEY_UP_BREAK        (up_key | BRAKECODE) //1U
+#define KEY_UP              (up_key | MAKECODE) //2U
+#define KEY_DOWN_BREAK      (down_key | BRAKECODE) //3U
+#define KEY_DOWN            (down_key | MAKECODE)  //4U
+#define KEY_STOP            (stop_key | MAKECODE)  //5U
+#define KEY_STOP_BREAK      (stop_key | BRAKECODE) // 6U
+#define KEY_AUTO            (auto_key | MAKECODE)  //9U
+#define KEY_AUTO_BREAK      (auto_key | BRAKECODE)//7U
+#define KEY_START           (start_key | MAKECODE) //10U
+#define KEY_START_BREAK     (start_key | BRAKECODE)// 8U
+#define KEY_EXIT            (time_out | MAKECODE)  //11U
 
 
 
 #define MAX_SCREEN_COUNT    3U
-#define MAX_SCREEN_OBJECT   20U
+#define MAX_SCREEN_OBJECT   25U
 #define XRESULURION         128U
 #define YRESOLUTION         64U
 #define FONT_TYPE           ( u8g2_font_6x13_t_cyrillic )
@@ -85,10 +98,14 @@
 #define ENGINE_WTIME   84U
 #define COS_FI         85U
 #define IN_CAC         86U
+#define IP_ADRESS      87U
+#define TIME_DATE      88U
+#define FPO_S            89U
+#define FPI_S            90U
+#define CONTROLER_STATUS 91U
+#define STATUS_TIME      92U
 
 
-
-#define IP_ADRESS           0x01
 /*------------------------------ Enum ----------------------------------------*/
 
 
@@ -104,6 +121,12 @@ typedef enum
   HW_DATA,
   INPUT_HW_DATA,
 } OBJECT_TYPE;
+
+typedef enum
+{
+  FLAG_RESET,
+  FLAG_SET,
+} FLAG;
 /*---------------------------- Structures --------------------------------------*/
 typedef struct __packed
 {
@@ -144,16 +167,29 @@ void vDrawObject( xScreenObjet* pScreenObjects );
 void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-void vGetStatusData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-void vUToStr(uint8_t * str, uint16_t data, signed char scale);
+void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vMenuMessageInit( osThreadId_t xmainprocess );
-void vMenuGetData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
-void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key );
-void EventScreenKeyCallBack( xScreenSetObject* menu, char key );
-void xInfoScreenCallBack( xScreenSetObject * menu, char key );
-void xInputScreenKeyCallBack( xScreenSetObject * menu, char key );
+
+
+//Обработчики нажатий клавиш
+void xYesNoScreenKeyCallBack    ( xScreenSetObject * menu, char key );
+void xSettingsScreenKeyCallBack ( xScreenSetObject * menu, char key );
+void xPasswordScreenCallBack    ( xScreenSetObject * menu, char key );
+void EventScreenKeyCallBack     ( xScreenSetObject * menu, char key );
+void xInfoScreenCallBack        ( xScreenSetObject * menu, char key );
+void xInputScreenKeyCallBack    ( xScreenSetObject * menu, char key );
+void xMessageScreenCallBack     ( xScreenSetObject * menu, char key );
+
+
+void vMenuMessageShow(char * mes);
+void vMenuMessageHide(void);
 /*----------------------------------------------------------------------------*/
 #endif /* INC_MENU_H_ */

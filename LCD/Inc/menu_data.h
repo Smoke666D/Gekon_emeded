@@ -16,12 +16,15 @@
 #define MENU_LEVEL1_COUNT      7U
 #define ENGINE_MENU_COUNT      3U
 #define NET_MENU_COUNT         3U
-#define GENERATOR_MENU_COUNT   7U
+#define GENERATOR_MENU_COUNT   9U
 #define SETTINGS_MENU_COUNT    1U
 #define YESNO_MENU_COUNT       1U
 #define EVENT_MENU_COUNT       1U
 #define ABOUT_MENU_COUNT       3U
 #define ALARM_MENU_COUNT       1U
+#define PASSWORD_MENU_COUNT    1U
+#define MESSAGE_MENU_COUNT     1U
+#define LO                     1U
 
  extern xScreenType   xEventScreens[EVENT_MENU_COUNT];
  extern xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT];
@@ -44,5 +47,7 @@
  extern xScreenSetObject xEngineMenu;
  extern xScreenSetObject xNetMenu;
  extern xScreenSetObject xSettingsMenu;
-
+ extern xScreenSetObject xPasswordMenu;
+ extern xScreenSetObject xMessageMenu;
+ extern xScreenSetObject xYesNoMenu;
 #endif /* INC_MENU_DATA_H_ */

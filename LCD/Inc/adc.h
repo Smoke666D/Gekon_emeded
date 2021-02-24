@@ -21,6 +21,7 @@
 #include "stdlib.h"
 #include "engine.h"
 #include "controllerTypes.h"
+#include "utils.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U
@@ -58,21 +59,21 @@
 #define GEN_L1_FASE_V       6
 #define GEN_L1_LINE_V       7
 #define GEN_L1_REAL_POWER   8
-#define GEN_L1_APER_POWER   9
+#define GEN_L1_ACTIVE_POWER 9
 #define GEN_L1_REAC_POWER   10
 #define GEN_L2_CUR          11
 #define GEN_L2_FREQ         12
 #define GEN_L2_FASE_V       13
 #define GEN_L2_LINE_V       14
 #define GEN_L2_REAL_POWER   15
-#define GEN_L2_APER_POWER   16
+#define GEN_L2_ACTIVE_POWER 16
 #define GEN_L2_REAC_POWER   17
 #define GEN_L3_CUR          18
 #define GEN_L3_FREQ         19
 #define GEN_L3_FASE_V       20
 #define GEN_L3_LINE_V       21
 #define GEN_L3_REAL_POWER   22
-#define GEN_L3_APER_POWER   23
+#define GEN_L3_ACTIVE_POWER 23
 #define GEN_L3_REAC_POWER   24
 #define GEN_APPER_POWER     25
 #define GEN_REAL_POWER      26
@@ -96,7 +97,7 @@
 #define RCSHUNT         0.01  //Сопротивление шунтирующих резисторов токовых входов
 #define OPTRANSCOOF     20    //Коофециент усиления операционного усилителя на  токовых входах
 #define VRef            3.3
-#define MIN_PRESENT_FREQ 20.0
+
 
 
 #define R118_R122      104.7
@@ -135,9 +136,7 @@
 #define LOW_AMP        0x04U
 
 
-#define NO_ROTATION   0x00U
-#define B_C_ROTATION  0x01U
-#define C_B_ROTATION  0x02U
+
 
 typedef enum
 {
@@ -152,9 +151,18 @@ typedef enum
   FREQ_DETECTED,
 } xADCGenDetectType;
 
+
+typedef enum
+{
+  NO_ROTATION,
+  B_C_ROTATION,
+  C_B_ROTATION,
+} xADCRotatinType;
+
 /*
  * Функции API драйвера
  */
+SENSOR_TYPE xADCGetFLChType(void);
 SENSOR_TYPE xADCGetxOPChType(void);
 fix16_t xADCGetGENActivePower();
 fix16_t xADCGetGENReactivePower();
@@ -191,8 +199,8 @@ uint8_t uADCGetValidDataFlag();
 fix16_t xADCGetNETLFreq();
 fix16_t xADCGetGENLFreq();
 fix16_t xADCGetCOSFi();
-uint8_t uADCGetGenFaseRotation();
-uint8_t uADCGetNetFaseRotation();
+xADCRotatinType xADCGetGenFaseRotation();
+xADCRotatinType xADCGetNetFaseRotation();
 fix16_t xADCGetREG(uint16_t reg);
 void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);

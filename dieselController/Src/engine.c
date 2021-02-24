@@ -39,6 +39,7 @@ static RELAY_DEVICE          idleRelay           = { 0U };
 static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
 static StaticQueue_t         xEngineCommandQueue = { 0U };
 static QueueHandle_t         pEngineCommandQueue = NULL;
+static EMERGENCY_STOP_STATUS emgencyStopStatus   = EMERGENCY_STOP_IDLE;
 /*--------------------------------- Constant ---------------------------------*/
 static const fix16_t fix60                  = F16( 60U );                      /* --- */
 static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION ); /* sec */
@@ -100,6 +101,12 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /
     "PROCESSING",
     "FAIL",
     "OK",
+  };
+  static const char* emergencyStopStatusStr[3U] =
+  {
+    "START",
+    "PROCESSING",
+    "END"
   };
 #endif
 /*-------------------------------- Variables ---------------------------------*/
@@ -294,7 +301,7 @@ fix16_t fFUELprocess ( void )
 /*----------------------------------------------------------------------------*/
 fix16_t fSPEEDfromFreq ( fix16_t freq )
 {
-  return fix16_div( fix16_mul( freq, fix60 ), speed.polePairs ); /* RPM */
+  return fix16_mul( fix16_div( freq, speed.polePairs ), fix60 ); /* RPM */
 }
 /*----------------------------------------------------------------------------*/
 fix16_t fSPEEDprocess ( void )
@@ -713,6 +720,16 @@ void vLOGICprintPlanStopStatus ( PLAN_STOP_STATUS status )
   #if ( DEBUG_SERIAL_STATUS > 0U )
     vSYSSerial( ">>Plan stop status: " );
     vSYSSerial( planStopStatusStr[status] );
+    vSYSSerial( "\r\n" );
+  #endif
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vLOGICprintEmergencyStopStatus ( EMERGENCY_STOP_STATUS status )
+{
+  #ifdef DEBUG
+    vSYSSerial( ">>Emergency status: " );
+    vSYSSerial( emergencyStopStatusStr[status] );
     vSYSSerial( "\r\n" );
   #endif
   return;
@@ -1936,26 +1953,56 @@ void vENGINEtask ( void* argument )
       /*------------------------------- ENGINE EMERGENCY STOP ----------------------------------*/
       /*----------------------------------------------------------------------------------------*/
       case ENGINE_CMD_EMEGENCY_STOP:
-        starter.set( RELAY_OFF );
-        vRELAYset( &fuel.pump, RELAY_OFF );
-        vRELAYset( &fuel.booster.relay, RELAY_OFF );
-        vRELAYset( &coolant.cooler.relay, RELAY_OFF );
-        vRELAYset( &coolant.heater.relay, RELAY_OFF );
-        vRELAYset( &idleRelay, RELAY_OFF );
-        vRELAYdelayTrig( &stopSolenoid );
-        preHeater.active = 0U;
-        vRELAYset( &preHeater.relay, RELAY_OFF );
-        vFPOsetGenReady( RELAY_OFF );
-        vFPOsetReadyToStart( RELAY_OFF );
-        engine.status             = ENGINE_STATUS_EMERGENCY_STOP;
-        engine.cmd                = ENGINE_CMD_NONE;
-        engine.startError.active  = PERMISSION_DISABLE;
-        engine.stopError.active   = PERMISSION_ENABLE;
-        oil.alarm.error.active    = PERMISSION_DISABLE;
-        oil.preAlarm.error.active = PERMISSION_DISABLE;
-        charger.start             = PERMISSION_DISABLE;
-        blockTimerFinish          = TRIGGER_IDLE;
-        starterFinish             = TRIGGER_IDLE;
+        switch ( emgencyStopStatus )
+        {
+          case EMERGENCY_STOP_IDLE:
+            vLOGICprintEmergencyStopStatus( emgencyStopStatus );
+            vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
+            starter.set( RELAY_OFF );
+            vRELAYset( &fuel.pump, RELAY_OFF );
+            vRELAYset( &fuel.booster.relay, RELAY_OFF );
+            vRELAYset( &coolant.cooler.relay, RELAY_OFF );
+            vRELAYset( &coolant.heater.relay, RELAY_OFF );
+            vRELAYset( &idleRelay, RELAY_OFF );
+            vRELAYdelayTrig( &stopSolenoid );
+            preHeater.active = PERMISSION_DISABLE;
+            vRELAYset( &preHeater.relay, RELAY_OFF );
+            vFPOsetGenReady( RELAY_OFF );
+            vFPOsetReadyToStart( RELAY_OFF );
+            engine.status             = ENGINE_STATUS_EMERGENCY_STOP;
+            engine.startError.active  = PERMISSION_DISABLE;
+            oil.alarm.error.active    = PERMISSION_DISABLE;
+            oil.preAlarm.error.active = PERMISSION_DISABLE;
+            charger.start             = PERMISSION_DISABLE;
+            blockTimerFinish          = TRIGGER_IDLE;
+            starterFinish             = TRIGGER_IDLE;
+            emgencyStopStatus         = EMERGENCY_STOP_PROCESSING;
+            vLOGICresetTimer( &commonTimer );
+            commonTimer.delay = planStop.processDelay;
+            vLOGICstartTimer( &commonTimer, "Common engine timer " );
+            vLOGICprintEmergencyStopStatus( emgencyStopStatus );
+            break;
+          case EMERGENCY_STOP_PROCESSING:
+            if ( uLOGICisTimer( &commonTimer ) > 0U )
+            {
+              emgencyStopStatus = EMERGENCY_STOP_END;
+            }
+            if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) > 0U )
+            {
+              vLOGICresetTimer( &commonTimer );
+              emgencyStopStatus = EMERGENCY_STOP_END;
+            }
+            break;
+          case EMERGENCY_STOP_END:
+            vLOGICprintEmergencyStopStatus( emgencyStopStatus );
+            emgencyStopStatus       = EMERGENCY_STOP_IDLE;
+            engine.cmd              = ENGINE_CMD_NONE;
+            engine.stopError.active = PERMISSION_ENABLE;
+            break;
+          default:
+            emgencyStopStatus = EMERGENCY_STOP_IDLE;
+            break;
+        }
         break;
       /*----------------------------------------------------------------------------------------*/
       /*------------------------------- ENGINE RESET TO IDLE -----------------------------------*/

@@ -52,28 +52,16 @@ void vDATAAPIsendEventAll ( DATA_API_REINIT message )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-DATA_API_STATUS vDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
+DATA_API_STATUS eDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
     flTakeSource = 18U;
-    //if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
-    //{
-      //if ( adr < pointer )
-      //{
-        if ( eSTORAGEreadLogRecord( adr, record ) != EEPROM_OK )
-        {
-          res = DATA_API_STAT_EEPROM_ERROR;
-        }
-      //}
-      //else
-      //{
-        //record->time         = 0U;
-        //record->event.type   = EVENT_NONE;
-        //record->event.action = ACTION_NONE;
-      //}
-    //}
+    if ( eSTORAGEreadLogRecord( adr, record ) != EEPROM_OK )
+    {
+      res = DATA_API_STAT_EEPROM_ERROR;
+    }
     xSemaphoreGive( xSemaphore );
   }
   else
@@ -342,6 +330,7 @@ void vDATAAPIlogInit ( void )
   {
     if ( eSTORAGEreadLogRecord( pointer, &record ) == EEPROM_OK )
     {
+      logCash.pointer = pointer;
       if ( record.time == 0U )
       {
         logCash.size = pointer;
@@ -966,6 +955,9 @@ DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer )
           res = DATA_API_STAT_BUSY;
         }
         break;
+      case DATA_API_CMD_READ_CASH:
+        *pointer = logCash.pointer;
+        break;
       default:
         res = DATA_API_STAT_CMD_ERROR;
         break;
@@ -1028,7 +1020,11 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
                 {
                   pointer = 0U;
                 }
-                if ( eSTORAGEwriteLogPointer( pointer ) != EEPROM_OK )
+                if ( eSTORAGEwriteLogPointer( pointer ) == EEPROM_OK )
+                {
+                  logCash.pointer = pointer;
+                }
+                else
                 {
                   res = DATA_API_STAT_EEPROM_ERROR;
                 }
@@ -1057,9 +1053,20 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
           }
           else
           {
-            res            = vDATAAPIlogLoad( *adr, record );
-            logCash.adr    = *adr;
-            logCash.record = *record;
+            res = eDATAAPIlogLoad( *adr, record );
+            if ( res == DATA_API_STAT_OK )
+            {
+              if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
+              {
+                logCash.pointer = pointer;
+                logCash.adr     = *adr;
+                logCash.record  = *record;
+              }
+              else
+              {
+                res = DATA_API_STAT_EEPROM_ERROR;
+              }
+            }
           }
           break;
 
@@ -1068,7 +1075,7 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
           break;
 
         case DATA_API_CMD_LOAD:
-          res = vDATAAPIlogLoad( *adr, record );
+          res = eDATAAPIlogLoad( *adr, record );
           break;
         case DATA_API_CMD_ERASE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )

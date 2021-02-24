@@ -10,12 +10,20 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #include "stm32f2xx_hal_i2c.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
 /*------------------------ Define --------------------------------------*/
 #define  RTC_DEVICE_ADR       0xD0U
 #define  RTC_MEMORY_SIZE      19U
 #define  RTC_TIMEOUT          1000U
+#define  RTC_BUSY_TIMEOUT     1U
+#define  RTC_POOL_TIMEOUT     10U
 #define  RTC_SEMAPHORE_DELAY  ( ( TickType_t ) 10U )
-
+#define  RTC_TASK_PRIORITY    osPriorityNormal
+#define  RTC_TASK_STACK_SIZE  512U
+/*----- RTC register addresses ----------*/
 #define  RTC_SECONDS          0x00U
 #define  RTC_MINUTES          0x01U
 #define  RTC_HOURS            0X02U
@@ -35,9 +43,8 @@
 #define  RTC_AO               0x10U  /* Aging Offset */
 #define  RTC_UTR              0x11U  /* Temperature Register (Upper Byte) signed char */
 #define  RTC_LTR              0x12U  /* Temperature Register (Lower Byte) */
-
+/*--------- Time encoding ---------------*/
 #define  RTC_TIME_SIZE        7U
-
 #define  RTC_SEC_MSK          0x7FU
 #define  RTC_MIN_MSK          0x7FU
 #define  RTC_HOUR_MSK         0x3FU
@@ -171,16 +178,19 @@ typedef struct __packed
   uint8_t         hour;
   DAY_TYPE        wday;
   uint8_t         day;
-  ALARM_RTC_TYPE  type;   /* Alarm can be activate on date or on day of the week */
-  uint8_t         rate;   /* Rate of alarm */
-  uint8_t         ie;     /* Interrupt enable */
+  ALARM_RTC_TYPE  type;      /* Alarm can be activate on date or on day of the week */
+  uint8_t         rate;      /* Rate of alarm */
+  uint8_t         ie   : 1U; /* Interrupt enable */
 } RTC_ALARM;
 /*------------------------ Functions -----------------------------------*/
 void       vRTCinit ( I2C_HandleTypeDef* hi2c );             /* Ok */
+void       vRTCgetCashTime ( RTC_TIME* time );
+void       vRTCcleanTime ( RTC_TIME* time );
+
+RTC_STATUS eRTCgetTime ( RTC_TIME* time );                   /* Ok */
+RTC_STATUS eRTCsetTime ( RTC_TIME* time );                   /* Ok */
 RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq ); /**/
 RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq );                  /**/
-RTC_STATUS eRTCgetTime ( RTC_TIME* time );                   /* Ok */
-RTC_STATUS vRTCsetTime ( RTC_TIME* time );                   /* Ok */
 RTC_STATUS vRTCsetCalibration ( signed char value );         /**/
 RTC_STATUS eRTCgetCalibration ( signed char* value );        /**/
 RTC_STATUS eRTCgetTemperature ( float* data );               /**/

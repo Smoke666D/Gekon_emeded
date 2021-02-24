@@ -15,6 +15,8 @@
 #include "adc.h"
 #include "RTC.H"
 #include "journal.h"
+#include "fpi.h"
+#include "fpo.h"
 #include "alarm.h"
 #include "controllerTypes.h"
 #include "string.h"

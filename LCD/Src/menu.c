@@ -1034,7 +1034,7 @@ void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   TRIGGER_STATE  DS;
-  DS = eFPIgetState ( ID-1 );
+  DS = eFPIgetState( ID-1 );
   if (DS==TRIGGER_IDLE)
   {
      Data[0] = '0';
@@ -1049,6 +1049,15 @@ void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 }
 
+
+void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+   if (cmd !=mREAD ) return;
+
+   vSTATUSget();
+
+  return;
+}
 
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {

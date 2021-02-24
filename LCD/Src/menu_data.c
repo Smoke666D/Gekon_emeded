@@ -270,8 +270,6 @@ static xScreenObjet const EventMainScreen[]=
 };
 
 
-
-
 static xScreenObjet const InfoMainScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,128U,TEXT_STRING,Header,"О ПРИБОРЕ",NULL,0U},
@@ -297,8 +295,18 @@ static xScreenObjet const SerialNumberScreen[]=
 
 static xScreenObjet const LinkMainScreen[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Входы/выходы",NULL,0U},
-  {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Выходы 1 2 3 4 5 6",NULL,0U},
+  {0U,FONT_SIZE*7U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 1U},
+  {0U,FONT_SIZE*9U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 2U},
+  {0U,FONT_SIZE*11U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 3U},
+  {0U,FONT_SIZE*13U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 4U},
+  {0U,FONT_SIZE*15U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 5U},
+  {0U,FONT_SIZE*17U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 6U},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Входы  1 2 3 4",NULL,0U},
+  {0U,FONT_SIZE*7U,  LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 1U},
+  {0U,FONT_SIZE*9U,  LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 2U},
+  {0U,FONT_SIZE*11U, LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 3U},
+  {0U,FONT_SIZE*13U, LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 4U},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 

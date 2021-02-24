@@ -98,6 +98,8 @@
 #define IN_CAC         86U
 #define IP_ADRESS      87U
 #define TIME_DATE      88U
+#define FPO_S          89U
+#define FPI_S           90U
 
 
 
@@ -168,6 +170,8 @@ void vMenuMessageInit( osThreadId_t xmainprocess );
 void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
 
 

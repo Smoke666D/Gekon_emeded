@@ -542,9 +542,9 @@ void vMenuTask ( void )
         if (fAlarmFlag == FLAG_RESET)
         {
           pCurrMenu = &xMainMenu;
-           xTimeOutFlag = FLAG_SET;
-           pCurrMenu->pCurrIndex = HOME_MENU;
-           vLCDSetLedBrigth(1);
+          xTimeOutFlag = FLAG_SET;
+          pCurrMenu->pCurrIndex = HOME_MENU;
+          vLCDSetLedBrigth(1);
 
         }
         else
@@ -567,6 +567,7 @@ void vMenuTask ( void )
 
 void vMenuGotoAlarmScreen( void)
 {
+      pCurrMenu = &xMainMenu;
       pCurrMenu->pCurrIndex = ALARM_MENU;
       vLCDBrigthInit();
       return;
@@ -1011,9 +1012,48 @@ void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   Data[1]=0;
 }
 
+void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  TRIGGER_STATE  DS;
+  DS = eFPOgetState ( ID-1 );
+  if (DS==TRIGGER_IDLE)
+  {
+     Data[0] = '0';
+  }
+  else
+  {
+     Data[0] = '1';
+  }
+  Data[1] = 0;
+
+  return;
+
+}
+
+
+void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  TRIGGER_STATE  DS;
+  DS = eFPIgetState ( ID-1 );
+  if (DS==TRIGGER_IDLE)
+  {
+     Data[0] = '0';
+  }
+  else
+  {
+     Data[0] = '1';
+  }
+  Data[1] = 0;
+
+  return;
+
+}
+
+
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
+
   uint16_t utempdata;
   uint16_t tt[6]={0,0,0,0,0,0};
   char TS[6];
@@ -1021,8 +1061,8 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   RTC_TIME time;
   switch (ID)
   {
-    case  TIME_DATE:
 
+    case  TIME_DATE:
       vRTCgetCashTime (&time );
       vUNToStr( Data, time.day,2);
       vStrAdd(Data,":");

@@ -76,8 +76,8 @@ static fix16_t xGEN_F3_CUR =0;
 static fix16_t xADC_TEMP =0;
 static uint32_t ADC3Freq =10000;
 static uint32_t ADC2Freq =10000;
-static uint8_t uNetFaseRotation = NO_ROTATION;
-static uint8_t uGenFaseRotation = NO_ROTATION;
+static xADCRotatinType uNetFaseRotation = NO_ROTATION;
+static xADCRotatinType uGenFaseRotation = NO_ROTATION;
 static fix16_t xCosFi =0;
 static fix16_t F2xCosFi =0;
 static fix16_t F3xCosFi =0;
@@ -376,13 +376,13 @@ uint8_t uADCGetValidDataFlag()
 
 }
 
-uint8_t uADCGetGenFaseRotation()
+xADCRotatinType xADCGetGenFaseRotation()
 {
   return uGenFaseRotation;
 
 }
 
-uint8_t uADCGetNetFaseRotation()
+xADCRotatinType xADCGetNetFaseRotation()
 {
   return uNetFaseRotation;
 

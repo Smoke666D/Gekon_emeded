@@ -1064,7 +1064,7 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        vSTATUSget(&xStatus);
        vStrCopy(Data,(char *)cSTATUSgetString(xStatus.status));
        break;
-     case   STATUS_TIME:
+     case  STATUS_TIME:
        vSTATUSget(&xStatus);
        vUToStr( Data, xStatus.time,0);
        break;
@@ -1095,12 +1095,11 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
   uint16_t utempdata;
+  xADCRotatinType xfase;
   uint16_t tt[6]={0,0,0,0,0,0};
   eConfigAttributes ATR;
   switch (ID)
   {
-
-
     case  IP_ADRESS:
       cSERVERgetStrIP( Data );
       break;
@@ -1322,10 +1321,10 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
              break;
          }
         if (ID ==NET_ROTATION)
-          utempdata=uADCGetNetFaseRotation();
+          xfase=xADCGetNetFaseRotation();
         else
-          utempdata=uADCGetGenFaseRotation();
-             switch (utempdata)
+          xfase=xADCGetGenFaseRotation();
+             switch (xfase)
              {
                case B_C_ROTATION:
                  vStrCopy(Data,"L1-L2-L3");

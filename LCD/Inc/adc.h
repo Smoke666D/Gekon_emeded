@@ -136,9 +136,7 @@
 #define LOW_AMP        0x04U
 
 
-#define NO_ROTATION   0x00U
-#define B_C_ROTATION  0x01U
-#define C_B_ROTATION  0x02U
+
 
 typedef enum
 {
@@ -152,6 +150,14 @@ typedef enum
   NO_FREQ,
   FREQ_DETECTED,
 } xADCGenDetectType;
+
+
+typedef enum
+{
+  NO_ROTATION,
+  B_C_ROTATION,
+  C_B_ROTATION,
+} xADCRotatinType;
 
 /*
  * Функции API драйвера
@@ -193,8 +199,8 @@ uint8_t uADCGetValidDataFlag();
 fix16_t xADCGetNETLFreq();
 fix16_t xADCGetGENLFreq();
 fix16_t xADCGetCOSFi();
-uint8_t uADCGetGenFaseRotation();
-uint8_t uADCGetNetFaseRotation();
+xADCRotatinType xADCGetGenFaseRotation();
+xADCRotatinType xADCGetNetFaseRotation();
 fix16_t xADCGetREG(uint16_t reg);
 void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);

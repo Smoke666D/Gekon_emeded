@@ -143,31 +143,19 @@ void vUSBlogToReport ( USB_REPORT* report, uint16_t adr )
  *         report  - output structure
  * output: status of operation
  */
-void vUSBConfigToReport ( USB_REPORT* report, uint16_t adr )
+void vUSBconfigToReport ( USB_REPORT* report, uint16_t adr )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
-  uint8_t shift = 0U;
-
   if ( adr < SETTING_REGISTER_NUMBER )
   {
     report->stat = USB_REPORT_STATE_OK;
-    shift        = uEncodeURI( configReg[adr]->atrib->units, MAX_UNITS_LENGTH, strBuffer );
     /*----------- Configuration value -----------*/
     for ( i=0U; i<configReg[adr]->atrib->len; i++ )
     {
       vUint16ToBytes( configReg[adr]->value[i], &report->data[count + ( 2U * i )] );
     }
     count += 2U * configReg[adr]->atrib->len;
-    /*----------- Configuration scale -----------*/
-    report->data[count] = ( uint8_t )( configReg[adr]->atrib->scale );
-    count++;
-    /*----------- Configuration units -----------*/
-    for ( i=0U; i<shift; i++ )
-    {
-      report->data[count] = ( uint8_t )( strBuffer[i] );
-      count++;
-    }
     /*-------------------------------------------*/
     report->length = count;
   }
@@ -185,7 +173,7 @@ void vUSBConfigToReport ( USB_REPORT* report, uint16_t adr )
  *         report - output structure
  * output: status of operation
  */
-void vUSBChartToReport ( uint16_t adr, USB_REPORT* report )
+void vUSBchartToReport ( uint16_t adr, USB_REPORT* report )
 {
   uint8_t i     = 0U;
   uint8_t count = 0U;
@@ -236,7 +224,7 @@ void vUSBChartToReport ( uint16_t adr, USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBChartDotsToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report )
+USB_STATUS eUSBchartDotsToReport ( uint16_t adr, const eChartData* chart, USB_REPORT* report )
 {
   USB_STATUS     res           = USB_STATUS_DONE;
   uint8_t        i             = 0U;
@@ -287,7 +275,7 @@ USB_STATUS eUSBChartDotsToReport ( uint16_t adr, const eChartData* chart, USB_RE
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBReportToTime ( const USB_REPORT* report )
+USB_STATUS eUSBreportToTime ( const USB_REPORT* report )
 {
   USB_STATUS res  = USB_STATUS_DONE;
   RTC_TIME   time;
@@ -313,7 +301,7 @@ USB_STATUS eUSBReportToTime ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBReportToPassword ( const USB_REPORT* report )
+USB_STATUS eUSBreportToPassword ( const USB_REPORT* report )
 {
   USB_STATUS      res    = USB_STATUS_DONE;
   PASSWORD_TYPE   pass   = { 0U };
@@ -393,7 +381,7 @@ USB_STATUS eUSBcheckupPassword ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBReportToFreeData ( const USB_REPORT* report )
+USB_STATUS eUSBreportToFreeData ( const USB_REPORT* report )
 {
   USB_STATUS      res    = USB_STATUS_DONE;
   uint16_t        value  = 0U;
@@ -437,7 +425,7 @@ USB_STATUS eUSBReportToFreeData ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
+USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
 {
   USB_STATUS      res                        = USB_STATUS_DONE;
   uint8_t         count                      = 0U;
@@ -485,7 +473,7 @@ USB_STATUS eUSBReportToConfig ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBParsingChart ( uint16_t adr, const uint8_t* data )
+void vUSBparsingChart ( uint16_t adr, const uint8_t* data )
 {
   uint8_t counter = 0U;
 
@@ -511,7 +499,7 @@ void vUSBParsingChart ( uint16_t adr, const uint8_t* data )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBParsingChartDots ( uint16_t adr, uint8_t firstDot, uint8_t size, const uint8_t* data )
+void vUSBparsingChartDots ( uint16_t adr, uint8_t firstDot, uint8_t size, const uint8_t* data )
 {
   uint8_t i       = 0U;
   uint8_t counter = 0U;
@@ -525,7 +513,7 @@ void vUSBParsingChartDots ( uint16_t adr, uint8_t firstDot, uint8_t size, const 
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBReportToChart ( const USB_REPORT* report )
+USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
 {
   static uint8_t currentChart   = 0xFFU;
   static uint8_t lastDotNumber  = 0U;
@@ -551,7 +539,7 @@ USB_STATUS eUSBReportToChart ( const USB_REPORT* report )
         {
           currentChart  = report->adr;
           lastDotNumber = 0U;
-          vUSBParsingChart( report->adr, report->data );
+          vUSBparsingChart( report->adr, report->data );
         }
         else
         {
@@ -564,7 +552,7 @@ USB_STATUS eUSBReportToChart ( const USB_REPORT* report )
           {
             size = length - ( USB_DATA_SIZE * ( uint8_t )( charts[report->adr]->size / USB_DATA_SIZE ) );
           }
-          vUSBParsingChartDots( report->adr, lastDotNumber, size, report->data );
+          vUSBparsingChartDots( report->adr, lastDotNumber, size, report->data );
           lastDotNumber += size;
           if ( lastDotNumber >= charts[report->adr]->size )
           {
@@ -586,7 +574,7 @@ USB_STATUS eUSBReportToChart ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBReportToEWA ( const USB_REPORT* report )
+USB_STATUS eUSBreportToEWA ( const USB_REPORT* report )
 {
   USB_STATUS      res           = USB_STATUS_DONE;
   uint8_t         length        = 0U;
@@ -757,7 +745,7 @@ void vUSBsendChart ( const USB_REPORT* request )
   {
     if ( report.adr < CHART_NUMBER )
     {
-      vUSBChartToReport( request->adr, &report );
+      vUSBchartToReport( request->adr, &report );
       vUSBsendReport( &report );
       for ( i=0U; i<USB_REPORT_SIZE; i++ )
       {
@@ -765,7 +753,7 @@ void vUSBsendChart ( const USB_REPORT* request )
       }
       for ( i=0U; i<( ( CHART_DOTS_SIZE / USB_DATA_SIZE ) + 1U ); i++ )
       {
-        result =  eUSBChartDotsToReport( request->adr, charts[request->adr], &report ) == USB_STATUS_DONE;
+        result =  eUSBchartDotsToReport( request->adr, charts[request->adr], &report ) == USB_STATUS_DONE;
         vUSBsendReport( &report );
         if ( result == USB_STATUS_DONE )
         {
@@ -1080,19 +1068,19 @@ void vStartUsbTask ( void *argument )
       switch( report.cmd )
       {
         case USB_REPORT_CMD_GET_CONFIG:
-          vUSBsend( &report, vUSBConfigToReport );
+          vUSBsend( &report, vUSBconfigToReport );
           break;
         case USB_REPORT_CMD_PUT_CONFIG:
-          vUSBget( &report, eUSBReportToConfig );
+          vUSBget( &report, eUSBreportToConfig );
           break;
         case USB_REPORT_CMD_GET_CHART:
           vUSBsendChart( &report );
           break;
         case USB_REPORT_CMD_PUT_CHART:
-          vUSBget( &report, eUSBReportToChart );
+          vUSBget( &report, eUSBreportToChart );
           break;
         case USB_REPORT_CMD_PUT_EWA:
-          vUSBget( &report, eUSBReportToEWA );
+          vUSBget( &report, eUSBreportToEWA );
           break;
         case USB_REPORT_CMD_SAVE_CONFIG:
           vUSBget( &report, eUSBsaveConfigs );
@@ -1104,13 +1092,13 @@ void vStartUsbTask ( void *argument )
           vUSBsend( &report, vUSBtimeToReport );
           break;
         case USB_REPORT_CMD_PUT_TIME:
-          vUSBget( &report, eUSBReportToTime );
+          vUSBget( &report, eUSBreportToTime );
           break;
         case USB_REPORT_CMD_GET_FREE_DATA:             // PC->DEVICE
           vUSBsend( &report, vUSBfreeDataToReport );
           break;
         case USB_REPORT_CMD_PUT_FREE_DATA:
-          vUSBget( &report, eUSBReportToFreeData );
+          vUSBget( &report, eUSBreportToFreeData );
           break;
         case USB_REPORT_CMD_GET_LOG:
           vUSBsend( &report, vUSBlogToReport );
@@ -1119,7 +1107,7 @@ void vStartUsbTask ( void *argument )
           vUSBget( &report, eUSBeraseLOG );
           break;
         case USB_REPORT_CMD_PUT_PASSWORD:
-          vUSBget( &report, eUSBReportToPassword );
+          vUSBget( &report, eUSBreportToPassword );
           break;
         case USB_REPORT_CMD_AUTHORIZATION:
           vUSBget( &report, eUSBcheckupPassword );

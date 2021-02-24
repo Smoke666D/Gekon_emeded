@@ -53,6 +53,11 @@ uint16_t uBytesToUnit16 ( const uint8_t* data )
   return ( ( uint16_t )data[0U] ) | ( ( ( uint16_t )data[1U] ) << 8U );
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t uByteToUint24 ( const uint8_t* data )
+{
+  return ( ( ( uint32_t )( data[2U] ) ) << 16U ) | ( ( ( uint32_t )( data[1U] ) ) <<  8U ) | ( ( uint32_t )( data[0U] ) );
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Initialization device and control USB size of report descriptor
  * input:  task for handling input USB data
@@ -700,6 +705,7 @@ void vUSBparseReport ( USB_REPORT* report )
   report->cmd    = report->buf[USB_CMD_BYTE];
   report->stat   = report->buf[USB_STAT_BYTE];
   report->adr    = uBytesToUnit16( &report->buf[USB_ADR0_BYTE] );
+  //report->length = uByteToUint24( &report->buf[USB_LEN0_BYTE] );
   report->length = ( ( ( uint32_t )( report->buf[USB_LEN2_BYTE] ) ) << 16U ) |
                    ( ( ( uint32_t )( report->buf[USB_LEN1_BYTE] ) ) <<  8U ) |
 		               ( ( ( uint32_t )( report->buf[USB_LEN0_BYTE] ) )        );

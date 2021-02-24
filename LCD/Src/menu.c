@@ -1052,9 +1052,41 @@ void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
+   DEVICE_INFO xStatus;
+   RTC_TIME    time;
+   char        TS[6];
+
    if (cmd !=mREAD ) return;
 
-   vSTATUSget();
+   switch (ID)
+   {
+     case  CONTROLER_STATUS:
+       vSTATUSget(&xStatus);
+       vStrCopy(Data,(char *)cSTATUSgetString(xStatus.status));
+       break;
+     case   STATUS_TIME:
+       vSTATUSget(&xStatus);
+       vUToStr( Data, xStatus.time,0);
+       break;
+     case  TIME_DATE:
+       vRTCgetCashTime (&time );
+       vUNToStr( Data, time.day,2);
+       vStrAdd(Data,":");
+       vUNToStr( TS, time.month,2);
+       vStrAdd(Data,TS);
+       vStrAdd(Data,":");
+       vUNToStr( TS, time.year,2);
+       vStrAdd(Data,TS);
+       vStrAdd(Data,"  ");
+       vUNToStr( TS, time.hour,2);
+       vStrAdd(Data,TS);
+       vStrAdd(Data,":");
+       vUNToStr( TS, time.min,2);
+       vStrAdd(Data,TS);
+       break;
+     default:
+       break;
+   }
 
   return;
 }
@@ -1062,31 +1094,13 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
-
   uint16_t utempdata;
   uint16_t tt[6]={0,0,0,0,0,0};
-  char TS[6];
   eConfigAttributes ATR;
-  RTC_TIME time;
   switch (ID)
   {
 
-    case  TIME_DATE:
-      vRTCgetCashTime (&time );
-      vUNToStr( Data, time.day,2);
-      vStrAdd(Data,":");
-      vUNToStr( TS, time.month,2);
-      vStrAdd(Data,TS);
-      vStrAdd(Data,":");
-      vUNToStr( TS, time.year,2);
-      vStrAdd(Data,TS);
-      vStrAdd(Data,"  ");
-      vUNToStr( TS, time.hour,2);
-      vStrAdd(Data,TS);
-      vStrAdd(Data,":");
-      vUNToStr( TS, time.min,2);
-      vStrAdd(Data,TS);
-      break;
+
     case  IP_ADRESS:
       cSERVERgetStrIP( Data );
       break;

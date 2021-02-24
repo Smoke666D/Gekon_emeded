@@ -48,6 +48,7 @@ static FLAG              fPassowordCorrect= FLAG_RESET;
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 void vMenuGotoAlarmScreen( void);
+
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 
@@ -838,16 +839,17 @@ void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 
 static uint8_t  StringShift   = 0,
-                StringShift1   = 0,
+                StringShift1  = 0,
                 BufferAlarm   = 0,
                 ScrollDelay   = 0,
-                BufAlarmCount = 0;
-/*
- * Вспомогательная функция для vGetAlarmForMenu. Предназначена для вывода текущей отображаемой ошибки или события в форматие x/общее количество событий
+                BufAlarmCount = 0,
+                uCurPointer   = 0;
+ /* Вспомогательная функция для vGetAlarmForMenu. Предназначена для вывода текущей отображаемой ошибки или события в форматие x/общее количество событий
  *
  */
 void vEventCountPrintFunction(uint16_t  utemp,char * Data )
 {
+     uint16_t pointer;
      if (uCurrentAlarm >= utemp)
      {
        uCurrentAlarm=0U;
@@ -856,6 +858,22 @@ void vEventCountPrintFunction(uint16_t  utemp,char * Data )
      {
        BufAlarmCount   = utemp;
        BufferAlarm     = uCurrentAlarm;
+       eDATAAPIlogPointer(DATA_API_CMD_READ_CASH,&pointer);
+       if ( pointer <= utemp )
+       {
+         uCurPointer = pointer -uCurrentAlarm;
+       }
+       else
+       {
+         if ((pointer -uCurrentAlarm) > 0 )
+         {
+           uCurPointer = pointer -uCurrentAlarm;
+         }
+         else
+         {
+           uCurPointer = LOG_SIZE - (uCurrentAlarm -pointer + 1);
+         }
+       }
        StringShift     = 0U;
        StringShift1    = 0U;
      }
@@ -909,6 +927,8 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
    return StartArray;
 }
 
+
+
 /*
  * Функция для отображения списка текущх ошибок или списка событий
  * !!!Важно.Для кооректого исполнения комманд, первой должна обязатаельнос вывполнятся команда ALARM_COUNT или EVENT_COUNT
@@ -918,6 +938,7 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
+
   static uint8_t          ALD   = 0;
   static uint16_t         utemp;
   char   TS[6];
@@ -956,29 +977,29 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case EVENT_COUNT:
       eDATAAPIlog(DATA_API_CMD_COUNTER,&utemp,&xrecord);
       vEventCountPrintFunction(utemp,Data);
-      eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurrentAlarm,&xrecord);
+      eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurPointer,&xrecord);
       break;
-    case CURRENT_ALARM_TIME:
     case CURRENT_EVENT_TIME:
+    case CURRENT_ALARM_TIME:
       if (uCurrentAlarm < BufAlarmCount)
-      {
-            vUNToStr( Data, (int)GET_LOG_DAY( xrecord.time ),2);
-            vStrAdd(Data,":");
-            vUNToStr( TS, (int)GET_LOG_MONTH( xrecord.time ),2);
-            vStrAdd(Data,TS);
-            vStrAdd(Data,":");
-            vUNToStr( TS,(int) LOG_START_YEAR + (int)GET_LOG_YEAR(xrecord.time) ,2);
-            vStrAdd(Data,TS);
-            vStrAdd(Data,"  ");
-            vUNToStr( TS, (int)GET_LOG_HOUR(xrecord.time),2);
-            vStrAdd(Data,TS);
-            vStrAdd(Data,":");
-            vUNToStr( TS, (int)GET_LOG_MIN( xrecord.time ),2);
-            vStrAdd(Data,TS);
-            vStrAdd(Data,":");
-            vUNToStr( TS, (int)GET_LOG_SEC( xrecord.time ) ,2);
-            vStrAdd(Data,TS);
-      }
+       {
+                  vUNToStr( Data, (int)GET_LOG_DAY( xrecord.time ),2);
+                  vStrAdd(Data,":");
+                  vUNToStr( TS, (int)GET_LOG_MONTH( xrecord.time ),2);
+                  vStrAdd(Data,TS);
+                  vStrAdd(Data,":");
+                  vUNToStr( TS,(int) LOG_START_YEAR + (int)GET_LOG_YEAR(xrecord.time) ,2);
+                  vStrAdd(Data,TS);
+                  vStrAdd(Data,"  ");
+                  vUNToStr( TS, (int)GET_LOG_HOUR(xrecord.time),2);
+                  vStrAdd(Data,TS);
+                  vStrAdd(Data,":");
+                  vUNToStr( TS, (int)GET_LOG_MIN( xrecord.time ),2);
+                  vStrAdd(Data,TS);
+                  vStrAdd(Data,":");
+                  vUNToStr( TS, (int)GET_LOG_SEC( xrecord.time ) ,2);
+                  vStrAdd(Data,TS);
+       }
       break;
     case CURRENT_ALARM_T:
     case CURRENT_EVENT_T:

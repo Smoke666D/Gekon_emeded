@@ -358,6 +358,9 @@ void vFPOdataInit ( void )
   vFPOanaliz( &mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( &mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( &mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
+  /* Default */
+  vFPOsetMainsSw( RELAY_ON );
+  vFPOsetGenSw( RELAY_OFF );
   /* Debug data */
   vFPOprintSetup();
   return;

@@ -185,17 +185,30 @@ void vUSBconfigToReport ( USB_REPORT* report, uint16_t adr )
  */
 void vUSBchartToReport ( uint16_t adr, USB_REPORT* report )
 {
-  uint8_t count = 0U;
-  /*-------------------------------------------*/
   report->cmd    = USB_REPORT_CMD_GET_CHART;
   report->dir    = USB_REPORT_DIR_OUTPUT;
   report->stat   = USB_REPORT_STATE_OK;
   report->adr    = adr;
-  report->length = 18U + ( CHART_UNIT_LENGTH * 12U ) + ( 8U * charts[adr]->size );
+  report->length = 4U;
+  /*---------------- X axis -------------------*/
+  report->data[0U] = charts[adr]->xType;
+  /*---------------- Y axis -------------------*/
+  report->data[1U] = charts[adr]->yType;
   /*----------------- Size --------------------*/
-  vUint16ToBytes( charts[adr]->size, &report->data[count] );
-  count += 2U;
+  vUint16ToBytes( charts[adr]->size, &report->data[2U] );
   /*-------------------------------------------*/
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void eUSBdotToReport ( const eChartData* chart, uint16_t adr, USB_REPORT* report )
+{
+  report->cmd    = USB_REPORT_CMD_GET_CHART;
+  report->dir    = USB_REPORT_DIR_OUTPUT;
+  report->stat   = USB_REPORT_STATE_OK;
+  report->adr    = adr;
+  report->length = 8U;
+  vUint32ToBytes( ( uint32_t )( chart->dots[adr].x ), &report->data[0U] );
+  vUint32ToBytes( ( uint32_t )( chart->dots[adr].y ), &report->data[4U] );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -537,81 +550,70 @@ USB_STATUS eUSBreportToEWA ( const USB_REPORT* report )
   uint8_t         checkData[4U] = { 0U };
   if ( report->length > 0U )
   {
-    if ( ( ( report->length - index ) / USB_DATA_SIZE ) > 0U )
+    if ( ( report->length - index ) >= USB_DATA_SIZE )
     {
       length = USB_DATA_SIZE;
     }
-    else if ( ( ( report->length - index ) % USB_DATA_SIZE ) > 0U )
+    else
     {
       length = ( uint8_t )( report->length - index );
     }
-    else
+    while ( status == DATA_API_STAT_BUSY )
     {
-      length = 0U;
+      status = eDATAAPIewa( DATA_API_CMD_SAVE, ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
     }
-    if ( length > 0U )
+    if ( status == DATA_API_STAT_OK )
     {
-      while ( status == DATA_API_STAT_BUSY )
-      {
-        status = eDATAAPIewa( DATA_API_CMD_SAVE, ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
-      }
-      if ( status == DATA_API_STAT_OK )
-      {
-	      checkAdr = STORAGE_EWA_DATA_ADR + index;
-	      for ( i=0U; i<length; i++ )
+	    checkAdr = STORAGE_EWA_DATA_ADR + index;
+	    for ( i=0U; i<length; i++ )
+	    {
+	      status = DATA_API_STAT_BUSY;
+	      while ( status == DATA_API_STAT_BUSY )
 	      {
-	        status = DATA_API_STAT_BUSY;
-	        while ( status == DATA_API_STAT_BUSY )
-	        {
-	          status = eDATAAPIewa( DATA_API_CMD_LOAD, checkAdr, checkData, 1U );
-	        }
-	        if ( ( report->data[i] != checkData[0U] ) || ( status != DATA_API_STAT_OK ) )
-	        {
-	          res = USB_STATUS_STORAGE_ERROR;
-	          break;
-	        }
-	        checkAdr++;
+	        status = eDATAAPIewa( DATA_API_CMD_LOAD, checkAdr, checkData, 1U );
 	      }
-        if ( res != USB_STATUS_STORAGE_ERROR )
+	      if ( ( report->data[i] != checkData[0U] ) || ( status != DATA_API_STAT_OK ) )
+	      {
+	        res = USB_STATUS_STORAGE_ERROR;
+	        break;
+	      }
+	      checkAdr++;
+	    }
+      if ( res != USB_STATUS_STORAGE_ERROR )
+      {
+        index += length;
+        if ( index < report->length )
         {
-          index += length;
-          if ( index < report->length )
+          res = USB_STATUS_CONT;
+        }
+        else if ( index == report->length )
+        {
+          index  = 0U;
+          status = DATA_API_STAT_BUSY;
+          while ( status == DATA_API_STAT_BUSY )
           {
-            res = USB_STATUS_CONT;
+            status = eDATAAPIewa( DATA_API_CMD_SAVE, STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), EEPROM_LENGTH_SIZE );
           }
-          else if ( index == report->length )
+          if ( status == DATA_API_STAT_OK )
           {
-            index  = 0U;
-            status = DATA_API_STAT_BUSY;
-            while ( status == DATA_API_STAT_BUSY )
-            {
-              status = eDATAAPIewa( DATA_API_CMD_SAVE, STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), EEPROM_LENGTH_SIZE );
-            }
-            if ( status == DATA_API_STAT_OK )
-            {
-              res = USB_STATUS_DONE;
-            }
-            else
-            {
-              res = USB_STATUS_STORAGE_ERROR;
-            }
+            res = USB_STATUS_DONE;
           }
           else
           {
- 	          index = 0U;
-	          res   = USB_STATUS_ERROR_LENGTH;
+            res = USB_STATUS_STORAGE_ERROR;
           }
         }
-      }
-      else
-      {
-	      index = 0U;
-	      res = USB_STATUS_STORAGE_ERROR;
+        else
+        {
+ 	        index = 0U;
+	        res   = USB_STATUS_ERROR_LENGTH;
+        }
       }
     }
     else
     {
-      res = USB_STATUS_ERROR_LENGTH;
+	    index = 0U;
+	    res = USB_STATUS_STORAGE_ERROR;
     }
   }
   return res;
@@ -703,7 +705,7 @@ void vUSBsendChart ( const USB_REPORT* request )
       }
       for ( i=0U; i<( ( CHART_DOTS_SIZE / USB_DATA_SIZE ) + 1U ); i++ )
       {
-        result =  eUSBchartDotsToReport( request->adr, charts[request->adr], &report ) == USB_STATUS_DONE;
+        result = eUSBchartDotsToReport( request->adr, charts[request->adr], &report ) == USB_STATUS_DONE;
         vUSBsendReport( &report );
         if ( result == USB_STATUS_DONE )
         {

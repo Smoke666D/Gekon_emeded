@@ -40,6 +40,14 @@ void vUint32ToBytes ( uint32_t input, uint8_t* output )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vUint24ToBytes ( uint32_t input, uint8_t* output )
+{
+  output[0U] = ( uint8_t )( ( input ) );
+  output[1U] = ( uint8_t )( ( input ) >> 8U );
+  output[2U] = ( uint8_t )( ( input ) >> 16U );
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vUint16ToBytes ( uint16_t input, uint8_t* output )
 {
   output[0U] = ( uint8_t )( input );
@@ -54,7 +62,17 @@ uint16_t uBytesToUnit16 ( const uint8_t* data )
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uByteToUint24 ( const uint8_t* data )
 {
-  return ( ( ( uint32_t )( data[2U] ) ) << 16U ) | ( ( ( uint32_t )( data[1U] ) ) <<  8U ) | ( ( uint32_t )( data[0U] ) );
+  return ( ( ( uint32_t )( data[2U] ) ) << 16U ) |
+         ( ( ( uint32_t )( data[1U] ) ) <<  8U ) |
+           ( ( uint32_t )( data[0U] ) );
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint32_t uByteToUint32 ( const uint8_t* data )
+{
+  return ( ( ( uint32_t )( data[3U] ) ) << 24U ) |
+         ( ( ( uint32_t )( data[2U] ) ) << 16U ) |
+         ( ( ( uint32_t )( data[1U] ) ) <<  8U ) |
+           ( ( uint32_t )( data[0U] ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -434,7 +452,7 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
     {
       if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
       {
-        charts[chartAdr]->size  = uBytesToUnit16( &report->data[2U] )
+        charts[chartAdr]->size  = uBytesToUnit16( &report->data[2U] );
         charts[chartAdr]->xType = report->data[0U];
         charts[chartAdr]->yType = report->data[1U];
         xSemaphoreGive( xCHARTgetSemophore() );
@@ -455,8 +473,8 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
     {
       if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
       {
-        charts[chartAdr]->dots[report->adr - 1U].x = *( fix16_t* )( report->data[0U] );
-        charts[chartAdr]->dots[report->adr - 1U].y = *( fix16_t* )( report->data[4U] );
+        charts[chartAdr]->dots[report->adr - 1U].x = *( fix16_t* )( &report->data[0U] );
+        charts[chartAdr]->dots[report->adr - 1U].y = *( fix16_t* )( &report->data[4U] );
         xSemaphoreGive( xCHARTgetSemophore() );
       }
       else
@@ -610,55 +628,6 @@ void vUSBsendReport ( USB_REPORT* report )
   while ( eUSBwrite( report->buf ) == USBD_BUSY )
   {
     osDelay( 2U );
-  }
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-/*
- * Send chart data via USB
- * input:  configuration register
- * output: none
- */
-void vUSBsendChart ( const USB_REPORT* request )
-{
-  uint8_t    i      = 0U;
-  USB_STATUS result = USB_STATUS_DONE;
-  USB_REPORT report =
-  {
-    .cmd  = request->cmd,
-    .adr  = request->adr,
-    .buf  = outputBuffer,
-    .data = &outputBuffer[USB_DATA_BYTE],
-  };
-  if ( usbAuthorization == AUTH_DONE )
-  {
-    if ( report.adr < CHART_NUMBER )
-    {
-      vUSBchartToReport( request->adr, &report );
-      vUSBsendReport( &report );
-      for ( i=0U; i<USB_REPORT_SIZE; i++ )
-      {
-        outputBuffer[i]=0U;
-      }
-      for ( i=0U; i<( ( CHART_DOTS_SIZE / USB_DATA_SIZE ) + 1U ); i++ )
-      {
-        result = eUSBchartDotsToReport( request->adr, charts[request->adr], &report ) == USB_STATUS_DONE;
-        vUSBsendReport( &report );
-        if ( result == USB_STATUS_DONE )
-        {
-          break;
-        }
-      }
-    }
-  }
-  else
-  {
-    report.stat = USB_REPORT_STATE_UNAUTHORIZED;
-    for ( i=0U; i<USB_REPORT_SIZE; i++ )
-    {
-      outputBuffer[i] = 0U;
-    }
-    vUSBsendReport( &report );
   }
   return;
 }

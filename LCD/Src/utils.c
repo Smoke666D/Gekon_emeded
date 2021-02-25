@@ -163,6 +163,10 @@ void vUToStr( char* str, uint16_t data, int8_t s )
       }
 
   }
+  if (i == 0)
+  {
+    str[i++]='0';
+  }
   str[i] = 0U;
   return;
 

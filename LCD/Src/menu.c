@@ -740,6 +740,7 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
         if ( xAtrib.len == 1U )
         {
           eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
+
           for ( i=0; i<MAX_UNITS_LENGTH; i++ )
           {
             if ( ( units[i] >> 8U) != 0U )
@@ -750,6 +751,10 @@ void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
           }
           Data[k] = 0U;
         }
+      }
+      else
+      {
+        vStrCopy(Data,"    ");
       }
       break;
     default:
@@ -791,15 +796,21 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   int8_t            scale                   = 0U;
   uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
   uint16_t          sbuff                   = 0U;
+  char         cbuf[17];
   Data[0U] = 0U;
   switch ( cmd )
   {
     case mREAD:
+
+
+
       eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
       if ( xAtrib.bitMapSize == 0U )
       {
         if ( xAtrib.len == 1U )
         {
+          if (ID!=10)
+          {
           switch ( xAtrib.type )
           {
             case 'U':
@@ -808,15 +819,40 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
               uDataType = 2;
               break;
             case 'S':
-              eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &sbuff );
+          //    eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &sbuff );
               //vITOSTRING( ( uint8_t* )Data, buff );
-              break;
-            case 'C':
+              Data[0]=0;
               break;
             default:
               break;
           }
+          }
+          else
+            Data[0]=0;
         }
+        else
+        {
+          if (ID==10)
+          {
+            switch ( xAtrib.type )
+            {
+            case 'C':
+              for (char t=0;t<17;t++)
+              {
+               cbuf[t]= 0;
+              }
+              vStrCopy(cbuf,"дата3");
+              eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting,(uint16_t *) &cbuf );
+
+              vStrCopy(Data,cbuf);
+              break;
+            default:
+              break;
+            }
+           }
+          else
+            Data[0]=0;
+          }
       }
       break;
     default:
@@ -824,6 +860,8 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   }
   return;
 }
+
+
 
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -1099,7 +1137,7 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        }
        else
        {
-         Data[0] = 0;
+         vStrCopy(Data,"  ");
        }
        break;
      case  TIME_DATE:

@@ -1093,7 +1093,14 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        break;
      case  STATUS_TIME:
        vSTATUSget(&xStatus);
-       vUToStr( Data, xStatus.time,0);
+       if (xStatus.timer ==PERMISSION_ENABLE)
+       {
+         vUToStr( Data, xStatus.time,0);
+       }
+       else
+       {
+         Data[0] = 0;
+       }
        break;
      case  TIME_DATE:
        vRTCgetCashTime (&time );

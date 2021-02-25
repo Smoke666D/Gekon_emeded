@@ -351,8 +351,8 @@ static xScreenObjet  const SettingsScreen[]=
   {3U,FONT_SIZE*19U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam18,NULL,(void*)&vGetSettingsBitData, 1U},
   {2U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsUnit,      0U},
   {2U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH,  INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,      0U},
-  {0U,FONT_SIZE*1U, LINE3+3U,100U, LINE4_HIGTH,  INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,      10U},
-  {LO,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsNumber,    0U},
+  {0U,FONT_SIZE*1U, LINE3+3U,100U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,      10U},
+  {LO,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH,HW_DATA,       InputParam,NULL,(void*)&vGetSettingsNumber,    0U},
 
 };
 

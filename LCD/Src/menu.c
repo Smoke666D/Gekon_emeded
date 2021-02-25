@@ -213,7 +213,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         switch(key)
        {
            case KEY_STOP:
-            if ( uiSetting >= 1U )
+            if ( uiSetting >= FIRST_VALID_SETTING   )
                    uiSetting--;
             break;
           case KEY_START:
@@ -795,68 +795,42 @@ void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   uint16_t          buff                    = 0U;
   int8_t            scale                   = 0U;
   uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
-  uint16_t          sbuff                   = 0U;
-  char         cbuf[17];
+  char              cbuf[17]                = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
   Data[0U] = 0U;
-  switch ( cmd )
+  if ( cmd == mREAD )
   {
-    case mREAD:
-
-
-
       eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
       if ( xAtrib.bitMapSize == 0U )
       {
-        if ( xAtrib.len == 1U )
-        {
-          if (ID!=10)
-          {
-          switch ( xAtrib.type )
-          {
-            case 'U':
-              eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
-              vUToStr ( Data, buff, scale );
-              uDataType = 2;
-              break;
-            case 'S':
-          //    eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &sbuff );
-              //vITOSTRING( ( uint8_t* )Data, buff );
-              Data[0]=0;
-              break;
-            default:
-              break;
-          }
-          }
-          else
-            Data[0]=0;
+         if ( xAtrib.len == 1U )
+         {
+             if (ID!=10)
+             {
+                 switch ( xAtrib.type )
+                 {
+                     case 'U':
+                         eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
+                         vUToStr ( Data, buff, scale );
+                         uDataType = 2;
+                         break;
+                     case 'S':
+                       //    eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &sbuff );
+                       //vITOSTRING( ( uint8_t* )Data, buff );
+                       break;
+                     default:
+                       break;
+                 }
+             }
         }
         else
         {
-          if (ID==10)
+          if ( (ID==10) && ( xAtrib.type == 'C') )
           {
-            switch ( xAtrib.type )
-            {
-            case 'C':
-              for (char t=0;t<17;t++)
-              {
-               cbuf[t]= 0;
-              }
-              vStrCopy(cbuf,"дата3");
               eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting,(uint16_t *) &cbuf );
-
               vStrCopy(Data,cbuf);
-              break;
-            default:
-              break;
-            }
-           }
-          else
-            Data[0]=0;
           }
+        }
       }
-      break;
-    default:
-      break;
   }
   return;
 }
@@ -881,7 +855,7 @@ static uint8_t  StringShift1  = 0;
 static uint8_t  BufferAlarm   = 0;
 static uint8_t  ScrollDelay   = 0;
 static uint8_t  BufAlarmCount = 0;
-static uint8_t  uCurPointer   = 0;
+static uint16_t  uCurPointer   = 0;
  /* Вспомогательная функция для vGetAlarmForMenu. Предназначена для вывода текущей отображаемой ошибки или события в форматие x/общее количество событий
  *
  */
@@ -1049,8 +1023,29 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case CURRENT_EVENT_T:
       if (uCurrentAlarm < BufAlarmCount)
       {
-        vStrCopy(TempArray,(char*)logTypesDictionary[xrecord.event.type]);
-        vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift));
+        switch (xrecord.event.type)
+        {
+          case EVENT_USER_FUNCTION_A:
+            eDATAAPIconfigValue( DATA_API_CMD_READ, DIA_MESSAGE_ADR,(uint16_t *) &Data );
+            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift));
+            break;
+          case EVENT_USER_FUNCTION_B:
+            eDATAAPIconfigValue( DATA_API_CMD_READ, DIB_MESSAGE_ADR,(uint16_t *) &Data );
+            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift));
+            break;
+          case EVENT_USER_FUNCTION_C:
+            eDATAAPIconfigValue( DATA_API_CMD_READ, DIC_MESSAGE_ADR,(uint16_t *) &Data );
+            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift));
+            break;
+          case EVENT_USER_FUNCTION_D:
+            eDATAAPIconfigValue( DATA_API_CMD_READ, DID_MESSAGE_ADR,(uint16_t *) &Data );
+            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift));
+            break;
+          default:
+            vStrCopy(TempArray,(char*)logTypesDictionary[xrecord.event.type]);
+            vStrCopy(Data,vScrollFunction(strlen(TempArray), &StringShift));
+            break;
+        }
       }
       else
       {

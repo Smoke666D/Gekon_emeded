@@ -36,7 +36,7 @@
 #define   ALARM_MENU          1U
 
 #define   FIRST_VALID_SETTING 3U
-#define   FIRST_SETTING       1U
+#define   FIRST_SETTING      FIRST_VALID_SETTING
 
 #define LAST_OBJECT  1U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */

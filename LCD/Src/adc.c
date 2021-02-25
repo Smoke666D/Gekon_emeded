@@ -753,24 +753,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
 
 
 
-void vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  if (cmd == mREAD)
-  {
-    switch ( ID - 1U )
-    {
-      case ADC_FREQ:
-        fix16_to_str(fix16_from_int( ADC3Freq/10), Data, 0U );
-        break;
-      case ADC_TEMP:
-        fix16_to_str( xADC_TEMP, Data, 1U );
-        break;
-      default:
-        break;
-    }
-  }
-  return;
-}
+
 
 
 

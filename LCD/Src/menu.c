@@ -838,12 +838,12 @@ void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 
 
-static uint8_t  StringShift   = 0,
-                StringShift1  = 0,
-                BufferAlarm   = 0,
-                ScrollDelay   = 0,
-                BufAlarmCount = 0,
-                uCurPointer   = 0;
+static uint8_t  StringShift   = 0;
+static uint8_t  StringShift1  = 0;
+static uint8_t  BufferAlarm   = 0;
+static uint8_t  ScrollDelay   = 0;
+static uint8_t  BufAlarmCount = 0;
+static uint8_t  uCurPointer   = 0;
  /* Вспомогательная функция для vGetAlarmForMenu. Предназначена для вывода текущей отображаемой ошибки или события в форматие x/общее количество событий
  *
  */
@@ -862,11 +862,11 @@ void vEventCountPrintFunction(uint16_t  utemp,char * Data )
        eDATAAPIlogPointer(DATA_API_CMD_READ_CASH,&pointer);
        if (utemp < LOG_SIZE )
        {
-         uCurPointer = pointer -uCurrentAlarm -1;
+         uCurPointer = pointer -uCurrentAlarm -1U;
        }
        else
        {
-         if ((pointer -uCurrentAlarm) >= 0 )
+         if ((pointer -uCurrentAlarm-1) >= 0 )
          {
            uCurPointer = pointer -uCurrentAlarm -1;
          }
@@ -984,6 +984,8 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurPointer,&xrecord);
       break;
     case CURRENT_EVENT_TIME:
+
+
     case CURRENT_ALARM_TIME:
       if (uCurrentAlarm < BufAlarmCount)
        {

@@ -850,6 +850,7 @@ static uint8_t  StringShift   = 0,
 void vEventCountPrintFunction(uint16_t  utemp,char * Data )
 {
      uint16_t pointer;
+     char   TS[6];
      if (uCurrentAlarm >= utemp)
      {
        uCurrentAlarm=0U;
@@ -859,19 +860,19 @@ void vEventCountPrintFunction(uint16_t  utemp,char * Data )
        BufAlarmCount   = utemp;
        BufferAlarm     = uCurrentAlarm;
        eDATAAPIlogPointer(DATA_API_CMD_READ_CASH,&pointer);
-       if ( pointer <= utemp )
+       if (utemp < LOG_SIZE )
        {
-         uCurPointer = pointer -uCurrentAlarm;
+         uCurPointer = pointer -uCurrentAlarm -1;
        }
        else
        {
-         if ((pointer -uCurrentAlarm) > 0 )
+         if ((pointer -uCurrentAlarm) >= 0 )
          {
-           uCurPointer = pointer -uCurrentAlarm;
+           uCurPointer = pointer -uCurrentAlarm -1;
          }
          else
          {
-           uCurPointer = LOG_SIZE - (uCurrentAlarm -pointer + 1);
+           uCurPointer = (LOG_SIZE -1) - (uCurrentAlarm -pointer  );
          }
        }
        StringShift     = 0U;
@@ -879,7 +880,10 @@ void vEventCountPrintFunction(uint16_t  utemp,char * Data )
      }
      if (utemp >0)
      {
-       sprintf(Data,"%i / %i",uCurrentAlarm+1 ,utemp);
+       vUToStr(Data,uCurrentAlarm+1,0);
+       vStrAdd(Data," / ");
+       vUToStr(TS,utemp,0);
+       vStrAdd(Data,TS);
      }
      else
      {

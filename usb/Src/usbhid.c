@@ -397,7 +397,7 @@ USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
   /*------------- Length control --------------*/
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {
-    length = ( configReg[report->adr]->atrib->len * 2U ) + 1U + ( MAX_UNITS_LENGTH * 6U );
+    length = configReg[report->adr]->atrib->len * 2U;
     if ( length == report->length )
     {
       /*----------- Configuration value -----------*/
@@ -434,13 +434,13 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
   USB_STATUS res      = USB_STATUS_DONE;
   switch ( report->cmd )
   {
-    case USB_REPORT_CMD_GET_CHART_OIL:
+    case USB_REPORT_CMD_PUT_CHART_OIL:
       chartAdr = OIL_CHART_ADR;
       break;
-    case USB_REPORT_CMD_GET_CHART_COOLANT:
+    case USB_REPORT_CMD_PUT_CHART_COOLANT:
       chartAdr = COOLANT_CHART_ADR;
       break;
-    case USB_REPORT_CMD_GET_CHART_FUEL:
+    case USB_REPORT_CMD_PUT_CHART_FUEL:
       chartAdr = FUEL_CHART_ADR;
       break;
     default:
@@ -450,17 +450,14 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
   {
     if ( report->length == 4U )
     {
-      if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
+      while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
       {
-        charts[chartAdr]->size  = uBytesToUnit16( &report->data[2U] );
-        charts[chartAdr]->xType = report->data[0U];
-        charts[chartAdr]->yType = report->data[1U];
-        xSemaphoreGive( xCHARTgetSemophore() );
+
       }
-      else
-      {
-        res = USB_STATUS_FORBIDDEN;
-      }
+      charts[chartAdr]->size  = uBytesToUnit16( &report->data[2U] );
+      charts[chartAdr]->xType = report->data[0U];
+      charts[chartAdr]->yType = report->data[1U];
+      xSemaphoreGive( xCHARTgetSemophore() );
     }
     else
     {
@@ -471,16 +468,13 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
   {
     if ( report->length == 8U )
     {
-      if ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
+      while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
       {
-        charts[chartAdr]->dots[report->adr - 1U].x = *( fix16_t* )( &report->data[0U] );
-        charts[chartAdr]->dots[report->adr - 1U].y = *( fix16_t* )( &report->data[4U] );
-        xSemaphoreGive( xCHARTgetSemophore() );
+
       }
-      else
-      {
-        res = USB_STATUS_FORBIDDEN;
-      }
+      charts[chartAdr]->dots[report->adr - 1U].x = *( fix16_t* )( &report->data[0U] );
+      charts[chartAdr]->dots[report->adr - 1U].y = *( fix16_t* )( &report->data[4U] );
+      xSemaphoreGive( xCHARTgetSemophore() );
     }
     else
     {

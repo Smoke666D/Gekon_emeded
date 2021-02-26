@@ -32,11 +32,12 @@
 #define   BLINK_TIME          2U
 #define   BITMAP              3U
 #define   NUMBER              2U
+#define   DATE_TYPE           4U
 #define   HOME_MENU           0U
 #define   ALARM_MENU          1U
 
-#define   FIRST_VALID_SETTING 3U
-#define   FIRST_SETTING      FIRST_VALID_SETTING
+#define   FIRST_VALID_SETTING 2U
+#define   FIRST_SETTING       3U
 
 #define LAST_OBJECT  1U
 /* Определение виртуальных клавиш, которые могу как повторять клавиши клавиатуры, так и быть их комбинацие */
@@ -104,6 +105,11 @@
 #define FPI_S            90U
 #define CONTROLER_STATUS 91U
 #define STATUS_TIME      92U
+#define HOUR            93U
+#define MINUTE          94U
+#define DAY             95U
+#define MOUNTH           96U
+#define YEAR            97U
 
 
 /*------------------------------ Enum ----------------------------------------*/
@@ -176,6 +182,7 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
+void vGetTIMEForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vExitCurObject ( void );
 
 

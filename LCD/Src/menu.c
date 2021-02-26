@@ -105,6 +105,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
   {
     if (key == (KEY_EXIT))
     {
+      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
       fDownScreen = FLAG_RESET;
       fFirstEnter = FLAG_SET;
@@ -207,26 +208,103 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
            break;
        }
     }
+     if ((uDataType ==  DATE_TYPE) && ( ucActiveObject !=NO_SELECT_D))
+     {
+      switch (key)
+                {
+                  case KEY_DOWN_BREAK:
+                          ucActiveObject = CHANGE_D;
+  /*                        eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
+                          if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
+                              data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                          else
+                             data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                          eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
+                          break;
+*/
+                     break;
+                  case KEY_UP_BREAK:
+                           ucActiveObject = CHANGE_D;
+                          /* eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
+                           if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
+                               data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                           else
+                             data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                           eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
+*/
+                         break;
+                  case KEY_STOP:
+                           for (uint8_t i=uCurrentObject-1; i>0;i--)
+                           {
+                              if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                              {
+                                   menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+                                   uCurrentObject = i;
+                                   menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+                                   break;
+                              }
+                           }
+                         break;
+                  case KEY_START:
+                           for (uint8_t i=(uCurrentObject+1); i<MAX_SCREEN_OBJECT;i++)
+                           {
+                              if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == LO)
+                                           break;
+                              if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
+                              {
+                                    menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+                                    uCurrentObject = i;
+                                    menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
+                                    break;
+                                }
+                           }
+                          break;
+                  case KEY_AUTO:
+                         pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
+                         vExitCurObject();
+                         return;
+                  default:
+                      break;
+                }
+
+     }
+
     //Обащя навигация, в не зависимости от типа данных
     if ( ucActiveObject == NO_SELECT_D )
     {
         switch(key)
        {
            case KEY_STOP:
-            if ( uiSetting >= FIRST_VALID_SETTING   )
+            if ( uiSetting > FIRST_VALID_SETTING   )
+            {
                    uiSetting--;
+                   if (uiSetting < FIRST_SETTING)
+                   {
+                       menu->pCurrIndex = 1;
+                   }
+            }
             break;
           case KEY_START:
             if ( uiSetting <= ( SETTING_REGISTER_NUMBER - 2U ) )
                   uiSetting++;
+            if (uiSetting >=FIRST_SETTING)
+              menu->pCurrIndex = 0;
             break;
           case KEY_DOWN_BREAK:
             if ( uiSetting >= 10U )
+            {
                 uiSetting -= 10U;
+                if (uiSetting < FIRST_SETTING)
+                {
+                  menu->pCurrIndex = 1;
+                }
+            }
             break;
           case KEY_UP_BREAK:
             if (  uiSetting <= ( SETTING_REGISTER_NUMBER - 12U )  )
                 uiSetting += 10U;
+            if (uiSetting >=FIRST_SETTING)
+               menu->pCurrIndex = 0;
             break;
           case KEY_AUTO:
             if ((fPassowordCorrect == FLAG_SET) || (systemPassword.status == PASSWORD_RESET))
@@ -239,7 +317,6 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                 if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
                 {
                     uCurrentObject = i;
-                    break;
                 }
               }
               menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
@@ -1085,6 +1162,39 @@ void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
      Data[0] = '1';
   }
   Data[1] = 0;
+
+  return;
+
+}
+
+void vGetTIMEForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  RTC_TIME time;
+  Data[1] = 0;
+  vRTCgetCashTime (&time );
+  uDataType = 4;
+  switch (ID)
+  {
+    case HOUR:
+      vUNToStr(Data, time.hour,2);
+      break;
+    case MINUTE:
+      vUNToStr(Data, time.min,2);
+      break;
+    case DAY:
+      vUNToStr(Data, time.day,2);
+      break;
+    case MOUNTH:
+      vUNToStr(Data, time.month,2);
+      break;
+    case YEAR:
+      vUNToStr(Data, time.year,2);
+      break;
+    default:
+      break;
+
+  }
+
 
   return;
 

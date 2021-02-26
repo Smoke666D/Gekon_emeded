@@ -934,11 +934,6 @@ void vStartUsbTask ( void *argument )
         case USB_REPORT_CMD_PUT_CHART_FUEL:
           vUSBget( &report, eUSBreportToChart );
           break;
-
-
-
-
-
         case USB_REPORT_CMD_PUT_EWA:
           vUSBget( &report, eUSBreportToEWA );
           break;

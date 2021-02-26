@@ -43,6 +43,8 @@ static FLAG              fAlarmFlag       = FLAG_RESET;
 static FLAG              fDownScreen      = FLAG_RESET;
 static uint8_t           uCurrentObject   = 0U;
 static FLAG              fPassowordCorrect= FLAG_RESET;
+static uint8_t           timechange=0U;
+static RTC_TIME          buftime;
 
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -59,6 +61,7 @@ void vMenuGotoAlarmScreen( void);
  */
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
 {
+
     switch ( key )
     {
       case KEY_STOP:  //Если клавиша стоп, то подсвечиваем объект "ДА"
@@ -73,7 +76,16 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
         //Если каливаша AUTO то проверяем объеты меню, если выбран ДА.
         if ( menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] == 1U )
         {
-          eDATAAPIconfigValue(DATA_API_CMD_SAVE,uiSetting,NULL);
+          if (uDataType ==  DATE_TYPE)
+          {
+            eRTCsetTime (&buftime);
+            eRTCgetTime (&buftime);
+            timechange = 0;
+          }
+          else
+          {
+            eDATAAPIconfigValue(DATA_API_CMD_SAVE,uiSetting,NULL);
+          }
         }
         else
         {
@@ -93,6 +105,55 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
         break;
     }
   return;
+}
+/*
+ *   Функции экранов редактирования уставок
+ *
+ */
+
+
+/*
+ * Сервисная функция для корретироаки времени в меню на строек. Проверяет корректность измененных данных
+ */
+void vMenuTimeChange(int8_t offset)
+{
+  ucActiveObject = CHANGE_D;
+  timechange     = 1U;
+  switch (uCurrentObject)
+  {
+        case 1:
+           if ( ( buftime.hour + offset ) <= RTC_HOUR_MAX )
+           {
+              buftime.hour = buftime.hour + offset;
+           }
+           break;
+        case 2:
+           if ( ( buftime.min + offset ) <= RTC_MIN_MAX )
+           {
+              buftime.min = buftime.min + offset;
+           }
+           break;
+        case 3:
+           if ( ( buftime.day + offset <= RTC_DAY_MAX ) && ( buftime.day + offset >= RTC_DAY_MIN ) )
+           {
+              buftime.day = buftime.day + offset;
+           }
+           break;
+        case 4:
+           if ( ( buftime.month + offset <= RTC_MONTH_MAX ) && ( buftime.month + offset >= RTC_MONTH_MIN ) )
+           {
+              buftime.month = buftime.month + offset;
+           }
+           break;
+        case 5:
+           if ( ( buftime.year + offset ) <= RTC_YEAR_MAX )
+           {
+              buftime.year = buftime.year + offset;
+           }
+           break;
+         default:
+           break;
+   }
 }
 
 
@@ -114,6 +175,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
       }
       uiSetting  = FIRST_SETTING ;
+      timechange = 0;
     }
     if ( ( ucActiveObject !=NO_SELECT_D) && (uDataType == BITMAP))
     {
@@ -211,28 +273,13 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
      if ((uDataType ==  DATE_TYPE) && ( ucActiveObject !=NO_SELECT_D))
      {
       switch (key)
-                {
-                  case KEY_DOWN_BREAK:
-                          ucActiveObject = CHANGE_D;
-  /*                        eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
-                          if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
-                              data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                          else
-                             data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                          eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
-                          break;
-*/
-                     break;
-                  case KEY_UP_BREAK:
-                           ucActiveObject = CHANGE_D;
-                          /* eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &data );
-                           if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
-                               data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                           else
-                             data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
-                           eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
-*/
-                         break;
+      {
+               case KEY_DOWN_BREAK:
+                    vMenuTimeChange (-1);
+                    break;
+               case KEY_UP_BREAK:
+                    vMenuTimeChange (1);
+                    break;
                   case KEY_STOP:
                            for (uint8_t i=uCurrentObject-1; i>0;i--)
                            {
@@ -260,6 +307,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                            }
                           break;
                   case KEY_AUTO:
+                         timechange = 0;
                          pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
                          vExitCurObject();
                          return;
@@ -1169,26 +1217,29 @@ void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 
 void vGetTIMEForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
-  RTC_TIME time;
   Data[1] = 0;
-  vRTCgetCashTime (&time );
+  if (timechange == 0U)
+  {
+    vRTCgetCashTime (&buftime );
+  }
+
   uDataType = 4;
   switch (ID)
   {
     case HOUR:
-      vUNToStr(Data, time.hour,2);
+      vUNToStr(Data, buftime.hour,2);
       break;
     case MINUTE:
-      vUNToStr(Data, time.min,2);
+      vUNToStr(Data, buftime.min,2);
       break;
     case DAY:
-      vUNToStr(Data, time.day,2);
+      vUNToStr(Data, buftime.day,2);
       break;
     case MOUNTH:
-      vUNToStr(Data, time.month,2);
+      vUNToStr(Data, buftime.month,2);
       break;
     case YEAR:
-      vUNToStr(Data, time.year,2);
+      vUNToStr(Data, buftime.year,2);
       break;
     default:
       break;

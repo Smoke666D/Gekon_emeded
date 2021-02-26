@@ -327,6 +327,10 @@ RTC_STATUS eRTCsetTime ( RTC_TIME* time )
         buffer[RTC_YEAR]    = decToBcd( time->year );
         res = eRTCwrite( RTC_SECONDS, buffer, RTC_TIME_SIZE );
         osDelay( RTC_POOL_TIMEOUT );
+        if ( res == RTC_OK )
+        {
+          cashTime = *time;
+        }
       }
       xSemaphoreGive( xRTCSemaphore );
     }

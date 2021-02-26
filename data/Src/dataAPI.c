@@ -430,6 +430,7 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
               {
                 res = DATA_API_STAT_EEPROM_ERROR;
               }
+              vCHARTupdateAtrib();
               xSemaphoreGive( xCHARTgetSemophore() );
             }
             xSemaphoreGive( xSemaphore );

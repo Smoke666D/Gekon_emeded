@@ -206,27 +206,42 @@ EEPROM_STATUS eSTORAGEwriteCharts ( void )
   EEPROM_STATUS res        = EEPROM_OK;
   uint8_t       i          = 0U;
   uint8_t       j          = 0U;
-  uint32_t      adr        = STORAGE_CHART_ADR;
-  uint8_t       size       = 0U;
+  uint32_t      adr        = 0U;
   uint8_t       len        = 0U;
   uint8_t       buffer[4U] = { 0U };
   for ( i=0U; i<CHART_NUMBER; i++ )
   {
-    size  = 0U;
-    len   = uUint16ToBlob( charts[i]->size, buffer );
-    res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-    size += len;
-    for ( j=0U; j<charts[i]->size; j++ )
+    adr  = STORAGE_CHART_ADR + CHART_CHART_SIZE * i;
+    len  = uUint16ToBlob( charts[i]->size, buffer );
+    res  = eEEPROMwriteMemory( adr, buffer, len );
+    adr += len;
+    if ( res == EEPROM_OK )
     {
-      len   = uFix16ToBlob( charts[i]->dots[j].x, buffer );
-      res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-      size += len;
-      len   = uFix16ToBlob( charts[i]->dots[j].y, buffer );
-      res   = eEEPROMwriteMemory( ( adr + size + 1U ), buffer, len );
-      size += len;
+      for ( j=0U; j<charts[i]->size; j++ )
+      {
+        len  = uFix16ToBlob( charts[i]->dots[j].x, buffer );
+        res  = eEEPROMwriteMemory( adr, buffer, len );
+        adr += len;
+        if ( res == EEPROM_OK )
+        {
+          len  = uFix16ToBlob( charts[i]->dots[j].y, buffer );
+          res  = eEEPROMwriteMemory( adr, buffer, len );
+          adr += len;
+          if ( res != EEPROM_OK )
+          {
+            break;
+          }
+        }
+        else
+        {
+          break;
+        }
+      }
     }
-    res  = eEEPROMwriteMemory( adr, &size, 1U );
-    adr += size + 1U;
+    else
+    {
+      break;
+    }
   }
   return res;
 }
@@ -237,40 +252,42 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
   uint8_t       i          = 0U;
   uint8_t       j          = 0U;
   uint8_t       len        = 0U;
-  uint8_t       size       = 0U;
-  uint8_t       calc       = 0U;
-  uint32_t      adr        = STORAGE_CHART_ADR;
+  uint32_t      adr        = 0U;
   uint8_t       buffer[4U] = { 0U };
   for ( i=0U; i<CHART_NUMBER; i++ )
   {
-    res = eEEPROMreadMemory( adr, &calc, 1U );
-    if ( ( res == EEPROM_OK ) && ( calc > 0U ) && ( calc < CHART_CHART_SIZE ) )
+    adr  = STORAGE_CHART_ADR + CHART_CHART_SIZE * i;
+    res  = eEEPROMreadMemory( adr, buffer, 2U );
+    len  = uBlobToUint16( &charts[i]->size, buffer );
+    adr += len;
+    if ( charts[i]->size > CHART_DOTS_SIZE ) {
+      charts[i]->size = CHART_DOTS_SIZE;
+    }
+    if ( res == EEPROM_OK )
     {
-      size = 0U;
-      adr++;
-      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-      len   = uBlobToUint16( &charts[i]->size, buffer );
-      size += len;
       for ( j=0U; j<charts[i]->size; j++ )
       {
-	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	      len   = uBlobToFix16( &charts[i]->dots[j].x, buffer );
-	      size += len;
-	      res   = eEEPROMreadMemory( ( adr + size ), buffer, 4U );
-	      len   = uBlobToFix16( &charts[i]->dots[j].y, buffer );
-	      size += len;
-      }
-      adr += size;
-
-      if ( calc != size )
-      {
-        res = EEPROM_SIZE_ERROR;
-        break;
+	      res  = eEEPROMreadMemory( adr, buffer, 4U );
+	      len  = uBlobToFix16( &charts[i]->dots[j].x, buffer );
+	      adr += len;
+	      if ( res == EEPROM_OK )
+	      {
+	        res  = eEEPROMreadMemory( adr, buffer, 4U );
+	        len  = uBlobToFix16( &charts[i]->dots[j].y, buffer );
+	        adr += len;
+	        if ( res != EEPROM_OK )
+	        {
+	          break;
+	        }
+	      }
+	      else
+	      {
+	        break;
+	      }
       }
     }
     else
     {
-      res = EEPROM_ERROR;
       break;
     }
   }

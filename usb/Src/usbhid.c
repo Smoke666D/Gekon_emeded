@@ -221,10 +221,8 @@ void vUSBchartToReport ( USB_REPORT* report )
   }
   if ( report->adr == 0U )
   {
-    report->length   = 4U;
-    report->data[0U] = charts[chartAdr]->xType;
-    report->data[1U] = charts[chartAdr]->yType;
-    vUint16ToBytes( charts[chartAdr]->size, &report->data[2U] );
+    report->length   = 2U;
+    vUint16ToBytes( charts[chartAdr]->size, &report->data[0U] );
   }
   else if ( ( report->adr - 1U ) <= CHART_DOTS_SIZE )
   {
@@ -448,15 +446,13 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
   }
   if ( report->adr == 0U )
   {
-    if ( report->length == 4U )
+    if ( report->length == 2U )
     {
       while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
       {
 
       }
-      charts[chartAdr]->size  = uBytesToUnit16( &report->data[2U] );
-      charts[chartAdr]->xType = report->data[0U];
-      charts[chartAdr]->yType = report->data[1U];
+      charts[chartAdr]->size  = uBytesToUnit16( &report->data[0U] );
       xSemaphoreGive( xCHARTgetSemophore() );
     }
     else

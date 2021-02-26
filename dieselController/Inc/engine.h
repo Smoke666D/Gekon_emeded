@@ -23,31 +23,6 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  SENSOR_TYPE_NONE,
-  SENSOR_TYPE_NORMAL_OPEN,
-  SENSOR_TYPE_NORMAL_CLOSE,
-  SENSOR_TYPE_RESISTIVE,
-  SENSOR_TYPE_CURRENT,
-} SENSOR_TYPE;
-
-typedef enum
-{
-  SENSOR_STATUS_NORMAL,
-  SENSOR_STATUS_ERROR,
-  SENSOR_STATUS_LINE_ERROR,
-  SENSOR_STATUS_COMMON_ERROR,
-} SENSOR_STATUS;
-
-typedef enum
-{
-  SENSOR_CHANNEL_OIL,
-  SENSOR_CHANNEL_COOLANT,
-  SENSOR_CHANNEL_FUEL,
-  SENSOR_CHANNEL_COMMON,
-} SENSOR_CHANNEL;
-
-typedef enum
-{
   ENGINE_CMD_NONE,                    /*  0 */
   ENGINE_CMD_START,                   /*  1 Ignition */
   ENGINE_CMD_PLAN_STOP,               /*  2 */

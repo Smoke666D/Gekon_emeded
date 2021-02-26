@@ -6,6 +6,9 @@
  */
 /*----------------------- Includes -------------------------------------*/
 #include "chart.h"
+#include "config.h"
+#include "dataProces.h"
+#include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/
 const eAxisAttributes axisAtribOil = {
@@ -102,6 +105,35 @@ void vCHARTinitCharts ( void )
   {
     charts[i]->dots[1U].x = xAxisAtribs[charts[i]->xType]->max;
     charts[i]->dots[1U].y = yAxisAtribs[charts[i]->yType]->max;
+  }
+  return;
+}
+
+void vCHARTupdateAtrib ( void )
+{
+  if ( getBitMap( &oilPressureSetup, OIL_PRESSURE_SENSOR_TYPE_ADR ) == SENSOR_TYPE_CURRENT )
+  {
+    charts[0U]->xType = X_AXIS_TYPE_CURRENT;
+  }
+  else
+  {
+    charts[0U]->xType = X_AXIS_TYPE_RESISTIVE;
+  }
+  if ( getBitMap( &coolantTempSetup, COOLANT_TEMP_SENSOR_TYPE_ADR ) == SENSOR_TYPE_CURRENT )
+  {
+    charts[1U]->xType = X_AXIS_TYPE_CURRENT;
+  }
+  else
+  {
+    charts[1U]->xType = X_AXIS_TYPE_RESISTIVE;
+  }
+  if ( getBitMap( &fuelLevelSetup, FUEL_LEVEL_SENSOR_TYPE_ADR ) == SENSOR_TYPE_CURRENT )
+  {
+    charts[2U]->xType = X_AXIS_TYPE_CURRENT;
+  }
+  else
+  {
+    charts[2U]->xType = X_AXIS_TYPE_RESISTIVE;
   }
   return;
 }

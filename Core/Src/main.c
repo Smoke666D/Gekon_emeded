@@ -1298,6 +1298,7 @@ void StartDefaultTask(void *argument)
   vSYSSerial( ">>Start Default Task!\n\r" );
   vDATAAPIdataInit();                         /* Data from EEPROM initialization */
   vDATAAPIlogInit();                          /* Get log data from EEPROM */
+  vCHARTupdateAtrib();                        /* Update charts attributes */
   vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
   while ( uADCGetValidDataFlag() == 0U )

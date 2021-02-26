@@ -1170,7 +1170,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       switch(xADCGetxOPChType())
       {
         case SENSOR_TYPE_RESISTIVE:
-            eCHARTfunc(&oilSensorChart,  xADCGetSOP() ,   &temp);
+            eCHARTfunc(charts[OIL_CHART_ADR],  xADCGetSOP() ,   &temp);
             fix16_to_str( temp, Data, 2U );
             vStrAdd(Data," Бар");
             break;
@@ -1191,7 +1191,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       switch (xADCGetxCTChType())
       {
         case SENSOR_TYPE_RESISTIVE:
-            eCHARTfunc(&coolantSensorChart, xADCGetSCT() ,   &temp);
+            eCHARTfunc(charts[COOLANT_CHART_ADR], xADCGetSCT() ,   &temp);
             fix16_to_str( temp, Data, 0U );
             vStrAdd(Data," гр.С");
             break;

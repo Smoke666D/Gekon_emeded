@@ -87,6 +87,9 @@ typedef struct __packed
   eChartDot   dots[CHART_DOTS_SIZE]; /* 128 * 8 = 1024 bytes  */
 } eChartData;
 /*------------------------ Extern --------------------------------------*/
+extern       eChartData             oilSensorChart;
+extern       eChartData             coolantSensorChart;
+extern       eChartData             fuelSensorChart;;
 extern       eChartData*      const charts[CHART_NUMBER];
 extern const eAxisAttributes* const xAxisAtribs[X_AXIS_TYPES_NUMBER];
 extern const eAxisAttributes* const yAxisAtribs[Y_AXIS_TYPES_NUMBER];

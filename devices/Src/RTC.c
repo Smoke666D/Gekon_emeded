@@ -329,7 +329,7 @@ RTC_STATUS eRTCsetTime ( RTC_TIME* time )
         osDelay( RTC_POOL_TIMEOUT );
         if ( res == RTC_OK )
         {
-          cashTime = time;
+          cashTime = *time;
         }
       }
       xSemaphoreGive( xRTCSemaphore );

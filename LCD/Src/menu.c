@@ -10,7 +10,7 @@
 #include "keyboard.h"
 #include "menu_data.h"
 #include "controllerTypes.h"
-#include "stdio.h"
+//#include "stdio.h"
 #include "server.h"
 #include "engine.h"
 
@@ -43,9 +43,8 @@ static FLAG              fAlarmFlag       = FLAG_RESET;
 static FLAG              fDownScreen      = FLAG_RESET;
 static uint8_t           uCurrentObject   = 0U;
 static FLAG              fPassowordCorrect= FLAG_RESET;
-static uint8_t           timechange=0U;
+static FLAG              fTimeEdit        = FLAG_RESET;
 static RTC_TIME          buftime;
-
 
 /*----------------------- Functions -----------------------------------------------------------------*/
 
@@ -57,20 +56,27 @@ void vMenuGotoAlarmScreen( void);
 
 /*---------------------------------------------------------------------------------------------------*/
 /*
- * Функция обработки клавишей меню да-нет?
+ * Функции обработки клавишей меню да-нет?
  */
+#define     YES_MASK   0x01
+#define     NO_MASK    0x02
+
+void vYesNoMenu(xScreenSetObject* menu,uint8_t mask)
+{
+  menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] = mask & 0x01;
+  menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3U].ObjectParamert[3U] = (mask >> 1) & 0x01;
+  return;
+}
+
 void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
 {
-
     switch ( key )
     {
       case KEY_STOP:  //Если клавиша стоп, то подсвечиваем объект "ДА"
-        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] = 1U;
-        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3U].ObjectParamert[3U] = 0U;
+        vYesNoMenu(menu,YES_MASK);
         break;
       case KEY_START://Если клавиша старт, то подсвечиваем объект "НЕТ"
-        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] = 0U;
-        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3U].ObjectParamert[3U] = 1U;
+        vYesNoMenu(menu,NO_MASK);
       break;
       case KEY_AUTO:
         //Если каливаша AUTO то проверяем объеты меню, если выбран ДА.
@@ -79,8 +85,7 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
           if (uDataType ==  DATE_TYPE)
           {
             eRTCsetTime (&buftime);
-            eRTCgetTime (&buftime);
-            timechange = 0;
+            fTimeEdit = FLAG_RESET;
           }
           else
           {
@@ -89,27 +94,155 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
         }
         else
         {
-          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] =1U;
-          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3U].ObjectParamert[3U] =0U;
+          vYesNoMenu(menu,YES_MASK); //Подсвечиваем объект "ДА"
+          if (uiSetting >= FIRST_VALID_SETTING)
+          {
+            eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
+          }
         }
-        eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
         pCurrMenu = xYesNoMenu.pHomeMenu[0U].pUpScreenSet;
         break;
       case KEY_EXIT:  // Если прилетела команда выход, что также может быть и таймаутом,
                       // выходим каскадом в предидущие меню
-        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[2U].ObjectParamert[3U] =1U;
-        menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[3U].ObjectParamert[3U] =0U;
-        eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
+        vYesNoMenu(menu,YES_MASK);
+        pCurrMenu = xYesNoMenu.pHomeMenu[0U].pUpScreenSet;
+        pCurrMenu->pFunc( pCurrMenu, KEY_EXIT );
         break;
       default:
         break;
     }
   return;
 }
+/***********************************************************************   Функции экранов редактирования уставок*********************************************************************/
+
+#define        HOUR_OBJECT      1U
+#define        MINUTE_OBJECT    2U
+#define        DAY_OBJECT       3U
+#define        MONTH_OBJECT     4U
+#define        YEAR_OBJECT      5U
+
 /*
- *   Функции экранов редактирования уставок
- *
+ * Сервисная функция вывода в строку заданного бита уставки типа bitmap
  */
+void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  eConfigAttributes xAtrib    = { 0U };
+  uint16_t          buff      =  0U;
+  if ( cmd == mREAD)
+  {
+      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+      if ( xAtrib.bitMapSize != 0U )
+      {
+        eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &buff );
+        Data[0]   = ( ( buff >> ( ID-1 ) ) & 0x01 ) + '0';
+        Data[1]   = 0;
+        uDataType = BITMAP_TYPE;
+      }
+      else
+      {
+        Data[0]=0;
+      }
+  }
+  return;
+}
+
+/*
+ *  Сервисная функция вывода данных численного формата
+ */
+
+void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  eConfigAttributes xAtrib                  = { 0U };
+  uint16_t          buff                    = 0U;
+  int8_t            scale                   = 0U;
+  uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
+  char              cbuf[17]                = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Data[0U] = 0U;
+  if ( cmd == mREAD )
+  {
+      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+      if ( xAtrib.bitMapSize == 0U )
+      {
+         if ( xAtrib.len == 1U )
+         {
+             if (ID!=10)
+             {
+                 switch ( xAtrib.type )
+                 {
+                     case 'U':
+                         eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
+                         vUToStr ( Data, buff, scale );
+                         uDataType = 2;
+                         break;
+                     case 'S':
+
+                       break;
+                     default:
+                       break;
+                 }
+             }
+        }
+        else
+        {
+          if ( (ID==10) && ( xAtrib.type == 'C') )
+          {
+              eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting,(uint16_t *) &cbuf );
+              vStrCopy(Data,cbuf);
+          }
+        }
+      }
+  }
+  return;
+}
+
+
+/*
+ * Сервисная функция вывода в номера редактируемой настройки
+ */
+void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  if (cmd == mREAD)
+  {
+    vUToStr(Data, uiSetting,0);
+  }
+  return;
+}
+
+
+/*
+ * Сервисная функция вывода в строку размерности насртокйки
+ */
+
+void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  eConfigAttributes xAtrib                  = { 0U };
+  uint8_t           k                       = 0U;
+  uint16_t          buff                    = 0U;
+  int8_t            scale                   = 0U;
+  uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
+  if ( cmd == mREAD)
+  {
+      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+      if (( xAtrib.bitMapSize == 0U ) && ( xAtrib.len == 1U ) )
+      {
+          eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
+          for (uint8_t i=0; i< MAX_UNITS_LENGTH; i++ )
+          {
+            if ( ( units[i] >> 8U) != 0U )
+            {
+              Data[k++] = units[i] >> 8U;
+            }
+            Data[k++] = units[i] & 0x00FFU;
+          }
+          Data[k] = 0U;
+      }
+      else
+      {
+        vStrCopy(Data,"    ");
+      }
+  }
+  return;
+}
 
 
 /*
@@ -118,34 +251,34 @@ void xYesNoScreenKeyCallBack ( xScreenSetObject* menu, char key )
 void vMenuTimeChange(int8_t offset)
 {
   ucActiveObject = CHANGE_D;
-  timechange     = 1U;
+  fTimeEdit      = FLAG_SET;
   switch (uCurrentObject)
   {
-        case 1:
+        case HOUR_OBJECT:
            if ( ( buftime.hour + offset ) <= RTC_HOUR_MAX )
            {
               buftime.hour = buftime.hour + offset;
            }
            break;
-        case 2:
+        case MINUTE_OBJECT:
            if ( ( buftime.min + offset ) <= RTC_MIN_MAX )
            {
               buftime.min = buftime.min + offset;
            }
            break;
-        case 3:
+        case DAY_OBJECT:
            if ( ( buftime.day + offset <= RTC_DAY_MAX ) && ( buftime.day + offset >= RTC_DAY_MIN ) )
            {
               buftime.day = buftime.day + offset;
            }
            break;
-        case 4:
+        case MONTH_OBJECT:
            if ( ( buftime.month + offset <= RTC_MONTH_MAX ) && ( buftime.month + offset >= RTC_MONTH_MIN ) )
            {
               buftime.month = buftime.month + offset;
            }
            break;
-        case 5:
+        case YEAR_OBJECT:
            if ( ( buftime.year + offset ) <= RTC_YEAR_MAX )
            {
               buftime.year = buftime.year + offset;
@@ -170,12 +303,12 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
       fDownScreen = FLAG_RESET;
       fFirstEnter = FLAG_SET;
+      fTimeEdit   = FLAG_RESET;
       if (uiSetting >= FIRST_VALID_SETTING)
       {
         eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
       }
       uiSetting  = FIRST_SETTING ;
-      timechange = 0;
     }
     if ( ( ucActiveObject !=NO_SELECT_D) && (uDataType == BITMAP))
     {
@@ -187,7 +320,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                   if (data & (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1)))
                       data &= ~(0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
                   else
-                     data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
+                      data |= (0x01<<(menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].DataID-1));
                   eDATAAPIconfigValue( DATA_API_CMD_WRITE, uiSetting, &data );
                   break;
 
@@ -270,7 +403,8 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
            break;
        }
     }
-     if ((uDataType ==  DATE_TYPE) && ( ucActiveObject !=NO_SELECT_D))
+     //Блок редактирования данныт типа даты и времекни
+     if ( ( uDataType ==  DATE_TYPE ) && ( ucActiveObject != NO_SELECT_D ) )
      {
       switch (key)
       {
@@ -307,16 +441,14 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                            }
                           break;
                   case KEY_AUTO:
-                         timechange = 0;
+                          fTimeEdit =  FLAG_RESET;
                          pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
                          vExitCurObject();
                          return;
                   default:
                       break;
                 }
-
      }
-
     //Обащя навигация, в не зависимости от типа данных
     if ( ucActiveObject == NO_SELECT_D )
     {
@@ -499,6 +631,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
             }
             else
             {
+
               if ( menu->pCurrIndex == menu->pMaxIndex )
               {
                 menu->pCurrIndex = 0U;
@@ -591,14 +724,16 @@ void vMenuMessageInit ( osThreadId_t xmainprocess )
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuTask ( void )
 {
-    //Блок обработки нажатий на клавиши
 
   static FLAG xTimeOutFlag = FLAG_RESET;
+
+  //Если установлен флаг реинициализации
   if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
   {
      vLCDBrigthInit();
      xEventGroupClearBits( xDATAAPIgetEventGroup(),    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT );
   }
+
   osDelay(100);
   temp_counter++;
   //Блок отрисовки экранов
@@ -608,6 +743,7 @@ void vMenuTask ( void )
     vLCDRedraw();
     temp_counter = 0U;
   }
+
   if ( xQueueReceive( pKeyboard, &TempEvent, 0U ) == pdPASS )
   {
     key = 0U;
@@ -671,7 +807,6 @@ void vMenuTask ( void )
           xTimeOutFlag = FLAG_SET;
           pCurrMenu->pCurrIndex = HOME_MENU;
           vLCDSetLedBrigth(1);
-
         }
         else
         {
@@ -682,7 +817,7 @@ void vMenuTask ( void )
       {
         if (xTimeOutFlag == FLAG_SET)
         {
-           xTimeOutFlag =FLAG_RESET;
+           xTimeOutFlag = FLAG_RESET;
            vLCDBrigthInit();
         }
       }
@@ -760,14 +895,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
             if ( pScreenObjects[i].ObjectParamert[3U] > 0U )
             {
               Insert = 1U;
-              if ( Blink > 0U )
-              {
-                Blink = 0U;
-              }
-              else
-              {
-                Blink = 1U;
-              }
+              Blink = ( Blink > 0U ) ? 0U : 1U;
             }
             if ( !Insert )
             {
@@ -845,133 +973,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
   }
   return;
 }
-
-
-void vGetSettingsUnit ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  eConfigAttributes xAtrib                  = { 0U };
-  uint8_t           k                       = 0U;
-  uint16_t          buff                    = 0U;
-  uint8_t           i                       = 0U;
-  int8_t            scale                   = 0U;
-  uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
-  Data[0U] = 0U;
-  switch ( cmd )
-  {
-    case mREAD:
-      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
-      if ( xAtrib.bitMapSize == 0U )
-      {
-        if ( xAtrib.len == 1U )
-        {
-          eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
-
-          for ( i=0; i<MAX_UNITS_LENGTH; i++ )
-          {
-            if ( ( units[i] >> 8U) != 0U )
-            {
-              Data[k++] = units[i] >> 8U;
-            }
-            Data[k++] = units[i] & 0x00FFU;
-          }
-          Data[k] = 0U;
-        }
-      }
-      else
-      {
-        vStrCopy(Data,"    ");
-      }
-      break;
-    default:
-      break;
-  }
-  return;
-}
-
-
-
-
-void vGetSettingsBitData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  eConfigAttributes xAtrib                  = { 0U };
-  uint16_t          buff                    =  0U;
-  switch ( cmd )
-  {
-    case  mREAD:
-      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
-      if ( xAtrib.bitMapSize != 0U )
-      {
-        eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &buff );
-        Data[0]=((buff>>(ID-1)) & 0x01)+'0';
-        Data[1]=0;
-        uDataType = 3;
-      }
-      else
-        Data[0]=0;
-      break;
-    default:
-      break;
-  }
-}
-
-void vGetSettingsData ( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  eConfigAttributes xAtrib                  = { 0U };
-  uint16_t          buff                    = 0U;
-  int8_t            scale                   = 0U;
-  uint16_t          units[MAX_UNITS_LENGTH] = { 0U };
-  char              cbuf[17]                = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  Data[0U] = 0U;
-  if ( cmd == mREAD )
-  {
-      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
-      if ( xAtrib.bitMapSize == 0U )
-      {
-         if ( xAtrib.len == 1U )
-         {
-             if (ID!=10)
-             {
-                 switch ( xAtrib.type )
-                 {
-                     case 'U':
-                         eDATAAPIconfig( DATA_API_CMD_READ, uiSetting, &buff, &scale, units );
-                         vUToStr ( Data, buff, scale );
-                         uDataType = 2;
-                         break;
-                     case 'S':
-                       //    eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting, &sbuff );
-                       //vITOSTRING( ( uint8_t* )Data, buff );
-                       break;
-                     default:
-                       break;
-                 }
-             }
-        }
-        else
-        {
-          if ( (ID==10) && ( xAtrib.type == 'C') )
-          {
-              eDATAAPIconfigValue( DATA_API_CMD_READ, uiSetting,(uint16_t *) &cbuf );
-              vStrCopy(Data,cbuf);
-          }
-        }
-      }
-  }
-  return;
-}
-
-
-
-void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  if (cmd == mREAD)
-  {
-    vUToStr(Data, uiSetting,0);
-    //vUCTOSTRING( ( uint8_t* )Data, (uint8_t) uiSetting);
-  }
-  return;
-}
-
 
 
 
@@ -1079,11 +1080,9 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   static LOG_RECORD_TYPE  xrecord;
-
   static uint8_t          ALD   = 0;
   static uint16_t         utemp;
   char   TS[6];
-
   vStrCopy(Data," ");
   switch (ID)
   {
@@ -1098,11 +1097,13 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
              vMenuGotoAlarmScreen();
              pCurrMenu->pFunc( pCurrMenu, KEY_EXIT ); //И отпраляем в текущуе меню команды выхода, переход на экран алармов осуществет обработчик текущего меню
          }
-         if ( ++ALD>BLINK_TIME )
+         if ( ++ALD > BLINK_TIME )
          {
            vStrCopy(Data,"О");
            if (ALD ==(BLINK_TIME*2))
-           ALD=0;
+           {
+             ALD=0;
+           }
          }
       }
       else
@@ -1121,8 +1122,6 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       eDATAAPIlog(DATA_API_CMD_READ_CASH,&uCurPointer,&xrecord);
       break;
     case CURRENT_EVENT_TIME:
-
-
     case CURRENT_ALARM_TIME:
       if (uCurrentAlarm < BufAlarmCount)
        {
@@ -1197,32 +1196,15 @@ void vGetPasswordData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
   Data[1]=0;
 }
 
-void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
-{
-  TRIGGER_STATE  DS;
-  DS = eFPOgetState ( ID-1 );
-  if (DS==TRIGGER_IDLE)
-  {
-     Data[0] = '0';
-  }
-  else
-  {
-     Data[0] = '1';
-  }
-  Data[1] = 0;
 
-  return;
-
-}
 
 void vGetTIMEForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   Data[1] = 0;
-  if (timechange == 0U)
+  if ( fTimeEdit ==  FLAG_RESET)
   {
     vRTCgetCashTime (&buftime );
   }
-
   uDataType = 4;
   switch (ID)
   {
@@ -1243,12 +1225,8 @@ void vGetTIMEForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
     default:
       break;
-
   }
-
-
   return;
-
 }
 
 
@@ -1256,20 +1234,19 @@ void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   TRIGGER_STATE  DS;
   DS = eFPIgetState( ID-1 );
-  if (DS==TRIGGER_IDLE)
-  {
-     Data[0] = '0';
-  }
-  else
-  {
-     Data[0] = '1';
-  }
+  Data[0] = ( DS== TRIGGER_IDLE ) ? '0' : '1' ;
   Data[1] = 0;
-
   return;
-
 }
 
+void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
+{
+  TRIGGER_STATE  DS;
+  DS = eFPOgetState ( ID-1 );
+  Data[0] = ( DS== TRIGGER_IDLE ) ? '0' : '1' ;
+  Data[1] = 0;
+  return;
+}
 
 void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
@@ -1277,7 +1254,7 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
    RTC_TIME    time;
    char        TS[6];
 
-   if (cmd !=mREAD ) return;
+   if (cmd != mREAD ) return;
 
    switch (ID)
    {
@@ -1315,64 +1292,63 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
      default:
        break;
    }
-
   return;
 }
-
+/***********************************************************************************вывод в меню данных контроллера*************************************************************************************/
+/*
+ * Сервисная функция вывода в строку серийного номера
+ */
+void vMenuPrintSerial(char * str, uint16_t * serial)
+{
+  for (uint8_t i=0;i<3;i++)
+  {
+       str[i*6]  = cHexToChar( (serial[i] >> 12)  & 0x0F );
+       str[i*6+1]= cHexToChar((serial[i]>>8)   & 0xF);
+       str[i*6+2]= ':';
+       str[i*6+3]= cHexToChar((serial[i]>>4)   & 0xF);
+       str[i*6+4]= cHexToChar((serial[i])      & 0xF);
+       str[i*6+5]=':';
+  }
+  str[17]=0;
+  return;
+}
+/*
+ * Функция вывода данных
+ */
 void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   fix16_t temp;
   uint16_t utempdata;
   xADCRotatinType xfase;
   uint16_t tt[6]={0,0,0,0,0,0};
+  char TS[6];
   eConfigAttributes ATR;
+  Data[0] = 0;
   switch (ID)
   {
     case  IP_ADRESS:
       cSERVERgetStrIP( Data );
       break;
     case HW_VER:
-      eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,&ATR);
-      if (ATR.len ==1 )
-      {
-          eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_CONTROLLER_ADR ,(uint16_t*)&tt);
-          sprintf(Data,"%i.%i",tt[0]/1000,tt[0]%1000);
-      }
-      break;
     case SW_VER:
-      eDATAAPIconfigAtrib(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR,&ATR);
+      eDATAAPIconfigAtrib(DATA_API_CMD_READ, ( ID == HW_VER ) ? VERSION_CONTROLLER_ADR : VERSION_FIRMWARE_ADR ,&ATR);
       if (ATR.len ==1 )
       {
-        eDATAAPIconfigValue(DATA_API_CMD_READ,VERSION_FIRMWARE_ADR, (uint16_t*)&tt);
-        sprintf(Data,"%i.%i",tt[0]/1000,tt[0]%1000);
+          eDATAAPIconfigValue(DATA_API_CMD_READ, (ID == HW_VER ) ? VERSION_CONTROLLER_ADR : VERSION_FIRMWARE_ADR ,(uint16_t*)&tt);
+          vUToStr(TS,tt[0]/1000,0);
+          vStrCopy(Data,TS);
+          vUToStr(TS,tt[0]%1000,0);
+          vStrAdd(Data,TS);
+          //sprintf(Data,"%i.%i",tt[0]/1000,tt[0]%1000);
       }
       break;
     case SERIAL_L:
       eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR, (uint16_t*)&tt);
-      for (uint8_t i=0;i<3;i++)
-      {
-           Data[i*6]  = cHexToChar((tt[i]>>12)  & 0x0F );
-           Data[i*6+1]= cHexToChar((tt[i]>>8)   & 0xF);
-           Data[i*6+2]= ':';
-           Data[i*6+3]= cHexToChar((tt[i]>>4)   & 0xF);
-           Data[i*6+4]= cHexToChar((tt[i])      & 0xF);
-           Data[i*6+5]=':';
-      }
-      Data[17]=0;
+      vMenuPrintSerial(Data,(uint16_t*) &tt);
       break;
     case SERIAL_H:
       eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,(uint16_t*)&tt);
-      for (uint8_t i=0;i<3;i++)
-          {
-            Data[i*6]  = cHexToChar((tt[i+3]>>12) & 0x0F );
-            Data[i*6+1]= cHexToChar((tt[i+3]>>8)   & 0xF);
-            Data[i*6+2]=':';
-            Data[i*6+3]= cHexToChar((tt[i+3]>>4)   & 0xF);
-            Data[i*6+4]= cHexToChar((tt[i+3])   & 0xF);
-            Data[i*6+5]=':';
-          }
-        Data[17]=0;
-
+      vMenuPrintSerial(Data,(uint16_t*) &tt);
       break;
     case FUEL_LEVEL:
       switch (xADCGetFLChType())
@@ -1384,10 +1360,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
          case SENSOR_TYPE_NORMAL_OPEN:
          case SENSOR_TYPE_NORMAL_CLOSE:
-             if (eENGINEgetFuelSensorState()==TRIGGER_SET)
-                vStrCopy(Data,"Активен");
-              else
-                vStrCopy(Data,"Не актив.");
+             vStrCopy(Data, eENGINEgetFuelSensorState()==TRIGGER_SET ? "Активен" : "Не актив." );
              break;
           default:
             Data[0]=0;
@@ -1404,10 +1377,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
-            if (eENGINEgetOilSensorState()==TRIGGER_SET)
-              vStrCopy(Data,"Активен");
-            else
-              vStrCopy(Data,"Не актив.");
+            vStrCopy(Data, eENGINEgetOilSensorState()==TRIGGER_SET ? "Активен" : "Не актив." );
             break;
         default:
             Data[0]=0;
@@ -1425,10 +1395,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
-            if (eENGINEgetCoolantSensorState()==TRIGGER_SET)
-              vStrCopy(Data,"Активен");
-            else
-              vStrCopy(Data,"Не актив.");
+            vStrCopy(Data, eENGINEgetCoolantSensorState()==TRIGGER_SET ? "Активен" : "Не актив." );
             break;
         default:
            Data[0]=0;
@@ -1453,7 +1420,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
     case GEN_L3_FASE_V:
       if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
       {
-        Data[0]=0;
+         Data[0]=0;
       }
       else
       {
@@ -1474,7 +1441,6 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       fix16_to_str(  xADCGetREG(ID), Data, 2U );
       vStrAdd(Data," Гц");
       break;
-
     case GEN_L2_CUR:
     case GEN_L3_CUR:
         if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
@@ -1548,34 +1514,33 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
              Data[0]=0;
              break;
          }
-        if (ID ==NET_ROTATION)
-          xfase=xADCGetNetFaseRotation();
-        else
-          xfase=xADCGetGenFaseRotation();
-             switch (xfase)
-             {
-               case B_C_ROTATION:
-                 vStrCopy(Data,"L1-L2-L3");
-                 break;
-               case C_B_ROTATION:
-                 vStrCopy(Data,"L1-L3-L2");
-                 break;
-               default:
-                 vStrCopy(Data,"XX-XX-XX");
-                 break;
-             }
-             break;
+         xfase = (ID ==NET_ROTATION) ? xADCGetNetFaseRotation() : xADCGetGenFaseRotation() ;
+         switch (xfase)
+         {
+            case B_C_ROTATION:
+              vStrCopy(Data,"L1-L2-L3");
+              break;
+            case C_B_ROTATION:
+              vStrCopy(Data,"L1-L3-L2");
+              break;
+              default:
+            vStrCopy(Data,"XX-XX-XX");
+              break;
+          }
+          break;
      case ENGINE_SPEED:
            fix16_to_str( fENGINEspeedGet(), Data, 0U );
            vStrAdd( Data, " об/м" );
            break;
      case  ENGINE_SCOUNT:
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);
-           sprintf(Data,"%u",utempdata);
+           vUToStr(Data,utempdata,0);
+           //sprintf(Data,"%u",utempdata);
            break;
      case ENGINE_WTIME:
            eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
-           sprintf(Data,"%u",utempdata);
+           vUToStr(Data,utempdata,0);
+           //sprintf(Data,"%u",utempdata);
            break;
      case COS_FI:
            fix16_to_str( xADCGetCOSFi(), Data, 2 );

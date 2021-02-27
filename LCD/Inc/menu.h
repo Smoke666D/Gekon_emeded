@@ -53,7 +53,8 @@
 #define KEY_START_BREAK     (start_key | BRAKECODE)// 8U
 #define KEY_EXIT            (time_out | MAKECODE)  //11U
 
-
+/**************Типы данны****************************************************************************************/
+#define BITMAP_TYPE         3U
 
 #define MAX_SCREEN_COUNT    3U
 #define MAX_SCREEN_OBJECT   25U
@@ -113,6 +114,7 @@
 
 
 /*------------------------------ Enum ----------------------------------------*/
+
 
 
 typedef enum

@@ -1320,7 +1320,7 @@ uint8_t vADCGetADC3Data()
  else
  {
    xNET_F2_VDD = 0;
-   uNetFaseRotation=NO_ROTATION;
+   uNetFaseRotation = NO_ROTATION;
   }
 
  //Проверям есть ли на канале напряжение.
@@ -1333,7 +1333,7 @@ uint8_t vADCGetADC3Data()
  else
  {
    xNET_F3_VDD = 0;
-   uNetFaseRotation=NO_ROTATION;
+   uNetFaseRotation = NO_ROTATION;
  }
  //Проверяем флаг чередования фаз.Если он сброшен, значит детектировали нулевое напряжение на 1-й фазе и
  //нужно проверить чередование фаз полсе востановления напряжния
@@ -1346,14 +1346,7 @@ uint8_t vADCGetADC3Data()
    {
      if (( abs (DF1 - DF2 )> FASE_DETECT_HISTERESIS ) &&  ( abs(DF2 - DF3 )> FASE_DETECT_HISTERESIS ))
      {
-       if (DF2 < DF3)
-       {
-         uNetFaseRotation = B_C_ROTATION;
-       }
-       else
-       {
-         uNetFaseRotation = C_B_ROTATION;
-       }
+       uNetFaseRotation = (DF2 < DF3) ? B_C_ROTATION : C_B_ROTATION;
      }
    }
  }

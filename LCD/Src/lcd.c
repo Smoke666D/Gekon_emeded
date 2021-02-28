@@ -52,6 +52,8 @@ void vLCDBrigthInit()
  */
 void vLCDSetLedBrigth ( uint8_t brigth )
 {
+
+
   if ( brigth <= displayBrightnesLevel.atrib->max )
   {
     lcd_brigth = brigth;

@@ -23,7 +23,7 @@ static unsigned char STATUS[KEYBOARD_COUNT]                     = { 0U };
 static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
 static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, start_key ,auto_key };
 static unsigned long KeyNorPressTimeOut                         = 0U;
-static unsigned long KEY_TIME_OUT                               = 1000U;
+
 uint8_t              KeyboardBuffer[ 16U * sizeof( KeyEvent ) ] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
 void vSetupKeyboard( void )
@@ -60,7 +60,7 @@ void vKeyboardInit(  uint32_t message )
 /*
  * Задача обработки клавиш
  * */
-void vKeyboardTask( void const * argument )
+void vKeyboardTask( void * argument )
 {
   KeyEvent      TEvent;
   GPIO_PinState TK[5U];
@@ -149,17 +149,5 @@ void vKeyboardTask( void const * argument )
   }
   return;
 }
-/*---------------------------------------------------------------------------------------------------*/
-unsigned long ulGetKeyTimeOut( void )
-{
-  return KEY_TIME_OUT;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vSetKeyTimeOut( unsigned long data )
-{
-  KEY_TIME_OUT = data;
-}
-
-
 
 

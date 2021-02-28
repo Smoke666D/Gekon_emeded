@@ -174,7 +174,7 @@ void StartDefaultTask(void *argument);
 /* USER CODE BEGIN PFP */
 void StartLcdTask(void *argument);
 extern void StartADCTask(void *argument);
-extern void vKeyboardTask(void const * argument);
+extern void vKeyboardTask(void * argument);
 extern void vStartNetTask(void *argument);
 extern void vStartUsbTask(void *argument);
 /* USER CODE END PFP */

@@ -409,10 +409,8 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
       switch (key)
       {
                case KEY_DOWN_BREAK:
-                    vMenuTimeChange (-1);
-                    break;
                case KEY_UP_BREAK:
-                    vMenuTimeChange (1);
+                    vMenuTimeChange ( ( key ==  KEY_DOWN_BREAK ) ? -1 : 1 );
                     break;
                   case KEY_STOP:
                            for (uint8_t i=uCurrentObject-1; i>0;i--)
@@ -600,14 +598,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
           pMenu     = pCurrMenu;
         }
       }
-      if ( pMenu->pCurrIndex == pMenu->pMaxIndex )
-      {
-        pMenu->pCurrIndex = 0U;
-      }
-      else
-      {
-        pMenu->pCurrIndex++;
-      }
+      pMenu->pCurrIndex = ( pMenu->pCurrIndex == pMenu->pMaxIndex ) ? 0U : pMenu->pCurrIndex + 1;
       uCurrentAlarm =0;
       key_ready &= ~SET_MENU_READY;
       break;
@@ -631,15 +622,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
             }
             else
             {
-
-              if ( menu->pCurrIndex == menu->pMaxIndex )
-              {
-                menu->pCurrIndex = 0U;
-              }
-              else
-              {
-                menu->pCurrIndex++;
-              }
+              pMenu->pCurrIndex = ( pMenu->pCurrIndex == pMenu->pMaxIndex ) ? 0U : pMenu->pCurrIndex + 1;
             }
         }
        break;
@@ -926,14 +909,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
               break;
             case HW_DATA:
             case INPUT_HW_DATA:
-              if ( pScreenObjects[i].DataID > 0U )
-              {
-                pScreenObjects[i].GetDtaFunction( mREAD, &Text, pScreenObjects[i].DataID );
-              }
-              else
-              {
-                pScreenObjects[i].GetDtaFunction( mREAD, &Text );
-              }
+              ( pScreenObjects[i].DataID > 0U ) ? pScreenObjects[i].GetDtaFunction( mREAD, &Text, pScreenObjects[i].DataID ) : pScreenObjects[i].GetDtaFunction( mREAD, &Text );
               TEXT = (char*)Text;
               break;
             default:
@@ -973,7 +949,6 @@ void vDrawObject( xScreenObjet * pScreenObjects)
   }
   return;
 }
-
 
 
 static uint8_t  StringShift   = 0;
@@ -1234,7 +1209,7 @@ void vGetFPIForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   TRIGGER_STATE  DS;
   DS = eFPIgetState( ID-1 );
-  Data[0] = ( DS== TRIGGER_IDLE ) ? '0' : '1' ;
+  Data[0] = ( DS == TRIGGER_IDLE ) ? '0' : '1' ;
   Data[1] = 0;
   return;
 }
@@ -1243,7 +1218,7 @@ void vGetFPOForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   TRIGGER_STATE  DS;
   DS = eFPOgetState ( ID-1 );
-  Data[0] = ( DS== TRIGGER_IDLE ) ? '0' : '1' ;
+  Data[0] = ( DS == TRIGGER_IDLE ) ? '0' : '1' ;
   Data[1] = 0;
   return;
 }
@@ -1264,14 +1239,7 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        break;
      case  STATUS_TIME:
        vSTATUSget(&xStatus);
-       if (xStatus.timer ==PERMISSION_ENABLE)
-       {
-         vUToStr( Data, xStatus.time,0);
-       }
-       else
-       {
-         vStrCopy(Data,"  ");
-       }
+       ( xStatus.timer ==PERMISSION_ENABLE ) ? vUToStr( Data, xStatus.time,0) : vStrCopy(Data,"  ");
        break;
      case  TIME_DATE:
        vRTCgetCashTime (&time );
@@ -1298,15 +1266,15 @@ void vGetControllerStatus( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 /*
  * Сервисная функция вывода в строку серийного номера
  */
-void vMenuPrintSerial(char * str, uint16_t * serial)
+void vMenuPrintSerial(char * str, uint16_t * serial, uint8_t ofs)
 {
   for (uint8_t i=0;i<3;i++)
   {
-       str[i*6]  = cHexToChar( (serial[i] >> 12)  & 0x0F );
-       str[i*6+1]= cHexToChar((serial[i]>>8)   & 0xF);
+       str[i*6]  = cHexToChar( (serial[ i + ofs ] >> 12)  & 0x0F);
+       str[i*6+1]= cHexToChar( (serial[ i + ofs ] >> 8 )  & 0xF );
        str[i*6+2]= ':';
-       str[i*6+3]= cHexToChar((serial[i]>>4)   & 0xF);
-       str[i*6+4]= cHexToChar((serial[i])      & 0xF);
+       str[i*6+3]= cHexToChar( (serial[ i + ofs ] >> 4 )  & 0xF );
+       str[i*6+4]= cHexToChar( (serial[ i + ofs ])        & 0xF );
        str[i*6+5]=':';
   }
   str[17]=0;
@@ -1343,12 +1311,9 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       }
       break;
     case SERIAL_L:
-      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR, (uint16_t*)&tt);
-      vMenuPrintSerial(Data,(uint16_t*) &tt);
-      break;
     case SERIAL_H:
-      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR,(uint16_t*)&tt);
-      vMenuPrintSerial(Data,(uint16_t*) &tt);
+      eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER_ADR, (uint16_t*)&tt);
+      vMenuPrintSerial(Data,(uint16_t*) &tt , ID == SERIAL_L ? 0 : 3);
       break;
     case FUEL_LEVEL:
       switch (xADCGetFLChType())
@@ -1360,7 +1325,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
          case SENSOR_TYPE_NORMAL_OPEN:
          case SENSOR_TYPE_NORMAL_CLOSE:
-             vStrCopy(Data, eENGINEgetFuelSensorState()==TRIGGER_SET ? "Активен" : "Не актив." );
+             vStrCopy(Data, eENGINEgetFuelSensorState() == TRIGGER_SET ? "Активен" : "Не актив." );
              break;
           default:
             Data[0]=0;
@@ -1377,7 +1342,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
-            vStrCopy(Data, eENGINEgetOilSensorState()==TRIGGER_SET ? "Активен" : "Не актив." );
+            vStrCopy(Data, eENGINEgetOilSensorState() == TRIGGER_SET ? "Активен" : "Не актив." );
             break;
         default:
             Data[0]=0;
@@ -1395,7 +1360,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
         case SENSOR_TYPE_NORMAL_OPEN:
         case SENSOR_TYPE_NORMAL_CLOSE:
-            vStrCopy(Data, eENGINEgetCoolantSensorState()==TRIGGER_SET ? "Активен" : "Не актив." );
+            vStrCopy(Data, eENGINEgetCoolantSensorState() == TRIGGER_SET ? "Активен" : "Не актив." );
             break;
         default:
            Data[0]=0;
@@ -1443,20 +1408,20 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       break;
     case GEN_L2_CUR:
     case GEN_L3_CUR:
-        if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
-        {
-              Data[0]=0;
-         }
-        else
-        {
+       if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
+       {
+          Data[0]=0;
+       }
+       else
+       {
           fix16_to_str(  xADCGetREG(ID), Data, 2U );
-           vStrAdd(Data," А");
+          vStrAdd(Data," А");
         }
         break;
     case GEN_L1_CUR:
     case GEN_AVER_A:
-      fix16_to_str(  xADCGetREG(ID), Data, 2U );
-      vStrAdd(Data," А");
+       fix16_to_str(  xADCGetREG(ID), Data, 2U );
+       vStrAdd(Data," А");
        break;
     case GEN_L2_REAC_POWER:
     case GEN_L3_REAC_POWER:
@@ -1477,19 +1442,19 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
      case GEN_L2_REAL_POWER:
      case GEN_L3_REAL_POWER:
          if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
-           {
-              Data[0]=0;
-           }
-            else
-            {
-                  fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
-                  vStrAdd(Data," кВА");
-             }
-             break;
+         {
+             Data[0]=0;
+         }
+         else
+         {
+            fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+            vStrAdd(Data," кВА");
+         }
+         break;
       case GEN_L1_REAL_POWER:
-              fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
-              vStrAdd(Data," кВА");
-              break;
+         fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+         vStrAdd(Data," кВА");
+         break;
    case GEN_L2_ACTIVE_POWER:
    case GEN_L3_ACTIVE_POWER:
        if (xADCGetScheme()==ELECTRO_SCHEME_SINGLE_PHASE)
@@ -1523,8 +1488,8 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             case C_B_ROTATION:
               vStrCopy(Data,"L1-L3-L2");
               break;
-              default:
-            vStrCopy(Data,"XX-XX-XX");
+            default:
+              vStrCopy(Data,"XX-XX-XX");
               break;
           }
           break;
@@ -1532,13 +1497,9 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            fix16_to_str( fENGINEspeedGet(), Data, 0U );
            vStrAdd( Data, " об/м" );
            break;
-     case  ENGINE_SCOUNT:
-           eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_STARTS_NUMBER_ADR,&utempdata);
-           vUToStr(Data,utempdata,0);
-           //sprintf(Data,"%u",utempdata);
-           break;
+     case ENGINE_SCOUNT:
      case ENGINE_WTIME:
-           eDATAAPIfreeData(DATA_API_CMD_READ,ENGINE_WORK_TIME_ADR,&utempdata);
+           eDATAAPIfreeData(DATA_API_CMD_READ, ( ID == ENGINE_SCOUNT ) ? ENGINE_STARTS_NUMBER_ADR : ENGINE_WORK_TIME_ADR ,&utempdata);
            vUToStr(Data,utempdata,0);
            //sprintf(Data,"%u",utempdata);
            break;

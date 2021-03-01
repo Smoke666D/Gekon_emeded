@@ -24,22 +24,22 @@
 #include "lcd.h"
 #include "charger.h"
 /*-------------------------------- Structures --------------------------------*/
-static ENGINE_TYPE           engine              = { 0U };
-static OIL_TYPE              oil                 = { 0U };
-static COOLANT_TYPE          coolant             = { 0U };
-static FUEL_TYPE             fuel                = { 0U };
-static SPEED_TYPE            speed               = { 0U };
-static BATTERY_TYPE          battery             = { 0U };
-static CHARGER_TYPE          charger             = { 0U };
-static STARTER_TYPE          starter             = { 0U };
-static PLAN_STOP_TYPE        planStop            = { 0U };
-static MAINTENCE_TYPE        maintence           = { 0U };
-static RELAY_DELAY_DEVICE    stopSolenoid        = { 0U };
-static RELAY_DEVICE          idleRelay           = { 0U };
-static RELAY_IMPULSE_DEVICE  preHeater           = { 0U };
-static StaticQueue_t         xEngineCommandQueue = { 0U };
-static QueueHandle_t         pEngineCommandQueue = NULL;
-static EMERGENCY_STATUS emgencyStopStatus   = EMERGENCY_IDLE;
+static ENGINE_TYPE        engine              = { 0U };
+static OIL_TYPE           oil                 = { 0U };
+static COOLANT_TYPE       coolant             = { 0U };
+static FUEL_TYPE          fuel                = { 0U };
+static SPEED_TYPE         speed               = { 0U };
+static BATTERY_TYPE       battery             = { 0U };
+static CHARGER_TYPE       charger             = { 0U };
+static STARTER_TYPE       starter             = { 0U };
+static PLAN_STOP_TYPE     planStop            = { 0U };
+static MAINTENCE_TYPE     maintence           = { 0U };
+static RELAY_DELAY_DEVICE stopSolenoid        = { 0U };
+static RELAY_DEVICE       idleRelay           = { 0U };
+static PREHEATER_TYPE     preHeater           = { 0U };
+static StaticQueue_t      xEngineCommandQueue = { 0U };
+static QueueHandle_t      pEngineCommandQueue = NULL;
+static EMERGENCY_STATUS   emgencyStopStatus   = EMERGENCY_IDLE;
 /*--------------------------------- Constant ---------------------------------*/
 static const fix16_t fix60                  = F16( 60U );                      /* --- */
 static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION ); /* sec */
@@ -78,10 +78,12 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /
     "FAIL_STARTING",
     "FAIL_STOPPING",
   };
-  static const char* starterStatusStr[11U] =
+  static const char* starterStatusStr[13U] =
   {
     "IDLE",
-    "START_DELAY",
+    "PREHEATING",
+    "FUEL_PREPUMPING",
+    "START_PREPARATION",
     "READY",
     "CRANKING",
     "CRANK_DELAY",
@@ -870,12 +872,10 @@ void vENGINEdataInit ( void )
   coolant.cooler.relay.set                = vFPOsetCooler;
   coolant.cooler.relay.status             = RELAY_OFF;
   /*--------------------------------------------------------------*/
-  preHeater.active       = PERMISSION_DISABLE;
   preHeater.level        = getValue( &enginePreHeatLevel );
   preHeater.relay.set    = vFPOsetPreheater;
   preHeater.relay.status = RELAY_OFF;
-  preHeater.status       = RELAY_DELAY_IDLE;
-  preHeater.timer.delay  = getValue( &enginePreHeatDelay );
+  preHeater.delay        = getValue( &enginePreHeatDelay );
   /*--------------------------------------------------------------*/
   fuel.level.type                 = getBitMap( &fuelLevelSetup, FUEL_LEVEL_SENSOR_TYPE_ADR );
   fuel.level.channel              = SENSOR_CHANNEL_FUEL;
@@ -1219,9 +1219,9 @@ void vENGINEdataReInit ( void )
   coolant.cooler.onLevel    = getValue( &coolantTempCoolerOnLevel );
   coolant.cooler.offLevel   = getValue( &coolantTempCoolerOffLevel );
   /*--------------------------------------------------------------*/
-  preHeater.level       = getValue( &enginePreHeatLevel );
-  preHeater.relay.set   = vFPOsetPreheater;
-  preHeater.timer.delay = getValue( &enginePreHeatDelay );
+  preHeater.level     = getValue( &enginePreHeatLevel );
+  preHeater.relay.set = vFPOsetPreheater;
+  preHeater.delay     = getValue( &enginePreHeatDelay );
   /*--------------------------------------------------------------*/
   fuel.level.type                = getBitMap( &fuelLevelSetup, FUEL_LEVEL_SENSOR_TYPE_ADR );
   fuel.level.cutout.enb          = getBitMap( &fuelLevelSetup, FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR );
@@ -1622,9 +1622,7 @@ void vENGINEtask ( void* argument )
           {
             case STARTER_IDLE:
               vFPOsetReadyToStart( RELAY_OFF );
-              vRELAYimpulseReset( &preHeater );
               engine.stopError.active            = PERMISSION_DISABLE;
-              preHeater.active                   = PERMISSION_DISABLE;
               speed.lowAlarm.error.active        = PERMISSION_DISABLE;
               speed.hightAlarm.error.active      = PERMISSION_DISABLE;
               oil.alarm.error.active             = PERMISSION_DISABLE;
@@ -1633,26 +1631,44 @@ void vENGINEtask ( void* argument )
               battery.lowAlarm.error.active      = PERMISSION_DISABLE;
               engine.status                      = ENGINE_STATUS_BUSY_STARTING;
               vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
-              vLCD_BrigthOFF();
-              vRELAYset( &fuel.pump, RELAY_ON );
-              commonTimer.delay = fuelPrePumpingDelay;
-              vLOGICstartTimer( &commonTimer, "Common engine timer " );
               if ( starter.idlingDelay != 0U )
               {
                 vRELAYset( &idleRelay, RELAY_ON );
               }
-              vLOGICprintStarterStatus( starter.status );
-              starter.status                     = STARTER_START_PREPARATION;
+              if ( ( coolantVal <= preHeater.level ) && ( preHeater.relay.enb == PERMISSION_ENABLE ) )
+              {
+                commonTimer.delay = preHeater.delay;
+                vLOGICstartTimer( &commonTimer, "Common engine timer " );
+                vSTATUSsetup( DEVICE_STATUS_PREHEATING, commonTimer.id );
+                vRELAYset( &preHeater.relay, RELAY_ON );
+                starter.status = STARTER_PREHEATING;
+                vLOGICprintStarterStatus( starter.status );
+              }
+              else
+              {
+                starter.status = STARTER_FUEL_PREPUMPING;
+              }
               break;
             case STARTER_PREHEATING:
-              vSTATUSsetup( DEVICE_STATUS_PREHEATING, commonTimer.id );
+              if ( uLOGICisTimer( &commonTimer ) > 0U )
+              {
+                vRELAYset( &preHeater.relay, RELAY_OFF );
+                vLOGICprintStarterStatus( starter.status );
+                starter.status = STARTER_FUEL_PREPUMPING;
+              }
+              break;
+            case STARTER_FUEL_PREPUMPING:
+              vRELAYset( &fuel.pump, RELAY_ON  );
+              commonTimer.delay = fuelPrePumpingDelay;
+              vLOGICstartTimer( &commonTimer, "Common engine timer " );
+              vLOGICprintStarterStatus( starter.status );
+              starter.status = STARTER_START_PREPARATION;
               break;
             case STARTER_START_PREPARATION:
               if ( ( eELECTROgetAlarmStatus()      == ELECTRO_ALARM_STATUS_START ) &&
                    ( uLOGICisTimer( &commonTimer ) >  0U                         ) )
               {
-                starter.status   = STARTER_READY;
-                preHeater.active = PERMISSION_ENABLE;
+                starter.status = STARTER_READY;
                 vLOGICprintStarterStatus( starter.status );
               }
               break;
@@ -1671,6 +1687,7 @@ void vENGINEtask ( void* argument )
                 starter.iteration++;
                 starter.status    = STARTER_CRANKING;
                 commonTimer.delay = starter.crankingDelay;
+                vLCD_BrigthOFF();
                 starter.set( RELAY_ON );
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vSTATUSsetup( DEVICE_STATUS_CRANKING, commonTimer.id );
@@ -1693,6 +1710,7 @@ void vENGINEtask ( void* argument )
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 starter.set( RELAY_OFF );
+                vLCD_BrigthOn();
                 if ( starter.iteration < starter.attempts )
                 {
                   starter.status = STARTER_CRANK_DELAY;
@@ -1705,7 +1723,6 @@ void vENGINEtask ( void* argument )
                 {
                   vRELAYset( &fuel.pump, RELAY_OFF );
                   vRELAYdelayTrig( &stopSolenoid );
-                  preHeater.active = PERMISSION_DISABLE;
                   starter.status   = STARTER_FAIL;
                   vLOGICprintStarterStatus( starter.status );
                 }
@@ -1761,9 +1778,7 @@ void vENGINEtask ( void* argument )
             case STARTER_WARMING:
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
-                starter.status   = STARTER_OK;
-                preHeater.active = PERMISSION_DISABLE;
-                vRELAYset( &preHeater.relay, RELAY_OFF );
+                starter.status = STARTER_OK;
                 vFPOsetGenReady( RELAY_ON );
                 vLOGICprintStarterStatus( starter.status );
               }
@@ -1985,15 +2000,15 @@ void vENGINEtask ( void* argument )
           case EMERGENCY_IDLE:
             vLOGICprintEmergencyStopStatus( emgencyStopStatus );
             vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
+            vLCD_BrigthOn();
             starter.set( RELAY_OFF );
-            vRELAYset( &fuel.pump, RELAY_OFF );
-            vRELAYset( &fuel.booster.relay, RELAY_OFF );
+            vRELAYset( &fuel.pump,            RELAY_OFF );
+            vRELAYset( &fuel.booster.relay,   RELAY_OFF );
             vRELAYset( &coolant.cooler.relay, RELAY_OFF );
             vRELAYset( &coolant.heater.relay, RELAY_OFF );
-            vRELAYset( &idleRelay, RELAY_OFF );
+            vRELAYset( &idleRelay,            RELAY_OFF );
+            vRELAYset( &preHeater.relay,      RELAY_OFF );
             vRELAYdelayTrig( &stopSolenoid );
-            preHeater.active = PERMISSION_DISABLE;
-            vRELAYset( &preHeater.relay, RELAY_OFF );
             vFPOsetGenReady( RELAY_OFF );
             vFPOsetReadyToStart( RELAY_OFF );
             engine.status             = ENGINE_STATUS_EMERGENCY_STOP;
@@ -2050,7 +2065,6 @@ void vENGINEtask ( void* argument )
         vLOGICresetTimer( &commonTimer        );
         vLOGICresetTimer( &maintence.timer    );
         vLOGICresetTimer( &charger.timer      );
-        vLOGICresetTimer( &preHeater.timer    );
         vLOGICresetTimer( &stopSolenoid.timer );
         engine.cmd               = ENGINE_CMD_NONE;
         engine.startError.active = PERMISSION_DISABLE;
@@ -2073,7 +2087,6 @@ void vENGINEtask ( void* argument )
         break;
     }
     /* Process outputs */
-    vRELAYimpulseProcess( &preHeater, coolantVal );
     vRELAYdelayProcess( &stopSolenoid );
     /*------------------------------------------------------------------------------------------*/
   }

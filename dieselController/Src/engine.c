@@ -168,6 +168,36 @@ uint8_t eSENSORcheckCutout ( SENSOR_CHANNEL source )
   return res;
 }
 /*----------------------------------------------------------------------------*/
+uint8_t uSENSORisAnalog ( SENSOR sensor )
+{
+  uint8_t res = 0U;
+  if ( ( sensor.type == SENSOR_TYPE_RESISTIVE ) || ( sensor.type == SENSOR_TYPE_CURRENT ) )
+  {
+    res = 1U;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+uint8_t uSENSORisDiscret ( SENSOR sensor )
+{
+  uint8_t res = 0U;
+  if ( ( sensor.type == SENSOR_TYPE_NORMAL_OPEN ) || ( sensor.type == SENSOR_TYPE_NORMAL_CLOSE ) )
+  {
+    res = 1U;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+uint8_t uSENSORisDisable ( SENSOR sensor )
+{
+  uint8_t res = 0U;
+  if ( sensor.type == SENSOR_TYPE_NONE )
+  {
+    res = 1U;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
 void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
 {
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
@@ -180,7 +210,7 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
   }
   else
   {
-    if ( ( sensor->type == SENSOR_TYPE_RESISTIVE ) || ( sensor->type == SENSOR_TYPE_CURRENT ) )
+    if ( uSENSORisAnalog( *sensor ) > 0U )
     {
       funcStat = eCHARTfunc( sensor->chart, sensor->get(), value );
       switch ( funcStat )
@@ -224,7 +254,7 @@ fix16_t fOILprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &oil.pressure, &value );
-  if ( ( oil.pressure.type == SENSOR_TYPE_RESISTIVE ) || ( oil.pressure.type == SENSOR_TYPE_CURRENT ) )
+  if ( uSENSORisAnalog( oil.pressure ) > 0U )
   {
     vALARMcheck( &oil.alarm, value );
     if ( oil.alarm.error.status == ALARM_STATUS_IDLE )
@@ -232,7 +262,7 @@ fix16_t fOILprocess ( void )
       vALARMcheck( &oil.preAlarm, value );
     }
   }
-  else if ( ( oil.pressure.type == SENSOR_TYPE_NORMAL_OPEN ) || ( oil.pressure.type == SENSOR_TYPE_NORMAL_CLOSE ) )
+  else if ( uSENSORisDiscret( oil.pressure ) > 0U )
   {
     vERRORcheck( &oil.alarm.error, oil.pressure.trig );
   }
@@ -247,7 +277,7 @@ fix16_t fCOOLANTprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &coolant.temp, &value );
-  if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
+  if ( uSENSORisAnalog( coolant.temp ) > 0U )
   {
     vALARMcheck( &coolant.alarm, value );
     if ( coolant.alarm.error.status == ALARM_STATUS_IDLE )
@@ -261,7 +291,7 @@ fix16_t fCOOLANTprocess ( void )
     vRELAYautoProces( &coolant.heater, value );
     vRELAYautoProces( &coolant.cooler, value );
   }
-  else if ( ( coolant.temp.type == SENSOR_TYPE_NORMAL_OPEN ) || ( coolant.temp.type == SENSOR_TYPE_NORMAL_CLOSE ) )
+  else if ( uSENSORisDiscret( coolant.temp ) > 0U)
   {
     vERRORcheck( &coolant.alarm.error, coolant.temp.trig );
   }
@@ -276,7 +306,7 @@ fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
+  if ( uSENSORisAnalog( fuel.level ) > 0U)
   {
     vALARMcheck( &fuel.lowAlarm, value );
     if ( fuel.lowAlarm.error.status == ALARM_STATUS_IDLE )
@@ -290,7 +320,7 @@ fix16_t fFUELprocess ( void )
     }
     vRELAYautoProces( &fuel.booster, value );
   }
-  else if ( ( fuel.level.type == SENSOR_TYPE_NORMAL_OPEN ) || ( fuel.level.type == SENSOR_TYPE_NORMAL_CLOSE ) )
+  else if ( uSENSORisDiscret( fuel.level ) > 0U )
   {
     vERRORcheck( &fuel.lowAlarm.error, fuel.level.trig );
   }
@@ -758,7 +788,7 @@ void vENGINEdataInit ( void )
     oil.preAlarm.error.enb  = PERMISSION_DISABLE;
     oil.pressure.cutout.enb = PERMISSION_DISABLE;
   }
-  else if ( ( oil.pressure.type == SENSOR_TYPE_RESISTIVE ) || ( oil.pressure.type == SENSOR_TYPE_CURRENT ) )
+  else if ( uSENSORisAnalog( oil.pressure ) > 0U )
   {
     oil.pressure.cutout.enb = getBitMap( &oilPressureSetup, OIL_PRESSURE_OPEN_CIRCUIT_ALARM_ENB_ADR );
     oil.alarm.error.enb     = getBitMap( &oilPressureSetup, OIL_PRESSURE_ALARM_ENB_ADR              );
@@ -811,9 +841,8 @@ void vENGINEdataInit ( void )
     coolant.preAlarm.error.enb     = PERMISSION_DISABLE;
     coolant.heater.relay.enb       = PERMISSION_DISABLE;
     coolant.cooler.relay.enb       = PERMISSION_DISABLE;
-    preHeater.relay.enb            = PERMISSION_DISABLE;
   }
-  else if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
+  else if ( uSENSORisAnalog( coolant.temp ) > 0U )
   {
     coolant.temp.cutout.enb        = getBitMap( &coolantTempSetup, FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR    );
     coolant.alarm.error.enb        = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ALARM_ENB_ADR         );
@@ -821,7 +850,6 @@ void vENGINEdataInit ( void )
     coolant.preAlarm.error.enb     = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_PRE_ALARM_ENB_ADR     );
     coolant.heater.relay.enb       = getBitMap( &coolantTempSetup, COOLANT_TEMP_HEATER_ENB_ADR              );
     coolant.cooler.relay.enb       = getBitMap( &coolantTempSetup, COOLANT_TEMP_COOLER_ENB_ADR              );
-    preHeater.relay.enb            = getBitMap( &engineSetup, ENGINE_PRE_HEAT_ENB_ADR                       );
   }
   else
   {
@@ -831,7 +859,6 @@ void vENGINEdataInit ( void )
     coolant.preAlarm.error.enb     = PERMISSION_DISABLE;
     coolant.heater.relay.enb       = PERMISSION_DISABLE;
     coolant.cooler.relay.enb       = PERMISSION_DISABLE;
-    preHeater.relay.enb            = PERMISSION_DISABLE;
   }
   coolant.alarm.error.active              = PERMISSION_ENABLE;
   coolant.alarm.type                      = ALARM_LEVEL_HIGHT;
@@ -872,6 +899,7 @@ void vENGINEdataInit ( void )
   coolant.cooler.relay.set                = vFPOsetCooler;
   coolant.cooler.relay.status             = RELAY_OFF;
   /*--------------------------------------------------------------*/
+  preHeater.relay.enb    = PERMISSION_ENABLE;
   preHeater.level        = getValue( &enginePreHeatLevel );
   preHeater.relay.set    = vFPOsetPreheater;
   preHeater.relay.status = RELAY_OFF;
@@ -898,7 +926,7 @@ void vENGINEdataInit ( void )
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
-  else if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
+  else if ( uSENSORisAnalog( fuel.level ) > 0U )
   {
     fuel.level.cutout.enb        = getBitMap( &fuelLevelSetup, FUEL_LEVEL_OPEN_CIRCUIT_ALARM_ENB_ADR );
     fuel.lowAlarm.error.enb      = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_ALARM_ENB_ADR          );
@@ -1171,7 +1199,7 @@ void vENGINEdataReInit ( void )
     oil.alarm.error.enb    = PERMISSION_DISABLE;
     oil.preAlarm.error.enb = PERMISSION_DISABLE;
   }
-  else if ( ( oil.pressure.type == SENSOR_TYPE_RESISTIVE ) || ( oil.pressure.type == SENSOR_TYPE_CURRENT ) )
+  else if ( uSENSORisAnalog( oil.pressure ) > 0U )
   {
     oil.alarm.error.enb    = getBitMap( &oilPressureSetup, OIL_PRESSURE_ALARM_ENB_ADR );
     oil.preAlarm.error.enb = getBitMap( &oilPressureSetup, OIL_PRESSURE_PRE_ALARM_ENB_ADR );
@@ -1194,16 +1222,14 @@ void vENGINEdataReInit ( void )
     coolant.preAlarm.error.enb     = PERMISSION_DISABLE;
     coolant.heater.relay.enb       = PERMISSION_DISABLE;
     coolant.cooler.relay.enb       = PERMISSION_DISABLE;
-    preHeater.relay.enb            = PERMISSION_DISABLE;
   }
-  else if ( ( coolant.temp.type == SENSOR_TYPE_RESISTIVE ) || ( coolant.temp.type == SENSOR_TYPE_CURRENT ) )
+  else if ( uSENSORisAnalog( coolant.temp ) > 0U )
   {
     coolant.alarm.error.enb        = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ALARM_ENB_ADR );
     coolant.electroAlarm.error.enb = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_ELECTRO_ALARM_ENB_ADR );
     coolant.preAlarm.error.enb     = getBitMap( &coolantTempSetup, COOLANT_HIGHT_TEMP_PRE_ALARM_ENB_ADR );
     coolant.heater.relay.enb       = getBitMap( &coolantTempSetup, COOLANT_TEMP_HEATER_ENB_ADR );
     coolant.cooler.relay.enb       = getBitMap( &coolantTempSetup, COOLANT_TEMP_COOLER_ENB_ADR );
-    preHeater.relay.enb            = getBitMap( &engineSetup, ENGINE_PRE_HEAT_ENB_ADR );
   }
   else
   {
@@ -1212,7 +1238,6 @@ void vENGINEdataReInit ( void )
     coolant.preAlarm.error.enb     = PERMISSION_DISABLE;
     coolant.heater.relay.enb       = PERMISSION_DISABLE;
     coolant.cooler.relay.enb       = PERMISSION_DISABLE;
-    preHeater.relay.enb            = PERMISSION_DISABLE;
   }
   coolant.heater.onLevel    = getValue( &coolantTempHeaterOnLevel );
   coolant.heater.offLevel   = getValue( &coolantTempHeaterOffLevel );
@@ -1233,7 +1258,7 @@ void vENGINEdataReInit ( void )
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
-  if ( ( fuel.level.type == SENSOR_TYPE_RESISTIVE ) || ( fuel.level.type == SENSOR_TYPE_CURRENT ) )
+  if ( uSENSORisAnalog( fuel.level ) > 0U )
   {
     fuel.lowAlarm.error.enb      = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_ALARM_ENB_ADR );
     fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR );
@@ -1635,7 +1660,9 @@ void vENGINEtask ( void* argument )
               {
                 vRELAYset( &idleRelay, RELAY_ON );
               }
-              if ( ( coolantVal <= preHeater.level ) && ( preHeater.relay.enb == PERMISSION_ENABLE ) )
+              if ( ( preHeater.delay > 0U ) &&
+                   ( ( ( uSENSORisAnalog( coolant.temp ) > 0U ) && ( coolantVal <= preHeater.level ) ) ||
+                     ( uSENSORisAnalog( coolant.temp ) == 0U ) ) )
               {
                 commonTimer.delay = preHeater.delay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );

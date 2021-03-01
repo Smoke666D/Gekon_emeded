@@ -1,5 +1,4 @@
 /*
- * Configuration file from 'config.csv'
  */
 #include   "config.h"
 
@@ -2022,10 +2021,9 @@ eConfigReg mainsOverFrequencyAlarmLevel =
    .value = mainsOverFrequencyAlarmLevelValue,
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap engineSetupBitMap[2U] = 
+const eConfigBitMap engineSetupBitMap[1U] = 
 {
    { 15U, 0U },     // engineStartAttempts
-   { 16U, 4U },     // enginePreHeatEnb
 };
 uint16_t engineSetupValue[1U] = { 3U };
 const eConfigAttributes engineSetupAtrib =
@@ -2037,7 +2035,7 @@ const eConfigAttributes engineSetupAtrib =
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 2U,
+   .bitMapSize = 1U,
    .bitMap     = engineSetupBitMap
 };
 eConfigReg engineSetup =

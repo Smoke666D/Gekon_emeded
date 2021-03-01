@@ -270,7 +270,6 @@ typedef struct __packed
 #define   MAINS_UNDER_FREQUENCY_ALARM_ENB_ADR          2U
 #define   MAINS_OVER_FREQUENCY_ALARM_ENB_ADR           3U
 #define   ENGINE_START_ATTEMPTS_ADR                    0U
-#define   ENGINE_PRE_HEAT_ENB_ADR                      1U
 #define   STARTER_OIL_PRESSURE_CHECK_ON_START_ENB_ADR  0U
 #define   STARTER_STOP_OIL_PRESSURE_ENB_ADR            1U
 #define   STARTER_STOP_CHARGE_ALTERNATOR_ENB_ADR       2U

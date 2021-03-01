@@ -53,6 +53,7 @@ typedef enum
 {
   STARTER_IDLE,
   STARTER_PREHEATING,
+  STARTER_FUEL_PREPUMPING,
   STARTER_START_PREPARATION,
   STARTER_READY,
   STARTER_CRANKING,
@@ -168,6 +169,13 @@ typedef struct __packed
   SYSTEM_TIMER      timer;
   ALARM_TYPE        alarm;
 } CHARGER_TYPE;
+
+typedef struct __packed
+{
+  RELAY_DEVICE relay;
+  fix16_t      level;
+  fix16_t      delay;
+} PREHEATER_TYPE;
 
 typedef struct __packed
 {

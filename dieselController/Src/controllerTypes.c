@@ -116,6 +116,8 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "USER_FUNCTION_B",
     "USER_FUNCTION_C",
     "USER_FUNCTION_D",
+    "MAINS_PHASE_SEQUENCE",
+    "GENERATOR_PHASE_SEQUENCE",
   };
   const char* alarmActionStr[LOG_ACTION_SIZE] =
   {

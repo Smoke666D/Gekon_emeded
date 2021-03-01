@@ -252,6 +252,7 @@ typedef struct __packed
 #define   DOF_TYPE_ADR                                 1U
 #define   GEN_POWER_GENERATOR_CONTROL_ENB_ADR          0U
 #define   GEN_AC_SYS_ADR                               1U
+#define   GEN_PHASE_SEQUENCE_CONTROL_ENB_ADR           2U
 #define   GEN_UNDER_VOLTAGE_ALARM_ENB_ADR              0U
 #define   GEN_UNDER_VOLTAGE_PRE_ALARM_ENB_ADR          1U
 #define   GEN_OVER_VOLTAGE_PRE_ALARM_ENB_ADR           2U

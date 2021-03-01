@@ -16,6 +16,8 @@
 #include "dataAPI.h"
 #include "controller.h"
 #include "measurement.h"
+#include "config.h"
+#include "dataProces.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -268,6 +270,7 @@ USB_STATUS eUSBreportToPassword ( const USB_REPORT* report )
   USB_STATUS      res    = USB_STATUS_DONE;
   PASSWORD_TYPE   pass   = { 0U };
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  uint16_t        buf    = getUintValue( configReg[MODULE_SETUP_ADR] );
   if ( report->length == PASSWORD_SIZE )
   {
     pass.status = report->data[0U];
@@ -283,9 +286,29 @@ USB_STATUS eUSBreportToPassword ( const USB_REPORT* report )
       {
         status = eDATAAPIpassword( DATA_API_CMD_SAVE, NULL );
       }
-      if ( status != DATA_API_STAT_OK )
+      if ( status == DATA_API_STAT_OK )
       {
-        res = USB_STATUS_STORAGE_ERROR;
+        if ( pass.status == PASSWORD_SET )
+        {
+          buf |= moduleSetup.atrib->bitMap[PASSWORD_ENB_ADR].mask;
+        }
+        else
+        {
+          buf &= ~moduleSetup.atrib->bitMap[PASSWORD_ENB_ADR].mask;
+        }
+        status = eDATAAPIconfigValue( DATA_API_CMD_WRITE, MODULE_SETUP_ADR, &buf );
+        if ( status == DATA_API_STAT_OK )
+        {
+          status = eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL );
+          if ( status != DATA_API_STAT_OK )
+          {
+            res = USB_STATUS_STORAGE_ERROR;
+          }
+        }
+        else
+        {
+          res = USB_STATUS_STORAGE_ERROR;
+        }
       }
       else
       {

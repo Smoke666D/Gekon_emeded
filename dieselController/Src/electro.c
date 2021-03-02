@@ -299,16 +299,10 @@ void vMAINSprocess ( void )
   }
   /*------------------------- Voltage alarms --------------------------*/
   vELECTROalarmCheck( &mains.lowVoltageAlarm, voltage, MAINS_LINE_NUMBER );
-  if ( mains.lowVoltageAlarm.error.status == ALARM_STATUS_IDLE )
-  {
-    vELECTROalarmCheck( &mains.hightVoltageAlarm, voltage, MAINS_LINE_NUMBER );
-  }
+  vELECTROalarmCheck( &mains.hightVoltageAlarm, voltage, MAINS_LINE_NUMBER );
   /*------------------------ Frequency alarms --------------------------*/
   vALARMcheck( &mains.lowFreqAlarm, freq );
-  if ( mains.lowFreqAlarm.error.status == ALARM_STATUS_IDLE )
-  {
-    vALARMcheck( &mains.hightFreqAlarm, freq );
-  }
+  vALARMcheck( &mains.hightFreqAlarm, freq );
   /*-------------------- Phase sequence control ------------------------*/
   vERRORcheck( &mains.phaseSequenceError, ( xADCGetNetFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
   /*--------------------------- Events ---------------------------------*/
@@ -355,26 +349,14 @@ fix16_t fGENERATORprocess ( void )
   maxCurrent = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
   /*------------------------- Voltage alarms --------------------------*/
   vELECTROalarmCheck( &generator.lowVoltageAlarm, voltage, MAINS_LINE_NUMBER );
-  if ( generator.lowVoltageAlarm.error.status == ALARM_STATUS_IDLE )
-  {
-    vELECTROalarmCheck( &generator.lowVoltagePreAlarm, voltage, MAINS_LINE_NUMBER );
-  }
+  vELECTROalarmCheck( &generator.lowVoltagePreAlarm, voltage, MAINS_LINE_NUMBER );
   vELECTROalarmCheck( &generator.hightVoltageAlarm, voltage, MAINS_LINE_NUMBER );
-  if ( generator.hightVoltageAlarm.error.status == ALARM_STATUS_IDLE )
-  {
-    vELECTROalarmCheck( &generator.hightVoltagePreAlarm, voltage, MAINS_LINE_NUMBER );
-  }
+  vELECTROalarmCheck( &generator.hightVoltagePreAlarm, voltage, MAINS_LINE_NUMBER );
   /*------------------------ Frequency alarms --------------------------*/
   vALARMcheck( &generator.lowFreqAlarm, freq );
-  if ( generator.lowFreqAlarm.error.status == ALARM_STATUS_IDLE )
-  {
-    vALARMcheck( &generator.lowFreqPreAlarm, freq );
-  }
+  vALARMcheck( &generator.lowFreqPreAlarm, freq );
   vALARMcheck( &generator.hightFreqAlarm, freq );
-  if ( generator.hightFreqAlarm.error.status == ALARM_STATUS_IDLE )
-  {
-    vALARMcheck( &generator.hightFreqPreAlarm, freq );
-  }
+  vALARMcheck( &generator.hightFreqPreAlarm, freq );
   /*--------------------- Phase sequence control ----------------------*/
   vERRORcheck( &generator.phaseSequenceError, ( xADCGetNetFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
   /*------------------------- Current alarms --------------------------*/

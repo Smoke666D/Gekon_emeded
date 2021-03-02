@@ -318,6 +318,12 @@ fix16_t fFUELprocess ( void )
 /*----------------------------------------------------------------------------*/
 fix16_t fSPEEDfromFreq ( fix16_t freq )
 {
+  fix16_t sub = fix16_div( freq, speed.polePairs );
+  fix16_t res = fix16_mul( sub, fix60 );
+  float a = fix16_to_float( freq );
+  float b = fix16_to_float( sub );
+  float c = fix16_to_float( res );
+  float d = fix16_to_float( speed.polePairs );
   return fix16_mul( fix16_div( freq, speed.polePairs ), fix60 ); /* RPM */
 }
 /*----------------------------------------------------------------------------*/
@@ -1305,7 +1311,7 @@ void vENGINEdataReInit ( void )
   speed.lowAlarm.error.enb = getBitMap( &speedSetup, SPEED_LOW_ALARM_ENB_ADR );
   speed.lowAlarm.level     = getValue( &speedLowAlarmLevel );
   speed.hightAlarm.level   = getValue( &speedHightAlarmLevel );
-  speed.polePairs          = ( uint8_t )( genPoleQuantity.value[0U] );
+  speed.polePairs          = getValue( &genPoleQuantity );
   /*--------------------------------------------------------------*/
   stopSolenoid.relay.enb   = uFPOisEnable( FPO_FUN_STOP_SOLENOID );
   stopSolenoid.timer.delay = getValue( configReg[TIMER_SOLENOID_HOLD_ADR] );
@@ -1797,7 +1803,7 @@ void vENGINEtask ( void* argument )
               starter.status    = STARTER_STATUS_IDLE;
               starter.iteration = 0U;
               eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
-              eDATAAPIfreeData( DATA_API_CMD_SAVE, ENGINE_STARTS_NUMBER_ADR, NULL );
+              eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
               vLOGICprintStarterStatus( starter.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_START;

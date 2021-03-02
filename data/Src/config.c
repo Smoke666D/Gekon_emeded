@@ -2,7 +2,7 @@
  */
 #include   "config.h"
 
-uint16_t versionControllerValue[1U] = { 1U };
+const uint16_t versionControllerValue[1U] = { 1U };
 const eConfigAttributes versionControllerAtrib =
 {
    .adr        = 0U,
@@ -15,13 +15,13 @@ const eConfigAttributes versionControllerAtrib =
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
-eConfigReg versionController =
+const eConfigReg versionController =
 {
    .atrib = &versionControllerAtrib,
    .value = versionControllerValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t versionFirmwareValue[1U] = { 1U };
+const uint16_t versionFirmwareValue[1U] = { 1U };
 const eConfigAttributes versionFirmwareAtrib =
 {
    .adr        = 1U,
@@ -34,7 +34,7 @@ const eConfigAttributes versionFirmwareAtrib =
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
-eConfigReg versionFirmware =
+const eConfigReg versionFirmware =
 {
    .atrib = &versionFirmwareAtrib,
    .value = versionFirmwareValue,
@@ -135,12 +135,11 @@ eConfigReg hysteresisLevel =
    .value = hysteresisLevelValue,
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap moduleSetupBitMap[2U] = 
+const eConfigBitMap moduleSetupBitMap[1U] = 
 {
-   { 1U, 0U },     // moduleType
-   { 2U, 1U },     // alarmAllBlock
+   { 1U, 0U },     // passwordEnb
 };
-uint16_t moduleSetupValue[1U] = { 3U };
+uint16_t moduleSetupValue[1U] = { 0U };
 const eConfigAttributes moduleSetupAtrib =
 {
    .adr        = 7U,
@@ -150,7 +149,7 @@ const eConfigAttributes moduleSetupAtrib =
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 2U,
+   .bitMapSize = 1U,
    .bitMap     = moduleSetupBitMap
 };
 eConfigReg moduleSetup =
@@ -1402,12 +1401,13 @@ eConfigReg timerGenTransientDelay =
    .value = timerGenTransientDelayValue,
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap genSetupBitMap[2U] = 
+const eConfigBitMap genSetupBitMap[3U] = 
 {
    { 1U, 0U },     // genPowerGeneratorControlEnb
    { 6U, 1U },     // genAcSys
+   { 8U, 3U },     // genPhaseSequenceControlEnb
 };
-uint16_t genSetupValue[1U] = { 1U };
+uint16_t genSetupValue[1U] = { 9U };
 const eConfigAttributes genSetupAtrib =
 {
    .adr        = 69U,
@@ -1417,7 +1417,7 @@ const eConfigAttributes genSetupAtrib =
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 2U,
+   .bitMapSize = 3U,
    .bitMap     = genSetupBitMap
 };
 eConfigReg genSetup =

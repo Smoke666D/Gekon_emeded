@@ -116,6 +116,8 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "USER_FUNCTION_B",
     "USER_FUNCTION_C",
     "USER_FUNCTION_D",
+    "MAINS_PHASE_SEQUENCE",
+    "GENERATOR_PHASE_SEQUENCE",
   };
   const char* alarmActionStr[LOG_ACTION_SIZE] =
   {
@@ -169,7 +171,7 @@ PERMISSION eSTATUSisTimer ( DEVICE_STATUS status )
   if ( ( status == DEVICE_STATUS_IDLE           ) ||
        ( status == DEVICE_STATUS_READY_TO_START ) ||
        ( status == DEVICE_STATUS_WORKING        ) ||
-       ( status == DEVICE_STATUS_EMERGENCY_STOP ) ||
+       ( status == DEVICE_STATUS_ERROR ) ||
        ( status == DEVICE_STATUS_BAN_START      ) )
   {
     res = PERMISSION_DISABLE;
@@ -191,6 +193,11 @@ void vSTATUScalcTime ( void )
 const char* cSTATUSgetString ( DEVICE_STATUS status )
 {
   return deviceStatusDic[status];
+}
+/*----------------------------------------------------------------------------*/
+DEVICE_STATUS eSTATUSgetStatus ( void )
+{
+  return deviceInfo.status;
 }
 /*----------------------------------------------------------------------------*/
 void vSTATUSget ( DEVICE_INFO* info )
@@ -236,7 +243,7 @@ void vLOGICprintLogRecord ( LOG_RECORD_TYPE record )
 void vLOGICprintEvent ( SYSTEM_EVENT event )
 {
   #if ( DEBUG_SERIAL_ALARM > 0U )
-    vSYSSerial( ">>Event: " );
+    vSYSSerial( ">>Event           : " );
     vSYSSerial( eventTypesStr[event.type] );
     vSYSSerial( "; Action: " );
     vSYSSerial( alarmActionStr[event.action] );

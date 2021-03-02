@@ -201,8 +201,7 @@ typedef struct __packed
 #define   RECORD_SETUP_ADR                                       120U
 #define   RECORD_INTERVAL_ADR                                    121U
 /*---------------------- Bitmap addresses ------------------------------*/
-#define   MODULE_TYPE_ADR                              0U
-#define   ALARM_ALL_BLOCK_ADR                          1U
+#define   PASSWORD_ENB_ADR                             0U
 #define   OIL_PRESSURE_SENSOR_TYPE_ADR                 0U
 #define   OIL_PRESSURE_OPEN_CIRCUIT_ALARM_ENB_ADR      1U
 #define   OIL_PRESSURE_ALARM_ENB_ADR                   2U
@@ -253,6 +252,7 @@ typedef struct __packed
 #define   DOF_TYPE_ADR                                 1U
 #define   GEN_POWER_GENERATOR_CONTROL_ENB_ADR          0U
 #define   GEN_AC_SYS_ADR                               1U
+#define   GEN_PHASE_SEQUENCE_CONTROL_ENB_ADR           2U
 #define   GEN_UNDER_VOLTAGE_ALARM_ENB_ADR              0U
 #define   GEN_UNDER_VOLTAGE_PRE_ALARM_ENB_ADR          1U
 #define   GEN_OVER_VOLTAGE_PRE_ALARM_ENB_ADR           2U
@@ -300,8 +300,8 @@ typedef struct __packed
 #define   RECORD_FREQ_NET_ENB_ADR                      12U
 #define   RECORD_VOLTAGE_ACC_ENB_ADR                   13U
 /*------------------------- Extern -------------------------------------*/
-extern eConfigReg versionController;
-extern eConfigReg versionFirmware;
+extern const eConfigReg versionController;
+extern const eConfigReg versionFirmware;
 extern eConfigReg serialNumber;
 extern eConfigReg displayBrightnesLevel;
 extern eConfigReg displayContarstLevel;

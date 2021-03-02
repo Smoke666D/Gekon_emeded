@@ -34,6 +34,7 @@ typedef enum
   ELECTRO_CMD_NONE,
   ELECTRO_CMD_LOAD_MAINS,
   ELECTRO_CMD_LOAD_GENERATOR,
+  ELECTRO_CMD_UNLOAD,
   ELECTRO_CMD_ENABLE_STOP_ALARMS,
   ELECTRO_CMD_DISABLE_START_ALARMS,
   ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS,
@@ -144,6 +145,7 @@ typedef struct __packed
   ALARM_TYPE         phaseImbalanceAlarm;   /* Phase imbalance protection */
   ALARM_TYPE         currentWarningAlarm;   /* Simple level alarm */
   CURRENT_ALARM_TYPE currentAlarm;
+  ERROR_TYPE         phaseSequenceError;
   /*---------- OUTPUT ----------*/
   RELAY_DEVICE       relay;
   RELAY_DELAY_DEVICE relayOn;
@@ -152,16 +154,17 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION         enb   : 1U;
-  ELECTRO_STATUS     state : 1U;
+  PERMISSION         enb         : 1U;
+  ELECTRO_STATUS     state       : 1U;
+  PERMISSION         alarmsIgnor : 1U;
   ELECTRO_CHANNEL    line[MAINS_LINE_NUMBER];
   getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
-  PERMISSION         alarmsIgnor : 1U;
   ALARM_TYPE         lowVoltageAlarm;
   ALARM_TYPE         hightVoltageAlarm;
   ALARM_TYPE         lowFreqAlarm;
   ALARM_TYPE         hightFreqAlarm;
+  ERROR_TYPE         phaseSequenceError;
   /*---------- EVENTS ----------*/
   ERROR_TYPE         autoStart;
   ERROR_TYPE         autoStop;

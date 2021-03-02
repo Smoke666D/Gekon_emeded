@@ -1073,11 +1073,12 @@ void vADCInit(void)
 
 }
 
+static uint8_t OF =0,OF1=0;
+  static uint16_t DCCount=0;
 
 void StartADCTask(void *argument)
 {
-   static uint8_t OF =0,OF1=0;
-   static uint16_t DCCount=0;
+
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    //Иницилиазация АЦП

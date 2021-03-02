@@ -321,12 +321,13 @@ uint8_t vSelectNewObject( xScreenSetObject* menu, uint8_t i)
 return 0;
 }
 
+
+
+
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
-  static FLAG              fFirstEnter   = FLAG_SET;
+
   uint16_t data =0;
-  if ( fFirstEnter == FLAG_RESET )
-  {
     if (key == (KEY_EXIT))
     {
 
@@ -334,7 +335,6 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
       fDownScreen = FLAG_RESET;
       ucActiveObject = NO_SELECT_D;
-      fFirstEnter = FLAG_SET;
       fTimeEdit   = FLAG_RESET;
       if (uiSetting >= FIRST_VALID_SETTING)
       {
@@ -382,14 +382,14 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                 ucActiveObject = CHANGE_D;
                 eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
                 break;
-         case KEY_DOWN_BREAK:
+         case KEY_DOWN:
                ucActiveObject = CHANGE_D;
                for ( uint8_t i=0U; i<10U; i++ )
                {
                   eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
                }
                break;
-         case KEY_UP_BREAK:
+         case KEY_UP:
                ucActiveObject = CHANGE_D;
                for ( uint8_t i=0U; i<10U; i++ )
                {
@@ -465,20 +465,8 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
              break;
          }
       }
-  }
-  else
-  {
-    //Обработка клавиш начинается только после того, как будут отпущены клавиши UP и BREAK
-    fPassowordCorrect = FLAG_RESET;
-    password[0] =  0U;
-    password[1] = 0U;
-    password[2] = 0U;
-    password[3] = 0U;
-    if (key == KEY_STOP_BREAK )
-    {
-      fFirstEnter = FLAG_RESET;
-    }
-  }
+
+
   return;
 }
 
@@ -487,48 +475,76 @@ static uint8_t CurPassDigitSelect = 0;
 void xPasswordScreenCallBack ( xScreenSetObject* menu, char key )
 {
 
-   if  ( (key== KEY_START) && (CurPassDigitSelect < 3))
-   {
-     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
-     CurPassDigitSelect++;
-     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
-   }
-   if  ( (key==KEY_STOP) && (CurPassDigitSelect > 0))
-   {
-     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
-     CurPassDigitSelect--;
-     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
-   }
-   if ((key == KEY_UP) && ( password[CurPassDigitSelect] < 9 ))
-   {
-     password[CurPassDigitSelect]++;
-   }
-   if ((key == KEY_DOWN) && ( password[CurPassDigitSelect] > 0 ))
-   {
-     password[CurPassDigitSelect]--;
-   }
-   if ((key == KEY_AUTO) || (key ==KEY_EXIT))
-   {
-     if (((password[0]*1000 + password[1]*100 + password[2]*10 + password[0]) == systemPassword.data) && (key == KEY_AUTO))
-     {
-       fPassowordCorrect = FLAG_SET;
-     }
-     else
-     {
-       fPassowordCorrect = FLAG_SET;
-     }
-      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
-      menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
-      pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
-      if (key == KEY_EXIT)
-      {
-         pCurrMenu->pFunc( pCurrMenu, KEY_EXIT );
-      }
-   }
+  switch (key)
+  {
+    case KEY_START:
+         if (CurPassDigitSelect < 3)
+         {
+           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+           CurPassDigitSelect++;
+           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
+         }
+         break;
+    case KEY_STOP:
+         if   (CurPassDigitSelect > 0)
+         {
+           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+           CurPassDigitSelect--;
+           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 1U;
+         }
+         break;
+    case KEY_UP:
+         if ( password[CurPassDigitSelect] < 9 )
+         {
+           password[CurPassDigitSelect]++;
+         }
+         break;
+    case KEY_DOWN:
+          if ( password[CurPassDigitSelect] > 0 )
+          {
+             password[CurPassDigitSelect]--;
+          }
+          break;
+    case KEY_AUTO:
+          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
+          CurPassDigitSelect = 0;
+          if ((password[0]*1000 + password[1]*100 + password[2]*10 + password[3]) == systemPassword.data)
+           {
+             fPassowordCorrect = FLAG_SET;
+             pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
+             pCurrMenu->pFunc( pCurrMenu, KEY_AUTO );
+           }
+           else
+           {
+             fPassowordCorrect = FLAG_RESET;
+
+             menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+             menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
+             CurPassDigitSelect = 0;
+             pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
+             vMenuMessageShow("Неверный пароль!");
+           }
+
+         break;
+    case KEY_EXIT:
+          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
+          CurPassDigitSelect = 0;
+          pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
+          pCurrMenu->pFunc( pCurrMenu, KEY_EXIT );
+         break;
+    default:
+         break;
+
+
+
+  }
+  return;
 
 }
 
-
+static  uint8_t   key_ready =0;
 /*---------------------------------------------------------------------------------------------------*/
 //Функция обработки нажатий в базовых меню
 
@@ -536,12 +552,18 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
 {
   uint8_t           index = menu->pCurrIndex;
   xScreenSetObject* pMenu = menu;
-  static  uint8_t   key_ready =0;
+
 
   switch ( key )
   {
     case KEY_UP:
       key_ready|= SET_MENU_READY;
+      if  ((key_ready & SET_MENU_READY)!=0)
+      {
+         //Переход в меню
+         pCurrMenu = &xSettingsMenu;
+         pCurrMenu->pCurrIndex = 0U;
+      }
       break;
     case KEY_UP_BREAK:
       //Смотрим, не находимся ли мы в экранах нижнего уровня
@@ -587,12 +609,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
       {
         key_ready |= STOP_KEY_READY;
         xTaskNotify( xProccesToNotify, ( uint32_t )HMI_CMD_STOP, eSetBits );
-        if  ((key_ready & SET_MENU_READY)!=0)
-        {
-          //Переход в меню
-            pCurrMenu = &xSettingsMenu;
-            pCurrMenu->pCurrIndex = 0U;
-        }
+
       }
       break;
     case KEY_AUTO:
@@ -659,12 +676,13 @@ void vMenuMessageInit ( osThreadId_t xmainprocess )
 
 
 
+static FLAG xTimeOutFlag = FLAG_RESET;
 
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuTask ( void )
 {
 
-  static FLAG xTimeOutFlag = FLAG_RESET;
+
 
   //Если установлен флаг реинициализации
   if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) &    DATA_API_FLAG_LCD_TASK_CONFIG_REINIT ) > 0U )
@@ -1007,12 +1025,12 @@ char * vScrollFunction(uint16_t utemp, uint8_t  * shift)
  * !!!Важно.Для кооректого исполнения комманд, первой должна обязатаельнос вывполнятся команда ALARM_COUNT или EVENT_COUNT
  * В связи с тем, что функция писалась под конкретную сруктуру вывода в меню, для сокращения обращений к памяти, текущая запись кэшируется при выволненении команды ALARM_COUNT или EVENT_COUNT
  */
+static uint16_t         utemp;
+static LOG_RECORD_TYPE  xrecord;
+static uint8_t          ALD   = 0;
 
 void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
-  static LOG_RECORD_TYPE  xrecord;
-  static uint8_t          ALD   = 0;
-  static uint16_t         utemp;
   char   TS[6];
   vStrCopy(Data," ");
   switch (ID)
@@ -1031,7 +1049,7 @@ void vGetAlarmForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
          if ( ++ALD > BLINK_TIME )
          {
            vStrCopy(Data,"О");
-           if (ALD ==(BLINK_TIME*2))
+           if (ALD > (BLINK_TIME*2))
            {
              ALD=0;
            }
@@ -1466,37 +1484,41 @@ void vGetMessageData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
 {
   Data[0]=0;
   vStrCopy(Data,MessageData);
+  return;
 }
-
-
+/*
+ *  Функция обработки нажатия клавиш в окне сообщений. Реагируем только на нажатия, что бы можно было
+ *  привязывать вывод сообщения к нажатию на кнопку. В противном случае, окон будет закрываться сразу
+ *  же полсе отпускания кноки.
+ */
 void xMessageScreenCallBack ( xScreenSetObject* menu, char key )
 {
-  static FLAG fKey = FLAG_RESET;
-  if (key!=0)
+  if ( (key & MAKECODE) !=0 )
   {
-    if (fKey == FLAG_RESET )
-    {
-      fKey = FLAG_SET;
-    }
-    else
-    {
-      fKey = FLAG_RESET;
-      vMenuMessageHide();
-    }
+     vMenuMessageHide();
+     if (key == KEY_EXIT)
+     {
+        pCurrMenu->pFunc( pCurrMenu, KEY_EXIT );
+     }
   }
-
+  return;
 }
-
+/*
+ *  Функция активации окна пользовательского сообщения.
+ */
 void vMenuMessageShow(char * mes)
 {
   xMessageMenu.pHomeMenu[0U].pUpScreenSet = pCurrMenu;
   pCurrMenu = &xMessageMenu;
-  pCurrMenu->pCurrIndex = 0U;
   vStrCopy(MessageData,mes);
+  return;
 }
-
+/*
+ *  Функция закрытия окна сообщения
+ */
 void vMenuMessageHide(void)
 {
     pCurrMenu = xMessageMenu.pHomeMenu[0U].pUpScreenSet;
+    return;
 }
 

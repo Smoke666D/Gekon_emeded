@@ -397,24 +397,29 @@ void vADCNetDataUpdate()
     xEventGroupClearBits (xADCEvent, NET_UPDATE );
     xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
     GENERATOR_DATA[NET_FREQ] =xNET_FREQ;
-
     GENERATOR_DATA[NET_L1_FASE_V] =fix16_mul(xNET_F1_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-    GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul(xNET_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-    GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-
-
-    if (xNetWiring==ELECTRO_SCHEME_STAR)
-       {
-         GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt(x3 ));
-         GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt(x3 ));
-         GENERATOR_DATA[NET_L3_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt(x3 ));
-       }
-       else
-       {
-         GENERATOR_DATA[NET_L1_LINE_V] =xNET_F1_VDD;
-         GENERATOR_DATA[NET_L2_LINE_V] =xNET_F2_VDD;
-         GENERATOR_DATA[NET_L3_LINE_V] =xNET_F3_VDD;
-       }
+    switch ( xNetWiring )
+    {
+      case ELECTRO_SCHEME_STAR:
+           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul(xNET_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt(x3 ));
+           GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt(x3 ));
+           GENERATOR_DATA[NET_L3_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt(x3 ));
+           break;
+      case ELECTRO_SCHEME_TRIANGLE:
+           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul(xNET_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L3_LINE_V] = GENERATOR_DATA[NET_L3_FASE_V];
+           GENERATOR_DATA[NET_L2_LINE_V] = GENERATOR_DATA[NET_L2_FASE_V];
+           GENERATOR_DATA[NET_L1_LINE_V] = GENERATOR_DATA[NET_L1_FASE_V];
+           break;
+      case ELECTRO_SCHEME_SINGLE_PHASE:
+           GENERATOR_DATA[NET_L3_LINE_V] = 0;
+           GENERATOR_DATA[NET_L2_LINE_V] = 0;
+           GENERATOR_DATA[NET_L1_LINE_V] = GENERATOR_DATA[NET_L1_FASE_V];;
+           break;
+    }
   }
 
 }
@@ -1073,12 +1078,12 @@ void vADCInit(void)
 
 }
 
-static uint8_t OF =0,OF1=0;
-  static uint16_t DCCount=0;
+
 
 void StartADCTask(void *argument)
 {
-
+    static uint8_t OF =0,OF1=0;
+    static uint16_t DCCount=0;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    //Иницилиазация АЦП

@@ -327,10 +327,10 @@ return 0;
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
 
-  uint16_t data =0;
+    uint16_t data =0;
     if (key == (KEY_EXIT))
     {
-
+      fPassowordCorrect = FLAG_RESET;
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
       fDownScreen = FLAG_RESET;
@@ -375,31 +375,22 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
      switch (key)
     {
          case KEY_STOP:
-                ucActiveObject = CHANGE_D;
-                eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
-                break;
          case KEY_START:
-                ucActiveObject = CHANGE_D;
-                eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
-                break;
+              ucActiveObject = CHANGE_D;
+              eDATAAPIconfigValue(key == KEY_STOP ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
+              break;
          case KEY_DOWN:
-               ucActiveObject = CHANGE_D;
-               for ( uint8_t i=0U; i<10U; i++ )
-               {
-                  eDATAAPIconfigValue( DATA_API_CMD_DEC, uiSetting, NULL );
-               }
-               break;
          case KEY_UP:
-               ucActiveObject = CHANGE_D;
-               for ( uint8_t i=0U; i<10U; i++ )
-               {
-                  eDATAAPIconfigValue( DATA_API_CMD_INC, uiSetting, NULL );
-               }
-               break;
+              ucActiveObject = CHANGE_D;
+              for ( uint8_t i=0U; i<10U; i++ )
+              {
+                 eDATAAPIconfigValue( key == KEY_STOP ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
+              }
+              break;
          case KEY_AUTO:
-               pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
-               vExitCurObject();
-               return;
+              pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
+              vExitCurObject();
+              return;
          default:
            break;
        }
@@ -465,16 +456,26 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
              break;
          }
       }
-
-
   return;
 }
 
 static uint8_t CurPassDigitSelect = 0;
 
+void vPasswordHide(xScreenSetObject* menu)
+{
+  password[0] = 0U;
+  password[1] = 0U;
+  password[2] = 0U;
+  password[3] = 0U;
+  menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
+  menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
+  pCurrMenu = pCurrMenu->pHomeMenu[0U].pUpScreenSet;
+  CurPassDigitSelect = 0;
+}
+
+
 void xPasswordScreenCallBack ( xScreenSetObject* menu, char key )
 {
-
   switch (key)
   {
     case KEY_START:
@@ -510,38 +511,20 @@ void xPasswordScreenCallBack ( xScreenSetObject* menu, char key )
           menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
           CurPassDigitSelect = 0;
           if ((password[0]*1000 + password[1]*100 + password[2]*10 + password[3]) == systemPassword.data)
-           {
-             fPassowordCorrect = FLAG_SET;
-             pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
-             pCurrMenu->pFunc( pCurrMenu, KEY_AUTO );
-           }
-           else
-           {
-             fPassowordCorrect = FLAG_RESET;
-
-             menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
-             menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
-             CurPassDigitSelect = 0;
-             pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
-             vMenuMessageShow("Неверный пароль!");
-           }
-
+          {
+            fPassowordCorrect = FLAG_SET;
+          }
+          vPasswordHide(menu);
+          ( fPassowordCorrect == FLAG_SET ) ? pCurrMenu->pFunc( pCurrMenu, KEY_AUTO ) : vMenuMessageShow("Неверный пароль!");
          break;
     case KEY_EXIT:
-          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[CurPassDigitSelect].ObjectParamert[3U] = 0U;
-          menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[0].ObjectParamert[3U] = 1U;
-          CurPassDigitSelect = 0;
-          pCurrMenu = xPasswordMenu.pHomeMenu[0U].pUpScreenSet;
+          vPasswordHide(menu);
           pCurrMenu->pFunc( pCurrMenu, KEY_EXIT );
          break;
     default:
          break;
-
-
-
   }
   return;
-
 }
 
 static  uint8_t   key_ready =0;
@@ -558,7 +541,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
   {
     case KEY_UP:
       key_ready|= SET_MENU_READY;
-      if  ((key_ready & SET_MENU_READY)!=0)
+      if  ( (key_ready & (SET_MENU_READY | STOP_KEY_READY )) ==(SET_MENU_READY | STOP_KEY_READY ))
       {
          //Переход в меню
          pCurrMenu = &xSettingsMenu;

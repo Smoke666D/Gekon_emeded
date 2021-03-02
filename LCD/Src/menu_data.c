@@ -30,6 +30,7 @@
 static uint8_t Header[]       = { 0U, 1U, CENTER_ALIGN };
 static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN};
 static uint8_t LeftText[]     = { 0U, 1U, LEFT_ALIGN };
+
 static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam3[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam4[]   = { 0U, 1U, LEFT_ALIGN, 0U };
@@ -49,6 +50,11 @@ static uint8_t InputParam16[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam17[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam18[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam19[]   = { 0U, 1U, LEFT_ALIGN, 1U };
+static uint8_t InputParam20[]   = { 0U, 1U, CENTER_ALIGN, 1U };
+static uint8_t InputParam21[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam22[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam23[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+
 static uint8_t InputParam1[]  =  { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  =  { 0U, 1U, CENTER_ALIGN, 0U };
 
@@ -381,11 +387,11 @@ static xScreenObjet const xYesNoScreen[]=
 
 static xScreenObjet const xPasswordScreen[]=
 {
-  {0U,FONT_SIZE*3U ,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam19,NULL,(void*)&vGetPasswordData,1U},
-  {0U,FONT_SIZE*7U ,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam2,NULL,(void*)&vGetPasswordData,2U},
-  {0U,FONT_SIZE*10U,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,(void*)&vGetPasswordData,3U},
-  {0U,FONT_SIZE*13U,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam4,NULL,(void*)&vGetPasswordData,4U},
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Пароль",NULL,0U},
+  {0U,FONT_SIZE*4U ,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam20,NULL,(void*)&vGetPasswordData,1U},
+  {0U,FONT_SIZE*8U ,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam21,NULL,(void*)&vGetPasswordData,2U},
+  {0U,FONT_SIZE*12U,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam22,NULL,(void*)&vGetPasswordData,3U},
+  {0U,FONT_SIZE*16U,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam23,NULL,(void*)&vGetPasswordData,4U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,Header,"Введите пароль",NULL,0U},
   {1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
 
 };

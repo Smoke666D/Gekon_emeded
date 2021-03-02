@@ -701,7 +701,7 @@ void vELECTROdataInit ( void )
   mains.relayOff.timer.id     = LOGIC_DEFAULT_TIMER_ID;
   mains.relayOff.status       = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.getFreq = xADCGetNETLFreq;
+  mains.getFreq             = xADCGetNETLFreq;
   mains.line[0U].getVoltage = xADCGetNETL1;
   mains.line[0U].getCurrent = NULL;
   mains.line[1U].getVoltage = xADCGetNETL2;
@@ -709,6 +709,13 @@ void vELECTROdataInit ( void )
   mains.line[2U].getVoltage = xADCGetNETL3;
   mains.line[2U].getCurrent = NULL;
   /*----------------------------------------------------------------------------*/
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vELECTROreset ( void )
+{
+  electro.cmd   = ELECTRO_CMD_NONE;
+  electro.state = ELECTRO_STATUS_IDLE;
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -805,6 +812,49 @@ void vELECTROtask ( void* argument )
     {
       case ELECTRO_CMD_NONE:
         break;
+      case ELECTRO_CMD_UNLOAD:
+        switch ( electro.state )
+        {
+          case ELECTRO_PROC_STATUS_IDLE:
+            if ( mains.state == ELECTRO_STATUS_LOAD )
+            {
+              vRELAYset( &mains.relay, RELAY_OFF );
+              vRELAYdelayTrig( &mains.relayOff );
+              vLOGICprintDebug( ">>Electro         : Disconnect mains\r\n" );
+             }
+             if ( generator.state == ELECTRO_STATUS_LOAD )
+             {
+               vRELAYset( &generator.relay, RELAY_OFF );
+               vRELAYdelayTrig( &generator.relayOff );
+               vLOGICprintDebug( ">>Electro         : Disconnect generator\r\n" );
+             }
+             electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
+            break;
+          case ELECTRO_PROC_STATUS_DISCONNECT:
+            if ( ( mains.relayOff.status     == RELAY_DELAY_IDLE ) &&
+                 ( generator.relayOff.status == RELAY_DELAY_IDLE ) )
+            {
+              vLOGICstartTimer( &electro.timer, "Electro timer       " );
+              electro.state   = ELECTRO_PROC_STATUS_DONE;
+              vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
+            }
+            break;
+          case ELECTRO_PROC_STATUS_DONE:
+            if ( uLOGICisTimer( &electro.timer ) > 0U )
+            {
+              mains.state     = ELECTRO_STATUS_IDLE;
+              generator.state = ELECTRO_STATUS_IDLE;
+              electro.state   = ELECTRO_PROC_STATUS_IDLE;
+              electro.cmd     = ELECTRO_CMD_NONE;
+              vLOGICprintDebug( ">>Electro         : Unload done\r\n" );
+            }
+            break;
+          default:
+            vELECTROreset();
+            break;
+        }
+
+        break;
       case ELECTRO_CMD_LOAD_MAINS:
         if ( mains.state == ELECTRO_STATUS_IDLE )
         {
@@ -837,17 +887,19 @@ void vELECTROtask ( void* argument )
             case ELECTRO_PROC_STATUS_DONE:
               if ( mains.relayOn.status == RELAY_DELAY_IDLE )
               {
-                electro.state = ELECTRO_STATUS_IDLE;
                 mains.state   = ELECTRO_STATUS_LOAD;
-                electro.cmd   = ELECTRO_CMD_NONE;
+                vELECTROreset();
                 vLOGICprintDebug( ">>Electro         : Mains connection done\r\n" );
               }
               break;
             default:
-              electro.cmd   = ELECTRO_CMD_NONE;
-              electro.state = ELECTRO_STATUS_IDLE;
+              vELECTROreset();
               break;
           }
+        }
+        else
+        {
+          vELECTROreset();
         }
         break;
       case ELECTRO_CMD_LOAD_GENERATOR:
@@ -889,10 +941,13 @@ void vELECTROtask ( void* argument )
               }
               break;
             default:
-              electro.cmd   = ELECTRO_CMD_NONE;
-              electro.state = ELECTRO_STATUS_IDLE;
+              vELECTROreset();
               break;
           }
+        }
+        else
+        {
+          vELECTROreset();
         }
         break;
       case ELECTRO_CMD_ENABLE_STOP_ALARMS:

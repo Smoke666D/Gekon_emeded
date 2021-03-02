@@ -189,10 +189,10 @@ void vCONTROLLERprintActiveErrorList ( void )
 uint8_t uALARMisForList ( SYSTEM_EVENT* event )
 {
   uint8_t res = 0U;
-  if ( ( event->action == ACTION_PLAN_STOP_AND_BAN_START ) ||
-       ( event->action  == ACTION_BAN_START              ) ||
-       ( event->action == ACTION_WARNING                 ) ||
-       ( event->action == ACTION_EMERGENCY_STOP          ) )
+  if ( ( event->action == ACTION_BAN_START      ) ||
+       ( event->action == ACTION_WARNING        ) ||
+       ( event->action == ACTION_SHUTDOWN       ) ||
+       ( event->action == ACTION_EMERGENCY_STOP ) )
   {
     res = 1U;
   }

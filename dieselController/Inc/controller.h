@@ -24,7 +24,7 @@ typedef enum
 typedef enum
 {
   CONTROLLER_STATUS_IDLE,
-  CONTROLLER_STATUS_ALARM,
+  CONTROLLER_STATUS_ERROR,
   CONTROLLER_STATUS_START,
   CONTROLLER_STATUS_START_WITH_DELAY,
   CONTROLLER_STATUS_PLAN_STOP,
@@ -59,11 +59,14 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  CONTROLLER_MODE   mode            : 1U;
-  CONTROLLER_STATE  state           : 3U;
-  PERMISSION        banAutoShutdown : 1U;
-  PERMISSION        banAutoStart    : 1U;
-  PERMISSION        banGenLoad      : 1U;
+  CONTROLLER_MODE   mode               : 1U;
+  CONTROLLER_STATE  state              : 3U;
+  PERMISSION        banAutoShutdown    : 1U;
+  PERMISSION        banAutoStart       : 1U;
+  PERMISSION        banGenLoad         : 1U;
+  PERMISSION        powerOffImidiately : 1U;
+  PERMISSION        logWarning         : 1U;
+  PERMISSION        logPositive        : 1U;
   fix16_t           stopDelay;
   fix16_t           startDelay;
   SYSTEM_TIMER      timer;

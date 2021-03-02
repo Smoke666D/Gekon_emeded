@@ -108,15 +108,14 @@ typedef enum
 
 typedef enum
 {
-  ACTION_NONE,                    /* 0 */
-  ACTION_WARNING,                 /* 1 */
-  ACTION_EMERGENCY_STOP,          /* 2 */
-  ACTION_SHUTDOWN,                /* 3 */
-  ACTION_PLAN_STOP,               /* 4 */
-  ACTION_PLAN_STOP_AND_BAN_START, /* 5 */
-  ACTION_BAN_START,               /* 6 */
-  ACTION_AUTO_START,              /* 7 */
-  ACTION_AUTO_STOP,               /* 8 */
+  ACTION_NONE,                    /* 0 None     */
+  ACTION_WARNING,                 /* 1 Warning  */
+  ACTION_EMERGENCY_STOP,          /* 2 Error    */
+  ACTION_SHUTDOWN,                /* 3 Error    */
+  ACTION_PLAN_STOP,               /* 4 Positive */
+  ACTION_BAN_START,               /* 5 Feature  */
+  ACTION_AUTO_START,              /* 6 Positive */
+  ACTION_AUTO_STOP,               /* 7 Positive */
 } SYSTEM_ACTION;
 
 typedef enum
@@ -262,7 +261,7 @@ typedef enum
   DEVICE_STATUS_COOLDOWN,        /* 10 1 Engine cool down on nominal speed */
   DEVICE_STATUS_IDLE_COOLDOWN,   /* 11 1 Engine cool down on idle speed    */
   DEVICE_STATUS_STOP_PROCESSING, /* 12 1 Waiting for engine stop           */
-  DEVICE_STATUS_EMERGENCY_STOP,  /* 13 0 Fatal error. Need to reset manual */
+  DEVICE_STATUS_ERROR,           /* 13 0 Fatal error. Need to reset manual */
   DEVICE_STATUS_BAN_START,       /* 14 0 Start is banned by error          */
 } DEVICE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
@@ -354,6 +353,7 @@ extern const char* logTypesDictionary[LOG_TYPES_SIZE];
 #endif
 /*----------------------- Functions ------------------------------------*/
 const char*   cSTATUSgetString ( DEVICE_STATUS status );
+DEVICE_STATUS eSTATUSgetStatus ( void );
 void          vSTATUSget ( DEVICE_INFO* info );
 void          vSTATUSsetup ( DEVICE_STATUS status, timerID_t id );
 void          vLOGICinit ( TIM_HandleTypeDef* tim );

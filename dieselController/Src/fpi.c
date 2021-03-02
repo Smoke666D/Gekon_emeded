@@ -251,7 +251,6 @@ void vFPIdataInit ( void )
 /*----------------------------------------------------------------------------*/
 void vFPIinit ( const FPI_INIT* init )
 {
-  uint8_t i = 0U;
   /* Physical part */
   fpis[FPI_A].port = init->portA;
   fpis[FPI_A].pin  = init->pinA;

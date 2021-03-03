@@ -13,7 +13,7 @@
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 #define  FPO_NUMBER           6U
-#define  FPO_DIS_NUMBER       3U
+#define  FPO_DIS_NUMBER       ( FPO_NUMBER / 2U )
 #define  FPO_FUNCTION_NUMBER  21U
 #define  FPO_A                0U
 #define  FPO_B                1U
@@ -24,6 +24,10 @@
 #define  FPO_DIS_AB           0U
 #define  FPO_DIS_CD           1U
 #define  FPO_DIS_EF           2U
+/*------------------------- Check --------------------------------------*/
+#if ( ( FPO_NUMBER % 2U ) != 0U )
+  #error Wrong FPO number
+#endif
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {

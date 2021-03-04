@@ -19,7 +19,7 @@
 static SemaphoreHandle_t  xSemaphore = NULL;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t  u8g2;
-static uint8_t  LCD_Buffer[LCD_DATA_BUFFER_SIZE];
+static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
 static uint8_t lcd_delay=0;
 static uint8_t lcd_brigth_counter =0;
 static uint8_t lcd_brigth =0;
@@ -200,11 +200,11 @@ static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout1(SPI_HandleTypeDef *hspi,
         /* Process Unlocked */
         __HAL_UNLOCK(hspi);
 
-        return HAL_TIMEOUT;
+        return ( HAL_TIMEOUT );
       }
     }
   }
-  return HAL_OK;
+  return ( HAL_OK );
 }
 
 static void SPI_DMATransmit(DMA_HandleTypeDef *hdma)

@@ -293,7 +293,7 @@ uint8_t vSelectLastObject( xScreenSetObject* menu, uint8_t i)
 {
   if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == LO)
   {
-      return 1;
+      return ( 1U );
   }
   if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
   {
@@ -301,24 +301,24 @@ uint8_t vSelectLastObject( xScreenSetObject* menu, uint8_t i)
       uCurrentObject = i;
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
   }
-  return 0;
+  return ( 0U );
 }
 
 uint8_t vSelectNewObject( xScreenSetObject* menu, uint8_t i)
 {
   if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == LO)
   {
-    return 1;
+    return ( 1U );
   }
   if (menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[i].last == uDataType )
   {
     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
     uCurrentObject = i;
     menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 1U;
-    return 1;
+    return ( 1U );
   }
 
-return 0;
+return ( 0U );
 }
 
 
@@ -1407,20 +1407,22 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case GEN_L2_REAC_POWER:
       case GEN_L3_REAC_POWER:
       case GEN_L1_REAC_POWER:
-           fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+      case GEN_REACTIVE_POWER:
+            fix16_to_str(  xADCGetREG(ID), Data, 2U );
            vStrAdd(Data," кВАр");
            break;
       case GEN_L2_REAL_POWER:
       case GEN_L3_REAL_POWER:
       case GEN_L1_REAL_POWER:
-           fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+      case GEN_REAL_POWER:
+           fix16_to_str(  xADCGetREG(ID), Data, 2U );
            vStrAdd(Data," кВА");
            break;
       case GEN_L2_ACTIVE_POWER:
       case GEN_L3_ACTIVE_POWER:
       case GEN_L1_ACTIVE_POWER:
-      case GEN_REACTIVE_POWER:
-           fix16_to_str( fix16_div(xADCGetREG(ID),fix16_from_int(1000)), Data, 2U );
+      case GEN_ACTIVE_POWER:
+           fix16_to_str(  xADCGetREG(ID), Data, 2U );
            vStrAdd(Data," кВт");
            break;
       case NET_ROTATION:

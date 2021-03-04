@@ -248,7 +248,7 @@ PERMISSION       eENGINEisStartBan ( void );
 ENGINE_STATUS    eENGINEgetEngineStatus ( void );
 STARTER_STATUS   eENGINEgetStarterStatus ( void );
 EMERGENCY_STATUS eENGINEgetEmergencyStatus ( void );
-STOP_STATUS eENGINEgetPlanStopStatus ( void );
+STOP_STATUS      eENGINEgetPlanStopStatus ( void );
 TRIGGER_STATE    eENGINEgetOilSensorState ( void );
 TRIGGER_STATE    eENGINEgetCoolantSensorState ( void );
 TRIGGER_STATE    eENGINEgetFuelSensorState ( void );

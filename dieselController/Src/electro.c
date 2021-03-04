@@ -326,6 +326,15 @@ void vMAINSprocess ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef DEBUG
+fix16_t fGENERATORsynteticCurrent ( void )
+{
+  fix16_t res = 0U;
+  res = fix16_mul( fix16_div( xADCGetSFL(), F16( 500U ) ), generator.rating.current );
+  return res;
+}
+#endif
+/*---------------------------------------------------------------------------------------------------*/
 /* Check generator
  * Input:  None
  * Output: Maximum of voltage
@@ -573,7 +582,8 @@ void vELECTROdataInit ( void )
   generator.getFreq             = xADCGetGENLFreq;
   generator.getPower            = xADCGetGENActivePower;
   generator.line[0U].getVoltage = xADCGetGENL1Lin;
-  generator.line[0U].getCurrent = xADCGetGENL1Cur;
+  //generator.line[0U].getCurrent = xADCGetGENL1Cur;
+  generator.line[0U].getCurrent = fGENERATORsynteticCurrent;
   generator.line[1U].getVoltage = xADCGetGENL2Lin;
   generator.line[1U].getCurrent = xADCGetGENL2Cur;
   generator.line[2U].getVoltage = xADCGetGENL3Lin;

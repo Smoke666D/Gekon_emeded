@@ -46,6 +46,10 @@ void vDATAAPIsendEventAll ( DATA_API_REINIT message )
       mask = DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT;
       xEventGroupSetBits( xDataApiEvents, mask );
       break;
+    case DATA_API_REDRAW_DISPLAY:
+      mask = DATA_API_FLAG_REDRAW_DISPLAY;
+      xEventGroupSetBits( xDataApiEvents, mask );
+      break;
     default:
       break;
   }

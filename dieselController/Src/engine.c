@@ -318,12 +318,6 @@ fix16_t fFUELprocess ( void )
 /*----------------------------------------------------------------------------*/
 fix16_t fSPEEDfromFreq ( fix16_t freq )
 {
-  fix16_t sub = fix16_div( freq, speed.polePairs );
-  fix16_t res = fix16_mul( sub, fix60 );
-  float a = fix16_to_float( freq );
-  float b = fix16_to_float( sub );
-  float c = fix16_to_float( res );
-  float d = fix16_to_float( speed.polePairs );
   return fix16_mul( fix16_div( freq, speed.polePairs ), fix60 ); /* RPM */
 }
 /*----------------------------------------------------------------------------*/
@@ -1678,6 +1672,7 @@ void vENGINEtask ( void* argument )
               if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
               {
                 vLCD_BrigthOn();
+                vDATAAPIsendEventAll( DATA_API_REDRAW_DISPLAY );
                 starterFinish     = TRIGGER_SET;
                 starter.status    = STARTER_STATUS_CONTROL_BLOCK;
                 commonTimer.delay = starter.blockDelay;
@@ -1703,6 +1698,7 @@ void vENGINEtask ( void* argument )
                 starterFinish  = 1U;
                 starter.status = STARTER_STATUS_CONTROL_BLOCK;
                 vLCD_BrigthOn();
+                vDATAAPIsendEventAll( DATA_API_REDRAW_DISPLAY );
                 vLOGICresetTimer( &commonTimer );
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );

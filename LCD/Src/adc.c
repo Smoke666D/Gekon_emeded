@@ -93,7 +93,6 @@ static fix16_t  xTransCoof =0;
 fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
-
 /*
  *  Константы
  */
@@ -169,12 +168,12 @@ fix16_t xADCGetCAC()
 fix16_t xADCGetSOP()
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  return xSOP;
+  return (xSOP);
 }
 fix16_t xADCGetSCT()
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  return xSCT;
+  return (xSCT);
 }
 fix16_t xADCGetSFL()
 {
@@ -379,13 +378,15 @@ uint8_t uADCGetValidDataFlag()
 
 xADCRotatinType xADCGetGenFaseRotation()
 {
-  return uGenFaseRotation;
+  xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
+  return (uGenFaseRotation);
 
 }
 
 xADCRotatinType xADCGetNetFaseRotation()
 {
-  return uNetFaseRotation;
+  xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
+  return (uNetFaseRotation);
 
 }
 
@@ -592,24 +593,20 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],GENERATOR_DATA[GEN_L2_REAL_POWER]);
     GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],GENERATOR_DATA[GEN_REAL_POWER]);
 
-
     GENERATOR_DATA[GEN_AVER_V] = GENERATOR_DATA[GEN_L1_LINE_V];
     GENERATOR_DATA[GEN_AVER_A] = GENERATOR_DATA[GEN_L1_CUR];
     GENERATOR_DATA[GEN_AVER_P] = GENERATOR_DATA[GEN_L1_ACTIVE_POWER];
 
-
+    //Если не однофазное включени, то рачитываем среднее арефмитическое линейного напряжение и тока.
     if (xNetWiring != ELECTRO_SCHEME_SINGLE_PHASE)
     {
-           GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L2_LINE_V]);
-           GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L3_LINE_V]);
-           GENERATOR_DATA[GEN_AVER_V] = fix16_div(GENERATOR_DATA[GEN_AVER_V],x3);
-
-           GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L2_CUR]);
-           GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L3_CUR]);
-           GENERATOR_DATA[GEN_AVER_A] = fix16_div(GENERATOR_DATA[GEN_AVER_A],x3);
+         GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L2_LINE_V]);
+         GENERATOR_DATA[GEN_AVER_V] = fix16_add(GENERATOR_DATA[GEN_AVER_V],GENERATOR_DATA[GEN_L3_LINE_V]);
+         GENERATOR_DATA[GEN_AVER_V] = fix16_div(GENERATOR_DATA[GEN_AVER_V],x3);
+         GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L2_CUR]);
+         GENERATOR_DATA[GEN_AVER_A] = fix16_add(GENERATOR_DATA[GEN_AVER_A],GENERATOR_DATA[GEN_L3_CUR]);
+         GENERATOR_DATA[GEN_AVER_A] = fix16_div(GENERATOR_DATA[GEN_AVER_A],x3);
    }
-
-
   }
 }
 

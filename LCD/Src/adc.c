@@ -88,7 +88,6 @@ static uint16_t F2uCosFiPeriod =0;
 static uint16_t F2uCosFiMax =0;
 static uint16_t F3uCosFiPeriod =0;
 static uint16_t F3uCosFiMax =0;
-
 static fix16_t  xTransCoof =0;
 fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
@@ -160,7 +159,6 @@ fix16_t xADCGetCAC()
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   //Пересчитываем его в реальное напяжение.
   xCAC = fix16_mul( fix16_from_int( uCAC ),  xVDD_CF );
-
   return (xCAC);
 
 }
@@ -403,15 +401,15 @@ void vADCNetDataUpdate()
     switch ( xNetWiring )
     {
       case ELECTRO_SCHEME_STAR:
-           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul(xNET_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-           GENERATOR_DATA[NET_L1_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt(x3 ));
-           GENERATOR_DATA[NET_L2_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt(x3 ));
-           GENERATOR_DATA[NET_L3_LINE_V]=fix16_mul(GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt(x3 ));
+           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul(xNET_F2_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L1_LINE_V]= fix16_mul(GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt( x3 ) );
+           GENERATOR_DATA[NET_L2_LINE_V]= fix16_mul(GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt( x3 ) );
+           GENERATOR_DATA[NET_L3_LINE_V]= fix16_mul(GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt( x3 ) );
            break;
       case ELECTRO_SCHEME_TRIANGLE:
-           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul(xNET_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul( xNET_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul( xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
            GENERATOR_DATA[NET_L3_LINE_V] = GENERATOR_DATA[NET_L3_FASE_V];
            GENERATOR_DATA[NET_L2_LINE_V] = GENERATOR_DATA[NET_L2_FASE_V];
            GENERATOR_DATA[NET_L1_LINE_V] = GENERATOR_DATA[NET_L1_FASE_V];
@@ -435,12 +433,11 @@ void vADCGeneratorDataUpdate()
   if (GenFlag & GEN_UPDATE)
   {
     xEventGroupClearBits (xADCEvent, GEN_UPDATE );
-
     xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
     GENERATOR_DATA[GEN_FREQ] = xGEN_FREQ;
 
     //Вычисление фазных значений наряжений в вольтах
-    GENERATOR_DATA[GEN_L1_FASE_V] =fix16_mul(xGEN_F1_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+    GENERATOR_DATA[GEN_L1_FASE_V] = fix16_mul(xGEN_F1_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
     switch ( xNetWiring )
     {
       case ELECTRO_SCHEME_STAR:
@@ -485,23 +482,22 @@ void vADCGeneratorDataUpdate()
     else
     {
         //Расчзет косинуса Фм L1
-        xCosFi                              = fix16_mul(fix16_pi,F16(2U));
-        xCosFi                              = fix16_div(xCosFi,fix16_from_int(uCosFiPeriod));  // 2Pi/uCurPeriod
-        xCosFi                              = fix16_mul(fix16_from_int(uCosFiMax),xCosFi);
-        xCosFi                               =fix16_cos(xCosFi);
-        xCosFi                              = fix16_mul(xCosFi,xMinus1);
+        xCosFi                              = fix16_mul( fix16_pi, F16( 2U ) );
+        xCosFi                              = fix16_div( xCosFi, fix16_from_int ( uCosFiPeriod ) );  // 2Pi/uCurPeriod
+        xCosFi                              = fix16_mul( fix16_from_int( uCosFiMax ), xCosFi );
+        xCosFi                              = fix16_mul( fix16_cos( xCosFi ), xMinus1 );
         //Расяет синуса Фи
-        temp                                = fix16_sub(F16(1),fix16_mul(xCosFi,xCosFi));
-        GENERATOR_DATA[GEN_L1_REAC_POWER]   = fix16_sqrt(temp);
-        temp                                = fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V],GENERATOR_DATA[GEN_L1_CUR]);
-        GENERATOR_DATA[GEN_L1_ACTIVE_POWER] = fix16_mul(temp,xCosFi);
-        GENERATOR_DATA[GEN_L1_ACTIVE_POWER] = fix16_div(GENERATOR_DATA[GEN_L1_ACTIVE_POWER],F16(1000));
-        temp                                = fix16_mul(GENERATOR_DATA[GEN_L1_REAC_POWER],temp);
-        GENERATOR_DATA[GEN_L1_REAC_POWER]   = fix16_div(temp,F16(1000));
-        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_L1_REAC_POWER]);
-        temp                                = fix16_mul(GENERATOR_DATA[GEN_L1_ACTIVE_POWER],GENERATOR_DATA[GEN_L1_ACTIVE_POWER]);
-        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],temp);
-        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_sqrt(GENERATOR_DATA[GEN_L1_REAL_POWER]);
+        temp                                = fix16_sub( F16( 1U ), fix16_sq( xCosFi ) );
+        GENERATOR_DATA[GEN_L1_REAC_POWER]   = fix16_sqrt( temp );
+        temp                                = fix16_mul( GENERATOR_DATA[GEN_L1_FASE_V], GENERATOR_DATA[GEN_L1_CUR] );
+        GENERATOR_DATA[GEN_L1_ACTIVE_POWER] = fix16_mul( temp,xCosFi );
+        GENERATOR_DATA[GEN_L1_ACTIVE_POWER] = fix16_div( GENERATOR_DATA[GEN_L1_ACTIVE_POWER],F16(1000));
+        temp                                = fix16_mul( GENERATOR_DATA[GEN_L1_REAC_POWER],temp);
+        GENERATOR_DATA[GEN_L1_REAC_POWER]   = fix16_div( temp, F16( 1000 ) );
+        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_sq( GENERATOR_DATA [GEN_L1_REAC_POWER] );
+        temp                                = fix16_sq( GENERATOR_DATA[GEN_L1_ACTIVE_POWER] );
+        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_add( GENERATOR_DATA[GEN_L1_REAL_POWER], temp );
+        GENERATOR_DATA[GEN_L1_REAL_POWER]   = fix16_sqrt( GENERATOR_DATA [GEN_L1_REAL_POWER] );
 
     }
 
@@ -527,7 +523,7 @@ void vADCGeneratorDataUpdate()
           F2xCosFi                                =fix16_cos(F2xCosFi);
           F2xCosFi                              = fix16_mul(F2xCosFi,xMinus1);
                 //Расяет синуса Фи
-          temp                                = fix16_sub(F16(1),fix16_mul(F2xCosFi,F2xCosFi));
+          temp                                = fix16_sub(F16(1), fix16_sq( F2xCosFi ) );
           GENERATOR_DATA[GEN_L2_REAC_POWER]   = fix16_sqrt(temp);
           temp                                = fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V],GENERATOR_DATA[GEN_L2_CUR]);
           GENERATOR_DATA[GEN_L2_ACTIVE_POWER] = fix16_mul(temp,xCosFi);
@@ -557,15 +553,15 @@ void vADCGeneratorDataUpdate()
           F3xCosFi                                =fix16_cos(F3xCosFi);
           F3xCosFi                              = fix16_mul(F3xCosFi,xMinus1);
                          //Расяет синуса Фи
-          temp                                = fix16_sub(F16(1),fix16_mul(F3xCosFi,F3xCosFi));
+          temp                                = fix16_sub(F16(1), fix16_sq (F3xCosFi ) );
           GENERATOR_DATA[GEN_L3_REAC_POWER]   = fix16_sqrt(temp);
           temp                                = fix16_mul(GENERATOR_DATA[GEN_L3_FASE_V],GENERATOR_DATA[GEN_L3_CUR]);
           GENERATOR_DATA[GEN_L3_ACTIVE_POWER] = fix16_mul(temp,xCosFi);
           GENERATOR_DATA[GEN_L3_ACTIVE_POWER] = fix16_div(GENERATOR_DATA[GEN_L3_ACTIVE_POWER],F16(1000));
           temp                                = fix16_mul(GENERATOR_DATA[GEN_L3_REAC_POWER],temp);
           GENERATOR_DATA[GEN_L3_REAC_POWER]   = fix16_div(temp,F16(1000));
-          GENERATOR_DATA[GEN_L3_REAL_POWER]   = fix16_mul(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L3_REAC_POWER]);
-          temp                                = fix16_mul(GENERATOR_DATA[GEN_L3_ACTIVE_POWER],GENERATOR_DATA[GEN_L3_ACTIVE_POWER]);
+          GENERATOR_DATA[GEN_L3_REAL_POWER]   = fix16_sq( GENERATOR_DATA[GEN_L3_REAC_POWER] );
+          temp                                = fix16_sq( GENERATOR_DATA[GEN_L3_ACTIVE_POWER] );
           GENERATOR_DATA[GEN_L3_REAL_POWER]   = fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],temp);
           GENERATOR_DATA[GEN_L3_REAL_POWER]   = fix16_sqrt(GENERATOR_DATA[GEN_L3_REAL_POWER]);
 
@@ -587,11 +583,11 @@ void vADCGeneratorDataUpdate()
     GENERATOR_DATA[GEN_REACTIVE_POWER] = fix16_add(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L2_REAC_POWER]);
     GENERATOR_DATA[GEN_REACTIVE_POWER] = fix16_add(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_REACTIVE_POWER]);
 
-    GENERATOR_DATA[GEN_ACTIVE_POWER] = fix16_add(GENERATOR_DATA[GEN_L3_ACTIVE_POWER],GENERATOR_DATA[GEN_L2_ACTIVE_POWER]);
-    GENERATOR_DATA[GEN_ACTIVE_POWER] = fix16_add(GENERATOR_DATA[GEN_L1_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
+    GENERATOR_DATA[GEN_ACTIVE_POWER]   = fix16_add(GENERATOR_DATA[GEN_L3_ACTIVE_POWER],GENERATOR_DATA[GEN_L2_ACTIVE_POWER]);
+    GENERATOR_DATA[GEN_ACTIVE_POWER]   = fix16_add(GENERATOR_DATA[GEN_L1_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
 
-    GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],GENERATOR_DATA[GEN_L2_REAL_POWER]);
-    GENERATOR_DATA[GEN_REAL_POWER] = fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],GENERATOR_DATA[GEN_REAL_POWER]);
+    GENERATOR_DATA[GEN_REAL_POWER]     = fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],GENERATOR_DATA[GEN_L2_REAL_POWER]);
+    GENERATOR_DATA[GEN_REAL_POWER]     = fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],GENERATOR_DATA[GEN_REAL_POWER]);
 
     GENERATOR_DATA[GEN_AVER_V] = GENERATOR_DATA[GEN_L1_LINE_V];
     GENERATOR_DATA[GEN_AVER_A] = GENERATOR_DATA[GEN_L1_CUR];
@@ -610,31 +606,34 @@ void vADCGeneratorDataUpdate()
   }
 }
 
+
+
+
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
  */
 static uint8_t adc_count =0;
 void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
-
   uint16_t temp_int = 0U;
-
   xEventGroupClearBits( xADCEvent, DC_READY );
   switch ( AnalogSwitch )
   {
     case 1U:
-      uVDD = GetAverVDD( 4U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer  );   //Получем среднение заничение АЦП канала питания
-      uCSA = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );    //Усредняем сырые значения АЦП
-      uCAS = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );   //Усредняем сырые значения АЦП канала CommonAnalogSensor
+      /* Получаем средние значения из буфера АЦП */
+      uVDD = GetAverVDD( 4U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer  );
+      uCSA = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
+      uCAS = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
       uTemp = GetAverVDD( 3U, DC_SIZE, 4,(int16_t *)&ADC1_IN_Buffer );
+      /* Преобразования строенного термодатчика */
       xADC_TEMP = fix16_sub(  fix16_from_float(uTemp*3.3/4095U), fix16_from_float( 0.76 ) );
-      xADC_TEMP = fix16_div( xADC_TEMP, fix16_from_float(0.0025) );
-      xADC_TEMP = fix16_add( xADC_TEMP, fix16_from_int( 25 ) );
+      xADC_TEMP = fix16_div( xADC_TEMP, F16 (0.0025) );
+      xADC_TEMP = fix16_add( xADC_TEMP, F16( 25 ) );
       //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
       uADCError = 0U;
       if ( ( uCSA - uCAS ) <= DELTA )
       {
-        xSOP = fix16_from_int( MAX_RESISTANCE );
+        xSOP = F16( MAX_RESISTANCE );
         xSCT = xSOP;
         xSFL = xSOP;
         uADCError |= COMMON_ERROR;
@@ -659,22 +658,13 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
            break;
          case SENSOR_TYPE_NORMAL_OPEN:
          case SENSOR_TYPE_NORMAL_CLOSE:
-             if (uSCT < (uCSD/2))
-             {
-               xSCT =0U;
-             }
-             else
-             {
-                xSCT =fix16_from_int( MAX_RESISTANCE );
-             }
+             xSCT = ( uSCT < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE) ;
              break;
          case SENSOR_TYPE_CURRENT:
          default:
             xSCT = 0U;
             break;
          }
-
-
         switch (xFLChType)
         {
           case SENSOR_TYPE_RESISTIVE:
@@ -691,21 +681,14 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
           break;
           case SENSOR_TYPE_NORMAL_OPEN:
           case SENSOR_TYPE_NORMAL_CLOSE:
-             if (uSFL < (uCSD/2))
-             {
-                 xSFL =0U;
-             }
-            else
-            {
-                xSFL =fix16_from_int( MAX_RESISTANCE );
-            }
+             xSFL = ( uSFL < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE);
             break;
          case SENSOR_TYPE_CURRENT:
          default:
             xSFL = 0U;
             break;
        }
-        switch (xOPChType)
+       switch (xOPChType)
         {
           case SENSOR_TYPE_RESISTIVE:
              if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP < uCAS ) )
@@ -721,14 +704,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
              break;
           case SENSOR_TYPE_NORMAL_OPEN:
           case SENSOR_TYPE_NORMAL_CLOSE:
-            if (uSOP < (uCSD/2))
-            {
-              xSOP =0U;
-            }
-            else
-            {
-              xSOP =fix16_from_int( MAX_RESISTANCE );
-            }
+            xSOP = ( uSOP < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE) ;
            break;
           case SENSOR_TYPE_CURRENT:
           default:
@@ -1299,24 +1275,25 @@ uint8_t vADCGetADC3Data()
   uint16_t uCurPeriod = ADC_FRAME_SIZE-1;
   int16_t iMax =0;
   uint16_t DF1,DF2,DF3;
-  vDecNetural((int16_t *)&ADC3_IN_Buffer);
-  iMax =xADCMax((int16_t *)&ADC3_IN_Buffer, 2, uCurPeriod,&DF1,4);
+
+  vDecNetural( (int16_t *)&ADC3_IN_Buffer );
+  iMax = xADCMax( (int16_t *)&ADC3_IN_Buffer, 2, uCurPeriod, &DF1,4U );
   xEventGroupClearBits( xADCEvent, NET_READY );
   if( iMax >= MIN_AMP_VALUE )
   {
-        result =  vADCFindFreq((int16_t *)&ADC3_IN_Buffer, &uCurPeriod,2,iMax);
+        result =  vADCFindFreq( (int16_t *)&ADC3_IN_Buffer, &uCurPeriod, 2U ,iMax );
         if (result==ADC_OK)
         {
-          iMax =xADCMax((int16_t *)  &ADC3_IN_Buffer, 2, uCurPeriod,&DF1,4);
-          xNET_FREQ = fix16_div(fix16_from_int(ADC3Freq/10),fix16_from_int(uCurPeriod));
-          xNET_FREQ= fix16_mul(xNET_FREQ,fix16_from_int(10));
+          iMax =xADCMax( (int16_t *)  &ADC3_IN_Buffer, 2, uCurPeriod, &DF1, 4U );
+          xNET_FREQ = fix16_div( fix16_from_int(ADC3Freq/10), fix16_from_int(uCurPeriod) );
+          xNET_FREQ=  fix16_mul( xNET_FREQ, F16(10U) );
         }
         else
         {
           xEventGroupSetBits( xADCEvent, NET_READY );
           return (result);
         }
-        xNET_F1_VDD = xADCRMS((int16_t *)&ADC3_IN_Buffer, 2, uCurPeriod,4 );
+        xNET_F1_VDD = xADCRMS((int16_t *)&ADC3_IN_Buffer, 2U, uCurPeriod, 4U );
  }
  else
  {
@@ -1418,10 +1395,10 @@ uint8_t vADCGetADC12Data()
   {
     uFreqPresent = NO_FREQ;
     uGenFaseRotation = NO_ROTATION;
-    xGEN_F1_VDD =0;
-    xGEN_F2_VDD =0;
-    xGEN_F3_VDD =0;
-    xGEN_FREQ  =0;
+    xGEN_F1_VDD = 0;
+    xGEN_F2_VDD = 0;
+    xGEN_F3_VDD = 0;
+    xGEN_FREQ   = 0;
     xCosFi = 0;
     xEventGroupSetBits( xADCEvent, GEN_READY );
     xEventGroupSetBits( xADCEvent, GEN_UPDATE);
@@ -1561,13 +1538,12 @@ uint8_t vADCGetADC12Data()
    else
    {
      //Если по каким-то причинам мы не можем в текущий момент расчитать значение частоты напрежения генератора, то считаем ток арефмечтический исходя из максимального значения
-     fix_temp =    fix16_sqrt( fix16_from_int(2) );
+     fix_temp =    fix16_sqrt( F16( 2U) );
      xGEN_F1_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 0, uCurPeriod, &DF3,3 )), fix_temp );
      xGEN_F2_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 1, uCurPeriod, &DF3,3 )), fix_temp );
      xGEN_F3_CUR = fix16_div( fix16_from_int( xADCMax( (int16_t *)&ADC1_IN_Buffer, 2, uCurPeriod, &DF3,3 )), fix_temp );
    }
    xEventGroupSetBits( xADCEvent, CUR_READY );
-
    xEventGroupSetBits( xADCEvent, GEN_UPDATE);
   return ( result );
 
@@ -1623,14 +1599,15 @@ int16_t  xADCMax( int16_t * source, uint8_t off, uint16_t size, uint16_t * delay
   return ( max );
 
 }
-
-uint16_t GetAverVDD(uint8_t channel,uint8_t size,uint8_t offset,int16_t * source)
+/*
+ *
+ */
+uint16_t GetAverVDD(uint8_t channel, uint8_t size, uint8_t offset, int16_t * source)
 {
-
    uint32_t Buffer=0;
-   for (uint8_t i=0;i<size;i++)
+   for (uint8_t i=0; i<size; i++)
    {
-     Buffer =Buffer+ source[i*offset+channel];
+     Buffer = Buffer + source[i*offset + channel];
    }
    Buffer =Buffer/size;
    return  ( (uint16_t)Buffer );

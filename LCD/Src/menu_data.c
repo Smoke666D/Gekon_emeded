@@ -30,6 +30,7 @@
 static uint8_t Header[]       = { 0U, 1U, CENTER_ALIGN };
 static uint8_t RigthText[]    = { 0U, 1U, RIGTH_ALIGN};
 static uint8_t LeftText[]     = { 0U, 1U, LEFT_ALIGN };
+
 static uint8_t InputParam[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam3[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam4[]   = { 0U, 1U, LEFT_ALIGN, 0U };
@@ -49,6 +50,11 @@ static uint8_t InputParam16[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam17[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam18[]   = { 0U, 1U, LEFT_ALIGN, 0U };
 static uint8_t InputParam19[]   = { 0U, 1U, LEFT_ALIGN, 1U };
+static uint8_t InputParam20[]   = { 0U, 1U, CENTER_ALIGN, 1U };
+static uint8_t InputParam21[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam22[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+static uint8_t InputParam23[]   = { 0U, 1U, CENTER_ALIGN, 0U };
+
 static uint8_t InputParam1[]  =  { 0U, 1U, CENTER_ALIGN, 1U };
 static uint8_t InputParam2[]  =  { 0U, 1U, CENTER_ALIGN, 0U };
 
@@ -191,7 +197,7 @@ static xScreenObjet const Generator5Screen[]=
    {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ГЕНЕРАТОР - Сводные",NULL,0U},
    {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
    {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Мощность",NULL,0U},
-   {0U,FONT_SIZE*11U,LINE1+6U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_REACTIVE_POWER},
+   {0U,FONT_SIZE*11U,LINE1+6U,60U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_REAL_POWER},
    {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"cos f",NULL,0U},
    {0U,FONT_SIZE*11U,LINE3+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,COS_FI},
    {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
@@ -315,12 +321,12 @@ static xScreenObjet const StatusMainScreen[]=
 
   {0U,LEFT_OFFSET,LINE1-12U,110U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetControllerStatus,TIME_DATE},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
-  {0U,LEFT_OFFSET,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetControllerStatus,CONTROLER_STATUS},
-  {0U,FONT_SIZE*19U,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetControllerStatus,STATUS_TIME},
+  {0U,LEFT_OFFSET,LINE1+6U,100U,LINE4_HIGTH,HW_DATA,LeftText,NULL,(void*)&vGetControllerStatus,CONTROLER_STATUS},
+  {0U,FONT_SIZE*19U,LINE1+6U,10U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetControllerStatus,STATUS_TIME},
   {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"U= ",NULL,0U},
   {0U,FONT_SIZE*4U,LINE2+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,GEN_AVER_V},
   {0U,FONT_SIZE*9U,LINE3,0U,0U,TEXT_STRING,LeftText,"P= ",NULL,0U},
-  {0U,FONT_SIZE*15U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_REACTIVE_POWER},
+  {0U,FONT_SIZE*15U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu, GEN_ACTIVE_POWER},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"F= ",NULL,0U},
   {0U,FONT_SIZE*7U,LINE3+3U,20U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)&vGetDataForMenu,GEN_FREQ},
   {0U,FONT_SIZE*11U,LINE4,0U,0U,TEXT_STRING,LeftText,"I= ",NULL,0U},
@@ -333,27 +339,43 @@ static xScreenObjet  const SettingsScreen[]=
 {
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА :",NULL,0U},
   {0U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
-  {3U,FONT_SIZE*1U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetSettingsBitData, 16U},
-  {3U,FONT_SIZE*2U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetSettingsBitData, 15U},
-  {3U,FONT_SIZE*3U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam5,NULL,(void*)&vGetSettingsBitData, 14U},
-  {3U,FONT_SIZE*4U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam6,NULL,(void*)&vGetSettingsBitData, 13U},
-  {3U,FONT_SIZE*6U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam7,NULL,(void*)&vGetSettingsBitData, 12U},
-  {3U,FONT_SIZE*7U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam8,NULL,(void*)&vGetSettingsBitData, 11U},
-  {3U,FONT_SIZE*8U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam9,NULL,(void*)&vGetSettingsBitData, 10U},
-  {3U,FONT_SIZE*9U,  LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam10,NULL,(void*)&vGetSettingsBitData, 9U},
-  {3U,FONT_SIZE*11U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam11,NULL,(void*)&vGetSettingsBitData, 8U},
-  {3U,FONT_SIZE*12U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam12,NULL,(void*)&vGetSettingsBitData, 7U},
-  {3U,FONT_SIZE*13U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam13,NULL,(void*)&vGetSettingsBitData, 6U},
-  {3U,FONT_SIZE*14U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam14,NULL,(void*)&vGetSettingsBitData, 5U},
-  {3U,FONT_SIZE*16U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam15,NULL,(void*)&vGetSettingsBitData, 4U},
-  {3U,FONT_SIZE*17U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam16,NULL,(void*)&vGetSettingsBitData, 3U},
-  {3U,FONT_SIZE*18U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam17,NULL,(void*)&vGetSettingsBitData, 2U},
-  {3U,FONT_SIZE*19U, LINE2+3U,10U, LINE4_HIGTH, INPUT_HW_DATA, InputParam18,NULL,(void*)&vGetSettingsBitData, 1U},
-  {2U,FONT_SIZE*16U, LINE1+6U,40U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsUnit,      0U},
+  {BITMAP_TYPE,FONT_SIZE*1U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetSettingsBitData, 16U},
+  {BITMAP_TYPE,FONT_SIZE*2U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetSettingsBitData, 15U},
+  {BITMAP_TYPE,FONT_SIZE*3U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam5,NULL,(void*)&vGetSettingsBitData, 14U},
+  {BITMAP_TYPE,FONT_SIZE*4U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam6,NULL,(void*)&vGetSettingsBitData, 13U},
+  {BITMAP_TYPE,FONT_SIZE*6U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam7,NULL,(void*)&vGetSettingsBitData, 12U},
+  {BITMAP_TYPE,FONT_SIZE*7U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam8,NULL,(void*)&vGetSettingsBitData, 11U},
+  {BITMAP_TYPE,FONT_SIZE*8U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam9,NULL,(void*)&vGetSettingsBitData, 10U},
+  {BITMAP_TYPE,FONT_SIZE*9U,  LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam10,NULL,(void*)&vGetSettingsBitData, 9U},
+  {BITMAP_TYPE,FONT_SIZE*11U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam11,NULL,(void*)&vGetSettingsBitData, 8U},
+  {BITMAP_TYPE,FONT_SIZE*12U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam12,NULL,(void*)&vGetSettingsBitData, 7U},
+  {BITMAP_TYPE,FONT_SIZE*13U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam13,NULL,(void*)&vGetSettingsBitData, 6U},
+  {BITMAP_TYPE,FONT_SIZE*14U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam14,NULL,(void*)&vGetSettingsBitData, 5U},
+  {BITMAP_TYPE,FONT_SIZE*16U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam15,NULL,(void*)&vGetSettingsBitData, 4U},
+  {BITMAP_TYPE,FONT_SIZE*17U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam16,NULL,(void*)&vGetSettingsBitData, 3U},
+  {BITMAP_TYPE,FONT_SIZE*18U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam17,NULL,(void*)&vGetSettingsBitData, 2U},
+  {BITMAP_TYPE,FONT_SIZE*19U, LINE2+3U,8U, LINE4_HIGTH-1, INPUT_HW_DATA, InputParam18,NULL,(void*)&vGetSettingsBitData, 1U},
+  {2U,FONT_SIZE*16U, LINE1+6U,30U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsUnit,      0U},
   {2U,FONT_SIZE*5U, LINE1+6U,30U, LINE4_HIGTH,  INPUT_HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,      0U},
-  {LO,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH, HW_DATA,       InputParam,NULL,(void*)&vGetSettingsNumber,    0U},
-
+  {0U,FONT_SIZE*1U, LINE3+3U,100U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)&vGetSettingsData,      10U},
+  {LO,FONT_SIZE*13U, LINE1-11U,30U, LINE4_HIGTH,HW_DATA,       InputParam,NULL,(void*)&vGetSettingsNumber,    0U},
 };
+
+
+static xScreenObjet  const SettingsTimeScreen[]=
+{
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА ВРЕМЕНИ :",NULL,0U},
+  {4U,FONT_SIZE*1U, LINE1+4U,12U, LINE4_HIGTH, INPUT_HW_DATA, InputParam3,NULL,(void*)&vGetTIMEForMenu, HOUR},
+  {0U,FONT_SIZE*3U+1, LINE2-3, 0U,  0, TEXT_STRING,LeftText,":",NULL, 0U},
+  {4U,FONT_SIZE*4U, LINE1+4U,12U, LINE4_HIGTH, INPUT_HW_DATA, InputParam4,NULL,(void*)&vGetTIMEForMenu,MINUTE},
+  {4U,FONT_SIZE*1U, LINE3+3U,12U, LINE4_HIGTH, INPUT_HW_DATA, InputParam5,NULL,(void*)&vGetTIMEForMenu, DAY},
+  {0U,FONT_SIZE*3U+1, LINE4-1, 0U,  0, TEXT_STRING,LeftText,":",NULL, 0U},
+  {4U,FONT_SIZE*4U, LINE3+3U,12U, LINE4_HIGTH, INPUT_HW_DATA, InputParam6,NULL,(void*)&vGetTIMEForMenu,MOUNTH},
+  {0U,FONT_SIZE*6U+1, LINE4-1, 0U,  0, TEXT_STRING,LeftText,":",NULL, 0U},
+  {4U,FONT_SIZE*7U,LINE3+3U,12U, LINE4_HIGTH, INPUT_HW_DATA, InputParam7,NULL,(void*)&vGetTIMEForMenu,YEAR},
+  {LO,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"НАСТРОЙКА ДАТЫ :",NULL,0U},
+};
+
 
 static xScreenObjet const xYesNoScreen[]=
 {
@@ -365,11 +387,11 @@ static xScreenObjet const xYesNoScreen[]=
 
 static xScreenObjet const xPasswordScreen[]=
 {
-  {0U,FONT_SIZE*3U ,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam19,NULL,(void*)&vGetPasswordData,1U},
-  {0U,FONT_SIZE*7U ,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam2,NULL,(void*)&vGetPasswordData,2U},
-  {0U,FONT_SIZE*10U,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam3,NULL,(void*)&vGetPasswordData,3U},
-  {0U,FONT_SIZE*13U,LINE2,10U,LINE4_HIGTH,INPUT_HW_DATA,InputParam4,NULL,(void*)&vGetPasswordData,4U},
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Пароль",NULL,0U},
+  {0U,FONT_SIZE*4U ,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam20,NULL,(void*)&vGetPasswordData,1U},
+  {0U,FONT_SIZE*8U ,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam21,NULL,(void*)&vGetPasswordData,2U},
+  {0U,FONT_SIZE*12U,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam22,NULL,(void*)&vGetPasswordData,3U},
+  {0U,FONT_SIZE*16U,LINE2,15U,LINE4_HIGTH,INPUT_HW_DATA,InputParam23,NULL,(void*)&vGetPasswordData,4U},
+  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,Header,"Введите пароль",NULL,0U},
   {1U, 0U, ( LINE4_HIGTH + 1U ), 128U, ( LINE4_HIGTH + 1U ), H_LINE, Header, NULL, NULL, 0U },
 
 };
@@ -426,7 +448,8 @@ xScreenType  xAlarmScreens[ALARM_MENU_COUNT]=
 
 xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
 {
-  { SettingsScreen, &xMainMenu, NULL,  0U, 0U},
+  { SettingsScreen,     &xMainMenu, NULL,  0U, 0U},
+  { SettingsTimeScreen, &xMainMenu, NULL,  0U, 0U},
 };
 
 

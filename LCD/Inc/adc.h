@@ -77,7 +77,7 @@
 #define GEN_L3_REAC_POWER   24
 #define GEN_APPER_POWER     25
 #define GEN_REAL_POWER      26
-#define GEN_ACTIVE_POWER     27
+#define GEN_ACTIVE_POWER    27
 #define GEN_REACTIVE_POWER  28
 #define NET_FREQ            29
 #define NET_L1_FASE_V       30
@@ -114,10 +114,6 @@
 #define COFDIN         1U
 #define COFAIN         5U
 #define CANC           6U
-
-
-
-
 
 
 #define DC_SIZE        50U

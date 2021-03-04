@@ -117,21 +117,24 @@ float fxParToFloat(uint16_t data, int8_t scale)
   return;
 }
 */
-void vUToStr( char* str, uint16_t data, signed char scale )
+void vUToStr( char* str, uint16_t data, int8_t s )
 {
 
   uint8_t     i      = 0U;
   uint16_t    DD     = 10000U;
+  int8_t scale  = s;
   signed char offset = 0U;
   FLAG        fPoint = FLAG_RESET;
   FLAG        fB     = FLAG_RESET;
-  if ( scale < 0U )
+  if ( scale <= ((int8_t)(-1)) )
   {
-    offset = 1U;
-    fPoint  = FLAG_SET;
+         offset = 1U;
+         fPoint  = FLAG_SET;
   }
   for ( uint8_t k = 0U; k < (5U + offset); k++ )
   {
+
+
       if ( ( fPoint == FLAG_SET ) && ( k == ( 5U + scale ) ) )
       {
         str[i++] = '.';
@@ -159,6 +162,10 @@ void vUToStr( char* str, uint16_t data, signed char scale )
         DD   = DD / 10U;
       }
 
+  }
+  if (i == 0)
+  {
+    str[i++]='0';
   }
   str[i] = 0U;
   return;

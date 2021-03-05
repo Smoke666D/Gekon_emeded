@@ -9,6 +9,16 @@
 
 #include "adc.h"
 
+typedef struct
+{
+  SENSOR_TYPE xSensType;
+  uint16_t    uData;
+  fix16_t     xData;
+  uint8_t     Error;
+} xAINStruct;
+
+xAINStruct xDeviceAIN[3];
+
 static   SENSOR_TYPE        xOPChType =SENSOR_TYPE_NONE;
 static   SENSOR_TYPE        xCTChType =SENSOR_TYPE_NONE;
 static   SENSOR_TYPE        xFLChType =SENSOR_TYPE_NONE;
@@ -21,7 +31,7 @@ volatile int16_t            ADC3_IN_Buffer[ADC_FRAME_SIZE*ADC3_CHANNELS] = { 0U 
 static   uint16_t           ADCDATA[8U]                                  = { 0U };
 static   uint8_t            ADC_VALID_DATA                               =  0;
 static   float              MIN_PRESENT_FREQ  =20.0;
-
+static   uint8_t            adc_count = 0;
 
 uint8_t  vADCGetADC3Data();
 uint8_t  vADCGetADC12Data();
@@ -57,7 +67,7 @@ static uint16_t uCAS =0;
 static fix16_t xSOP =0; //Напряжение АЦП канала SensOilPressure (напряжение канала давления масла)
 static uint16_t uSOP =0;
 static fix16_t xSCT =0; //Напряжение АЦП канала SensCoolantTemper (напряжение канала температуры охлаждающей жидкости)
-static uint16_t uSCT =0;
+//static uint16_t uSCT =0;
 static fix16_t xSFL =0; //Напряжение АЦП канала SensFuelLevel (напряжение канала уровня топлива)
 static uint16_t uSFL =0;
 static uint16_t uCSA =0;
@@ -387,29 +397,32 @@ xADCRotatinType xADCGetNetFaseRotation()
   return (uNetFaseRotation);
 
 }
-
-void vADCNetDataUpdate()
+/*
+ * Функция расчета парамертов сети
+ */
+void vADCNetDataUpdate( void)
 {
-  EventBits_t GenFlag;
-  GenFlag = xEventGroupGetBits(xADCEvent);
-  if (GenFlag & NET_UPDATE)
+
+  /*Проверяем, было ли обновления данных, если новый цикл обработки данных еще не закончился регистры параметров сети
+    не обновляются*/
+  if (xEventGroupGetBits( xADCEvent ) & NET_UPDATE)
   {
-    xEventGroupClearBits (xADCEvent, NET_UPDATE );
-    xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
-    GENERATOR_DATA[NET_FREQ] =xNET_FREQ;
-    GENERATOR_DATA[NET_L1_FASE_V] =fix16_mul(xNET_F1_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+    xEventGroupClearBits ( xADCEvent, NET_UPDATE );
+    xEventGroupWaitBits( xADCEvent, NET_READY, pdTRUE, pdTRUE, 5);
+    GENERATOR_DATA[NET_FREQ]      =xNET_FREQ;
+    GENERATOR_DATA[NET_L1_FASE_V] =fix16_mul( xNET_F1_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
     switch ( xNetWiring )
     {
       case ELECTRO_SCHEME_STAR:
-           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul(xNET_F2_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul(xNET_F3_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-           GENERATOR_DATA[NET_L1_LINE_V]= fix16_mul(GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt( x3 ) );
-           GENERATOR_DATA[NET_L2_LINE_V]= fix16_mul(GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt( x3 ) );
-           GENERATOR_DATA[NET_L3_LINE_V]= fix16_mul(GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt( x3 ) );
+           GENERATOR_DATA[NET_L2_FASE_V] = fix16_mul( xNET_F2_VDD, (fix16_t) 21178 );//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L3_FASE_V] = fix16_mul( xNET_F3_VDD, (fix16_t) 21178 );//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L1_LINE_V] = fix16_mul( GENERATOR_DATA[NET_L1_FASE_V], fix16_sqrt( x3 ) );
+           GENERATOR_DATA[NET_L2_LINE_V] = fix16_mul( GENERATOR_DATA[NET_L2_FASE_V], fix16_sqrt( x3 ) );
+           GENERATOR_DATA[NET_L3_LINE_V] = fix16_mul( GENERATOR_DATA[NET_L3_FASE_V], fix16_sqrt( x3 ) );
            break;
       case ELECTRO_SCHEME_TRIANGLE:
-           GENERATOR_DATA[NET_L2_FASE_V] =fix16_mul( xNET_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-           GENERATOR_DATA[NET_L3_FASE_V] =fix16_mul( xNET_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L2_FASE_V] = fix16_mul( xNET_F2_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+           GENERATOR_DATA[NET_L3_FASE_V] = fix16_mul( xNET_F3_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
            GENERATOR_DATA[NET_L3_LINE_V] = GENERATOR_DATA[NET_L3_FASE_V];
            GENERATOR_DATA[NET_L2_LINE_V] = GENERATOR_DATA[NET_L2_FASE_V];
            GENERATOR_DATA[NET_L1_LINE_V] = GENERATOR_DATA[NET_L1_FASE_V];
@@ -421,38 +434,39 @@ void vADCNetDataUpdate()
            break;
     }
   }
-
+  return;
 }
 
-
+/*
+ * Функция расчета парамертов генератора
+ */
 void vADCGeneratorDataUpdate()
 {
-  EventBits_t GenFlag;
+
   fix16_t temp;
-  GenFlag = xEventGroupGetBits(xADCEvent);
-  if (GenFlag & GEN_UPDATE)
+  if (xEventGroupGetBits(xADCEvent) & GEN_UPDATE)
   {
     xEventGroupClearBits (xADCEvent, GEN_UPDATE );
     xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
     GENERATOR_DATA[GEN_FREQ] = xGEN_FREQ;
 
     //Вычисление фазных значений наряжений в вольтах
-    GENERATOR_DATA[GEN_L1_FASE_V] = fix16_mul(xGEN_F1_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+    GENERATOR_DATA[GEN_L1_FASE_V] = fix16_mul( xGEN_F1_VDD, (fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
     switch ( xNetWiring )
     {
       case ELECTRO_SCHEME_STAR:
-          GENERATOR_DATA[GEN_L2_FASE_V] =fix16_mul(xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-          GENERATOR_DATA[GEN_L3_FASE_V] =fix16_mul(xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-          GENERATOR_DATA[GEN_L1_LINE_V]= fix16_mul(GENERATOR_DATA[GEN_L1_FASE_V], fix16_sqrt(x3 ));
-          GENERATOR_DATA[GEN_L2_LINE_V]= fix16_mul(GENERATOR_DATA[GEN_L2_FASE_V], fix16_sqrt(x3 ));
-          GENERATOR_DATA[GEN_L3_LINE_V]= fix16_mul(GENERATOR_DATA[GEN_L3_FASE_V], fix16_sqrt(x3 ));
+          GENERATOR_DATA[GEN_L2_FASE_V] = fix16_mul( xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L3_FASE_V] = fix16_mul( xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L1_LINE_V] = fix16_mul( GENERATOR_DATA[GEN_L1_FASE_V], fix16_sqrt( x3 ) );
+          GENERATOR_DATA[GEN_L2_LINE_V] = fix16_mul( GENERATOR_DATA[GEN_L2_FASE_V], fix16_sqrt( x3 ) );
+          GENERATOR_DATA[GEN_L3_LINE_V] = fix16_mul( GENERATOR_DATA[GEN_L3_FASE_V], fix16_sqrt( x3 ) );
           break;
       case ELECTRO_SCHEME_TRIANGLE:
-          GENERATOR_DATA[GEN_L2_FASE_V] =fix16_mul(xGEN_F2_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-          GENERATOR_DATA[GEN_L3_FASE_V] =fix16_mul(xGEN_F3_VDD,(fix16_t) 21178);//умонжить на ( 401U * 3.3 / 4095U )
-          GENERATOR_DATA[GEN_L1_LINE_V] =GENERATOR_DATA[GEN_L1_FASE_V];
-          GENERATOR_DATA[GEN_L2_LINE_V] =GENERATOR_DATA[GEN_L2_FASE_V];
-          GENERATOR_DATA[GEN_L3_LINE_V] =GENERATOR_DATA[GEN_L3_FASE_V];
+          GENERATOR_DATA[GEN_L2_FASE_V] = fix16_mul( xGEN_F2_VDD,(fix16_t) 21178 );//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L3_FASE_V] = fix16_mul( xGEN_F3_VDD,(fix16_t) 21178 );//умонжить на ( 401U * 3.3 / 4095U )
+          GENERATOR_DATA[GEN_L1_LINE_V] = GENERATOR_DATA[GEN_L1_FASE_V];
+          GENERATOR_DATA[GEN_L2_LINE_V] = GENERATOR_DATA[GEN_L2_FASE_V];
+          GENERATOR_DATA[GEN_L3_LINE_V] = GENERATOR_DATA[GEN_L3_FASE_V];
           break;
       case ELECTRO_SCHEME_SINGLE_PHASE:
           GENERATOR_DATA[GEN_L2_FASE_V] =0;
@@ -467,7 +481,7 @@ void vADCGeneratorDataUpdate()
 
     //Вычисление значения токов
     //Пересчет данных с АЦП в значения тока на шутнирующих резисторах и применяем коофицент трансформации для токовых измирительных трасформатров
-    temp = fix16_mul(xLCurCoof,xTransCoof);
+    temp = fix16_mul( xLCurCoof, xTransCoof );
 
     xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
 
@@ -517,11 +531,11 @@ void vADCGeneratorDataUpdate()
         else
         {
           //Расчзет косинуса Фм L2
-          F2xCosFi                              = fix16_mul(fix16_pi,F16(2));
-          F2xCosFi                              = fix16_div( F2xCosFi,fix16_from_int(F2uCosFiPeriod));  // 2Pi/uCurPeriod
-          F2xCosFi                              = fix16_mul(fix16_from_int(F2uCosFiMax),F2xCosFi);
-          F2xCosFi                                =fix16_cos(F2xCosFi);
-          F2xCosFi                              = fix16_mul(F2xCosFi,xMinus1);
+          F2xCosFi                            = fix16_mul( fix16_pi, F16( 2U ) );
+          F2xCosFi                            = fix16_div( F2xCosFi, fix16_from_int( F2uCosFiPeriod ) );  // 2Pi/uCurPeriod
+          F2xCosFi                            = fix16_mul( fix16_from_int( F2uCosFiMax ), F2xCosFi );
+          F2xCosFi                            = fix16_cos( F2xCosFi );
+          F2xCosFi                            = fix16_mul( F2xCosFi, xMinus1 );
                 //Расяет синуса Фи
           temp                                = fix16_sub(F16(1), fix16_sq( F2xCosFi ) );
           GENERATOR_DATA[GEN_L2_REAC_POWER]   = fix16_sqrt(temp);
@@ -582,10 +596,8 @@ void vADCGeneratorDataUpdate()
     //Расчет полной мощности
     GENERATOR_DATA[GEN_REACTIVE_POWER] = fix16_add(GENERATOR_DATA[GEN_L3_REAC_POWER],GENERATOR_DATA[GEN_L2_REAC_POWER]);
     GENERATOR_DATA[GEN_REACTIVE_POWER] = fix16_add(GENERATOR_DATA[GEN_L1_REAC_POWER],GENERATOR_DATA[GEN_REACTIVE_POWER]);
-
     GENERATOR_DATA[GEN_ACTIVE_POWER]   = fix16_add(GENERATOR_DATA[GEN_L3_ACTIVE_POWER],GENERATOR_DATA[GEN_L2_ACTIVE_POWER]);
     GENERATOR_DATA[GEN_ACTIVE_POWER]   = fix16_add(GENERATOR_DATA[GEN_L1_ACTIVE_POWER],GENERATOR_DATA[GEN_ACTIVE_POWER]);
-
     GENERATOR_DATA[GEN_REAL_POWER]     = fix16_add(GENERATOR_DATA[GEN_L3_REAL_POWER],GENERATOR_DATA[GEN_L2_REAL_POWER]);
     GENERATOR_DATA[GEN_REAL_POWER]     = fix16_add(GENERATOR_DATA[GEN_L1_REAL_POWER],GENERATOR_DATA[GEN_REAL_POWER]);
 
@@ -607,24 +619,50 @@ void vADCGeneratorDataUpdate()
 }
 
 
+void vADCSetAinState( SENSOR_TYPE xInType, fix16_t * OutData, uint16_t InData, uint8_t ErrorMask)
+{
+  uint16_t temp_int = 0U;
+  switch (xInType)
+          {
+             case SENSOR_TYPE_RESISTIVE:
+             if ( ( ( uCSD - InData ) <= DELTA ) || ( InData < uCAS ) )
+             {
+                *OutData = 0U;
+                uADCError |= ErrorMask;
+             }
+             else
+             {
+                 temp_int = ( ( InData - uCAS ) * R3 ) / ( uCSD - InData );
+                 *OutData = fix16_from_int( temp_int );
+             }
+             break;
+           case SENSOR_TYPE_NORMAL_OPEN:
+           case SENSOR_TYPE_NORMAL_CLOSE:
+             *OutData  = ( InData < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE) ;
+               break;
+           case SENSOR_TYPE_CURRENT:
+           default:
+             *OutData  = 0U;
+              break;
+           }
 
+}
 
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
  */
-static uint8_t adc_count =0;
+
 void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
-  uint16_t temp_int = 0U;
   xEventGroupClearBits( xADCEvent, DC_READY );
   switch ( AnalogSwitch )
   {
     case 1U:
       /* Получаем средние значения из буфера АЦП */
-      uVDD = GetAverVDD( 4U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer  );
-      uCSA = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
-      uCAS = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
-      uTemp = GetAverVDD( 3U, DC_SIZE, 4,(int16_t *)&ADC1_IN_Buffer );
+      uVDD = GetAverVDD( 4U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer  );
+      uCSA = GetAverVDD( 5U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      uCAS = GetAverVDD( 6U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      uTemp = GetAverVDD( 3U, DC_SIZE, 4, (int16_t *)&ADC1_IN_Buffer );
       /* Преобразования строенного термодатчика */
       xADC_TEMP = fix16_sub(  fix16_from_float(uTemp*3.3/4095U), fix16_from_float( 0.76 ) );
       xADC_TEMP = fix16_div( xADC_TEMP, F16 (0.0025) );
@@ -634,83 +672,16 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       if ( ( uCSA - uCAS ) <= DELTA )
       {
         xSOP = F16( MAX_RESISTANCE );
-        xSCT = xSOP;
-        xSFL = xSOP;
+        xSCT = F16( MAX_RESISTANCE );
+        xSFL = F16( MAX_RESISTANCE );
         uADCError |= COMMON_ERROR;
       }
       else
       {
-        //Усредняем сырые значения АЦП
-        uSCT = GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
-        switch (xCTChType)
-        {
-           case SENSOR_TYPE_RESISTIVE:
-           if ( ( ( uCSD - uSCT ) <= DELTA ) || ( uSCT < uCAS ) )
-           {
-              xSCT = 0U;
-              uADCError |= CT_CHANEL_ERROR;
-           }
-           else
-           {
-               temp_int = ( ( uSCT - uCAS ) * R3 ) / ( uCSD - uSCT );
-               xSCT = fix16_from_int( temp_int );
-           }
-           break;
-         case SENSOR_TYPE_NORMAL_OPEN:
-         case SENSOR_TYPE_NORMAL_CLOSE:
-             xSCT = ( uSCT < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE) ;
-             break;
-         case SENSOR_TYPE_CURRENT:
-         default:
-            xSCT = 0U;
-            break;
-         }
-        switch (xFLChType)
-        {
-          case SENSOR_TYPE_RESISTIVE:
-          if ( ( ( uCSD - uSFL ) <= DELTA ) || ( uSFL < uCAS ) )
-          {
-            xSFL = 0U;
-            uADCError |= FL_CHANEL_ERROR;
-          }
-          else
-          {
-            temp_int = ( ( uSFL - uCAS ) * R3 ) / ( uCSD - uSFL );
-            xSFL = fix16_from_int( temp_int );
-          }
-          break;
-          case SENSOR_TYPE_NORMAL_OPEN:
-          case SENSOR_TYPE_NORMAL_CLOSE:
-             xSFL = ( uSFL < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE);
-            break;
-         case SENSOR_TYPE_CURRENT:
-         default:
-            xSFL = 0U;
-            break;
-       }
-       switch (xOPChType)
-        {
-          case SENSOR_TYPE_RESISTIVE:
-             if ( ( ( uCSD - uSOP ) <= DELTA ) || ( uSOP < uCAS ) )
-             {
-                xSOP = 0U;
-                uADCError |= OP_CHANEL_ERROR;
-             }
-            else
-            {
-               temp_int = ( ( uSOP - uCAS ) * R3 ) / ( uCSD - uSOP );
-               xSOP = fix16_from_int( temp_int );
-             }
-             break;
-          case SENSOR_TYPE_NORMAL_OPEN:
-          case SENSOR_TYPE_NORMAL_CLOSE:
-            xSOP = ( uSOP < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE) ;
-           break;
-          case SENSOR_TYPE_CURRENT:
-          default:
-            xSOP = 0U;
-            break;
-        }
+        /* Расчет значений на аналогвых входах постянного тока */
+        vADCSetAinState( xCTChType, &xSCT,  GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer) , CT_CHANEL_ERROR);
+        vADCSetAinState( xFLChType, &xSFL,  uSFL  , FL_CHANEL_ERROR);
+        vADCSetAinState( xFLChType, &xSOP,  uSOP  , OP_CHANEL_ERROR);
       }
       if (adc_count==0)
       {
@@ -745,11 +716,6 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
 
 
 
-
-
-
-
-
 void  vADC3FrInit(uint16_t freq)
 {
   htim3.Init.Period = 60000000U / ( freq  );
@@ -758,21 +724,17 @@ void  vADC3FrInit(uint16_t freq)
   return;
 }
 
-
 void  vADC12FrInit(uint16_t freq)
 {
 
-    htim8.Init.Period = 120000000U/ (freq);
+    htim8.Init.Period = 120000000U/ ( freq );
     HAL_TIM_Base_Init(&htim8);
-
-    htim2.Init.Period = 60000000U / ( freq  );
+    htim2.Init.Period = 60000000U / ( freq );
     HAL_TIM_Base_Init(&htim2);
-
     HAL_TIM_Base_Start_IT( &htim2 );
     HAL_TIM_Base_Start_IT( &htim8 );
     return;
 }
-
 
 
 /*
@@ -1070,8 +1032,9 @@ void vADCInit(void)
 
 void StartADCTask(void *argument)
 {
-   uint8_t OF =0,OF1=0;
-   uint16_t DCCount=0;
+   uint8_t uADC3FreqChange = 0U,
+           uADC2FreqChange = 0U;
+   uint16_t DCCount        = 0U;
   //Создаем флаг готовности АПЦ
    xADCEvent = xEventGroupCreateStatic(&xADCCreatedEventGroup );
    //Иницилиазация АЦП
@@ -1101,7 +1064,7 @@ void StartADCTask(void *argument)
     __HAL_TIM_ENABLE(&htim3);
     __HAL_TIM_ENABLE(&htim2);
 
-    xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC1_READY ,pdTRUE,pdTRUE,portMAX_DELAY);
+    xEventGroupWaitBits(xADCEvent, ADC3_READY | ADC1_READY , pdTRUE, pdTRUE, portMAX_DELAY );
 
     ADCDATA[4] = (ADC3_IN_Buffer[8]+ADC3_IN_Buffer[17]+ADC3_IN_Buffer[26]+ADC3_IN_Buffer[35])>>2;
 
@@ -1110,74 +1073,80 @@ void StartADCTask(void *argument)
     vADC3DCInit(AC);
     osDelay(1);
 
-    //Запускаем преобразвоания по всем каналам АЦП
-    StartADCDMA(&hadc2,(uint32_t*)&ADC2_IN_Buffer,ADC_FRAME_SIZE*ADC2_CHANNELS);
-    StartADCDMA(&hadc1,(uint32_t*)&ADC1_IN_Buffer,ADC_FRAME_SIZE*ADC1_CHANNELS);
-    StartADCDMA(&hadc3,(uint32_t*)&ADC3_IN_Buffer,ADC_FRAME_SIZE*ADC3_CHANNELS);
+    /*  Запускаем преобразвоания по всем каналам АЦП  */
+    StartADCDMA( &hadc2, (uint32_t*)&ADC2_IN_Buffer, ADC_FRAME_SIZE*ADC2_CHANNELS );
+    StartADCDMA( &hadc1, (uint32_t*)&ADC1_IN_Buffer, ADC_FRAME_SIZE*ADC1_CHANNELS );
+    StartADCDMA( &hadc3, (uint32_t*)&ADC3_IN_Buffer, ADC_FRAME_SIZE*ADC3_CHANNELS );
     __HAL_TIM_ENABLE(&htim3);
     __HAL_TIM_ENABLE(&htim2);
     __HAL_TIM_ENABLE(&htim8);
+    /* Задача блокируется до окончания преобразований по всем каналам */
+    xEventGroupWaitBits( xADCEvent, ADC3_READY | ADC2_READY | ADC1_READY, pdTRUE, pdTRUE, portMAX_DELAY );
 
-    xEventGroupWaitBits(xADCEvent,ADC3_READY | ADC2_READY | ADC1_READY,pdTRUE,pdTRUE,portMAX_DELAY);
-  //  adctime = HAL_GetTick();
-    //Обработка значений АЦП3.
-     switch (vADCGetADC3Data())
+    /*Обработка значений АЦП3. */
+     switch ( vADCGetADC3Data( ) )
      {
-
+       /*Если частота дискетезации высокая, то поступательно снижаем ее, флаг uADC3FreqChange использутся
+        * что бы изменять частоту с задержкой, на случай случайного искажения данных в выборке */
        case HIGH_FREQ:
-         if (OF>0)
+         if ( uADC3FreqChange > 0 )
          {
-           ADC3Freq = ADC3Freq - ADC3Freq/10;
-           if (ADC3Freq <2000)  ADC3Freq = 2000;
+           ADC3Freq = ADC3Freq - ADC3Freq/10U;
+           if ( ADC3Freq < LOW_ADC_FREQ )  ADC3Freq = LOW_ADC_FREQ;
            vADC3FrInit(ADC3Freq);
-           OF=0;
+           uADC3FreqChange = 0U;
          }
-         OF++;
+         uADC3FreqChange++;
          break;
        case LOW_FREQ:
-         if (OF>0)
+         if (uADC3FreqChange > 0 )
          {
            ADC3Freq = ADC3Freq + ADC3Freq/4;
-           if (ADC3Freq >70000)  ADC3Freq = 40000;
-           vADC3FrInit(ADC3Freq);
-           OF=0;
+           if ( ADC3Freq > HIGH_ADC_FREQ )  ADC3Freq = MIDLE_ADC_FREQ;
+           vADC3FrInit( ADC3Freq );
+           uADC3FreqChange = 0U;
          }
-         OF++;
+         uADC3FreqChange++;
          break;
        default:
          break;
      }
-
-    switch (vADCGetADC12Data())
+     /*Обработка значений АЦП3 */
+    switch ( vADCGetADC12Data( ) )
     {
-
+      /*Если частота дискетезации высокая, то поступательно снижаем ее, флаг uADC2FreqChange использутся
+              * что бы изменять частоту с задержкой, на случай случайного искажения данных в выборке */
       case HIGH_FREQ:
-        if (OF1>0)
+        if (uADC2FreqChange > 0U )
         {
-           ADC2Freq = ADC2Freq - ADC2Freq/10;
-          if (ADC2Freq <2000)  ADC2Freq = 2000;
-          vADC12FrInit(ADC2Freq);
-          OF1=0;
+           ADC2Freq = ADC2Freq - ADC2Freq/10U;
+          if ( ADC2Freq < LOW_ADC_FREQ )
+          {
+            ADC2Freq = LOW_ADC_FREQ;
+          }
+          vADC12FrInit( ADC2Freq );
+          uADC2FreqChange = 0U;
         }
-        OF1++;
+        uADC2FreqChange++;
         break;
       case LOW_FREQ:
-        if (OF1>0)
+        if (uADC2FreqChange > 0U )
         {
-           ADC2Freq = ADC2Freq + ADC2Freq/4;
-           if (ADC2Freq >70000)  ADC2Freq = 40000;
-           vADC12FrInit(ADC2Freq);
-           OF1=0;
+           ADC2Freq = ADC2Freq + ADC2Freq/4U;
+           if ( ADC2Freq > HIGH_ADC_FREQ )
+           {
+             ADC2Freq =  MIDLE_ADC_FREQ;
+           }
+           vADC12FrInit( ADC2Freq );
+           uADC2FreqChange =0U;
          }
-         OF1++;
+         uADC2FreqChange++;
          break;
       default:
         break;
     }
-
-
    }
-
+   return;
 }
 
 
@@ -1353,7 +1322,9 @@ uint8_t vADCGetADC3Data()
 static int16_t CosBuffer[COS_DATA_COUNT][2];
 static int16_t F2CosBuffer[COS_DATA_COUNT][2];
 static int16_t F3CosBuffer[COS_DATA_COUNT][2];
-static uint8_t uCosCount =0,F2uCosCount =0,F3uCosCount =0;
+static uint8_t           uCosCount    = 0U,
+                         F2uCosCount  = 0U,
+                         F3uCosCount  = 0U;
 static xADCGenDetectType uFreqPresent = NO_FREQ;
 
 uint8_t vADCGetADC12Data()
@@ -1567,12 +1538,12 @@ xADCGenDetectType vADCGetGenFreqPres( void )
 fix16_t  xADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc )
 {
   uint64_t sum =0;
-  for (uint16_t i=0;i<size*cc;i=i+cc)
+  for (uint16_t i=0; i < size*cc; i= i + cc )
   {
-    sum =sum+ source[i+off]*source[i+off];
+    sum = sum + source[ i+off ] * source[ i+off ];
   }
-  sum =sum/size;
-  return (fix16_from_int (sqrt(sum)));
+  sum = sum / size;
+  return ( fix16_from_int (sqrt( sum ) ) );
 
 }
 /*

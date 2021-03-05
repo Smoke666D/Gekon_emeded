@@ -131,8 +131,12 @@
 #define ADC_ERROR      0x03U
 #define LOW_AMP        0x04U
 
-
-
+/*
+ * Параметры частоты дискретезации
+ */
+#define LOW_ADC_FREQ    2000U
+#define HIGH_ADC_FREQ   70000U
+#define MIDLE_ADC_FREQ  40000U
 
 typedef enum
 {

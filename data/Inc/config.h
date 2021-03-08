@@ -10,7 +10,6 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
 #define   MAX_BIT_MAP_LENGTH           14U
-#define   SETTING_REGISTER_MIN         3U
 #define   SETTING_REGISTER_NUMBER      122U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU

@@ -757,6 +757,7 @@ void vENGINEdataInit ( void )
   oil.trashhold                    = fix16_mul( getMaxValue( &oilPressureAlarmLevel ), oilTrashhold );
   oil.pressure.type                = getBitMap( &oilPressureSetup, OIL_PRESSURE_SENSOR_TYPE_ADR );
   oil.pressure.chart               = charts[OIL_CHART_ADR];
+  vCHARTupdateLimits( charts[OIL_CHART_ADR] );
   oil.pressure.get                 = OIL_SENSOR_SOURCE;
   oil.pressure.channel             = SENSOR_CHANNEL_OIL;
   oil.pressure.trig                = TRIGGER_IDLE;
@@ -808,6 +809,7 @@ void vENGINEdataInit ( void )
   /*--------------------------------------------------------------*/
   coolant.temp.type                = getBitMap( &coolantTempSetup, COOLANT_TEMP_SENSOR_TYPE_ADR );
   coolant.temp.chart               = charts[COOLANT_CHART_ADR];
+  vCHARTupdateLimits( charts[COOLANT_CHART_ADR] );
   coolant.temp.channel             = SENSOR_CHANNEL_COOLANT;
   coolant.temp.get                 = COOLANT_SENSOR_SOURCE;
   coolant.temp.trig                = TRIGGER_IDLE;
@@ -893,6 +895,7 @@ void vENGINEdataInit ( void )
   fuel.level.type                 = getBitMap( &fuelLevelSetup, FUEL_LEVEL_SENSOR_TYPE_ADR );
   fuel.level.channel              = SENSOR_CHANNEL_FUEL;
   fuel.level.chart                = charts[FUEL_CHART_ADR];
+  vCHARTupdateLimits( charts[FUEL_CHART_ADR] );
   fuel.level.get                  = FUEL_SENSOR_SOURCE;
   fuel.level.trig                 = TRIGGER_IDLE;
   fuel.level.cutout.active        = PERMISSION_ENABLE;

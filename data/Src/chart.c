@@ -108,7 +108,30 @@ void vCHARTinitCharts ( void )
   }
   return;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
+void vCHARTupdateLimits ( eChartData* chart )
+{
+  uint16_t i = 0U;
+  chart->x.min = chart->dots[0U].x;
+  chart->x.max = chart->dots[0U].x;
+  chart->y.min = chart->dots[0U].y;
+  chart->y.max = chart->dots[0U].y;
+  for ( i=0U; i<chart->size; i++ )
+  {
+    if ( chart->x.min > chart->dots[i].x )
+    {
+      chart->x.min = chart->dots[i].x;
+      chart->y.min = chart->dots[i].y;
+    }
+    if ( chart->x.max < chart->dots[i].x )
+    {
+      chart->x.max = chart->dots[i].x;
+      chart->y.max = chart->dots[i].y;
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vCHARTupdateAtrib ( void )
 {
   if ( getBitMap( &oilPressureSetup, OIL_PRESSURE_SENSOR_TYPE_ADR ) == SENSOR_TYPE_CURRENT )
@@ -167,24 +190,34 @@ eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
   {
     if ( x >= xAxisAtribs[chart->xType]->min )
     {
-      for ( i=1U; i<chart->size; i++ )
+      if ( x <= chart->x.min )
       {
-        if ( x < chart->dots[i].x )
-        {
-          break;
-        }
+        *y = chart->y.min;
       }
-      i--;
-      if ( i != chart->size)
+      else if ( x >= chart->x.max )
       {
-        vCHARTcalcFunction( chart, i, &func );
-        *y = fix16_add( fix16_mul( func.k, x ), func.b );
+        *y = chart->y.max;
       }
       else
       {
-        res = FUNC_SIZE_ERROR;
-        *y = yAxisAtribs[chart->yType]->max;
-
+        for ( i=1U; i<chart->size; i++ )
+        {
+          if ( x < chart->dots[i].x )
+          {
+            break;
+          }
+        }
+        i--;
+        if ( i != chart->size)
+        {
+          vCHARTcalcFunction( chart, i, &func );
+          *y = fix16_add( fix16_mul( func.k, x ), func.b );
+        }
+        else
+        {
+          res = FUNC_SIZE_ERROR;
+          *y = yAxisAtribs[chart->yType]->max;
+        }
       }
     }
     else

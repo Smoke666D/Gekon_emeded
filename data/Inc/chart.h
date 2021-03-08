@@ -81,9 +81,17 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  fix16_t  min; /* 4 bytes */
+  fix16_t  max; /* 4 bytes */
+} eAxisLimits;
+
+typedef struct __packed
+{
   X_AXIS_TYPE xType : 1;
   Y_AXIS_TYPE yType : 2;             /* 1 byte  */
   uint16_t    size;                  /* 2 bytes */
+  eAxisLimits x;
+  eAxisLimits y;
   eChartDot   dots[CHART_DOTS_SIZE]; /* 128 * 8 = 1024 bytes  */
 } eChartData;
 /*------------------------ Extern --------------------------------------*/
@@ -96,6 +104,7 @@ extern const eAxisAttributes* const yAxisAtribs[Y_AXIS_TYPES_NUMBER];
 /*----------------------- Function -------------------------------------*/
 void              vCHARTinitCharts ( void );
 void              vCHARTupdateAtrib ( void );
+void              vCHARTupdateLimits ( eChartData* chart );
 void              vCHARTcalcFunction ( const eChartData* chart, uint16_t n, eChartFunction* func );  /* Calculate line functions between dots of chart */
 eFunctionError    eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y );                     /* Get value of chart functions */
 SemaphoreHandle_t xCHARTgetSemophore ( void );

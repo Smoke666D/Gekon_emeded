@@ -183,30 +183,6 @@ uint32_t uSecToTic ( fix16_t input )
 void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
 {
   LOG_RECORD_TYPE record = { 0U };
-
-
-  /*
-  float   testData = 0U;
-  fix16_t setup    = fix16_from_int( 100U );
-
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 101U ), setup ) ); // 1.01     360 000
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 102U ), setup ) ); // 1.02      90 000
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 103U ), setup ) ); // 1.03      40 000
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 105U ), setup ) ); // 1.05      14 400
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 106U ), setup ) ); // 1.06      10 000
-
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 160U ), setup ) ); // 1.6      100
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 170U ), setup ) ); // 1.7      73,46
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 180U ), setup ) ); // 1.8      56,26
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 190U ), setup ) ); // 1.9      44,44
-  testData = fix16_to_float( fIDMTcalcTemp( fix16_from_int( 200U ), setup ) ); // 2.0      36
-
-  testData = fix16_to_float( fIDMTcalcCutout( fix16_from_int( 101U ), setup ) ); // 1.01     360 000
-  testData = fix16_to_float( fIDMTcalcCutout( fix16_from_int( 102U ), setup ) ); // 1.02      90 000
-  testData = fix16_to_float( fIDMTcalcCutout( fix16_from_int( 103U ), setup ) ); // 1.03      40 000
-  testData = fix16_to_float( fIDMTcalcCutout( fix16_from_int( 105U ), setup ) ); // 1.05      14 400
-  testData = fix16_to_float( fIDMTcalcCutout( fix16_from_int( 106U ), setup ) ); // 1.06      10 000
-*/
   switch ( alarm->state )
   {
     case ELECTRO_CURRENT_STATUS_IDLE:
@@ -233,6 +209,8 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
         {
           vSYSeventSend( alarm->thermal.event, &record );
           eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+          alarm->thermal.active = PERMISSION_DISABLE;
+          alarm->cutout.active  = PERMISSION_DISABLE;
           alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
         }
         if ( current >= alarm->cutout.current )
@@ -243,6 +221,8 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
           {
             vSYSeventSend( alarm->cutout.event, &record );
             eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+            alarm->thermal.active = PERMISSION_DISABLE;
+            alarm->cutout.active  = PERMISSION_DISABLE;
             alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
           }
         }
@@ -1106,6 +1086,7 @@ void vELECTROtask ( void* argument )
         vLOGICresetTimer( &generator.relayOff.timer  );
         vLOGICresetTimer( &mains.relayOn.timer       );
         vLOGICresetTimer( &mains.relayOff.timer      );
+        generator.currentAlarm.state = ELECTRO_CURRENT_STATUS_IDLE;
         vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
         electro.alarmState = ELECTRO_ALARM_STATUS_STOP;
         electro.cmd        = ELECTRO_CMD_NONE;

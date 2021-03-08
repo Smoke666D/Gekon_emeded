@@ -320,9 +320,7 @@ void vMAINSprocess ( void )
 #ifdef DEBUG
 fix16_t fGENERATORsynteticCurrent ( void )
 {
-  fix16_t res = 0U;
-  res = fix16_mul( fix16_div( xADCGetSFL(), F16( 500U ) ), generator.rating.current );
-  return res;
+  return fix16_mul( fix16_div( xADCGetSFL(), F16( 500U ) ), generator.rating.current );
 }
 #endif
 /*---------------------------------------------------------------------------------------------------*/
@@ -576,8 +574,7 @@ void vELECTROdataInit ( void )
   generator.getFreq             = xADCGetGENLFreq;
   generator.getPower            = xADCGetGENActivePower;
   generator.line[0U].getVoltage = xADCGetGENL1Lin;
-  //generator.line[0U].getCurrent = xADCGetGENL1Cur;
-  generator.line[0U].getCurrent = fGENERATORsynteticCurrent;
+  generator.line[0U].getCurrent = xADCGetGENL1Cur;
   generator.line[1U].getVoltage = xADCGetGENL2Lin;
   generator.line[1U].getCurrent = xADCGetGENL2Cur;
   generator.line[2U].getVoltage = xADCGetGENL3Lin;
@@ -968,7 +965,7 @@ void vELECTROtask ( void* argument )
         generator.hightFreqAlarm.error.active       = PERMISSION_DISABLE;
         generator.powerAlarm.error.active           = PERMISSION_DISABLE;
         generator.phaseImbalanceAlarm.error.active  = PERMISSION_DISABLE;
-        //generator.currentWarningAlarm.error.active  = PERMISSION_DISABLE;
+        generator.currentWarningAlarm.error.active  = PERMISSION_DISABLE;
         generator.phaseSequenceError.enb            = PERMISSION_DISABLE;
         electro.alarmState                          = ELECTRO_ALARM_STATUS_STOP;
         electro.cmd                                 = ELECTRO_CMD_NONE;
@@ -989,7 +986,7 @@ void vELECTROtask ( void* argument )
         generator.hightFreqAlarm.error.active       = PERMISSION_DISABLE;
         generator.powerAlarm.error.active           = PERMISSION_DISABLE;
         generator.phaseImbalanceAlarm.error.active  = PERMISSION_DISABLE;
-        //generator.currentWarningAlarm.error.active  = PERMISSION_DISABLE;
+        generator.currentWarningAlarm.error.active  = PERMISSION_DISABLE;
         generator.phaseSequenceError.enb            = PERMISSION_DISABLE;
         electro.alarmState                          = ELECTRO_ALARM_STATUS_START;
         electro.cmd                                 = ELECTRO_CMD_NONE;
@@ -1010,7 +1007,7 @@ void vELECTROtask ( void* argument )
         generator.hightFreqAlarm.error.active       = PERMISSION_ENABLE;
         generator.powerAlarm.error.active           = PERMISSION_ENABLE;
         generator.phaseImbalanceAlarm.error.active  = PERMISSION_ENABLE;
-        //generator.currentWarningAlarm.error.active  = PERMISSION_ENABLE;
+        generator.currentWarningAlarm.error.active  = PERMISSION_ENABLE;
         generator.phaseSequenceError.enb            = PERMISSION_ENABLE;
         vALARMreset( &mains.lowVoltageAlarm          );
         vALARMreset( &mains.hightVoltageAlarm        );

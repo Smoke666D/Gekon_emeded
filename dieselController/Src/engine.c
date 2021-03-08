@@ -936,7 +936,7 @@ void vENGINEdataInit ( void )
   fuel.lowAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
   fuel.lowAlarm.error.event.type        = EVENT_FUEL_LOW_LEVEL;
   fuel.lowAlarm.error.event.action      = ACTION_SHUTDOWN;
-  fuel.lowAlarm.error.ack               = PERMISSION_ENABLE;
+  fuel.lowAlarm.error.ack               = PERMISSION_DISABLE;
   fuel.lowAlarm.error.trig              = TRIGGER_IDLE;
   fuel.lowAlarm.error.status            = ALARM_STATUS_IDLE;
   fuel.lowPreAlarm.error.active         = PERMISSION_ENABLE;
@@ -965,8 +965,8 @@ void vENGINEdataInit ( void )
   fuel.hightAlarm.timer.delay           = getValue( &fuelLevelHightAlarmDelay );
   fuel.hightAlarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
   fuel.hightAlarm.error.event.type      = EVENT_FUEL_HIGHT_LEVEL;
-  fuel.hightAlarm.error.event.action    = ACTION_PLAN_STOP;
-  fuel.hightAlarm.error.ack             = PERMISSION_ENABLE;
+  fuel.hightAlarm.error.event.action    = ACTION_SHUTDOWN;
+  fuel.hightAlarm.error.ack             = PERMISSION_DISABLE;
   fuel.hightAlarm.error.trig            = TRIGGER_IDLE;
   fuel.hightAlarm.error.status          = ALARM_STATUS_IDLE;
   fuel.booster.onLevel                  = getValue( &fuelPumpOnLevel );

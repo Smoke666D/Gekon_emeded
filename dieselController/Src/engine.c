@@ -1885,6 +1885,7 @@ void vENGINEtask ( void* argument )
                 planStop.status = STOP_STATUS_FAIL;
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
+                engine.stopError.active = PERMISSION_ENABLE;
               }
               if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) > 0U )
               {
@@ -1898,11 +1899,8 @@ void vENGINEtask ( void* argument )
               engine.status    = ENGINE_STATUS_ERROR;
               engine.cmd       = ENGINE_CMD_NONE;
               planStop.status  = STOP_STATUS_IDLE;
-              event.action     = ACTION_EMERGENCY_STOP;
-              event.type       = EVENT_STOP_FAIL;
               blockTimerFinish = TRIGGER_IDLE;
               starterFinish    = TRIGGER_IDLE;
-              vSYSeventSend( event, NULL );
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_STATUS_OK:

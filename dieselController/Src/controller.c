@@ -47,8 +47,18 @@ void vCONTROLLERsetMode ( CONTROLLER_MODE mode );
 void vCONTROLLERstartAutoStop ( PERMISSION delay );
 void vCONTROLLERstartAutoStart ( PERMISSION delay );
 void vCONTROLLERtask ( void* argument );
+void vCONTROLLERsetErrorOutputs ( void );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERsetErrorOutputs ( void )
+{
+  vFPOsetGenReady( RELAY_OFF );
+  vFPOsetAlarm( RELAY_ON );
+  vFPOsetReadyToStart( RELAY_OFF );
+  vFPOsetDpsReady( RELAY_OFF );
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 {
@@ -80,32 +90,31 @@ void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
       /*--------- Commands to devices ----------*/
       vELECTROsendCmd( ELECTRO_CMD_LOAD_MAINS );
       vENGINEsendCmd( ENGINE_CMD_EMEGENCY_STOP );
+      vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+      controller.state = CONTROLLER_STATUS_ERROR;
       /*-------------- Setup HMI ---------------*/
       vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
       vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON );
       /*--------- Setup interior status --------*/
-      controller.state = CONTROLLER_STATUS_ERROR;
       vSTATUSsetup( DEVICE_STATUS_ERROR, LOGIC_DEFAULT_TIMER_ID );
       /*------------ Status output -------------*/
-      vFPOsetGenReady( RELAY_OFF );
-      vFPOsetAlarm( RELAY_ON );
-      vFPOsetReadyToStart( RELAY_OFF );
-      vFPOsetDpsReady( RELAY_OFF );
+      vCONTROLLERsetErrorOutputs();
       /*------------- Write to log -------------*/
       eLOGaddRecord( &record );
       break;
 
     case ACTION_SHUTDOWN:
       /*--------- Commands to devices ----------*/
-      vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
-      controller.state = CONTROLLER_STATUS_PLAN_STOP;
+      if ( controller.state != CONTROLLER_STATUS_ERROR )
+      {
+        vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+        controller.state = CONTROLLER_STATUS_PLAN_STOP;
+        controller.errorAfterStop = PERMISSION_ENABLE;
+      }
       /*--------- Setup interior status --------*/
       vSTATUSsetup( DEVICE_STATUS_ERROR, LOGIC_DEFAULT_TIMER_ID );
       /*------------ Status output -------------*/
-      vFPOsetGenReady( RELAY_OFF );
-      vFPOsetAlarm( RELAY_ON );
-      vFPOsetReadyToStart( RELAY_OFF );
-      vFPOsetDpsReady( RELAY_OFF );
+      vCONTROLLERsetErrorOutputs();
       /*------------- Write to log -------------*/
       eLOGaddRecord( &record );
       break;
@@ -304,7 +313,15 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       {
         vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
         vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON   );
-        controller.state = CONTROLLER_STATUS_IDLE;
+        if ( controller.errorAfterStop == PERMISSION_ENABLE )
+        {
+          controller.state          = CONTROLLER_STATUS_ERROR;
+          controller.errorAfterStop = PERMISSION_DISABLE;
+        }
+        else
+        {
+          controller.state = CONTROLLER_STATUS_IDLE;
+        }
         stopState        = CONTROLLER_TURNING_IDLE;
         vLOGICprintDebug( ">>Plan stop       : Finish\r\n" );
         if ( eSTATUSgetStatus() == DEVICE_STATUS_ERROR )
@@ -485,6 +502,7 @@ void vCONTROLLERdataInit ( void )
   controller.logWarning         = getBitMap( &logSetup,   LOG_SAVE_WARNING_EVENTS_ENB_ADR );
   controller.logPositive        = getBitMap( &logSetup,   LOG_POSITIVE_EVENTS_ENB_ADR );
   controller.powerOffImidiately = getBitMap( &mainsSetup, MAINS_POWER_OFF_IMMEDIATELY_ENB_ADR );
+  controller.errorAfterStop     = PERMISSION_DISABLE;
   return;
 }
 /*----------------------------------------------------------------------------*/

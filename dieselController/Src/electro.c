@@ -830,14 +830,6 @@ void vELECTROtask ( void* argument )
             if ( ( mains.relayOff.status     == RELAY_DELAY_IDLE ) &&
                  ( generator.relayOff.status == RELAY_DELAY_IDLE ) )
             {
-              vLOGICstartTimer( &electro.timer, "Electro timer       " );
-              electro.state   = ELECTRO_PROC_STATUS_DONE;
-              vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
-            }
-            break;
-          case ELECTRO_PROC_STATUS_DONE:
-            if ( uLOGICisTimer( &electro.timer ) > 0U )
-            {
               mains.state     = ELECTRO_STATUS_IDLE;
               generator.state = ELECTRO_STATUS_IDLE;
               electro.state   = ELECTRO_PROC_STATUS_IDLE;
@@ -867,7 +859,7 @@ void vELECTROtask ( void* argument )
               {
                 vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state   = ELECTRO_PROC_STATUS_CONNECT;
-                vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
+                vLOGICprintDebug( ">>Electro         : Reconnect delay\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
@@ -914,7 +906,7 @@ void vELECTROtask ( void* argument )
               {
                 vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state = ELECTRO_PROC_STATUS_CONNECT;
-                vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
+                vLOGICprintDebug( ">>Electro         : Reconnect delay\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:

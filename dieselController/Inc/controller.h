@@ -67,6 +67,7 @@ typedef struct __packed
   PERMISSION        powerOffImidiately : 1U;
   PERMISSION        logWarning         : 1U;
   PERMISSION        logPositive        : 1U;
+  PERMISSION        errorAfterStop     : 1U;
   fix16_t           stopDelay;
   fix16_t           startDelay;
   SYSTEM_TIMER      timer;

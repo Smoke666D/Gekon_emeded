@@ -23,16 +23,18 @@ static ELECTRO_SYSTEM_TYPE electro              = { 0U };
 static StaticQueue_t       xElectroCommandQueue = { 0U };
 static QueueHandle_t       pElectroCommandQueue = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t tempProtectionTimeMult    = F16( TEMP_PROTECTION_TIME_MULTIPLIER ); /* Temperature protection constant */
-static const fix16_t shortCircuitTrippingCurve = F16( CUTOUT_PROTECTION_TRIPPING_CURVE );
-static const fix16_t shortCircuitConstant      = F16( SHORT_CIRCUIT_CONSTANT );          /* Short circuit protection constant */
-static const fix16_t shortCircuitCutoutPower   = F16( CUTOUT_POWER );
-static const fix16_t powerUsageCalcTimeout     = F16( POWER_USAGE_CALC_TIMEOUT );
-static const fix16_t powerWsTokWs              = F16( 3600000U );
+static const fix16_t tempProtectionTrippingCurve = F16( TEMP_PROTECTION_TRIPPING_CURVE ); /* Temperature protection constant */
+static const fix16_t tempProtectionMaxTime       = F16( TEMP_PROTECTION_MAX_TIME );
+static const fix16_t shortCircuitTrippingCurve   = F16( CUTOUT_PROTECTION_TRIPPING_CURVE );
+static const fix16_t shortCircuitConstant        = F16( SHORT_CIRCUIT_CONSTANT );          /* Short circuit protection constant */
+static const fix16_t shortCircuitCutoutPower     = F16( CUTOUT_POWER );
+static const fix16_t powerUsageCalcTimeout       = F16( POWER_USAGE_CALC_TIMEOUT );
+static const fix16_t powerWsTokWs                = F16( 3600000U );
 /*-------------------------------- Variables ---------------------------------*/
 static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U };
 static fix16_t         maxGeneratorVolage                                 = 0U;
 static fix16_t         shortCircuitDividend                               = 0U;
+static fix16_t         minTempCurrentRatio                                = 0U;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t electroHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -47,7 +49,17 @@ void vELECTROtask ( void* argument );
  */
 fix16_t fIDMTcalcTemp ( fix16_t input, fix16_t setting )
 {
-  return fix16_div( tempProtectionTimeMult, fix16_sq( fix16_sub( fix16_div( input, setting ), fix16_one ) ) );
+  fix16_t ratio = fix16_div( input, setting );
+  fix16_t res   = 0U;
+  if ( ratio < minTempCurrentRatio )
+  {
+    res = tempProtectionMaxTime;
+  }
+  else
+  {
+    res = fix16_div( tempProtectionTrippingCurve, fix16_sq( fix16_sub( ratio, fix16_one ) ) );
+  }
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /* Calculation of disconnection time in short circuit protection
@@ -165,95 +177,74 @@ void vELECTROpowerUsageProcessing ( void )
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uSecToTic ( fix16_t input )
 {
-  uint32_t res = 0U;
-  return res;
+  return ( uint32_t )( fix16_to_int( fix16_mul( input, fix16_from_float( 1000U / CURRENT_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
 {
+  LOG_RECORD_TYPE record = { 0U };
   switch ( alarm->state )
   {
     case ELECTRO_CURRENT_STATUS_IDLE:
-      if ( current >= alarm->cutout.current )
+      if ( current >= alarm->thermal.current )
       {
-        alarm->cutout.delay       = fIDMTcalcCutout( current, alarm->cutout.current );
-        alarm->state              = ELECTRO_CURRENT_STATUS_CUTOUT_TRIG;
-        alarm->tim->Instance->CNT = 0U;
-        HAL_TIM_Base_Start( alarm->tim );
-      }
-      else if ( current >= alarm->over.current )
-      {
-        alarm->over.delay         = fIDMTcalcTemp( current, alarm->over.current );
-        alarm->state              = ELECTRO_CURRENT_STATUS_OVER_TRIG;
-        alarm->tim->Instance->CNT = 0U;
-        HAL_TIM_Base_Start( alarm->tim );
-      }
-      else
-      {
-
+        alarm->thermal.delay   = uSecToTic( fIDMTcalcTemp( current, alarm->thermal.current ) );
+        alarm->thermal.counter = 0U;
+        alarm->thermal.active  = PERMISSION_ENABLE;
+        if ( current >= alarm->cutout.current )
+        {
+          alarm->cutout.delay   = uSecToTic( fIDMTcalcCutout( current, alarm->cutout.current ) );
+          alarm->cutout.counter = 0U;
+          alarm->cutout.active  = PERMISSION_ENABLE;
+        }
+        alarm->state = ELECTRO_CURRENT_STATUS_TRIG;
       }
       break;
     /*--------------------------------------------------------------------------------*/
-    case ELECTRO_CURRENT_STATUS_OVER_TRIG:
-      if ( current >= alarm->cutout.current )
+    case ELECTRO_CURRENT_STATUS_TRIG:
+      if ( current >= alarm->thermal.current )
       {
-        alarm->state = ELECTRO_CURRENT_STATUS_CUTOUT_TRIG;
-      }
-      else
-      {
-        if ( current >= alarm->over.current )
+        alarm->thermal.delay = uSecToTic( fIDMTcalcTemp( current, alarm->thermal.current ) );
+        if ( alarm->thermal.counter >= alarm->thermal.delay )
         {
-          alarm->over.delay = fIDMTcalcTemp( current, alarm->over.current );
-          if ( alarm->tim->Instance->CNT >= uSecToTic( alarm->over.delay ) )
+          vSYSeventSend( alarm->thermal.event, &record );
+          eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+          alarm->thermal.active = PERMISSION_DISABLE;
+          alarm->cutout.active  = PERMISSION_DISABLE;
+          alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
+        }
+        if ( current >= alarm->cutout.current )
+        {
+          alarm->cutout.active = PERMISSION_ENABLE;
+          alarm->cutout.delay  = uSecToTic( fIDMTcalcCutout( current, alarm->cutout.current ) );
+          if ( alarm->cutout.counter >= alarm->cutout.delay )
           {
-            vSYSeventSend( alarm->over.event, NULL );
+            vSYSeventSend( alarm->cutout.event, &record );
+            eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+            alarm->thermal.active = PERMISSION_DISABLE;
+            alarm->cutout.active  = PERMISSION_DISABLE;
             alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
           }
         }
         else
         {
-          alarm->state = ELECTRO_CURRENT_STATUS_OVER_COOLDOWN;
-        }
-      }
-      break;
-    /*--------------------------------------------------------------------------------*/
-    case ELECTRO_CURRENT_STATUS_OVER_COOLDOWN:
-      if ( current >= alarm->over.current )
-      {
-        alarm->state = ELECTRO_CURRENT_STATUS_OVER_TRIG;
-      }
-      else
-      {
-        if ( alarm->tim->Instance->CNT >= alarm->over.delay )
-        {
-          alarm->state = ELECTRO_CURRENT_STATUS_IDLE;
-          HAL_TIM_Base_Stop( alarm->tim );
-        }
-      }
-      break;
-    /*--------------------------------------------------------------------------------*/
-    case ELECTRO_CURRENT_STATUS_CUTOUT_TRIG:
-      if ( current >= alarm->cutout.current )
-      {
-        alarm->cutout.delay = fIDMTcalcCutout( current, alarm->cutout.current );
-        if ( alarm->tim->Instance->CNT >= uSecToTic( alarm->cutout.delay ) )
-        {
-          vSYSeventSend( alarm->cutout.event, NULL );
-          alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
+          alarm->cutout.active  = PERMISSION_DISABLE;
+          alarm->cutout.counter = 0U;
         }
       }
       else
       {
-        alarm->state = ELECTRO_CURRENT_STATUS_OVER_TRIG;
+        alarm->thermal.active = PERMISSION_DISABLE;
+        alarm->cutout.active  = PERMISSION_DISABLE;
+        alarm->state          = ELECTRO_CURRENT_STATUS_IDLE;
       }
       break;
     /*--------------------------------------------------------------------------------*/
     case ELECTRO_CURRENT_STATUS_ALARM:
-      HAL_TIM_Base_Stop( alarm->tim );
       break;
     /*--------------------------------------------------------------------------------*/
     default:
-      alarm->state = ELECTRO_CURRENT_STATUS_IDLE;
+      alarm->state = ELECTRO_CURRENT_STATUS_TRIG;
       break;
   }
   return;
@@ -326,6 +317,13 @@ void vMAINSprocess ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef DEBUG
+fix16_t fGENERATORsynteticCurrent ( void )
+{
+  return fix16_mul( fix16_div( xADCGetSFL(), F16( 500U ) ), generator.rating.current );
+}
+#endif
+/*---------------------------------------------------------------------------------------------------*/
 /* Check generator
  * Input:  None
  * Output: Maximum of voltage
@@ -348,20 +346,20 @@ fix16_t fGENERATORprocess ( void )
   freq       = generator.getFreq();
   maxCurrent = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
   /*------------------------- Voltage alarms --------------------------*/
-  vELECTROalarmCheck( &generator.lowVoltageAlarm, voltage, MAINS_LINE_NUMBER );
-  vELECTROalarmCheck( &generator.lowVoltagePreAlarm, voltage, MAINS_LINE_NUMBER );
-  vELECTROalarmCheck( &generator.hightVoltageAlarm, voltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &generator.lowVoltageAlarm,      voltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &generator.lowVoltagePreAlarm,   voltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &generator.hightVoltageAlarm,    voltage, MAINS_LINE_NUMBER );
   vELECTROalarmCheck( &generator.hightVoltagePreAlarm, voltage, MAINS_LINE_NUMBER );
   /*------------------------ Frequency alarms --------------------------*/
-  vALARMcheck( &generator.lowFreqAlarm, freq );
-  vALARMcheck( &generator.lowFreqPreAlarm, freq );
-  vALARMcheck( &generator.hightFreqAlarm, freq );
+  vALARMcheck( &generator.lowFreqAlarm,      freq );
+  vALARMcheck( &generator.lowFreqPreAlarm,   freq );
+  vALARMcheck( &generator.hightFreqAlarm,    freq );
   vALARMcheck( &generator.hightFreqPreAlarm, freq );
   /*--------------------- Phase sequence control ----------------------*/
   vERRORcheck( &generator.phaseSequenceError, ( xADCGetNetFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
   /*------------------------- Current alarms --------------------------*/
-  vALARMcheck( &generator.powerAlarm,          maxCurrent );
-  vALARMcheck( &generator.currentWarningAlarm, power      );
+  vALARMcheck( &generator.powerAlarm,          power      );
+  vALARMcheck( &generator.currentWarningAlarm, maxCurrent );
   if ( electro.scheme != ELECTRO_SCHEME_SINGLE_PHASE )
   {
     vALARMcheck( &generator.phaseImbalanceAlarm, fELECTROcalcPhaseImbalance( current ) );
@@ -386,6 +384,7 @@ void vELECTROdataInit ( void )
   }
   /*----------------------------------------------------------------------------*/
   shortCircuitDividend = fix16_mul( shortCircuitTrippingCurve, shortCircuitConstant );
+  minTempCurrentRatio  = fix16_add( fix16_sqrt( fix16_div( tempProtectionTrippingCurve, tempProtectionMaxTime ) ), fix16_one );
   /*----------------------------------------------------------------------------*/
   electro.scheme      = getBitMap( &genSetup, GEN_AC_SYS_ADR );
   electro.state       = ELECTRO_PROC_STATUS_IDLE;
@@ -533,24 +532,26 @@ void vELECTROdataInit ( void )
   generator.powerAlarm.error.event.action = currentAction;
   generator.powerAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.currentWarningAlarm.error.active       = PERMISSION_DISABLE;
+  generator.currentWarningAlarm.error.active       = PERMISSION_ENABLE;
   generator.currentWarningAlarm.type               = ALARM_LEVEL_HIGHT;
   generator.currentWarningAlarm.level              = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentWarningLevel ), fix100U ) );
   generator.currentWarningAlarm.timer.delay        = getValue( &genOverCurrentWarningDelay );
   generator.currentWarningAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.currentWarningAlarm.error.event.type   = EVENT_OVER_CURRENT;
   generator.currentWarningAlarm.error.event.action = ACTION_WARNING;
+  generator.currentWarningAlarm.error.ack          = PERMISSION_ENABLE;
+  generator.currentWarningAlarm.error.trig         = TRIGGER_IDLE;
   generator.currentWarningAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.currentAlarm.state               = ELECTRO_CURRENT_STATUS_IDLE;
-  generator.currentAlarm.over.current        = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
-  generator.currentAlarm.over.delay          = 0U;
-  generator.currentAlarm.over.event.type     = EVENT_OVER_CURRENT;
-  generator.currentAlarm.over.event.action   = currentAction;
-  generator.currentAlarm.cutout.current      = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
-  generator.currentAlarm.cutout.delay        = 0U;
-  generator.currentAlarm.cutout.event.type   = EVENT_SHORT_CIRCUIT;
-  generator.currentAlarm.cutout.event.action = currentAction;
+  generator.currentAlarm.state                = ELECTRO_CURRENT_STATUS_IDLE;
+  generator.currentAlarm.thermal.current      = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
+  generator.currentAlarm.thermal.delay        = 0U;
+  generator.currentAlarm.thermal.event.type   = EVENT_OVER_CURRENT;
+  generator.currentAlarm.thermal.event.action = currentAction;
+  generator.currentAlarm.cutout.current       = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
+  generator.currentAlarm.cutout.delay         = 0U;
+  generator.currentAlarm.cutout.event.type    = EVENT_SHORT_CIRCUIT;
+  generator.currentAlarm.cutout.event.action  = currentAction;
   /*----------------------------------------------------------------------------*/
   generator.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_GEN );
   generator.relay.status = RELAY_OFF;
@@ -703,6 +704,19 @@ void vELECTROreset ( void )
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+void vELECTROtimCallback ( void )
+{
+  if ( generator.currentAlarm.thermal.active == PERMISSION_ENABLE )
+  {
+    generator.currentAlarm.thermal.counter++;
+  }
+  if ( generator.currentAlarm.cutout.active == PERMISSION_ENABLE )
+  {
+    generator.currentAlarm.cutout.counter++;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vELECTROinit ( TIM_HandleTypeDef* tim )
 {
   /* Data initialization */
@@ -816,14 +830,6 @@ void vELECTROtask ( void* argument )
             if ( ( mains.relayOff.status     == RELAY_DELAY_IDLE ) &&
                  ( generator.relayOff.status == RELAY_DELAY_IDLE ) )
             {
-              vLOGICstartTimer( &electro.timer, "Electro timer       " );
-              electro.state   = ELECTRO_PROC_STATUS_DONE;
-              vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
-            }
-            break;
-          case ELECTRO_PROC_STATUS_DONE:
-            if ( uLOGICisTimer( &electro.timer ) > 0U )
-            {
               mains.state     = ELECTRO_STATUS_IDLE;
               generator.state = ELECTRO_STATUS_IDLE;
               electro.state   = ELECTRO_PROC_STATUS_IDLE;
@@ -853,7 +859,7 @@ void vELECTROtask ( void* argument )
               {
                 vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state   = ELECTRO_PROC_STATUS_CONNECT;
-                vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
+                vLOGICprintDebug( ">>Electro         : Reconnect delay\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
@@ -900,7 +906,7 @@ void vELECTROtask ( void* argument )
               {
                 vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state = ELECTRO_PROC_STATUS_CONNECT;
-                vLOGICprintDebug( ">>Electro         : Start delay\r\n" );
+                vLOGICprintDebug( ">>Electro         : Reconnect delay\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
@@ -1069,6 +1075,7 @@ void vELECTROtask ( void* argument )
         vLOGICresetTimer( &generator.relayOff.timer  );
         vLOGICresetTimer( &mains.relayOn.timer       );
         vLOGICresetTimer( &mains.relayOff.timer      );
+        generator.currentAlarm.state = ELECTRO_CURRENT_STATUS_IDLE;
         vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
         electro.alarmState = ELECTRO_ALARM_STATUS_STOP;
         electro.cmd        = ELECTRO_CMD_NONE;

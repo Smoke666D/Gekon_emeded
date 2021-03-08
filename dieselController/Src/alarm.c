@@ -199,6 +199,13 @@ uint8_t uALARMisForList ( SYSTEM_EVENT* event )
   return res;
 }
 /*-----------------------------------------------------------------------------------------*/
+void vERRORreset ( ERROR_TYPE* error )
+{
+  error->trig   = TRIGGER_IDLE;
+  error->status = ALARM_STATUS_IDLE;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 void vERRORrelax ( ERROR_TYPE* error )
 {
   LOG_RECORD_TYPE rec = { 0U };
@@ -209,8 +216,7 @@ void vERRORrelax ( ERROR_TYPE* error )
     {
       eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, &rec, NULL );
     }
-    error->status = ALARM_STATUS_IDLE;
-    error->trig   = TRIGGER_IDLE;
+    vERRORreset( error );
   }
   return;
 }
@@ -239,17 +245,10 @@ void vERRORholding ( ERROR_TYPE* error )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vERRORreset ( ERROR_TYPE* error )
-{
-  error->trig   = TRIGGER_IDLE;
-  error->status = ALARM_STATUS_IDLE;
-  return;
-}
-/*-----------------------------------------------------------------------------------------*/
 void vALARMreset ( ALARM_TYPE* alarm )
 {
   vLOGICresetTimer( &alarm->timer );
-  vERRORreset( &alarm->error );
+  vERRORrelax( &alarm->error );
   return;
 }
 /*-----------------------------------------------------------------------------------------*/

@@ -936,7 +936,7 @@ void vENGINEdataInit ( void )
   fuel.lowAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
   fuel.lowAlarm.error.event.type        = EVENT_FUEL_LOW_LEVEL;
   fuel.lowAlarm.error.event.action      = ACTION_SHUTDOWN;
-  fuel.lowAlarm.error.ack               = PERMISSION_ENABLE;
+  fuel.lowAlarm.error.ack               = PERMISSION_DISABLE;
   fuel.lowAlarm.error.trig              = TRIGGER_IDLE;
   fuel.lowAlarm.error.status            = ALARM_STATUS_IDLE;
   fuel.lowPreAlarm.error.active         = PERMISSION_ENABLE;
@@ -965,8 +965,8 @@ void vENGINEdataInit ( void )
   fuel.hightAlarm.timer.delay           = getValue( &fuelLevelHightAlarmDelay );
   fuel.hightAlarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
   fuel.hightAlarm.error.event.type      = EVENT_FUEL_HIGHT_LEVEL;
-  fuel.hightAlarm.error.event.action    = ACTION_PLAN_STOP;
-  fuel.hightAlarm.error.ack             = PERMISSION_ENABLE;
+  fuel.hightAlarm.error.event.action    = ACTION_SHUTDOWN;
+  fuel.hightAlarm.error.ack             = PERMISSION_DISABLE;
   fuel.hightAlarm.error.trig            = TRIGGER_IDLE;
   fuel.hightAlarm.error.status          = ALARM_STATUS_IDLE;
   fuel.booster.onLevel                  = getValue( &fuelPumpOnLevel );
@@ -1885,6 +1885,7 @@ void vENGINEtask ( void* argument )
                 planStop.status = STOP_STATUS_FAIL;
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
+                engine.stopError.active = PERMISSION_ENABLE;
               }
               if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) > 0U )
               {
@@ -1898,11 +1899,8 @@ void vENGINEtask ( void* argument )
               engine.status    = ENGINE_STATUS_ERROR;
               engine.cmd       = ENGINE_CMD_NONE;
               planStop.status  = STOP_STATUS_IDLE;
-              event.action     = ACTION_EMERGENCY_STOP;
-              event.type       = EVENT_STOP_FAIL;
               blockTimerFinish = TRIGGER_IDLE;
               starterFinish    = TRIGGER_IDLE;
-              vSYSeventSend( event, NULL );
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_STATUS_OK:

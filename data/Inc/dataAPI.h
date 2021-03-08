@@ -79,5 +79,6 @@ void               vDATAAPIincLogSize ( void );
 void               vDATAAPIprintMemoryMap ( void );
 void               vDATAprintSerialNumber ( void );
 EventGroupHandle_t xDATAAPIgetEventGroup ( void );
+void               vDATAAPIsendEventAll ( DATA_API_REINIT message );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAAPI_H_ */

@@ -17,9 +17,11 @@
 #define  MAINS_LINE_NUMBER                 3U
 #define  ELECTRO_COMMAND_QUEUE_LENGTH      10U
 #define  POWER_USAGE_CALC_TIMEOUT          5U     /* sec */
+#define  CURRENT_TIMER_STEP                100U  /* ms */
 
-#define  TEMP_PROTECTION_TIME_MULTIPLIER   36U    /* t */
-#define  CUTOUT_PROTECTION_TRIPPING_CURVE  0.001f /* K */
+#define  TEMP_PROTECTION_TRIPPING_CURVE    36U
+#define  TEMP_PROTECTION_MAX_TIME          120U  /* sec */
+#define  CUTOUT_PROTECTION_TRIPPING_CURVE  0.01f
 #define  SHORT_CIRCUIT_CONSTANT            0.14f
 #define  CUTOUT_POWER                      0.02f
 /*------------------------- Enum ---------------------------------------*/
@@ -54,9 +56,7 @@ typedef enum
 typedef enum
 {
   ELECTRO_CURRENT_STATUS_IDLE,
-  ELECTRO_CURRENT_STATUS_OVER_TRIG,
-  ELECTRO_CURRENT_STATUS_OVER_COOLDOWN,
-  ELECTRO_CURRENT_STATUS_CUTOUT_TRIG,
+  ELECTRO_CURRENT_STATUS_TRIG,
   ELECTRO_CURRENT_STATUS_ALARM,
 } ELECTRO_CURRENT_STATUS;
 
@@ -100,14 +100,16 @@ typedef struct __packed
 typedef struct __packed
 {
   fix16_t      current;
-  fix16_t      delay;
+  uint32_t     delay;
+  uint32_t     counter;
+  PERMISSION   active  : 1U;
   SYSTEM_EVENT event;
 } CURRENT_SETTING_TYPE;
 
 typedef struct __packed
 {
   ELECTRO_CURRENT_STATUS state  : 3U;
-  CURRENT_SETTING_TYPE   over;
+  CURRENT_SETTING_TYPE   thermal;
   CURRENT_SETTING_TYPE   cutout;
   TIM_HandleTypeDef*     tim;
 } CURRENT_ALARM_TYPE;
@@ -176,6 +178,7 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
+void                   vELECTROtimCallback ( void );
 void                   vELECTROinit ( TIM_HandleTypeDef* tim );
 ELECTRO_STATUS         eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS         eELECTROgetMainsStatus ( void );

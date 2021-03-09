@@ -22,6 +22,7 @@
 #include "engine.h"
 #include "controllerTypes.h"
 #include "utils.h"
+#include "adcdata.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U
@@ -32,10 +33,12 @@
 #define DC_READY           0x40U
 #define GEN_UPDATE         0x80U
 #define NET_UPDATE         0x100U
+
 #define COMMON_ERROR       0x01U
 #define OP_CHANEL_ERROR    0x02U
 #define CT_CHANEL_ERROR    0x04U
-#define FL_CHANEL_ERROR    0x80U
+#define FL_CHANEL_ERROR    0x08U
+
 
 
 
@@ -49,6 +52,23 @@
 #define ADC3_ADD_CHANNEL   5U
 #define ADC_FRAME_SIZE     1024//700U//512U
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
+
+
+#define CSA               0
+#define CSD               1
+#define CAS               2
+
+#define DEV_VDD             0
+#define DEV_CHARGE_VDD      1
+#define DEV_TEMP            2
+#define DEV_SOP             3
+#define DEV_SCT             4
+#define DEV_SFL             5
+#define DEV_CSA             6
+#define DEV_CSD             7
+#define DEV_CAS             8
+
+
 
 #define GEN_RMS_CUR         0
 #define GEN_FREQ            1
@@ -159,11 +179,14 @@ typedef enum
   C_B_ROTATION,
 } xADCRotatinType;
 
+
+
 /*
  * Функции API драйвера
  */
-SENSOR_TYPE xADCGetFLChType(void);
-SENSOR_TYPE xADCGetxOPChType(void);
+uint8_t xADCGetFLChType(void);
+uint8_t xADCGetxOPChType(void);
+uint8_t xADCGetxCTChType(void);
 fix16_t xADCGetGENActivePower();
 fix16_t xADCGetGENReactivePower();
 fix16_t xADCGetGENRealPower();
@@ -206,7 +229,7 @@ void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 uint8_t uADCGetDCChError();
-SENSOR_TYPE xADCGetxCTChType(void);
+
 xADCGenDetectType vADCGetGenFreqPres( void );
 ELECTRO_SCHEME xADCGetScheme(void);
 #endif /* INC_ADC_H_ */

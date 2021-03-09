@@ -19,10 +19,8 @@ typedef struct
 
 xAINStruct xDeviceAIN[3];
 
-static   SENSOR_TYPE        xOPChType =SENSOR_TYPE_NONE;
-static   SENSOR_TYPE        xCTChType =SENSOR_TYPE_NONE;
-static   SENSOR_TYPE        xFLChType =SENSOR_TYPE_NONE;
-static   uint8_t            uADCError = 0U;
+
+//static   uint8_t            uADCError = 0U;
 static   EventGroupHandle_t xADCEvent;
 static   StaticEventGroup_t xADCCreatedEventGroup;
 volatile int16_t            ADC1_IN_Buffer[ADC_FRAME_SIZE*ADC1_CHANNELS] = { 0U };   //ADC1 input data buffer
@@ -57,21 +55,6 @@ extern ADC_HandleTypeDef hadc2;
 extern ADC_HandleTypeDef hadc3;
 
 
-
-
-static uint16_t uVDD =0;  //Значение АЦП канала PowInMCU (измерение напряжения питания)
-static uint16_t uCAC =0;
-static uint16_t uCSD =0;
- //Напряжение АЦП канала Common Analog Sens (общий провод датчиков)
-static uint16_t uCAS =0;
-static fix16_t xSOP =0; //Напряжение АЦП канала SensOilPressure (напряжение канала давления масла)
-static uint16_t uSOP =0;
-static fix16_t xSCT =0; //Напряжение АЦП канала SensCoolantTemper (напряжение канала температуры охлаждающей жидкости)
-//static uint16_t uSCT =0;
-static fix16_t xSFL =0; //Напряжение АЦП канала SensFuelLevel (напряжение канала уровня топлива)
-static uint16_t uSFL =0;
-static uint16_t uCSA =0;
-static uint16_t uTemp =0;
 static fix16_t xNET_F1_VDD =0;
 static fix16_t xNET_F2_VDD =0;
 static fix16_t xNET_F3_VDD =0;
@@ -101,6 +84,23 @@ static uint16_t F3uCosFiMax =0;
 static fix16_t  xTransCoof =0;
 fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+fix16_t  Convert (void * data);
+fix16_t  ConvertTemp (void * data);
+fix16_t  vADCSetAinState( void * data);
+
+xADCValue  xDeviceADC[]=
+    {
+        { SEN_TYPE_NONE, 0,  0,  (void *)Convert },     /*  VDD  */
+        { SEN_TYPE_NONE, 0,  0,  (void *)Convert },     /* CHARGE_VDD */
+        { SEN_TYPE_NONE, 0,  0,  (void *)ConvertTemp }, /* TEMP  */
+        { SEN_TYPE_NONE, 0,  0,  (void *)vADCSetAinState },     /* SOP  */
+        { SEN_TYPE_NONE, 0,  0,  (void *)vADCSetAinState },     /* SCL  */
+        { SEN_TYPE_NONE, 0,  0,  (void *)vADCSetAinState},     /* SFL  */
+        { SEN_TYPE_NONE, 0,  0,  NULL},                        /* CSA  */
+        { SEN_TYPE_NONE, 0,  0,  NULL                 },       /* CSD */
+        { SEN_TYPE_NONE, 0,  0,  NULL},                        /* CAS  */
+
+    };
 
 /*
  *  Константы
@@ -109,7 +109,6 @@ fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 static const fix16_t  xLCurCoof       = F16 (( VRef /4095)/(RCSHUNT * OPTRANSCOOF) );  //Коофицент пересчета значений токовых АЦП в ток на шунтирующих ризисторах
 static const fix16_t  xMinus1         = F16 (-1.0);
 static const fix16_t  x3              = F16 (3);
-static const fix16_t  xVDD_CF         = F16 (VDD_CF);
 static const fix16_t  MIN_CUR         = F16 (1.0);
 
 
@@ -118,29 +117,121 @@ static const fix16_t  MIN_CUR         = F16 (1.0);
  *
  */
 
+fix16_t  Convert (void * data)
+{
+ xADCValue * p = (xADCValue *) data ;
+ xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
+ p->xDataConvert = fix16_mul( fix16_from_int( p->uDataSrc ), F16 (VDD_CF) );
+ p->xDataConvert = fix16_sub( p->xDataConvert,F16(VT4) );
+ return (p->xDataConvert);
+}
 
+fix16_t  ConvertTemp (void * data)
+{
+  xADCValue * p = (xADCValue *) data ;
+/* Преобразования строенного термодатчика */
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5 );
+  p->xDataConvert = fix16_sub( fix16_from_float( p->uDataSrc * 3.3 / 4095U ), F16( 0.76 ) );
+  p->xDataConvert = fix16_div( xADC_TEMP, F16 (0.0025) );
+  p->xDataConvert = fix16_add( xADC_TEMP, F16( 25 ) );
+  return  (p->xDataConvert);
+}
+
+fix16_t  vADCSetAinState( void * data)
+{
+  xADCValue * p = (xADCValue *) data ;
+  xEventGroupWaitBits( xADCEvent, DC_READY, pdTRUE, pdTRUE, 5U );
+  if ( ( xDeviceADC[DEV_CSA].uDataSrc - xDeviceADC[DEV_CAS].uDataSrc ) <= DELTA )
+  {
+          p->xDataConvert = F16( MAX_RESISTANCE );
+          p->StateConfig = COMMON_SENS_ERROR | ( p->StateConfig & SEN_TYPE_MASK );
+  }
+  else
+  {
+          switch ( p->StateConfig & SEN_TYPE_MASK )
+          {
+             case SEN_TYPE_RESISTIVE:
+             if ( ( ( xDeviceADC[DEV_CSD].uDataSrc - p->uDataSrc ) <= DELTA ) || ( p->uDataSrc < xDeviceADC[DEV_CAS].uDataSrc ) )
+             {
+                p->xDataConvert = 0U;
+                p->StateConfig = CHANNEL_SENS_ERROR | ( p->StateConfig & SEN_TYPE_MASK );
+             }
+             else
+             {
+                 p->xDataConvert = fix16_from_int( ( ( p->uDataSrc - xDeviceADC[DEV_CAS].uDataSrc ) * R3 ) / ( xDeviceADC[DEV_CSD].uDataSrc - p->uDataSrc ) );
+             }
+             break;
+           case SEN_TYPE_NORMAL_OPEN:
+           case SEN_TYPE_NORMAL_CLOSE:
+              p->xDataConvert  = ( p->uDataSrc < ( xDeviceADC[DEV_CSD].uDataSrc / 2U ) )? 0U : F16(MAX_RESISTANCE) ;
+              break;
+           case SEN_TYPE_CURRENT:
+           default:
+              p->xDataConvert  = 0U;
+              break;
+           }
+  }
+  return  (p->xDataConvert);
+}
+
+/*Функции работы с каналами постоянного тока*/
 /*
  *  Функция возвращает тип канала урвоня топлива
  */
-SENSOR_TYPE xADCGetFLChType(void)
+uint8_t xADCGetFLChType(void)
 {
- return  (xFLChType);
+ return  (xDeviceADC[DEV_SFL].StateConfig & SEN_TYPE_MASK);
 }
 /*
  *  Функция возвращает тип канала давления масла
  */
-SENSOR_TYPE xADCGetxOPChType(void)
+uint8_t xADCGetxOPChType(void)
 {
- return (xOPChType);
+ return (xDeviceADC[DEV_SOP].StateConfig & SEN_TYPE_MASK);
 }
 /*
  *  Функция возвращает тип канала температуры охлаждающей жидкости масла
  */
-SENSOR_TYPE xADCGetxCTChType(void)
+uint8_t xADCGetxCTChType(void)
 {
- return (xCTChType);
+ return (xDeviceADC[DEV_SCT].StateConfig & SEN_TYPE_MASK);
 
 }
+/*
+ *  Функция возращает наряжения АКБ.
+ */
+fix16_t xADCGetVDD()
+{
+  return  (xDeviceADC[DEV_VDD].pFunc(&xDeviceADC[DEV_VDD]));
+}
+/*
+ * Функция возвращает напряжение заряного генератора
+ */
+fix16_t xADCGetCAC()
+{
+  return  (xDeviceADC[DEV_CHARGE_VDD ].pFunc(&xDeviceADC[DEV_CHARGE_VDD ]));
+}
+fix16_t xADCGetSOP()
+{
+  return (xDeviceADC[DEV_SOP].pFunc( &xDeviceADC[DEV_SOP] ) );
+}
+fix16_t xADCGetSCT()
+{
+  return ( xDeviceADC[DEV_SCT].pFunc( &xDeviceADC[DEV_SCT] ) );
+}
+fix16_t xADCGetSFL()
+{
+  return ( xDeviceADC[DEV_SFL].pFunc( &xDeviceADC[DEV_SFL] ) );
+}
+
+uint8_t uADCGetDCChError()
+{
+  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
+  return ((xDeviceADC[DEV_SOP].StateConfig >>4) | ((xDeviceADC[DEV_SCT].StateConfig & 0x20)>>3) | ((xDeviceADC[DEV_SFL].StateConfig & 0x20)>>2) ) ;
+
+}
+
+
 
 ELECTRO_SCHEME xADCGetScheme(void)
 {
@@ -148,46 +239,6 @@ ELECTRO_SCHEME xADCGetScheme(void)
 
 }
 
-/*
- *  Функция возращает наряжения АКБ.
- */
-fix16_t xADCGetVDD()
-{
-  fix16_t xVDD =0;
-  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  //Пересчитываем его в реальное напяжение.
-  xVDD = fix16_mul( fix16_from_int( uVDD ),  xVDD_CF );
- //Вычитаем падение на диоде
-  xVDD = fix16_sub( xVDD, VT4 );
-  return (xVDD);
-}
-
-
-fix16_t xADCGetCAC()
-{
-  fix16_t xCAC =0;
-  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  //Пересчитываем его в реальное напяжение.
-  xCAC = fix16_mul( fix16_from_int( uCAC ),  xVDD_CF );
-  return (xCAC);
-
-}
-
-fix16_t xADCGetSOP()
-{
-  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  return (xSOP);
-}
-fix16_t xADCGetSCT()
-{
-  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  return (xSCT);
-}
-fix16_t xADCGetSFL()
-{
-  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  return xSFL;
-}
 
 fix16_t xADCGetNETLFreq()
 {
@@ -367,14 +418,6 @@ fix16_t xADCGetREG(uint16_t reg)
 /*
  *  Функция возвращает мговенную мощность переменного тока
  */
-
-uint8_t uADCGetDCChError()
-{
-  xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-  return uADCError;
-
-}
-
 
 uint8_t uADCGetValidDataFlag()
 {
@@ -619,34 +662,7 @@ void vADCGeneratorDataUpdate()
 }
 
 
-void vADCSetAinState( SENSOR_TYPE xInType, fix16_t * OutData, uint16_t InData, uint8_t ErrorMask)
-{
-  uint16_t temp_int = 0U;
-  switch (xInType)
-          {
-             case SENSOR_TYPE_RESISTIVE:
-             if ( ( ( uCSD - InData ) <= DELTA ) || ( InData < uCAS ) )
-             {
-                *OutData = 0U;
-                uADCError |= ErrorMask;
-             }
-             else
-             {
-                 temp_int = ( ( InData - uCAS ) * R3 ) / ( uCSD - InData );
-                 *OutData = fix16_from_int( temp_int );
-             }
-             break;
-           case SENSOR_TYPE_NORMAL_OPEN:
-           case SENSOR_TYPE_NORMAL_CLOSE:
-             *OutData  = ( InData < ( uCSD / 2U ) )? 0U : F16(MAX_RESISTANCE) ;
-               break;
-           case SENSOR_TYPE_CURRENT:
-           default:
-             *OutData  = 0U;
-              break;
-           }
 
-}
 
 /*
  * Сервисная функция для перевода значений АЦП в напряжения
@@ -654,35 +670,20 @@ void vADCSetAinState( SENSOR_TYPE xInType, fix16_t * OutData, uint16_t InData, u
 
 void vADCConvertToVDD ( uint8_t AnalogSwitch )
 {
+
+
   xEventGroupClearBits( xADCEvent, DC_READY );
   switch ( AnalogSwitch )
   {
     case 1U:
       /* Получаем средние значения из буфера АЦП */
-      uVDD = GetAverVDD( 4U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer  );
-      uCSA = GetAverVDD( 5U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
-      uCAS = GetAverVDD( 6U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
-      uTemp = GetAverVDD( 3U, DC_SIZE, 4, (int16_t *)&ADC1_IN_Buffer );
-      /* Преобразования строенного термодатчика */
-      xADC_TEMP = fix16_sub(  fix16_from_float(uTemp*3.3/4095U), fix16_from_float( 0.76 ) );
-      xADC_TEMP = fix16_div( xADC_TEMP, F16 (0.0025) );
-      xADC_TEMP = fix16_add( xADC_TEMP, F16( 25 ) );
-      //Если на линии Common analog sens почти равно ControlSmAin, это означает что не у датчиков не подключен общий провод
-      uADCError = 0U;
-      if ( ( uCSA - uCAS ) <= DELTA )
-      {
-        xSOP = F16( MAX_RESISTANCE );
-        xSCT = F16( MAX_RESISTANCE );
-        xSFL = F16( MAX_RESISTANCE );
-        uADCError |= COMMON_ERROR;
-      }
-      else
-      {
-        /* Расчет значений на аналогвых входах постянного тока */
-        vADCSetAinState( xCTChType, &xSCT,  GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer) , CT_CHANEL_ERROR);
-        vADCSetAinState( xFLChType, &xSFL,  uSFL  , FL_CHANEL_ERROR);
-        vADCSetAinState( xFLChType, &xSOP,  uSOP  , OP_CHANEL_ERROR);
-      }
+      xDeviceADC[DEV_VDD] .uDataSrc  = GetAverVDD( 4U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      xDeviceADC[DEV_TEMP].uDataSrc  = GetAverVDD( 3U, DC_SIZE, 4, (int16_t *)&ADC1_IN_Buffer );
+      xDeviceADC[DEV_CSA].uDataSrc   = GetAverVDD( 5U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      xDeviceADC[DEV_CAS].uDataSrc   = GetAverVDD( 6U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      xDeviceADC[DEV_SCT].uDataSrc   = GetAverVDD( 7U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      /* Расчет значений на аналогвых входах постянного тока, расчет производится здесть, поскольку для него нужны мгновенные заначения переменных внутренних напряжений */
+
       if (adc_count==0)
       {
         adc_count=1;
@@ -695,15 +696,12 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_RESET );
       break;
     case 0U:
-      //Переводим в наряжние на канале АЦП
-      uCSD = GetAverVDD( 5U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
-      //Усредняем сырые значения АЦП
-      uSFL = GetAverVDD( 6U, DC_SIZE,9,(int16_t *)&ADC3_IN_Buffer );
-      //Усредняем сырые значения АЦП
-      uSOP = GetAverVDD( 7U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
-      //Усредняем сырые значения АЦП
-      uCAC = GetAverVDD( 8U, DC_SIZE ,9,(int16_t *)&ADC3_IN_Buffer);
-      //Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются
+      /* Получаем усреденные данные из буфером DMA АЦП */
+      xDeviceADC[DEV_CSD].uDataSrc         = GetAverVDD( 5U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      xDeviceADC[DEV_SFL].uDataSrc         = GetAverVDD( 6U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      xDeviceADC[DEV_SOP].uDataSrc         = GetAverVDD( 7U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      xDeviceADC[DEV_CHARGE_VDD].uDataSrc  = GetAverVDD( 8U, DC_SIZE, 9, (int16_t *)&ADC3_IN_Buffer );
+      /* Переключаем аналоговый комутатор и ждем пока напряжения за комутатором стабилизируются */
       HAL_GPIO_WritePin( ANALOG_SWITCH_GPIO_Port,ANALOG_SWITCH_Pin, GPIO_PIN_SET );
       osDelay(10);
       break;
@@ -974,15 +972,15 @@ void vADCConfigInit(void)
          if  ( eDATAAPIconfigValue(DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR ,&bitmask) == DATA_API_STAT_OK)
          {
             eDATAAPIconfigAtrib (DATA_API_CMD_READ, COOLANT_TEMP_SETUP_ADR, &atrib );
-            xCTChType = (bitmask  & atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].shift;
+            xDeviceADC[DEV_SCT].StateConfig = (bitmask  & atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[COOLANT_TEMP_SENSOR_TYPE_ADR].shift;
 
             eDATAAPIconfigValue(DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR ,&bitmask);
             eDATAAPIconfigAtrib (DATA_API_CMD_READ, OIL_PRESSURE_SETUP_ADR, &atrib );
-            xOPChType = (bitmask  & atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].shift;
+            xDeviceADC[DEV_SOP].StateConfig = (bitmask  & atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[OIL_PRESSURE_SENSOR_TYPE_ADR].shift;
 
             eDATAAPIconfigValue(DATA_API_CMD_READ,FUEL_LEVEL_SETUP_ADR  ,&bitmask);
             eDATAAPIconfigAtrib (DATA_API_CMD_READ, FUEL_LEVEL_SETUP_ADR , &atrib );
-            xFLChType = (bitmask  & atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].shift;
+            xDeviceADC[DEV_SFL].StateConfig = (bitmask  & atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].mask) >>atrib.bitMap[FUEL_LEVEL_SENSOR_TYPE_ADR].shift;
 
             //считываем коофицент трансформамции
             eDATAAPIconfigValue(DATA_API_CMD_READ,GEN_CURRENT_TRASFORM_RATIO_LEVEL_ADR , (uint16_t*)&tempdata);

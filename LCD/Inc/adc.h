@@ -54,9 +54,6 @@
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
 
 
-#define CSA               0
-#define CSD               1
-#define CAS               2
 
 #define DEV_VDD             0
 #define DEV_CHARGE_VDD      1
@@ -67,7 +64,9 @@
 #define DEV_CSA             6
 #define DEV_CSD             7
 #define DEV_CAS             8
-
+#define NET_FASE_V_L1       9
+#define NET_FASE_V_L2       10
+#define NET_FASE_V_L3       11
 
 
 #define GEN_RMS_CUR         0
@@ -99,16 +98,16 @@
 #define GEN_REAL_POWER      26
 #define GEN_ACTIVE_POWER    27
 #define GEN_REACTIVE_POWER  28
-#define NET_FREQ            29
-#define NET_L1_FASE_V       30
-#define NET_L1_LINE_V       31
-#define NET_L2_FASE_V       32
-#define NET_L2_LINE_V       33
-#define NET_L3_FASE_V       34
-#define NET_L3_LINE_V       35
-#define GEN_AVER_V          36
-#define GEN_AVER_A          37
-#define GEN_AVER_P          38
+#define GEN_AVER_V          29
+#define GEN_AVER_A          30
+#define GEN_AVER_P          31
+#define NET_FREQ            32
+#define NET_L1_FASE_V       33
+#define NET_L1_LINE_V       34
+#define NET_L2_FASE_V       35
+#define NET_L2_LINE_V       36
+#define NET_L3_FASE_V       37
+#define NET_L3_LINE_V       38
 
 /*
  * Номиналы резисторов

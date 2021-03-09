@@ -1303,7 +1303,12 @@ void vPrintAinData(char* Data, uint8_t ID)
   }
 }
 
-
+void vPrintFix16WithUnit(fix16_t value, char *buf, int decimals, char * unit)
+{
+  fix16_to_str( value, buf, decimals );
+  vStrAdd(buf,unit);
+  return;
+}
 /*
  * Функция вывода данных
  */
@@ -1371,33 +1376,44 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            vPrintAinData(Data, ID);
            break;
       case  IN_VDD:
-           fix16_to_str( xADCGetVDD(), Data, 2U );
-           vStrAdd(Data,"В");
+           vPrintFix16WithUnit( xADCGetVDD(), Data, 2U ,"В");
            break;
       case IN_CAC:
-           fix16_to_str( xADCGetCAC(), Data, 2U );
-           vStrAdd(Data,"В");
+           vPrintFix16WithUnit( xADCGetCAC(), Data, 2U ,"В");
+           break;
+      case NET_L1_FASE_V:
+           vPrintFix16WithUnit( xADCGetNETL1(),Data, 0U ," В");
+           break;
+      case NET_L2_FASE_V:
+           vPrintFix16WithUnit( xADCGetNETL2(),Data, 0U ," В");
+           break;
+      case NET_L3_FASE_V:
+           vPrintFix16WithUnit( xADCGetNETL3(),Data, 0U," В");
+           break;
+      case NET_L1_LINE_V:
+           vPrintFix16WithUnit( xADCGetNETL1Lin() ,Data, 0U," В");
            break;
       case NET_L2_LINE_V:
+           vPrintFix16WithUnit( xADCGetNETL2Lin() ,Data, 0U," В");
+           break;
       case NET_L3_LINE_V:
-      case NET_L2_FASE_V:
-      case NET_L3_FASE_V:
+           vPrintFix16WithUnit( xADCGetNETL3Lin() ,Data, 0U," В");
+           break;
+      case GEN_L1_FASE_V:
       case GEN_L2_LINE_V:
       case GEN_L3_LINE_V:
       case GEN_L2_FASE_V:
       case GEN_L3_FASE_V:
-      case NET_L1_FASE_V:
       case GEN_L1_LINE_V:
-      case NET_L1_LINE_V:
-      case GEN_L1_FASE_V:
       case GEN_AVER_V:
            fix16_to_str(  xADCGetREG(ID), Data, 0U );
            vStrAdd(Data," В");
            break;
       case NET_FREQ :
+           vPrintFix16WithUnit( xADCGetNETLFreq() ,Data, 2U," Гц");
+           break;
       case GEN_FREQ :
-           fix16_to_str(  xADCGetREG(ID), Data, 2U );
-           vStrAdd(Data," Гц");
+           vPrintFix16WithUnit( xADCGetGENLFreq() ,Data, 2U," Гц");
            break;
       case GEN_L2_CUR:
       case GEN_L3_CUR:

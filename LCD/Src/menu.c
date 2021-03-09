@@ -954,10 +954,12 @@ void vEventCountPrintFunction(uint16_t  utemp,char * Data )
        vStrAdd(Data," / ");
        vUToStr(TS,utemp,0);
        vStrAdd(Data,TS);
+       fAlarmFlag = FLAG_SET;
      }
      else
      {
        vStrCopy(Data,"0 / 0");
+       fAlarmFlag = FLAG_RESET;
      }
      if (++ScrollDelay>VIEW_DELAY)
      {

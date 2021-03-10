@@ -71,48 +71,50 @@
 #define GEN_FASE_V_L1       12
 #define GEN_FASE_V_L2       13
 #define GEN_FASE_V_L3       14
-
+#define GEN_FASE_C_L1       15
+#define GEN_FASE_C_L2       16
+#define GEN_FASE_C_L3       17
 
 #define GEN_RMS_CUR         0
 #define GEN_FREQ            1
 #define GEN_FASE_V          2
 #define GEN_LINE_V          3
-#define GEN_L1_CUR          4
+#define GEN_L1_LINE_C       4
 #define GEN_L1_FREQ         5
 #define GEN_L1_LINE_V       6
 #define GEN_L1_REAL_POWER   7
 #define GEN_L1_ACTIVE_POWER 8
 #define GEN_L1_REAC_POWER   9
-#define GEN_L2_CUR          10
-#define GEN_L2_FREQ         11
-#define GEN_L2_LINE_V       12
-#define GEN_L2_REAL_POWER   13
-#define GEN_L2_ACTIVE_POWER 14
-#define GEN_L2_REAC_POWER   15
-#define GEN_L3_CUR          16
-#define GEN_L3_FREQ         17
-#define GEN_L3_LINE_V       18
-#define GEN_L3_REAL_POWER   19
-#define GEN_L3_ACTIVE_POWER 20
-#define GEN_L3_REAC_POWER   21
-#define GEN_APPER_POWER     22
-#define GEN_REAL_POWER      23
-#define GEN_ACTIVE_POWER    24
-#define GEN_REACTIVE_POWER  25
-#define GEN_AVER_A          26
-#define GEN_AVER_P          27
-#define NET_FREQ            28
-#define NET_L1_LINE_V       29
-#define NET_L2_LINE_V       30
-#define NET_L3_LINE_V       31
-#define GEN_AVER_V          32
-#define NET_L1_FASE_V       33
-#define NET_L3_FASE_V       34
-#define NET_L2_FASE_V       35
-#define GEN_L3_FASE_V       36
-#define GEN_L2_FASE_V       37
-#define GEN_L1_FASE_V       38
-
+#define GEN_L2_LINE_C       10
+#define GEN_L2_LINE_V       11
+#define GEN_L2_REAL_POWER   12
+#define GEN_L2_ACTIVE_POWER 13
+#define GEN_L2_REAC_POWER   14
+#define GEN_L3_LINE_C       15
+#define GEN_L3_LINE_V       16
+#define GEN_L3_REAL_POWER   17
+#define GEN_L3_ACTIVE_POWER 18
+#define GEN_L3_REAC_POWER   19
+#define GEN_APPER_POWER     20
+#define GEN_REAL_POWER      21
+#define GEN_ACTIVE_POWER    22
+#define GEN_REACTIVE_POWER  23
+#define NET_FREQ            25
+#define NET_L1_LINE_V       26
+#define NET_L2_LINE_V       27
+#define NET_L3_LINE_V       28
+#define GEN_AVER_COS        29
+#define GEN_AVER_A          30
+#define GEN_AVER_V          31
+#define NET_L1_FASE_V       32
+#define NET_L3_FASE_V       33
+#define NET_L2_FASE_V       34
+#define GEN_L3_FASE_V       35
+#define GEN_L2_FASE_V       36
+#define GEN_L1_FASE_V       37
+#define GEN_L1_CUR          38
+#define GEN_L2_CUR          39
+#define GEN_L3_CUR          40
 /*
  * Номиналы резисторов
  */
@@ -221,11 +223,15 @@ fix16_t xADCGetGENL3Lin();        //Линейное напряжене Uсa г�
 fix16_t xADCGetGENL1Cur();        //Фазный ток Ian генератора
 fix16_t xADCGetGENL2Cur();        //Фазный ток Ibn генератора
 fix16_t xADCGetGENL3Cur();        //Фазный ток Icn генератора
+fix16_t xADCGetGENL1CurLin();
+fix16_t xADCGetGENL2CurLin();
+fix16_t xADCGetGENL3CurLin();
 uint8_t uADCGetValidDataFlag();
 fix16_t xADCGetNETLFreq();
 fix16_t xADCGetGENLFreq();
 fix16_t xADCGetCOSFi();
 fix16_t xADCGetGENAverV();
+fix16_t xADCGetGENAverC();
 xADCRotatinType xADCGetGenFaseRotation();
 xADCRotatinType xADCGetNetFaseRotation();
 fix16_t xADCGetREG(uint16_t reg);

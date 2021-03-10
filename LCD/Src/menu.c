@@ -1427,17 +1427,21 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            vPrintFix16WithUnit( xADCGetGENLFreq() ,Data, 2U," Гц");
            break;
       case GEN_L2_CUR:
+           vPrintFix16WithUnit( xADCGetGENL2Cur() ,Data, 2U," А");
+           break;
       case GEN_L3_CUR:
+           vPrintFix16WithUnit( xADCGetGENL3Cur() ,Data, 2U," А");
+           break;
       case GEN_L1_CUR:
+           vPrintFix16WithUnit( xADCGetGENL1Cur() ,Data, 2U," А");
+           break;
       case GEN_AVER_A:
-           fix16_to_str(  xADCGetREG(ID), Data, 2U );
-           vStrAdd(Data," А");
+           vPrintFix16WithUnit( xADCGetGENAverC() ,Data, 2U," А");
            break;
       case GEN_L2_REAC_POWER:
       case GEN_L3_REAC_POWER:
       case GEN_L1_REAC_POWER:
-      case GEN_REACTIVE_POWER:
-            fix16_to_str(  xADCGetREG(ID), Data, 2U );
+           fix16_to_str(  xADCGetREG(ID), Data, 2U );
            vStrAdd(Data," кВАр");
            break;
       case GEN_L2_REAL_POWER:
@@ -1450,7 +1454,6 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case GEN_L2_ACTIVE_POWER:
       case GEN_L3_ACTIVE_POWER:
       case GEN_L1_ACTIVE_POWER:
-      case GEN_ACTIVE_POWER:
            fix16_to_str(  xADCGetREG(ID), Data, 2U );
            vStrAdd(Data," кВт");
            break;

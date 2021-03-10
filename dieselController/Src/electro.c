@@ -252,7 +252,7 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
 /*---------------------------------------------------------------------------------------------------*/
 fix16_t fELECTROcalcPhaseImbalance ( fix16_t* value )
 {
-  return fix16_abs( fix16_sub( fELECTROgetMax( value, 3U ), fELECTROgetMax( value, 3U ) ) );
+  return fix16_abs( fix16_sub( fELECTROgetMax( value, 3U ), fELECTROgetMin( value, 3U ) ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vMAINSprocess ( void )
@@ -323,6 +323,8 @@ fix16_t fGENERATORsynteticCurrent ( void )
   return fix16_mul( fix16_div( xADCGetSFL(), F16( 500U ) ), generator.rating.current );
 }
 #endif
+float outTest = 0;
+float outLevel = 0;
 /*---------------------------------------------------------------------------------------------------*/
 /* Check generator
  * Input:  None
@@ -362,6 +364,8 @@ fix16_t fGENERATORprocess ( void )
   vALARMcheck( &generator.currentWarningAlarm, maxCurrent );
   if ( electro.scheme != ELECTRO_SCHEME_SINGLE_PHASE )
   {
+    outTest = fix16_to_float( fELECTROcalcPhaseImbalance( current ) );
+    outLevel = fix16_to_float( generator.phaseImbalanceAlarm.level );
     vALARMcheck( &generator.phaseImbalanceAlarm, fELECTROcalcPhaseImbalance( current ) );
   }
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );
@@ -395,13 +399,13 @@ void vELECTROdataInit ( void )
   generator.timer.delay = powerUsageCalcTimeout;
   generator.timer.id    = LOGIC_DEFAULT_TIMER_ID;
   /*----------------------------------------------------------------------------*/
-  generator.enb                    = getBitMap( &genSetup, GEN_POWER_GENERATOR_CONTROL_ENB_ADR );
-  generator.rating.power.active    = getValue( &genRatedActivePowerLevel );
-  generator.rating.power.reactive  = getValue( &genRatedReactivePowerLevel );
-  generator.rating.power.full      = getValue( &genRatedApparentPowerLevel );
-  generator.rating.cosFi           = fix16_div( generator.rating.power.active, generator.rating.power.full );
-  generator.rating.freq            = getValue( &genRatedFrequencyLevel );
-  generator.rating.current         = getValue( &genRatedCurrentLevel );
+  generator.enb                   = getBitMap( &genSetup, GEN_POWER_GENERATOR_CONTROL_ENB_ADR );
+  generator.rating.power.active   = getValue( &genRatedActivePowerLevel );
+  generator.rating.power.reactive = getValue( &genRatedReactivePowerLevel );
+  generator.rating.power.full     = getValue( &genRatedApparentPowerLevel );
+  generator.rating.cosFi          = fix16_div( generator.rating.power.active, generator.rating.power.full );
+  generator.rating.freq           = getValue( &genRatedFrequencyLevel );
+  generator.rating.current        = getValue( &genRatedCurrentLevel );
   /*----------------------------------------------------------------------------*/
   if ( generator.enb == PERMISSION_ENABLE )
   {
@@ -434,23 +438,25 @@ void vELECTROdataInit ( void )
     generator.phaseSequenceError.enb         = PERMISSION_DISABLE;
   }
   /*----------------------------------------------------------------------------*/
-  generator.lowVoltageAlarm.error.active       = PERMISSION_DISABLE;
-  generator.lowVoltageAlarm.type               = ALARM_LEVEL_LOW;
-  generator.lowVoltageAlarm.level              = getValue( &genUnderVoltageAlarmLevel );
-  generator.lowVoltageAlarm.timer.delay        = 0U;
-  generator.lowVoltageAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.lowVoltageAlarm.error.event.type   = EVENT_GENERATOR_LOW_VOLTAGE;
-  generator.lowVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.lowVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.lowVoltageAlarm.error.active            = PERMISSION_DISABLE;
+  generator.lowVoltageAlarm.type                    = ALARM_LEVEL_LOW;
+  generator.lowVoltageAlarm.level                   = getValue( &genUnderVoltageAlarmLevel );
+  generator.lowVoltageAlarm.timer.delay             = 0U;
+  generator.lowVoltageAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
+  generator.lowVoltageAlarm.error.event.type        = EVENT_GENERATOR_LOW_VOLTAGE;
+  generator.lowVoltageAlarm.error.event.action      = ACTION_EMERGENCY_STOP;
+  generator.lowVoltageAlarm.error.ack               = PERMISSION_DISABLE;
+  generator.lowVoltageAlarm.error.status            = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.lowVoltagePreAlarm.error.active       = PERMISSION_DISABLE;
-  generator.lowVoltagePreAlarm.type               = ALARM_LEVEL_LOW;
-  generator.lowVoltagePreAlarm.level              = getValue( &genUnderVoltagePreAlarmLevel );
-  generator.lowVoltagePreAlarm.timer.delay        = 0U;
-  generator.lowVoltagePreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.lowVoltagePreAlarm.error.event.type   = EVENT_GENERATOR_LOW_VOLTAGE;
-  generator.lowVoltagePreAlarm.error.event.action = ACTION_WARNING;
-  generator.lowVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.lowVoltagePreAlarm.error.active         = PERMISSION_DISABLE;
+  generator.lowVoltagePreAlarm.type                 = ALARM_LEVEL_LOW;
+  generator.lowVoltagePreAlarm.level                = getValue( &genUnderVoltagePreAlarmLevel );
+  generator.lowVoltagePreAlarm.timer.delay          = 0U;
+  generator.lowVoltagePreAlarm.timer.id             = LOGIC_DEFAULT_TIMER_ID;
+  generator.lowVoltagePreAlarm.error.event.type     = EVENT_GENERATOR_LOW_VOLTAGE;
+  generator.lowVoltagePreAlarm.error.event.action   = ACTION_WARNING;
+  generator.lowVoltagePreAlarm.error.ack            = PERMISSION_ENABLE;
+  generator.lowVoltagePreAlarm.error.status         = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   generator.hightVoltagePreAlarm.error.active       = PERMISSION_DISABLE;
   generator.hightVoltagePreAlarm.type               = ALARM_LEVEL_HIGHT;
@@ -459,110 +465,119 @@ void vELECTROdataInit ( void )
   generator.hightVoltagePreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   generator.hightVoltagePreAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_VOLTAGE;
   generator.hightVoltagePreAlarm.error.event.action = ACTION_WARNING;
+  generator.hightVoltagePreAlarm.error.ack          = PERMISSION_ENABLE;
   generator.hightVoltagePreAlarm.error.status       = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.hightVoltageAlarm.error.active       = PERMISSION_DISABLE;
-  generator.hightVoltageAlarm.type               = ALARM_LEVEL_HIGHT;
-  generator.hightVoltageAlarm.level              = getValue( &genOverVoltageAlarmLevel );
-  generator.hightVoltageAlarm.timer.delay        = 0U;
-  generator.hightVoltageAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.hightVoltageAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_VOLTAGE;
-  generator.hightVoltageAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.hightVoltageAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.hightVoltageAlarm.error.active          = PERMISSION_DISABLE;
+  generator.hightVoltageAlarm.type                  = ALARM_LEVEL_HIGHT;
+  generator.hightVoltageAlarm.level                 = getValue( &genOverVoltageAlarmLevel );
+  generator.hightVoltageAlarm.timer.delay           = 0U;
+  generator.hightVoltageAlarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
+  generator.hightVoltageAlarm.error.event.type      = EVENT_GENERATOR_HIGHT_VOLTAGE;
+  generator.hightVoltageAlarm.error.event.action    = ACTION_EMERGENCY_STOP;
+  generator.hightVoltageAlarm.error.ack             = PERMISSION_DISABLE;
+  generator.hightVoltageAlarm.error.status          = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.lowFreqAlarm.error.active       = PERMISSION_DISABLE;
-  generator.lowFreqAlarm.type               = ALARM_LEVEL_LOW;
-  generator.lowFreqAlarm.level              = getValue( &genUnderFrequencyAlarmLevel );
-  generator.lowFreqAlarm.timer.delay        = 0U;
-  generator.lowFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.lowFreqAlarm.error.event.type   = EVENT_GENERATOR_LOW_FREQUENCY;
-  generator.lowFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.lowFreqAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.lowFreqAlarm.error.active               = PERMISSION_DISABLE;
+  generator.lowFreqAlarm.type                       = ALARM_LEVEL_LOW;
+  generator.lowFreqAlarm.level                      = getValue( &genUnderFrequencyAlarmLevel );
+  generator.lowFreqAlarm.timer.delay                = 0U;
+  generator.lowFreqAlarm.timer.id                   = LOGIC_DEFAULT_TIMER_ID;
+  generator.lowFreqAlarm.error.event.type           = EVENT_GENERATOR_LOW_FREQUENCY;
+  generator.lowFreqAlarm.error.event.action         = ACTION_EMERGENCY_STOP;
+  generator.lowFreqAlarm.error.ack                  = PERMISSION_DISABLE;
+  generator.lowFreqAlarm.error.status               = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.lowFreqPreAlarm.error.active       = PERMISSION_DISABLE;
-  generator.lowFreqPreAlarm.type               = ALARM_LEVEL_LOW;
-  generator.lowFreqPreAlarm.level              = getValue( &genUnderFrequencyPreAlarmLevel );
-  generator.lowFreqPreAlarm.timer.delay        = 0U;
-  generator.lowFreqPreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.lowFreqPreAlarm.error.event.type   = EVENT_GENERATOR_LOW_FREQUENCY;
-  generator.lowFreqPreAlarm.error.event.action = ACTION_WARNING;
-  generator.lowFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.lowFreqPreAlarm.error.active            = PERMISSION_DISABLE;
+  generator.lowFreqPreAlarm.type                    = ALARM_LEVEL_LOW;
+  generator.lowFreqPreAlarm.level                   = getValue( &genUnderFrequencyPreAlarmLevel );
+  generator.lowFreqPreAlarm.timer.delay             = 0U;
+  generator.lowFreqPreAlarm.timer.id                = LOGIC_DEFAULT_TIMER_ID;
+  generator.lowFreqPreAlarm.error.event.type        = EVENT_GENERATOR_LOW_FREQUENCY;
+  generator.lowFreqPreAlarm.error.event.action      = ACTION_WARNING;
+  generator.lowFreqPreAlarm.error.ack               = PERMISSION_ENABLE;
+  generator.lowFreqPreAlarm.error.status            = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.hightFreqPreAlarm.error.active       = PERMISSION_DISABLE;
-  generator.hightFreqPreAlarm.type               = ALARM_LEVEL_HIGHT;
-  generator.hightFreqPreAlarm.level              = getValue( &genOverFrequencyPreAlarmLevel );
-  generator.hightFreqPreAlarm.timer.delay        = 0U;
-  generator.hightFreqPreAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.hightFreqPreAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_FREQUENCY;
-  generator.hightFreqPreAlarm.error.event.action = ACTION_WARNING;
-  generator.hightFreqPreAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.hightFreqPreAlarm.error.active          = PERMISSION_DISABLE;
+  generator.hightFreqPreAlarm.type                  = ALARM_LEVEL_HIGHT;
+  generator.hightFreqPreAlarm.level                 = getValue( &genOverFrequencyPreAlarmLevel );
+  generator.hightFreqPreAlarm.timer.delay           = 0U;
+  generator.hightFreqPreAlarm.timer.id              = LOGIC_DEFAULT_TIMER_ID;
+  generator.hightFreqPreAlarm.error.event.type      = EVENT_GENERATOR_HIGHT_FREQUENCY;
+  generator.hightFreqPreAlarm.error.event.action    = ACTION_WARNING;
+  generator.hightFreqPreAlarm.error.ack             = PERMISSION_ENABLE;
+  generator.hightFreqPreAlarm.error.status          = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.hightFreqAlarm.error.active       = PERMISSION_DISABLE;
-  generator.hightFreqAlarm.type               = ALARM_LEVEL_HIGHT;
-  generator.hightFreqAlarm.level              = getValue( &genOverFrequencyAlarmLevel );
-  generator.hightFreqAlarm.timer.delay        = 0U;
-  generator.hightFreqAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.hightFreqAlarm.error.event.type   = EVENT_GENERATOR_HIGHT_FREQUENCY;;
-  generator.hightFreqAlarm.error.event.action = ACTION_EMERGENCY_STOP;
-  generator.hightFreqAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.hightFreqAlarm.error.active             = PERMISSION_DISABLE;
+  generator.hightFreqAlarm.type                     = ALARM_LEVEL_HIGHT;
+  generator.hightFreqAlarm.level                    = getValue( &genOverFrequencyAlarmLevel );
+  generator.hightFreqAlarm.timer.delay              = 0U;
+  generator.hightFreqAlarm.timer.id                 = LOGIC_DEFAULT_TIMER_ID;
+  generator.hightFreqAlarm.error.event.type         = EVENT_GENERATOR_HIGHT_FREQUENCY;;
+  generator.hightFreqAlarm.error.event.action       = ACTION_EMERGENCY_STOP;
+  generator.hightFreqAlarm.error.ack                = PERMISSION_DISABLE;
+  generator.hightFreqAlarm.error.status             = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.phaseSequenceError.active       = PERMISSION_DISABLE;
-  generator.phaseSequenceError.ack          = PERMISSION_DISABLE;
-  generator.phaseSequenceError.event.type   = EVENT_GENERATOR_PHASE_SEQUENCE;
-  generator.phaseSequenceError.event.action = ACTION_SHUTDOWN;
-  generator.phaseSequenceError.ignor        = PERMISSION_DISABLE;
-  generator.phaseSequenceError.trig         = TRIGGER_IDLE;
-  generator.phaseSequenceError.status       = ALARM_STATUS_IDLE;
+  generator.phaseSequenceError.active               = PERMISSION_DISABLE;
+  generator.phaseSequenceError.ack                  = PERMISSION_DISABLE;
+  generator.phaseSequenceError.event.type           = EVENT_GENERATOR_PHASE_SEQUENCE;
+  generator.phaseSequenceError.event.action         = ACTION_SHUTDOWN;
+  generator.phaseSequenceError.ack                  = PERMISSION_DISABLE;
+  generator.phaseSequenceError.ignor                = PERMISSION_DISABLE;
+  generator.phaseSequenceError.trig                 = TRIGGER_IDLE;
+  generator.phaseSequenceError.status               = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.phaseImbalanceAlarm.error.active       = PERMISSION_DISABLE;
-  generator.phaseImbalanceAlarm.type               = ALARM_LEVEL_HIGHT;
-  generator.phaseImbalanceAlarm.level              = fix16_mul( generator.rating.current, fix16_div( getValue( &genCurrentOverPhaseImbalanceLevel ), fix100U ) );
-  generator.phaseImbalanceAlarm.timer.delay        = getValue( &genCurrentOverPhaseImbalanceDelay );
-  generator.phaseImbalanceAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.phaseImbalanceAlarm.error.event.type   = EVENT_PHASE_IMBALANCE;
-  generator.phaseImbalanceAlarm.error.event.action = currentAction;
-  generator.phaseImbalanceAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.phaseImbalanceAlarm.error.active        = PERMISSION_DISABLE;
+  generator.phaseImbalanceAlarm.type                = ALARM_LEVEL_HIGHT;
+  generator.phaseImbalanceAlarm.level               = fix16_mul( generator.rating.current, fix16_div( getValue( &genCurrentOverPhaseImbalanceLevel ), fix100U ) );
+  generator.phaseImbalanceAlarm.timer.delay         = getValue( &genCurrentOverPhaseImbalanceDelay );
+  generator.phaseImbalanceAlarm.timer.id            = LOGIC_DEFAULT_TIMER_ID;
+  generator.phaseImbalanceAlarm.error.event.type    = EVENT_PHASE_IMBALANCE;
+  generator.phaseImbalanceAlarm.error.event.action  = currentAction;
+  generator.phaseImbalanceAlarm.error.ack           = PERMISSION_DISABLE;
+  generator.phaseImbalanceAlarm.error.status        = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.powerAlarm.error.active       = PERMISSION_DISABLE;
-  generator.powerAlarm.type               = ALARM_LEVEL_HIGHT;
-  generator.powerAlarm.level              = fix16_mul( generator.rating.power.active, fix16_div( getValue( &genCurrentOverloadProtectionLevel ), fix100U ) );
-  generator.powerAlarm.timer.delay        = getValue( &genCurrentOverloadProtectionDelay );
-  generator.powerAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.powerAlarm.error.event.type   = EVENT_OVER_POWER;
-  generator.powerAlarm.error.event.action = currentAction;
-  generator.powerAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.powerAlarm.error.active                 = PERMISSION_DISABLE;
+  generator.powerAlarm.type                         = ALARM_LEVEL_HIGHT;
+  generator.powerAlarm.level                        = fix16_mul( generator.rating.power.active, fix16_div( getValue( &genCurrentOverloadProtectionLevel ), fix100U ) );
+  generator.powerAlarm.timer.delay                  = getValue( &genCurrentOverloadProtectionDelay );
+  generator.powerAlarm.timer.id                     = LOGIC_DEFAULT_TIMER_ID;
+  generator.powerAlarm.error.event.type             = EVENT_OVER_POWER;
+  generator.powerAlarm.error.event.action           = currentAction;
+  generator.powerAlarm.error.ack                    = PERMISSION_DISABLE;
+  generator.powerAlarm.error.status                 = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.currentWarningAlarm.error.active       = PERMISSION_ENABLE;
-  generator.currentWarningAlarm.type               = ALARM_LEVEL_HIGHT;
-  generator.currentWarningAlarm.level              = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentWarningLevel ), fix100U ) );
-  generator.currentWarningAlarm.timer.delay        = getValue( &genOverCurrentWarningDelay );
-  generator.currentWarningAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  generator.currentWarningAlarm.error.event.type   = EVENT_OVER_CURRENT;
-  generator.currentWarningAlarm.error.event.action = ACTION_WARNING;
-  generator.currentWarningAlarm.error.ack          = PERMISSION_ENABLE;
-  generator.currentWarningAlarm.error.trig         = TRIGGER_IDLE;
-  generator.currentWarningAlarm.error.status       = ALARM_STATUS_IDLE;
+  generator.currentWarningAlarm.error.active        = PERMISSION_ENABLE;
+  generator.currentWarningAlarm.type                = ALARM_LEVEL_HIGHT;
+  generator.currentWarningAlarm.level               = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentWarningLevel ), fix100U ) );
+  generator.currentWarningAlarm.timer.delay         = getValue( &genOverCurrentWarningDelay );
+  generator.currentWarningAlarm.timer.id            = LOGIC_DEFAULT_TIMER_ID;
+  generator.currentWarningAlarm.error.event.type    = EVENT_OVER_CURRENT;
+  generator.currentWarningAlarm.error.event.action  = ACTION_WARNING;
+  generator.currentWarningAlarm.error.ack           = PERMISSION_ENABLE;
+  generator.currentWarningAlarm.error.trig          = TRIGGER_IDLE;
+  generator.currentWarningAlarm.error.status        = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.currentAlarm.state                = ELECTRO_CURRENT_STATUS_IDLE;
-  generator.currentAlarm.thermal.current      = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
-  generator.currentAlarm.thermal.delay        = 0U;
-  generator.currentAlarm.thermal.event.type   = EVENT_OVER_CURRENT;
-  generator.currentAlarm.thermal.event.action = currentAction;
-  generator.currentAlarm.cutout.current       = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
-  generator.currentAlarm.cutout.delay         = 0U;
-  generator.currentAlarm.cutout.event.type    = EVENT_SHORT_CIRCUIT;
-  generator.currentAlarm.cutout.event.action  = currentAction;
+  generator.currentAlarm.state                      = ELECTRO_CURRENT_STATUS_IDLE;
+  generator.currentAlarm.thermal.current            = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
+  generator.currentAlarm.thermal.delay              = 0U;
+  generator.currentAlarm.thermal.event.type         = EVENT_OVER_CURRENT;
+  generator.currentAlarm.thermal.event.action       = currentAction;
+  generator.currentAlarm.cutout.current             = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
+  generator.currentAlarm.cutout.delay               = 0U;
+  generator.currentAlarm.cutout.event.type          = EVENT_SHORT_CIRCUIT;
+  generator.currentAlarm.cutout.event.action        = currentAction;
   /*----------------------------------------------------------------------------*/
-  generator.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_GEN );
-  generator.relay.status = RELAY_OFF;
-  generator.relay.set    = vFPOsetGenSw;
+  generator.relay.enb             = uFPOisEnable( FPO_FUN_TURN_ON_GEN );
+  generator.relay.status          = RELAY_OFF;
+  generator.relay.set             = vFPOsetGenSw;
   /*----------------------------------------------------------------------------*/
-  generator.relayOn.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_GEN_IMPULSE );
-  generator.relayOn.relay.status = RELAY_OFF;
-  generator.relayOn.relay.set    = vFPOsetGenOnImp;
-  generator.relayOn.timer.delay  = getValue( &timerGenBreakerClosePulse );
-  generator.relayOn.timer.id     = LOGIC_DEFAULT_TIMER_ID;
-  generator.relayOn.status       = RELAY_DELAY_IDLE;
+  generator.relayOn.relay.enb     = uFPOisEnable( FPO_FUN_TURN_ON_GEN_IMPULSE );
+  generator.relayOn.relay.status  = RELAY_OFF;
+  generator.relayOn.relay.set     = vFPOsetGenOnImp;
+  generator.relayOn.timer.delay   = getValue( &timerGenBreakerClosePulse );
+  generator.relayOn.timer.id      = LOGIC_DEFAULT_TIMER_ID;
+  generator.relayOn.status        = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
   generator.relayOff.relay.enb    = uFPOisEnable( FPO_FUN_TURN_OFF_GEN_IMPULSE );
   generator.relayOff.relay.status = RELAY_OFF;
@@ -571,14 +586,14 @@ void vELECTROdataInit ( void )
   generator.relayOff.timer.id     = LOGIC_DEFAULT_TIMER_ID;
   generator.relayOff.status       = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
-  generator.getFreq             = xADCGetGENLFreq;
-  generator.getPower            = xADCGetGENActivePower;
-  generator.line[0U].getVoltage = xADCGetGENL1Lin;
-  generator.line[0U].getCurrent = xADCGetGENL1Cur;
-  generator.line[1U].getVoltage = xADCGetGENL2Lin;
-  generator.line[1U].getCurrent = xADCGetGENL2Cur;
-  generator.line[2U].getVoltage = xADCGetGENL3Lin;
-  generator.line[2U].getCurrent = xADCGetGENL3Cur;
+  generator.getFreq               = xADCGetGENLFreq;
+  generator.getPower              = xADCGetGENActivePower;
+  generator.line[0U].getVoltage   = xADCGetGENL1Lin;
+  generator.line[0U].getCurrent   = xADCGetGENL1Cur;
+  generator.line[1U].getVoltage   = xADCGetGENL2Lin;
+  generator.line[1U].getCurrent   = xADCGetGENL2Cur;
+  generator.line[2U].getVoltage   = xADCGetGENL3Lin;
+  generator.line[2U].getCurrent   = xADCGetGENL3Cur;
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
   /*----------------------------------------------------------------------------*/
@@ -658,13 +673,13 @@ void vELECTROdataInit ( void )
   mains.hightFreqAlarm.error.ack             = PERMISSION_ENABLE;
   mains.hightFreqAlarm.error.status          = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.phaseSequenceError.active       = PERMISSION_ENABLE;
-  mains.phaseSequenceError.ack          = PERMISSION_DISABLE;
-  mains.phaseSequenceError.event.type   = EVENT_MAINS_PHASE_SEQUENCE;
-  mains.phaseSequenceError.event.action = ACTION_SHUTDOWN;
-  mains.phaseSequenceError.ignor        = PERMISSION_DISABLE;
-  mains.phaseSequenceError.trig         = TRIGGER_IDLE;
-  mains.phaseSequenceError.status       = ALARM_STATUS_IDLE;
+  mains.phaseSequenceError.active            = PERMISSION_ENABLE;
+  mains.phaseSequenceError.ack               = PERMISSION_DISABLE;
+  mains.phaseSequenceError.event.type        = EVENT_MAINS_PHASE_SEQUENCE;
+  mains.phaseSequenceError.event.action      = ACTION_SHUTDOWN;
+  mains.phaseSequenceError.ignor             = PERMISSION_DISABLE;
+  mains.phaseSequenceError.trig              = TRIGGER_IDLE;
+  mains.phaseSequenceError.status            = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.relay.enb    = uFPOisEnable( FPO_FUN_TURN_ON_MAINS );
   mains.relay.status = RELAY_OFF;
@@ -684,13 +699,13 @@ void vELECTROdataInit ( void )
   mains.relayOff.timer.id     = LOGIC_DEFAULT_TIMER_ID;
   mains.relayOff.status       = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
-  mains.getFreq             = xADCGetNETLFreq;
-  mains.line[0U].getVoltage = xADCGetNETL1;
-  mains.line[0U].getCurrent = NULL;
-  mains.line[1U].getVoltage = xADCGetNETL2;
-  mains.line[1U].getCurrent = NULL;
-  mains.line[2U].getVoltage = xADCGetNETL3;
-  mains.line[2U].getCurrent = NULL;
+  mains.getFreq               = xADCGetNETLFreq;
+  mains.line[0U].getVoltage   = xADCGetNETL1;
+  mains.line[0U].getCurrent   = NULL;
+  mains.line[1U].getVoltage   = xADCGetNETL2;
+  mains.line[1U].getCurrent   = NULL;
+  mains.line[2U].getVoltage   = xADCGetNETL3;
+  mains.line[2U].getCurrent   = NULL;
   /*----------------------------------------------------------------------------*/
   return;
 }

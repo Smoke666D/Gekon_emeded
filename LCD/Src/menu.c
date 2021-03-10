@@ -1400,14 +1400,25 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            vPrintFix16WithUnit( xADCGetNETL3Lin() ,Data, 0U," В");
            break;
       case GEN_L1_FASE_V:
+           vPrintFix16WithUnit( xADCGetGENL1() ,Data, 0U," В");
+           break;
       case GEN_L2_LINE_V:
+           vPrintFix16WithUnit( xADCGetGENL2Lin() ,Data, 0U," В");
+           break;
       case GEN_L3_LINE_V:
+           vPrintFix16WithUnit( xADCGetGENL3Lin() ,Data, 0U," В");
+           break;
       case GEN_L2_FASE_V:
+           vPrintFix16WithUnit( xADCGetGENL2() ,Data, 0U," В");
+           break;
       case GEN_L3_FASE_V:
+           vPrintFix16WithUnit( xADCGetGENL3() ,Data, 0U," В");
+           break;
       case GEN_L1_LINE_V:
+           vPrintFix16WithUnit( xADCGetGENL1Lin() ,Data, 0U," В");
+           break;
       case GEN_AVER_V:
-           fix16_to_str(  xADCGetREG(ID), Data, 0U );
-           vStrAdd(Data," В");
+           vPrintFix16WithUnit( xADCGetGENAverV() ,Data, 0U," В");
            break;
       case NET_FREQ :
            vPrintFix16WithUnit( xADCGetNETLFreq() ,Data, 2U," Гц");

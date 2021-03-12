@@ -1435,27 +1435,41 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
       case GEN_L1_CUR:
            vPrintFix16WithUnit( xADCGetGENL1Cur() ,Data, 2U," А");
            break;
-      case GEN_AVER_A:
-           vPrintFix16WithUnit( xADCGetGENAverC() ,Data, 2U," А");
+      case GEN_MAX_C:
+           vPrintFix16WithUnit( xADCGetGENMaxC() ,Data, 2U," А");
            break;
       case GEN_L2_REAC_POWER:
+           vPrintFix16WithUnit( xADCGetGENL2ReactivePower() ,Data, 2U," кВАр");
+           break;
       case GEN_L3_REAC_POWER:
+           vPrintFix16WithUnit( xADCGetGENL3ReactivePower() ,Data, 2U," кВАр");
+           break;
       case GEN_L1_REAC_POWER:
-           fix16_to_str(  xADCGetREG(ID), Data, 2U );
-           vStrAdd(Data," кВАр");
+           vPrintFix16WithUnit( xADCGetGENL1ReactivePower() ,Data, 2U," кВАр");
            break;
       case GEN_L2_REAL_POWER:
+           vPrintFix16WithUnit( xADCGetGENL2RealPower() ,Data, 2U," кВА");
+           break;
       case GEN_L3_REAL_POWER:
+           vPrintFix16WithUnit( xADCGetGENL3RealPower() ,Data, 2U," кВА");
+           break;
       case GEN_L1_REAL_POWER:
+           vPrintFix16WithUnit( xADCGetGENL1RealPower() ,Data, 2U," кВА");
+           break;
       case GEN_REAL_POWER:
-           fix16_to_str(  xADCGetREG(ID), Data, 2U );
-           vStrAdd(Data," кВА");
+           vPrintFix16WithUnit( xADCGetGENRealPower() ,Data, 2U," кВА");
            break;
       case GEN_L2_ACTIVE_POWER:
+           vPrintFix16WithUnit( xADCGetGENL2ActivePower() ,Data, 2U," кВт");
+           break;
       case GEN_L3_ACTIVE_POWER:
+           vPrintFix16WithUnit( xADCGetGENL3ActivePower() ,Data, 2U," кВт");
+           break;
       case GEN_L1_ACTIVE_POWER:
-           fix16_to_str(  xADCGetREG(ID), Data, 2U );
-           vStrAdd(Data," кВт");
+           vPrintFix16WithUnit( xADCGetGENL1ActivePower() ,Data, 2U," кВт");
+           break;
+      case GEN_ACTIVE_POWER:
+           vPrintFix16WithUnit( xADCGetGENActivePower() ,Data, 2U," кВт");
            break;
       case NET_ROTATION:
       case GEN_ROTATION:

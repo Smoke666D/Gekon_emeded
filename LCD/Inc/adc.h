@@ -104,8 +104,8 @@
 #define NET_L2_LINE_V       27
 #define NET_L3_LINE_V       28
 #define GEN_AVER_COS        29
-#define GEN_AVER_A          30
-#define GEN_AVER_V          31
+#define GEN_AVER_V          30
+#define GEN_MAX_C           31
 #define NET_L1_FASE_V       32
 #define NET_L3_FASE_V       33
 #define NET_L2_FASE_V       34
@@ -201,7 +201,9 @@ fix16_t xADCGetGENL3RealPower();
 fix16_t xADCGetGENL1ActivePower();
 fix16_t xADCGetGENL2ActivePower();
 fix16_t xADCGetGENL3ActivePower();
-
+fix16_t xADCGetGENL1ReactivePower();
+fix16_t xADCGetGENL2ReactivePower();
+fix16_t xADCGetGENL3ReactivePower();
 
 fix16_t xADCGetCAC();
 fix16_t xADCGetVDD();              // Функция возращает наряжения АКБ.
@@ -231,15 +233,18 @@ fix16_t xADCGetNETLFreq();
 fix16_t xADCGetGENLFreq();
 fix16_t xADCGetCOSFi();
 fix16_t xADCGetGENAverV();
-fix16_t xADCGetGENAverC();
+fix16_t xADCGetGENMaxC();
 xADCRotatinType xADCGetGenFaseRotation();
 xADCRotatinType xADCGetNetFaseRotation();
-fix16_t xADCGetREG(uint16_t reg);
 void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 uint8_t uADCGetDCChError();
-
+fix16_t  xADCConvert (void * data);
+fix16_t  xADCConvertTemp (void * data);
+fix16_t  vADCSetAinState( void * data);
+fix16_t  xConvertFaseV(void * data);
+fix16_t  xConvertFaseC(void * data);
 xADCGenDetectType vADCGetGenFreqPres( void );
 ELECTRO_SCHEME xADCGetScheme(void);
 #endif /* INC_ADC_H_ */

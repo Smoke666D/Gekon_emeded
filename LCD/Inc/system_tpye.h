@@ -27,21 +27,21 @@ typedef enum
   UWORD
 } DATA_TYPE;  /* System data type */
 /*---------------------------- Structures --------------------------------------*/
-typedef struct
+typedef struct __packed
 {
   fix16_t Data;
   fix16_t Step;
   fix16_t Max;
   fix16_t Min;
 } FixPointDataUinit;
-typedef struct
+typedef struct __packed
 {
   uint8_t Data;
   uint8_t Step;
   uint8_t Max;
   uint8_t Min;
 } ByteDataUinit;
-typedef struct
+typedef struct __packed
 {
   uint16_t Data;
   uint16_t Step;

@@ -1,0 +1,14 @@
+diff a/LCD/Src/lcd.c b/LCD/Src/lcd.c	(rejected hunks)
+@@ -262,10 +262,10 @@
+   uint8_t  x       = 0U;
+   uint8_t  y       = 0U;
+   uint16_t y_start = 0U;
+-  uint16_t y_end   = 0U;
++  uint16_t y_end   = LCD_DATA_BUFFER_SIZE;
+   uint8_t  k       = 0U;
+ 
+-  for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i ++ )
++ /* for ( i=0U; i<LCD_DATA_BUFFER_SIZE; i ++ )
+   {
+     if ( LCD_Buffer[i] != u8g2.tile_buf_ptr[i] )
+     {

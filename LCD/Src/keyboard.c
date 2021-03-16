@@ -6,28 +6,27 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "keyboard.h"
-#include "main.h"
+
 /*----------------------- Structures ----------------------------------------------------------------*/
 static xKeyPortStruct xKeyPortMass[KEYBOARD_COUNT]={
-		{SW0_GPIO_Port,SW0_Pin},
-		{SW1_GPIO_Port,SW1_Pin},
-		{SW2_GPIO_Port,SW2_Pin},
-		{SW3_GPIO_Port,SW3_Pin},
-		{SW4_GPIO_Port,SW4_Pin},
+		{  KL_UP_GPIO_Port, KL_UP_Pin },
+		{ KL_DOWN_GPIO_Port, KL_DOWN_Pin },
+		{ KL_STOP_GPIO_Port, KL_STOP_Pin },
+		{ KL_START_GPIO_Port, KL_START_Pin },
+		{ KL_AUTO_GPIO_Port, KL_AUTO_Pin },
 };
 static StaticQueue_t      xKeyboardQueue;
 static QueueHandle_t      pKeyboardQueue;
 static EventGroupHandle_t pxKeyStatusFLag;
 /*----------------------- Variables -----------------------------------------------------------------*/
-static unsigned char STATUS[KEYBOARD_COUNT]   = { 0U, 0U, 0U, 0U, 0U };
-static unsigned int  COUNTERS[KEYBOARD_COUNT] = { 0U, 0U, 0U, 0U, 0U };
-static unsigned char CODES[KEYBOARD_COUNT]    = { up_key, down_key, stop_key, auto_key, start_key };
-static unsigned long KeyNorPressTimeOut       = 0U;
-static unsigned long KEY_TIME_OUT             = 6000U;
-static char          cKeyDelay                = 0U;
-uint8_t KeyboardBuffer[ 16U * sizeof( KeyEvent ) ];
+static unsigned char STATUS[KEYBOARD_COUNT]                     = { 0U };
+static unsigned int  COUNTERS[KEYBOARD_COUNT]                   = { 0U };
+static unsigned char CODES[KEYBOARD_COUNT]                      = { up_key, down_key, stop_key, start_key ,auto_key };
+static unsigned long KeyNorPressTimeOut                         = 0U;
+
+uint8_t              KeyboardBuffer[ 16U * sizeof( KeyEvent ) ] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
-void SetupKeyboard( void )
+void vSetupKeyboard( void )
 {
   pxKeyStatusFLag = xEventGroupCreate();
   pKeyboardQueue  = xQueueCreateStatic( 16U, sizeof( KeyEvent ), KeyboardBuffer, &xKeyboardQueue );
@@ -35,25 +34,24 @@ void SetupKeyboard( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-QueueHandle_t GetKeyboardQueue( void )
+QueueHandle_t pGetKeyboardQueue( void )
 {
   return pKeyboardQueue;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 void vKeyboardInit(  uint32_t message )
 {
   switch ( message )
   {
     case KEY_ON_MESSAGE:
-      cKeyDelay =0;
-      xQueueReset(pKeyboardQueue);
-      xEventGroupSetBits(pxKeyStatusFLag,KEY_READY);
+      xQueueReset( pKeyboardQueue );
+      xEventGroupSetBits( pxKeyStatusFLag, KEY_READY );
       break;
     case KEY_OFF_MESSAGE:
       break;
     default:
-      xEventGroupClearBits(pxKeyStatusFLag,KEY_READY);
-      xQueueReset(pKeyboardQueue);
+      xEventGroupClearBits( pxKeyStatusFLag, KEY_READY );
+      xQueueReset( pKeyboardQueue );
       break;
   }
   return;
@@ -62,20 +60,19 @@ void vKeyboardInit(  uint32_t message )
 /*
  * Задача обработки клавиш
  * */
-void vKeyboardTask( void const * argument )
+void vKeyboardTask( void * argument )
 {
   KeyEvent      TEvent;
   GPIO_PinState TK[5U];
-  uint8_t       k = 0U;
   uint8_t       i = 0U;
 
   for(;;)
   {
     vTaskDelay(KEY_PEREOD/ portTICK_RATE_MS );
     xEventGroupWaitBits(pxKeyStatusFLag,KEY_READY,pdFALSE,pdTRUE,portMAX_DELAY); /* Задача ждет флага готовности KEY_READY, */
-    for ( k=0U; k<KEYBOARD_COUNT; k++ )                                          /* Считываем текущее состояние портов клавиатуры */
+    for ( i=0U; i<KEYBOARD_COUNT; i++ )                                          /* Считываем текущее состояние портов клавиатуры */
     {
-	  TK[k]=  HAL_GPIO_ReadPin( xKeyPortMass[k].KeyPort, xKeyPortMass[k].KeyPin );
+      TK[i]=  HAL_GPIO_ReadPin( xKeyPortMass[i].KeyPort, xKeyPortMass[i].KeyPin );
     }
     for ( i=0U; i<KEYBOARD_COUNT; i++ )                                          /* Анализируем клавиутру */
     {
@@ -139,36 +136,18 @@ void vKeyboardTask( void const * argument )
     	      break;
           }
         }
-        else
-        {
-          ;
-        }
       }
     }
     KeyNorPressTimeOut++;
-    if ( KeyNorPressTimeOut >= ( KEY_TIME_OUT / ( KEY_PEREOD / portTICK_RATE_MS ) ) )
+    if ( KeyNorPressTimeOut >= (displaySleepDelay.value[0] * (KEY_TIME_OUT / ( KEY_PEREOD / portTICK_RATE_MS ) ) ) )
     {
       KeyNorPressTimeOut = 0U;
       TEvent.KeyCode     = time_out;
       TEvent.Status      = MAKECODE;
       xQueueSend( pKeyboardQueue, &TEvent, portMAX_DELAY );
-      //	 vMenuStop(cKeyDelay);
-      cKeyDelay++;
     }
   }
   return;
 }
-/*---------------------------------------------------------------------------------------------------*/
-unsigned long GetKeyTimeOut( void )
-{
-  return KEY_TIME_OUT;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void SetKeyTimeOut( unsigned long data )
-{
-  KEY_TIME_OUT = data;
-}
-
-
 
 

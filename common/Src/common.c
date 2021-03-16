@@ -16,10 +16,10 @@ static UART_HandleTypeDef*	debug_huart;
  * input:	uart - UART structure
  * output:	none
  */
-void vSYSInitSerial( UART_HandleTypeDef* uart )
+void vSYSInitSerial ( UART_HandleTypeDef* uart )
 {
-	debug_huart = uart;
-	return;
+  debug_huart = uart;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -27,13 +27,23 @@ void vSYSInitSerial( UART_HandleTypeDef* uart )
  * input:	msg - string with message
  * output:	none
  */
-void vSYSSerial( char* msg )
+void vSYSSerial ( const char* msg )
 {
-	HAL_UART_Transmit(debug_huart, (uint8_t*)msg, strlen(msg), 0xFFFF);
-	return;
+  HAL_UART_Transmit(debug_huart, ( uint8_t* )msg, strlen(msg), 0xFFFF);
+  return;
+}
+
+void vSYSprintFix16 ( fix16_t value )
+{
+  char buffer[10U] = { 0U };
+  fix16_to_str( value, buffer, 2U );
+  vSYSSerial( "$" );
+  vSYSSerial( buffer );
+  vSYSSerial( ";\r\n" );
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vSYSgetUniqueID32( uint32_t* id )
+void vSYSgetUniqueID32 ( uint32_t* id )
 {
   id[0U] = GET_UNIQUE_ID0;
   id[1U] = GET_UNIQUE_ID1;
@@ -41,7 +51,7 @@ void vSYSgetUniqueID32( uint32_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vSYSgetUniqueID16( uint16_t* id )
+void vSYSgetUniqueID16 ( uint16_t* id )
 {
   id[0U] = ( uint16_t )( GET_UNIQUE_ID0 & 0xFFFF );
   id[1U] = ( uint16_t )( ( GET_UNIQUE_ID0 >> 16U ) & 0xFFFF );
@@ -52,13 +62,13 @@ void vSYSgetUniqueID16( uint16_t* id )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uEncodeURI( const uint16_t* input, uint8_t length, char* output )
+uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output )
 {
   uint8_t shift = 0U;
   uint8_t i     = 0U;
-  for( i=0U; i<length; i++ )
+  for ( i=0U; i<length; i++ )
   {
-    if ( input[i] > 0x00FF )
+    if ( input[i] > 0x00FFU )
     {
       sprintf( &output[shift], " %02X %02X", ( uint8_t )( ( input[i] & 0xFF00 ) >> 8U ), ( uint8_t )( input[i] & 0x00FF ) );
       output[shift]      = '%';
@@ -115,7 +125,15 @@ void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-
+uint8_t uSYSisConst ( void* ptr )
+{
+  uint8_t res = 1U;
+  if ( ptr > 0x20000000U )
+  {
+    res = 0U;
+  }
+  return res;
+}
 
 
 

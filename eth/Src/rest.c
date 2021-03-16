@@ -33,9 +33,9 @@ uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos
 uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
 uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
 uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );
-uint8_t    uRESTmakeStrRecord ( const char* header, uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output );
-uint32_t   uRESTmakeBitMap ( eConfigBitMap* bitMap, RESTrecordPos last, char* output );
-uint32_t   uRESTmakeBitMapArray ( uint8_t len, eConfigBitMap* bitMap, char* output );
+uint8_t    uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output );
+uint32_t   uRESTmakeBitMap ( const eConfigBitMap* bitMap, RESTrecordPos last, char* output );
+uint32_t   uRESTmakeBitMapArray ( uint8_t len, const eConfigBitMap* bitMap, char* output );
 uint32_t   uRESTmakeDotArray ( const eChartDot* dot, uint16_t len,char* output );
 uint32_t   uRESTmakeDot ( const eChartDot* dot, RESTrecordPos last, char* output );
 REST_ERROR eRESTpareingRecord (  const char* input, const char* header, char* data );
@@ -104,12 +104,12 @@ uint32_t uRESTmakeChart( const eChartData* chart, char* output )
   uint32_t position = 1U;
 
   output[0U] = '{';
-  position += uRESTmake16FixDigRecord( CHART_DATA_XMIN_STR,  chart->xmin,  REST_CONT_RECORD, &output[position] );
-  position += uRESTmake16FixDigRecord( CHART_DATA_XMAX_STR,  chart->xmax,  REST_CONT_RECORD, &output[position] );
-  position += uRESTmake16FixDigRecord( CHART_DATA_YMIN_STR,  chart->ymin,  REST_CONT_RECORD, &output[position] );
-  position += uRESTmake16FixDigRecord( CHART_DATA_YMAX_STR,  chart->ymax,  REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord(      CHART_DATA_XUNIT_STR, ( uint16_t* )( &chart->xunit ), CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord(      CHART_DATA_YUNIT_STR, ( uint16_t* )( &chart->yunit ), CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
+  position += uRESTmake16FixDigRecord( CHART_DATA_XMIN_STR,  xAxisAtribs[chart->xType]->min,  REST_CONT_RECORD, &output[position] );
+  position += uRESTmake16FixDigRecord( CHART_DATA_XMAX_STR,  xAxisAtribs[chart->xType]->max,  REST_CONT_RECORD, &output[position] );
+  position += uRESTmake16FixDigRecord( CHART_DATA_YMIN_STR,  yAxisAtribs[chart->yType]->min,  REST_CONT_RECORD, &output[position] );
+  position += uRESTmake16FixDigRecord( CHART_DATA_YMAX_STR,  yAxisAtribs[chart->yType]->max,  REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord(      CHART_DATA_XUNIT_STR, xAxisAtribs[chart->xType]->unit, CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord(      CHART_DATA_YUNIT_STR, yAxisAtribs[chart->yType]->unit, CHART_UNIT_LENGTH, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord(      CHART_DATA_SIZE_STR,  chart->size,  REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDotArray(                             chart->dots,  chart->size,      &output[position] );
   position++;
@@ -167,13 +167,13 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
 
   output[0U] = '{';
   position += uRESTmakeDigRecord( CONFIG_REG_ADR_STR,           reg->atrib->adr,   REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeSignedRecord( CONFIG_REG_SCALE_STR,      reg->scale,        REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeSignedRecord( CONFIG_REG_SCALE_STR,      reg->atrib->scale, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_LEN_STR,           reg->atrib->len,   REST_CONT_RECORD, &output[position] );
   position += uRESTmakeValueRecord( CONFIG_REG_VALUE_STR,       reg->value,        reg->atrib->len, reg->atrib->type , REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_MIN_STR,           reg->atrib->min,   REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_MAX_STR,           reg->atrib->max,   REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord( CONFIG_REG_UNITS_STR,         ( uint16_t* )( &( reg->units ) ),        MAX_UNITS_LENGTH, REST_CONT_RECORD, &output[position] );
-  position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          ( uint16_t* )( &( reg->atrib->type ) ), 1U, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord( CONFIG_REG_UNITS_STR,         ( uint16_t* )( &( reg->atrib->units ) ), MAX_UNITS_LENGTH, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          ( uint16_t* )( &( reg->atrib->type ) ),  1U, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_BIT_MAP_SIZE_STR,  reg->atrib->bitMapSize, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeBitMapArray( reg->atrib->bitMapSize, reg->atrib->bitMap, &output[position] );
   position++;
@@ -334,34 +334,10 @@ REST_ERROR eRESTparsingChart( char* input, uint16_t adr )
   {
     if ( strstr( pchSt, "data" ) == NULL)
     {
-      res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMIN_STR, &charts[adr]->xmin );
-      if ( res == REST_OK )
+      res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &charts[adr]->size );
+      if ( ( res == REST_OK ) && ( charts[adr]->size > 0U ) )
       {
-        res = uRESTparsing16FixDigRecord( input, CHART_DATA_XMAX_STR, &charts[adr]->xmax );
-        if ( res == REST_OK )
-        {
-          res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMIN_STR, &charts[adr]->ymin );
-          if ( res == REST_OK )
-          {
-            res = uRESTparsing16FixDigRecord( input, CHART_DATA_YMAX_STR, &charts[adr]->ymax );
-            if ( res == REST_OK )
-            {
-              res = eRESTparsingStrRecord( input, CHART_DATA_XUNIT_STR, charts[adr]->xunit, CHART_UNIT_LENGTH );
-              if ( res == REST_OK )
-              {
-                res = eRESTparsingStrRecord( input, CHART_DATA_YUNIT_STR, charts[adr]->yunit, CHART_UNIT_LENGTH );
-                if ( res == REST_OK )
-                {
-                  res = eRESTparsingDig16Record( input, CHART_DATA_SIZE_STR, &charts[adr]->size );
-                  if ( ( res == REST_OK ) && ( charts[adr]->size > 0U ) )
-                  {
-                    res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, charts[adr]->dots, charts[adr]->size );
-                  }
-                }
-              }
-            }
-          }
-        }
+        res = eRESTparsingDotArray( input, CHART_DATA_DOTS_STR, charts[adr]->dots, charts[adr]->size );
       }
     }
   }
@@ -800,7 +776,7 @@ REST_ERROR eRESTparsingSignedRecord( const char* input, const char* header, sign
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint32_t uRESTmakeBitMap( eConfigBitMap* bitMap, RESTrecordPos last, char* output )
+uint32_t uRESTmakeBitMap( const eConfigBitMap* bitMap, RESTrecordPos last, char* output )
 {
   uint32_t position = 1U;
 
@@ -817,7 +793,7 @@ uint32_t uRESTmakeBitMap( eConfigBitMap* bitMap, RESTrecordPos last, char* outpu
   return position;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint32_t uRESTmakeBitMapArray( uint8_t len, eConfigBitMap* bitMap, char* output )
+uint32_t uRESTmakeBitMapArray( uint8_t len, const eConfigBitMap* bitMap, char* output )
 {
   uint8_t  i        = 0U;
   uint32_t position = 0U;
@@ -936,7 +912,7 @@ uint8_t uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPo
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uRESTmakeStrRecord( const char* header, uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output )
+uint8_t uRESTmakeStrRecord( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
 

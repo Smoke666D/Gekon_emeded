@@ -19,6 +19,9 @@
 #include "math.h"
 #include "fix16.h"
 #include "stdlib.h"
+#include "engine.h"
+#include "controllerTypes.h"
+#include "utils.h"
 
 #define ADC1_READY         0x01U
 #define ADC2_READY         0x02U
@@ -29,6 +32,12 @@
 #define DC_READY           0x40U
 #define GEN_UPDATE         0x80U
 #define NET_UPDATE         0x100U
+#define COMMON_ERROR       0x01U
+#define OP_CHANEL_ERROR    0x02U
+#define CT_CHANEL_ERROR    0x04U
+#define FL_CHANEL_ERROR    0x80U
+
+
 
 #define ADC_READY          0x08U
 #define ADC1_CHANNEL       0x01U
@@ -41,8 +50,6 @@
 #define ADC_FRAME_SIZE     1024//700U//512U
 #define ADC_ADD_FRAME_SIZE ( ADC3_ADD_CHANNEL * 4U )
 
-
-
 #define GEN_RMS_CUR         0
 #define GEN_FREQ            1
 #define GEN_FASE_V          2
@@ -52,25 +59,25 @@
 #define GEN_L1_FASE_V       6
 #define GEN_L1_LINE_V       7
 #define GEN_L1_REAL_POWER   8
-#define GEN_L1_APER_POWER   9
+#define GEN_L1_ACTIVE_POWER 9
 #define GEN_L1_REAC_POWER   10
 #define GEN_L2_CUR          11
 #define GEN_L2_FREQ         12
 #define GEN_L2_FASE_V       13
 #define GEN_L2_LINE_V       14
 #define GEN_L2_REAL_POWER   15
-#define GEN_L2_APER_POWER   16
+#define GEN_L2_ACTIVE_POWER 16
 #define GEN_L2_REAC_POWER   17
 #define GEN_L3_CUR          18
 #define GEN_L3_FREQ         19
 #define GEN_L3_FASE_V       20
 #define GEN_L3_LINE_V       21
 #define GEN_L3_REAL_POWER   22
-#define GEN_L3_APER_POWER   23
+#define GEN_L3_ACTIVE_POWER 23
 #define GEN_L3_REAC_POWER   24
 #define GEN_APPER_POWER     25
 #define GEN_REAL_POWER      26
-#define GEN_ACTIVE_POWER     27
+#define GEN_ACTIVE_POWER    27
 #define GEN_REACTIVE_POWER  28
 #define NET_FREQ            29
 #define NET_L1_FASE_V       30
@@ -79,7 +86,9 @@
 #define NET_L2_LINE_V       33
 #define NET_L3_FASE_V       34
 #define NET_L3_LINE_V       35
-
+#define GEN_AVER_V          36
+#define GEN_AVER_A          37
+#define GEN_AVER_P          38
 
 /*
  * Номиналы резисторов
@@ -88,6 +97,8 @@
 #define RCSHUNT         0.01  //Сопротивление шунтирующих резисторов токовых входов
 #define OPTRANSCOOF     20    //Коофециент усиления операционного усилителя на  токовых входах
 #define VRef            3.3
+
+
 
 #define R118_R122      104.7
 #define R122           4.7
@@ -103,11 +114,6 @@
 #define COFDIN         1U
 #define COFAIN         5U
 #define CANC           6U
-
-
-#define STAR           0x01U
-#define TRIANGLE       0x02U
-#define ONE_FASE       0x00U
 
 
 #define DC_SIZE        50U
@@ -126,9 +132,7 @@
 #define LOW_AMP        0x04U
 
 
-#define NO_ROTATION   0x00U
-#define B_C_ROTATION  0x01U
-#define C_B_ROTATION  0x02U
+
 
 typedef enum
 {
@@ -137,17 +141,37 @@ typedef enum
   IDLE,
 } xADCFSMType;
 
+typedef enum
+{
+  NO_FREQ,
+  FREQ_DETECTED,
+} xADCGenDetectType;
+
+
+typedef enum
+{
+  NO_ROTATION,
+  B_C_ROTATION,
+  C_B_ROTATION,
+} xADCRotatinType;
+
 /*
  * Функции API драйвера
  */
+SENSOR_TYPE xADCGetFLChType(void);
+SENSOR_TYPE xADCGetxOPChType(void);
 fix16_t xADCGetGENActivePower();
 fix16_t xADCGetGENReactivePower();
 fix16_t xADCGetGENRealPower();
 fix16_t xADCGetGENL1RealPower();
 fix16_t xADCGetGENL2RealPower();
 fix16_t xADCGetGENL3RealPower();
+fix16_t xADCGetGENL1ActivePower();
+fix16_t xADCGetGENL2ActivePower();
+fix16_t xADCGetGENL3ActivePower();
 
 
+fix16_t xADCGetCAC();
 fix16_t xADCGetVDD();              // Функция возращает наряжения АКБ.
 fix16_t xADCGetSOP();
 fix16_t xADCGetSCT();
@@ -171,12 +195,14 @@ uint8_t uADCGetValidDataFlag();
 fix16_t xADCGetNETLFreq();
 fix16_t xADCGetGENLFreq();
 fix16_t xADCGetCOSFi();
-uint8_t uADCGetGenFaseRotation();
-uint8_t uADCGetNetFaseRotation();
+xADCRotatinType xADCGetGenFaseRotation();
+xADCRotatinType xADCGetNetFaseRotation();
 fix16_t xADCGetREG(uint16_t reg);
 void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-
-
+uint8_t uADCGetDCChError();
+SENSOR_TYPE xADCGetxCTChType(void);
+xADCGenDetectType vADCGetGenFreqPres( void );
+ELECTRO_SCHEME xADCGetScheme(void);
 #endif /* INC_ADC_H_ */

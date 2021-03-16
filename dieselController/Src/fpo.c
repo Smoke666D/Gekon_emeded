@@ -96,7 +96,11 @@ static FPO* starterFPO      = NULL;  /* 18 */
 static FPO* preheaterFPO    = NULL;  /* 19 */
 static FPO* idleFPO         = NULL;  /* 20 */
 /*-------------------------------- Functions ---------------------------------*/
-
+void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun );
+void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat );
+void vFPOprintSetup ( void );
+void vFPOdisSetup ( void );
+void vFPOsetupStartup ( void );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -124,7 +128,12 @@ void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat )
     if ( ( ( stat == RELAY_ON  ) && ( fpo->polarity == FPO_POL_NORMAL_OPEN  ) ) ||
          ( ( stat == RELAY_OFF ) && ( fpo->polarity == FPO_POL_NORMAL_CLOSE ) ) )
     {
-      cmd = GPIO_PIN_SET;
+      cmd        = GPIO_PIN_SET;
+      fpo->state = TRIGGER_SET;
+    }
+    else
+    {
+      fpo->state = TRIGGER_IDLE;
     }
     HAL_GPIO_WritePin( fpo->port, fpo->pin, cmd );
   }
@@ -146,7 +155,59 @@ void vFPOprintSetup ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vFPOdisSetup ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<FPO_DIS_NUMBER; i++ )
+  {
+    if ( ( fpos[2U * i].function      == FPO_FUN_NONE ) &&
+         ( fpos[2U * i + 1U].function == FPO_FUN_NONE ) )
+    {
+      HAL_GPIO_WritePin( fpos_dis[i].port, fpos_dis[i].pin, GPIO_PIN_RESET );
+    }
+    else
+    {
+      HAL_GPIO_WritePin( fpos_dis[i].port, fpos_dis[i].pin, GPIO_PIN_SET );
+    }
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vFPOsetupStartup ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<FPO_NUMBER; i++ )
+  {
+    if ( fpos[i].polarity == FPO_POL_NORMAL_OPEN )
+    {
+      HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_RESET );
+    }
+    else
+    {
+      if ( fpos[i].function == FPO_FUN_TURN_ON_MAINS )
+      {
+        HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_RESET );
+      }
+      else
+      {
+        HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_SET );
+      }
+    }
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetState ( uint8_t n )
+{
+  TRIGGER_STATE res = TRIGGER_IDLE;
+  if ( n < FPO_NUMBER )
+  {
+    res = fpos[n].state;
+  }
+  return res;
+}
 /*----------------------------------------------------------------------------*/
 uint8_t uFPOisEnable ( FPO_FUNCTION fun )
 {
@@ -285,7 +346,6 @@ void vFPOsetMainsOffImp ( RELAY_STATUS stat )
 /*----------------------------------------------------------------------------*/
 void vFPOdataInit ( void )
 {
-  uint8_t i = 0U;
   /* Read parameters form memory */
   fpos[FPO_A].polarity = getBitMap( &doSetup,  DOA_N_O_C_ADR );
   fpos[FPO_B].polarity = getBitMap( &doSetup,  DOB_N_O_C_ADR );
@@ -300,28 +360,8 @@ void vFPOdataInit ( void )
   fpos[FPO_E].function = getBitMap( &doefType, DOE_TYPE_ADR );
   fpos[FPO_F].function = getBitMap( &doefType, DOF_TYPE_ADR );
   /* GPIO start conditions */
-  for ( i=0U; i<FPO_DIS_NUMBER; i++ )
-  {
-    HAL_GPIO_WritePin( fpos_dis[i].port, fpos_dis[i].pin, GPIO_PIN_SET );
-  }
-  for ( i=0U; i<FPO_NUMBER; i++ )
-  {
-    if ( fpos[i].polarity == FPO_POL_NORMAL_OPEN )
-    {
-      HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_RESET );
-    }
-    else
-    {
-      if ( fpos[i].function == FPO_FUN_TURN_ON_MAINS )
-      {
-        HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_RESET );
-      }
-      else
-      {
-        HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_SET );
-      }
-    }
-  }
+  vFPOdisSetup();
+  vFPOsetupStartup();
   /* System part */
   vFPOanaliz( &dpsReadyFPO,     FPO_FUN_DPS_READY              );
   vFPOanaliz( &readyToStartFPO, FPO_FUN_READY_TO_START         );
@@ -343,6 +383,9 @@ void vFPOdataInit ( void )
   vFPOanaliz( &mainsSwFPO,      FPO_FUN_TURN_ON_MAINS          );
   vFPOanaliz( &mainsImpOnFPO,   FPO_FUN_TURN_ON_MAINS_IMPULSE  );
   vFPOanaliz( &mainsImpOffFPO,  FPO_FUN_TURN_OFF_MAINS_IMPULSE );
+  /* Default */
+  vFPOsetMainsSw( RELAY_ON );
+  vFPOsetGenSw( RELAY_OFF );
   /* Debug data */
   vFPOprintSetup();
   return;

@@ -19,7 +19,7 @@
 static SemaphoreHandle_t  xSemaphore = NULL;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t  u8g2;
-static uint8_t  LCD_Buffer[LCD_DATA_BUFFER_SIZE];
+static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
 static uint8_t lcd_delay=0;
 static uint8_t lcd_brigth_counter =0;
 static uint8_t lcd_brigth =0;
@@ -52,6 +52,8 @@ void vLCDBrigthInit()
  */
 void vLCDSetLedBrigth ( uint8_t brigth )
 {
+
+
   if ( brigth <= displayBrightnesLevel.atrib->max )
   {
     lcd_brigth = brigth;
@@ -144,6 +146,11 @@ void vLCDDelay( void )
       lcd_brigth_counter = 0U;
       HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_SET );
     }
+
+  if (lcd_brigth == 0)
+  {
+    HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_RESET );
+   }
   //Задержка после команды lcd
   if (lcd_delay)
     if ( hspi3.State != HAL_SPI_STATE_BUSY_TX )
@@ -193,11 +200,11 @@ static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout1(SPI_HandleTypeDef *hspi,
         /* Process Unlocked */
         __HAL_UNLOCK(hspi);
 
-        return HAL_TIMEOUT;
+        return ( HAL_TIMEOUT );
       }
     }
   }
-
+  return ( HAL_OK );
 }
 
 static void SPI_DMATransmit(DMA_HandleTypeDef *hdma)
@@ -397,10 +404,23 @@ void vLCD_Init()
 /*---------------------------------------------------------------------------------------------------*/
 
 
+/*
+ *
+ *
+ */
+void vLCD_BrigthOn()
+{
+  vLCDBrigthInit();
+}
 
-
-
-
+/*
+ *
+ *
+ */
+void vLCD_BrigthOFF()
+{
+  lcd_brigth = 0;
+}
 
 
 

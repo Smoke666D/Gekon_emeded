@@ -50,6 +50,8 @@
 #include "electro.h"
 #include "controller.h"
 #include "alarm.h"
+#include "measurement.h"
+#include "charger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,8 +73,6 @@ DMA_HandleTypeDef hdma_adc1;
 DMA_HandleTypeDef hdma_adc2;
 DMA_HandleTypeDef hdma_adc3;
 
-CAN_HandleTypeDef hcan1;
-
 I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
@@ -85,6 +85,7 @@ TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
+TIM_HandleTypeDef htim12;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
@@ -155,7 +156,6 @@ static void MX_SPI1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
-static void MX_CAN1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART2_UART_Init(void);
@@ -165,6 +165,7 @@ static void MX_TIM5_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM8_Init(void);
+static void MX_TIM12_Init ( void );
 
 
 
@@ -173,7 +174,7 @@ void StartDefaultTask(void *argument);
 /* USER CODE BEGIN PFP */
 void StartLcdTask(void *argument);
 extern void StartADCTask(void *argument);
-extern void vKeyboardTask(void const * argument);
+extern void vKeyboardTask(void * argument);
 extern void vStartNetTask(void *argument);
 extern void vStartUsbTask(void *argument);
 /* USER CODE END PFP */
@@ -249,7 +250,7 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick.
    *
    */
-   HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -271,7 +272,6 @@ int main(void)
   MX_ADC1_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
-  MX_CAN1_Init();
   MX_I2C1_Init();
   MX_SPI3_Init();
   MX_USART2_UART_Init();
@@ -281,6 +281,7 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   MX_TIM8_Init();
+  MX_TIM12_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
@@ -644,44 +645,6 @@ static void MX_ADC3_Init(void)
   /* USER CODE END ADC3_Init 2 */
 
 }
-
-/**
-  * @brief CAN1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_CAN1_Init(void)
-{
-
-  /* USER CODE BEGIN CAN1_Init 0 */
-
-  /* USER CODE END CAN1_Init 0 */
-
-  /* USER CODE BEGIN CAN1_Init 1 */
-
-  /* USER CODE END CAN1_Init 1 */
-  hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 16;
-  hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan1.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
-  hcan1.Init.TimeTriggeredMode = DISABLE;
-  hcan1.Init.AutoBusOff = DISABLE;
-  hcan1.Init.AutoWakeUp = DISABLE;
-  hcan1.Init.AutoRetransmission = DISABLE;
-  hcan1.Init.ReceiveFifoLocked = DISABLE;
-  hcan1.Init.TransmitFifoPriority = DISABLE;
-  if (HAL_CAN_Init(&hcan1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN CAN1_Init 2 */
-
-  /* USER CODE END CAN1_Init 2 */
-
-}
-
 /**
   * @brief I2C1 Initialization Function
   * @param None
@@ -1049,6 +1012,36 @@ static void MX_TIM8_Init(void)
 
 }
 
+static void MX_TIM12_Init ( void )
+{
+
+  TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig      = {0};
+
+  htim12.Instance               = TIM12;
+  htim12.Init.Prescaler         = 30001U;
+  htim12.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim12.Init.Period            = 201U;
+  htim12.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim12, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim12, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  return;
+}
+
 /**
   * @brief USART2 Initialization Function
   * @param None
@@ -1164,7 +1157,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
+  HAL_GPIO_WritePin(GPIOB, CHARG_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -1217,7 +1210,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : CHARG_ALTER_ON_Pin POUT_A_Pin POUT_B_Pin LD3_Pin
                            LED2_Pin EEPROM_NSS_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = CHARG_ALTER_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
+  GPIO_InitStruct.Pin = CHARG_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
                           |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -1303,22 +1296,26 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   //uint32_t  waterMark = 0U;
   vSYSSerial( ">>Start Default Task!\n\r" );
+  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
+  vDATAAPIlogInit();                          /* Get log data from EEPROM */
+  vCHARTupdateAtrib();                        /* Update charts attributes */
+  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
   while ( uADCGetValidDataFlag() == 0U )
   {
     osDelay( 10U );
   }
-  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
-  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
-  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
+  osDelay( 1100U );
   vVRinit( &htim6 );                          /* Speed sensor initialization */
   vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
   vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
-  osDelay( 1200U );                           /* Delay ADC valid data ready*/
+  vCHARGERinit( CHARG_ON_GPIO_Port, CHARG_ON_Pin);
   vALARMinit();                               /* Activ error list initialization */
   vENGINEinit();                              /**/
-  vELECTROinit();                             /**/
+  vELECTROinit( &htim12 );                    /**/
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
+  vMEASUREMENTinit();                         /**/
   /* Infinite loop */
   for(;;)
   {

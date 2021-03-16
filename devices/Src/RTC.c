@@ -6,15 +6,13 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "RTC.h"
-#include "cmsis_os.h"
-#include "FreeRTOS.h"
-#include "semphr.h"
 /*------------------------- Define ------------------------------------------------------------------*/
-#define  RTC_TIME_SIZE        7U
 #define  RTC_MEMORY_SIZE      19U
 /*----------------------- Structures ----------------------------------------------------------------*/
-static   I2C_HandleTypeDef*   RTCi2c        = NULL;
-static   SemaphoreHandle_t    xRTCSemaphore = NULL;
+static I2C_HandleTypeDef* RTCi2c        = NULL;
+static osThreadId_t       rtcHandle     = NULL;
+static SemaphoreHandle_t  xRTCSemaphore = NULL;
+static RTC_TIME           cashTime      = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -28,8 +26,19 @@ uint8_t    decToBcd ( uint8_t num );
 RTC_STATUS uRTCpoolSRUntil ( uint8_t target );
 RTC_STATUS eVarifyTime ( RTC_TIME* time );
 RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm );
+void       vRTCTask ( void );
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+void vRTCTask ( void )
+{
+  for (;;)
+  {
+    eRTCgetTime( &cashTime );
+    osDelay( 60000U );
+  }
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Transaction send function with RTC
@@ -46,7 +55,7 @@ RTC_STATUS eRTCsend ( uint8_t* data, uint8_t size )
     hal = HAL_I2C_Master_Transmit( RTCi2c, ( uint16_t )RTC_DEVICE_ADR, data, ( uint16_t )size, ( uint32_t )RTC_TIMEOUT );
     if ( hal == HAL_BUSY )
     {
-      osDelay( 1U );
+      osDelay( RTC_BUSY_TIMEOUT );
     }
     if ( ( hal == HAL_ERROR ) || ( hal == HAL_TIMEOUT ) )
     {
@@ -71,7 +80,7 @@ RTC_STATUS eRTCget ( uint8_t* data, uint8_t size )
     hal = HAL_I2C_Master_Receive( RTCi2c, ( uint16_t )RTC_DEVICE_ADR, data, ( uint16_t )size, ( uint32_t )RTC_TIMEOUT );
     if ( hal == HAL_BUSY )
     {
-      osDelay( 1U );
+      osDelay( RTC_BUSY_TIMEOUT );
     }
     if ( ( hal == HAL_ERROR ) || ( hal == HAL_TIMEOUT ) )
     {
@@ -155,7 +164,12 @@ uint8_t decToBcd ( uint8_t num )
 {
   return ( ( ( num / 10U ) << 4U ) + ( num % 10U ) );
 }
-
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Check input time
+ * Input:  time structure
+ * Output: result of checking
+ */
 RTC_STATUS eVarifyTime ( RTC_TIME* time )
 {
   RTC_STATUS res = RTC_OK;
@@ -172,14 +186,19 @@ RTC_STATUS eVarifyTime ( RTC_TIME* time )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Check input alarm
+ * Input:  alarm structure
+ * Output: result of checking
+ */
 RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm )
 {
   RTC_STATUS res = RTC_OK;
-  if ( ( alarm->sec > RTC_SEC_MAX )   ||
-       ( alarm->min > RTC_MIN_MAX )   ||
+  if ( ( alarm->sec  > RTC_SEC_MAX )  ||
+       ( alarm->min  > RTC_MIN_MAX )  ||
        ( alarm->hour > RTC_HOUR_MAX ) ||
        ( alarm->wday < RTC_WDAY_MIN ) || ( alarm->wday > RTC_WDAY_MAX ) ||
-       ( alarm->day < RTC_DAY_MIN )   || ( alarm->day > RTC_DAY_MAX ) )
+       ( alarm->day  < RTC_DAY_MIN )  || ( alarm->day > RTC_DAY_MAX ) )
   {
     res = RTC_FORMAT_ERROR;
   }
@@ -193,7 +212,7 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
   while ( ( status != target ) && ( res != RTC_OK ) )
   {
     res = eRTCread( RTC_SR, &status, 1U );
-    osDelay( 10U );
+    osDelay( RTC_POOL_TIMEOUT );
     if ( res == RTC_ERROR )
     {
       break;
@@ -202,7 +221,12 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-/*----------------------- PABLICK -------------------------------------------------------------------*/
+RTC_STATUS eRTCgetStatus ( uint8_t* status )
+{
+  return eRTCread( RTC_SR, status, 1U );
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Installation of RTC
@@ -211,8 +235,15 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
  */
 void vRTCinit ( I2C_HandleTypeDef* hi2c )
 {
+  vRTCcleanTime( &cashTime );
   RTCi2c        = hi2c;
   xRTCSemaphore = xSemaphoreCreateMutex();
+  const osThreadAttr_t rtcTask_attributes = {
+    .name       = "RTCTask",
+    .priority   = ( osPriority_t ) RTC_TASK_PRIORITY,
+    .stack_size = RTC_TASK_STACK_SIZE
+  };
+  rtcHandle = osThreadNew( vRTCTask, NULL, &rtcTask_attributes );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -231,11 +262,6 @@ void vRTCcleanTime ( RTC_TIME* time )
   time->min   = 0U;
   time->sec   = 0U;
   return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-RTC_STATUS eRTCgetStatus ( uint8_t* status )
-{
-  return eRTCread( RTC_SR, status, 1U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -276,12 +302,13 @@ RTC_STATUS eRTCgetTime ( RTC_TIME* time )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Write time to the RTC
  * Input:  Structure of time
  * Output: Status of operation
  */
-RTC_STATUS vRTCsetTime ( RTC_TIME* time )
+RTC_STATUS eRTCsetTime ( RTC_TIME* time )
 {
   RTC_STATUS res                   = eVarifyTime( time );
   uint8_t    buffer[RTC_TIME_SIZE] = { 0U };
@@ -299,7 +326,11 @@ RTC_STATUS vRTCsetTime ( RTC_TIME* time )
         buffer[RTC_MONTH]   = decToBcd( ( uint8_t )time->month );
         buffer[RTC_YEAR]    = decToBcd( time->year );
         res = eRTCwrite( RTC_SECONDS, buffer, RTC_TIME_SIZE );
-        osDelay(10U);
+        osDelay( RTC_POOL_TIMEOUT );
+        if ( res == RTC_OK )
+        {
+          cashTime = *time;
+        }
       }
       xSemaphoreGive( xRTCSemaphore );
     }
@@ -314,6 +345,13 @@ RTC_STATUS vRTCsetTime ( RTC_TIME* time )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
+void vRTCgetCashTime ( RTC_TIME* time )
+{
+  *time = cashTime;
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Write calibration value to the RTC
  * Input:  Signed calibration value
@@ -349,6 +387,7 @@ RTC_STATUS vRTCsetCalibration ( signed char value )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Read calibration value from the RTC
  * Input:  Signed calibration value
@@ -364,6 +403,7 @@ RTC_STATUS eRTCgetCalibration ( signed char* value )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Read temperature from the RTC
  * Input:  Float temperature
@@ -379,6 +419,7 @@ RTC_STATUS eRTCgetTemperature ( float* data )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Setup temperature compensation oscillator
  * Input:  enb - 0 - disable
@@ -425,6 +466,7 @@ RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Setup alarm of RTC
  * Input:  n     - number of alarm ( 1 or 2 )
@@ -483,6 +525,7 @@ RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Read alarm data from the RTC
  * Input:  n     - number of alarm ( 1 or 2 )
@@ -542,6 +585,7 @@ RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Read alarm status from the RTC
  * Input:  n - number of alarm:
@@ -575,6 +619,7 @@ RTC_STATUS vRTCclearAlarm ( uint8_t n )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Check alarm status
  * Input:  none
@@ -606,7 +651,7 @@ uint8_t uRTCcheckIfAlarm ( void )
   }
   return res;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 RTC_STATUS eRTCsetExternSquareWave ( uint8_t enb )
 {
   uint8_t    data = 0x00U;
@@ -626,7 +671,7 @@ RTC_STATUS eRTCsetExternSquareWave ( uint8_t enb )
   }
   return res;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 RTC_STATUS eRTCsetInterrupt ( uint8_t ext )
 {
   uint8_t    data = 0x00U;
@@ -645,7 +690,7 @@ RTC_STATUS eRTCsetInterrupt ( uint8_t ext )
   }
   return res;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
 RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq )
 {
   uint8_t    data = 0x00U;
@@ -674,6 +719,7 @@ RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Setup oscillator of the RTC
  * Input:  enb  - enable or disable oscillator

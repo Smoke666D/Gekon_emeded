@@ -1,26 +1,23 @@
 /*
- * vrSensor.h
+ * charger.h
  *
- *  Created on: 23 июн. 2020 г.
- *      Author: photo_Mickey
+ *  Created on: 16 февр. 2021 г.
+ *      Author: 79110
  */
 
-#ifndef INC_VRSENSOR_H_
-#define INC_VRSENSOR_H_
+#ifndef INC_CHARGER_H_
+#define INC_CHARGER_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
-#include "fix16.h"
+#include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
-#define  VR_MIN_SEC     60U
 /*------------------------- Enum ---------------------------------------*/
 /*----------------------- Callbacks ------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void    vVRinit ( TIM_HandleTypeDef* tim );
-void    vVRextiCallback ( void );
-void    vVRtimCallback ( void );
-fix16_t fVRgetSpeed ( void );
+void vCHARGERinit ( GPIO_TypeDef* port, uint16_t pin );
+void vCHARGERset ( RELAY_STATUS status );
 /*----------------------------------------------------------------------*/
-#endif /* INC_VRSENSOR_H_ */
+#endif /* INC_CHARGER_H_ */

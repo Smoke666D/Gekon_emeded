@@ -19,6 +19,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+#include "event_groups.h"
 #include "queue.h"
 #include "engine.h"
 #include "config.h"
@@ -27,14 +28,13 @@
 #include "fpi.h"
 #include "menu.h"
 #include "journal.h"
-#include "alarm.H"
+#include "alarm.h"
+#include "dataAPI.h"
 /*-------------------------------- Structures --------------------------------*/
 CONTROLLER_INIT controllerGPIO = { 0U };
 CONTROLLER_TYPE controller     = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
-#define  LOG_WARNINGS_ENABLE    ( getBitMap( &logSetup, LOG_SAVE_WARNING_EVENTS_ENB_ADR ) )
-#define  LOG_POSITIVE_ENABLE    ( getBitMap( &logSetup, LOG_POSITIVE_EVENTS_ENB_ADR ) )
-#define  POWER_OFF_IMMEDIATELY  ( getBitMap( &mainsSetup, MAINS_POWER_OFF_IMMEDIATELY_ENB_ADR ) )
+
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
@@ -42,9 +42,122 @@ static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
+void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state );
+void vCONTROLLERsetMode ( CONTROLLER_MODE mode );
+void vCONTROLLERstartAutoStop ( PERMISSION delay );
+void vCONTROLLERstartAutoStart ( PERMISSION delay );
 void vCONTROLLERtask ( void* argument );
+void vCONTROLLERsetErrorOutputs ( void );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERsetErrorOutputs ( void )
+{
+  vFPOsetGenReady( RELAY_OFF );
+  vFPOsetAlarm( RELAY_ON );
+  vFPOsetReadyToStart( RELAY_OFF );
+  vFPOsetDpsReady( RELAY_OFF );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
+{
+  LOG_RECORD_TYPE buffer = record;
+  vLOGICprintEvent( record.event );
+  switch ( record.event.action )
+  {
+
+    case ACTION_NONE:
+      /*------------- Write to log -------------*/
+      if ( ( controller.logPositive == PERMISSION_ENABLE ) &&
+           ( ( eSTATUSgetStatus()   != DEVICE_STATUS_ERROR ) ) )
+      {
+        eLOGaddRecord( &record );
+      }
+      break;
+
+    case ACTION_WARNING:
+      /*------------ Status output -------------*/
+      vFPOsetWarning( RELAY_ON );
+      /*------------- Write to log -------------*/
+      if ( controller.logWarning == PERMISSION_ENABLE )
+      {
+        eLOGaddRecord( &record );
+      }
+      break;
+
+    case ACTION_EMERGENCY_STOP:
+      /*--------- Commands to devices ----------*/
+      vELECTROsendCmd( ELECTRO_CMD_LOAD_MAINS );
+      vENGINEsendCmd( ENGINE_CMD_EMEGENCY_STOP );
+      vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+      controller.state = CONTROLLER_STATUS_ERROR;
+      /*-------------- Setup HMI ---------------*/
+      vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
+      vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON );
+      /*--------- Setup interior status --------*/
+      vSTATUSsetup( DEVICE_STATUS_ERROR, LOGIC_DEFAULT_TIMER_ID );
+      /*------------ Status output -------------*/
+      vCONTROLLERsetErrorOutputs();
+      /*------------- Write to log -------------*/
+      eLOGaddRecord( &record );
+      break;
+
+    case ACTION_SHUTDOWN:
+      /*--------- Commands to devices ----------*/
+      if ( controller.state != CONTROLLER_STATUS_ERROR )
+      {
+        vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+        controller.state = CONTROLLER_STATUS_PLAN_STOP;
+        controller.errorAfterStop = PERMISSION_ENABLE;
+      }
+      /*--------- Setup interior status --------*/
+      vSTATUSsetup( DEVICE_STATUS_ERROR, LOGIC_DEFAULT_TIMER_ID );
+      /*------------ Status output -------------*/
+      vCONTROLLERsetErrorOutputs();
+      /*------------- Write to log -------------*/
+      eLOGaddRecord( &record );
+      break;
+
+    case ACTION_PLAN_STOP:
+      /*--------- Commands to devices ----------*/
+      vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+      controller.state = CONTROLLER_STATUS_PLAN_STOP;
+      break;
+
+    case ACTION_BAN_START:
+      /*--------- Commands to devices ----------*/
+      vENGINEsendCmd( ENGINE_CMD_BAN_START );
+      /*------------ Status output -------------*/
+      vFPOsetReadyToStart( RELAY_OFF );
+      /*------------- Write to log -------------*/
+      eLOGaddRecord( &record );
+      break;
+
+    case ACTION_AUTO_START:
+      /*--------- Setup interior status --------*/
+      vCONTROLLERstartAutoStart( PERMISSION_DISABLE );
+      break;
+
+    case ACTION_AUTO_STOP:
+      /*--------- Setup interior status --------*/
+      vCONTROLLERstartAutoStop( PERMISSION_DISABLE );
+      /*------------- Write to log -------------*/
+      if ( controller.logPositive == PERMISSION_ENABLE )
+      {
+        if ( controller.mode == CONTROLLER_MODE_MANUAL )
+        {
+          buffer.event.action = ACTION_NONE;
+        }
+        eLOGaddRecord( &buffer );
+      }
+      break;
+
+    default:
+      break;
+  }
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
 {
@@ -91,99 +204,55 @@ void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERstartAutoStart ( void )
+void vCONTROLLERstartAutoStart ( PERMISSION delay )
 {
-  if ( ( controller.mode  == CONTROLLER_MODE_AUTO ) &&
-       ( controller.state != CONTROLLER_STATUS_ALARM ) &&
-       ( controller.banAutoStart == 0U                     ) &&
-       ( controller.state        == CONTROLLER_STATUS_IDLE ) )
+  if ( eENGINEisStartBan() == PERMISSION_DISABLE )
   {
-    controller.state = CONTROLLER_STATUS_START;
-    stopState        = CONTROLLER_TURNING_IDLE;
-    startState       = CONTROLLER_TURNING_IDLE;
+    if ( ( controller.mode         == CONTROLLER_MODE_AUTO   ) &&
+         ( controller.banAutoStart == 0U                     ) &&
+         ( controller.state        == CONTROLLER_STATUS_IDLE ) )
+    {
+      if ( delay == PERMISSION_ENABLE )
+      {
+        controller.state = CONTROLLER_STATUS_START_WITH_DELAY;
+      }
+      else
+      {
+        controller.state = CONTROLLER_STATUS_START;
+      }
+      stopState        = CONTROLLER_TURNING_IDLE;
+      startState       = CONTROLLER_TURNING_IDLE;
+    }
+    else
+    {
+      vLOGICprintDebug( ">>Autostart       : Engine start ban\r\n" );
+    }
   }
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERstartAutoStop ( void )
+void vCONTROLLERstartAutoStop ( PERMISSION delay )
 {
-  if ( ( controller.mode  == CONTROLLER_MODE_AUTO ) &&
-       ( controller.state != CONTROLLER_STATUS_ALARM ) &&
+  if ( ( controller.mode            == CONTROLLER_MODE_AUTO   ) &&
        ( controller.banAutoShutdown == 0U                     ) &&
        ( controller.state           == CONTROLLER_STATUS_WORK ) )
   {
-    controller.state = CONTROLLER_STATUS_PLAN_STOP;
-    stopState        = CONTROLLER_TURNING_IDLE;
-    startState       = CONTROLLER_TURNING_IDLE;
+    if ( delay == PERMISSION_ENABLE )
+    {
+      controller.state = CONTROLLER_STATUS_PLAN_STOP_WITH_DELAY;
+    }
+    else
+    {
+      controller.state = CONTROLLER_STATUS_PLAN_STOP;
+    }
+    stopState  = CONTROLLER_TURNING_IDLE;
+    startState = CONTROLLER_TURNING_IDLE;
   }
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
-{
-  LOG_RECORD_TYPE buffer = record;
-  vLOGICprintEvent( record.event );
-  switch ( record.event.action )
-  {
-    case ACTION_NONE:
-      if ( LOG_POSITIVE_ENABLE > 0U )
-      {
-        eLOGaddRecord( &record );
-      }
-      break;
 
-    case ACTION_WARNING:
-      vFPOsetWarning( RELAY_ON );
-      if ( LOG_WARNINGS_ENABLE > 0U )
-      {
-        eLOGaddRecord( &record );
-      }
-      vFPOsetWarning( RELAY_ON );
-      break;
-
-    case ACTION_EMERGENCY_STOP:
-      vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
-      vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_ON );
-      controller.state = CONTROLLER_STATUS_ALARM;
-      vENGINEsendCmd( ENGINE_CMD_EMEGENCY_STOP );
-      vFPOsetGenReady( RELAY_OFF );
-      vFPOsetAlarm( RELAY_ON );
-      vFPOsetReadyToStart( RELAY_OFF );
-      vFPOsetDpsReady( RELAY_OFF );
-      eLOGaddRecord( &record );
-      break;
-
-    case ACTION_PLAN_STOP:
-      vENGINEsendCmd( ENGINE_CMD_PLAN_STOP );
-      break;
-
-    case ACTION_BAN_START:
-      vENGINEsendCmd( ENGINE_CMD_BAN_START );
-      break;
-
-    case ACTION_AUTO_START:
-      vCONTROLLERstartAutoStart();
-      break;
-
-    case ACTION_AUTO_STOP:
-      if ( LOG_POSITIVE_ENABLE > 0U )
-      {
-        if ( controller.mode == CONTROLLER_MODE_MANUAL )
-        {
-          buffer.event.action = ACTION_NONE;
-        }
-        eLOGaddRecord( &buffer );
-      }
-      vCONTROLLERstartAutoStop();
-      break;
-
-    default:
-      break;
-  }
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState, uint8_t delayStop )
+void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState, PERMISSION delayOnStart )
 {
   ELECTRO_COMMAND electroCmd = ELECTRO_CMD_NONE;
 
@@ -191,11 +260,11 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
   {
     case CONTROLLER_TURNING_IDLE:
       vLOGICprintDebug( ">>Plan stop       : Start\r\n" );
-      if ( delayStop > 0U )
+      if ( delayOnStart == PERMISSION_ENABLE )
       {
         controller.timer.delay = controller.stopDelay;
-        vLOGICstartTimer( &controller.timer );
-        stopState = CONTROLLER_TURNING_DELAY;
+        vLOGICstartTimer( &controller.timer, "Controller timer    " );
+        stopState = CONTROLLER_TURNING_START_DELAY;
         vLOGICprintDebug( ">>Plan stop       : Delay trigger\r\n" );
       }
       else
@@ -205,8 +274,8 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       }
       break;
 
-    case CONTROLLER_TURNING_DELAY:
-      if ( uLOGICisTimer( controller.timer ) > 0U )
+    case CONTROLLER_TURNING_START_DELAY:
+      if ( uLOGICisTimer( &controller.timer ) > 0U )
       {
         stopState = CONTROLLER_TURNING_RELOAD;
         vLOGICprintDebug( ">>Plan stop       : Turn to mains\r\n" );
@@ -215,7 +284,7 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       {
         controller.state = CONTROLLER_STATUS_WORK;
         stopState        = CONTROLLER_TURNING_IDLE;
-        vLOGICresetTimer( controller.timer );
+        vLOGICresetTimer( &controller.timer );
         vLOGICprintDebug( ">>Plan stop       : Cancel\r\n" );
       }
       break;
@@ -244,9 +313,29 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       {
         vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
         vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON   );
-        controller.state = CONTROLLER_STATUS_IDLE;
+        if ( controller.errorAfterStop == PERMISSION_ENABLE )
+        {
+          controller.state          = CONTROLLER_STATUS_ERROR;
+          controller.errorAfterStop = PERMISSION_DISABLE;
+        }
+        else
+        {
+          controller.state = CONTROLLER_STATUS_IDLE;
+        }
         stopState        = CONTROLLER_TURNING_IDLE;
         vLOGICprintDebug( ">>Plan stop       : Finish\r\n" );
+        if ( eSTATUSgetStatus() == DEVICE_STATUS_ERROR )
+        {
+          vSTATUSsetup( DEVICE_STATUS_ERROR, LOGIC_DEFAULT_TIMER_ID );
+        }
+        else if ( eENGINEisStartBan() == PERMISSION_ENABLE )
+        {
+          vSTATUSsetup( DEVICE_STATUS_BAN_START, LOGIC_DEFAULT_TIMER_ID );
+        }
+        else
+        {
+          vSTATUSsetup( DEVICE_STATUS_READY_TO_START, LOGIC_DEFAULT_TIMER_ID );
+        }
       }
       break;
 
@@ -258,86 +347,131 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState )
+void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState, PERMISSION delayOnStart )
 {
   ELECTRO_COMMAND electroCmd = ELECTRO_CMD_NONE;
+  switch ( startState )
+  {
+    case CONTROLLER_TURNING_IDLE:
+      if ( eENGINEisStartBan() == PERMISSION_DISABLE )
+      {
+        if ( delayOnStart == PERMISSION_ENABLE )
+        {
+          controller.timer.delay = controller.startDelay;
+          vLOGICstartTimer( &controller.timer, "Controller timer    " );
+          vSTATUSsetup( DEVICE_STATUS_START_DELAY, controller.timer.id );
+          startState = CONTROLLER_TURNING_START_DELAY;
+          vLOGICprintDebug( ">>Autostart       : Delay trigger\r\n" );
+        }
+        else
+        {
+          startState = CONTROLLER_TURNING_READY;
+        }
+      }
+      else
+      {
+        vLOGICprintDebug( ">>Autostart       : Engine start ban\r\n" );
+      }
+      break;
 
+    case CONTROLLER_TURNING_START_DELAY:
+      if ( uLOGICisTimer( &controller.timer ) > 0U )
+      {
+        startState = CONTROLLER_TURNING_READY;
+      }
+      if ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) == FPI_LEVEL_LOW )
+      {
+        controller.state = CONTROLLER_STATUS_IDLE;
+        startState       = CONTROLLER_TURNING_IDLE;
+        vLOGICresetTimer( &controller.timer );
+        vLOGICprintDebug( ">>Autostart       : Cancel\r\n" );
+      }
+      break;
+
+    case CONTROLLER_TURNING_READY:
+      vLOGICprintDebug( ">>Autostart       : Start\r\n" );
+      vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+      vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
+      vFPIsetBlock();
+      if ( ( controller.powerOffImidiately == PERMISSION_ENABLE  ) &&
+           ( controller.banGenLoad         == PERMISSION_DISABLE ) )
+      {
+        electroCmd = ELECTRO_CMD_UNLOAD;
+        xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
+        vLOGICprintDebug( ">>Autostart       : Immediately turn off load\r\n" );
+      }
+      startState = CONTROLLER_TURNING_ENGINE;
+      break;
+
+    case CONTROLLER_TURNING_ENGINE:
+      vENGINEsendCmd( ENGINE_CMD_START );
+      startState = CONTROLLER_TURNING_RELOAD;
+      vLOGICprintDebug( ">>Autostart       : Turn on engine\r\n" );
+      break;
+
+    case CONTROLLER_TURNING_RELOAD:
+      if ( ( engineState           == ENGINE_STATUS_WORK ) &&
+           ( controller.banGenLoad == 0U ) )
+      {
+        electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
+        xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
+        startState = CONTROLLER_TURNING_DELAY;
+        vLOGICprintDebug( ">>Autostart       : Turn to generator\r\n" );
+      }
+      break;
+
+    case CONTROLLER_TURNING_DELAY:
+      if ( generatorState == ELECTRO_STATUS_LOAD )
+      {
+        controller.state = CONTROLLER_STATUS_WORK;
+        startState       = CONTROLLER_TURNING_IDLE;
+        vLOGICprintDebug( ">>Autostart       : Finish\r\n" );
+      }
+      break;
+
+    default:
+      startState = CONTROLLER_TURNING_IDLE;
+      vLOGICprintDebug( ">>Autostart       : Error\r\n" );
+      break;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState )
+{
   switch ( controller.state )
   {
     case CONTROLLER_STATUS_IDLE:
       break;
-    case CONTROLLER_STATUS_ALARM:
+    case CONTROLLER_STATUS_ERROR:
       break;
     /*--------------------------------------------------------------*/
     /*------------------------ REMOTE START ------------------------*/
     /*--------------------------------------------------------------*/
     case CONTROLLER_STATUS_START:
-      switch ( startState )
+      if ( controller.banAutoStart == 0U )
       {
-        case CONTROLLER_TURNING_IDLE:
-          if ( controller.banAutoStart == 0U )
-          {
-            startState = CONTROLLER_TURNING_READY;
-            vLOGICprintDebug( ">>Autostart       : Not banned\r\n" );
-          }
-          break;
-        case CONTROLLER_TURNING_READY:
-          vLOGICprintDebug( ">>Autostart       : Start\r\n" );
-          vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
-          vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
-          vFPIsetBlock();
-          if ( ( POWER_OFF_IMMEDIATELY > 0U  ) &&
-               ( controller.banGenLoad == 0U ) )
-          {
-            electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
-            xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
-            vLOGICprintDebug( ">>Autostart       : Immediately turn to generator\r\n" );
-          }
-          startState = CONTROLLER_TURNING_ENGINE;
-          break;
-        case CONTROLLER_TURNING_ENGINE:
-          vENGINEsendCmd( ENGINE_CMD_START );
-          startState = CONTROLLER_TURNING_RELOAD;
-          vLOGICprintDebug( ">>Autostart       : Turn on engine\r\n" );
-          break;
-        case CONTROLLER_TURNING_RELOAD:
-          if ( ( engineState           == ENGINE_STATUS_WORK ) &&
-               ( controller.banGenLoad == 0U ) )
-          {
-            electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
-            xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
-            startState = CONTROLLER_TURNING_DELAY;
-            vLOGICprintDebug( ">>Autostart       : Turn to generator\r\n" );
-          }
-          break;
-        case CONTROLLER_TURNING_DELAY:
-          if ( generatorState == ELECTRO_STATUS_LOAD )
-          {
-            controller.state = CONTROLLER_STATUS_WORK;
-            startState       = CONTROLLER_TURNING_IDLE;
-            vLOGICprintDebug( ">>Autostart       : Finish\r\n" );
-          }
-          break;
-        default:
-          startState = CONTROLLER_TURNING_IDLE;
-          vLOGICprintDebug( ">>Autostart       : Error\r\n" );
-          break;
+        vCONTROLLERstart( engineState, generatorState, mainsState, PERMISSION_DISABLE );
       }
+      break;
+    case CONTROLLER_STATUS_START_WITH_DELAY:
+      vCONTROLLERstart( engineState, generatorState, mainsState, PERMISSION_ENABLE );
       break;
     /*--------------------------------------------------------------*/
     /*------------------------- REMOTE STOP ------------------------*/
     /*--------------------------------------------------------------*/
     case CONTROLLER_STATUS_PLAN_STOP:
-      if ( ( controller.banAutoShutdown == 0U                          ) ||
-           ( controller.state           == CONTROLLER_STATUS_SHUTDOWN  ) )
+      if ( controller.banAutoShutdown == 0U )
       {
-        vCONTROLLERplanStop( engineState, generatorState, mainsState, 1U );
+        vCONTROLLERplanStop( engineState, generatorState, mainsState, PERMISSION_DISABLE );
       }
       break;
-    case CONTROLLER_STATUS_PLAN_STOP_DELAY:
+    case CONTROLLER_STATUS_PLAN_STOP_WITH_DELAY:
+      vCONTROLLERplanStop( engineState, generatorState, mainsState, PERMISSION_ENABLE );
       break;
-    case CONTROLLER_STATUS_SHUTDOWN:
-      break;
+    /*--------------------------------------------------------------*/
+    /*--------------------------------------------------------------*/
+    /*--------------------------------------------------------------*/
     case CONTROLLER_STATUS_WORK:
       break;
     default:
@@ -350,23 +484,25 @@ void vCONTROLLERautoProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generato
 void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState )
 {
   if ( ( engineState      == ENGINE_STATUS_WORK      ) &&
-       ( generatorState   == ELECTRO_STATUS_LOAD     ) &&
        ( controller.state == CONTROLLER_STATUS_START ) )
   {
     controller.state = CONTROLLER_STATUS_WORK;
   }
-
-  if ( ( controller.state == CONTROLLER_STATUS_PLAN_STOP ) ||
-       ( controller.state == CONTROLLER_STATUS_SHUTDOWN  ) )
+  if ( controller.state == CONTROLLER_STATUS_PLAN_STOP )
   {
-    vCONTROLLERplanStop( engineState, generatorState, mainsState, 0U );
+    vCONTROLLERplanStop( engineState, generatorState, mainsState, PERMISSION_DISABLE );
   }
   return;
 }
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERdataInit ( void )
 {
-  controller.stopDelay = getValue( &timerReturnDelay );
+  controller.stopDelay          = getValue( &timerReturnDelay );
+  controller.startDelay         = getValue( &timerStartDelay  );
+  controller.logWarning         = getBitMap( &logSetup,   LOG_SAVE_WARNING_EVENTS_ENB_ADR );
+  controller.logPositive        = getBitMap( &logSetup,   LOG_POSITIVE_EVENTS_ENB_ADR );
+  controller.powerOffImidiately = getBitMap( &mainsSetup, MAINS_POWER_OFF_IMMEDIATELY_ENB_ADR );
+  controller.errorAfterStop     = PERMISSION_DISABLE;
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -383,29 +519,78 @@ void vCONTROLLERprintStatus ( void )
   }
 
   return;
+/*----------------------------------------------------------------------------*/
 }
-
 void vCONTROLLERcheckAutoOn ( ENGINE_STATUS engineState )
 {
-  if ( controller.state != CONTROLLER_STATUS_ALARM )
+  if ( controller.state != CONTROLLER_STATUS_ERROR )
   {
     vFPOsetDpsReady( RELAY_ON );
-    if ( ( eELECTROgetMainsErrorFlag()            == TRIGGER_SET    ) ||
-         ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) == FPI_LEVEL_HIGH ) )
+    if ( eELECTROgetMainsErrorFlag() == TRIGGER_SET )
     {
-      vCONTROLLERstartAutoStart();
+      vCONTROLLERstartAutoStart( PERMISSION_DISABLE );
     }
-    if ( ( eELECTROgetMainsErrorFlag()            == TRIGGER_IDLE       ) &&
-         ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) != FPI_LEVEL_HIGH     ) &&
-         ( engineState                            != ENGINE_STATUS_IDLE ) )
+    else if ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) == FPI_LEVEL_HIGH )
     {
-      controller.state = CONTROLLER_STATUS_PLAN_STOP;
+      vCONTROLLERstartAutoStart( PERMISSION_ENABLE );
+    }
+    else
+    {
+
+    }
+    if ( engineState != ENGINE_STATUS_IDLE )
+    {
+      if ( eELECTROgetMainsErrorFlag() == TRIGGER_IDLE )
+      {
+        vCONTROLLERstartAutoStop( PERMISSION_DISABLE );
+      }
+      else if ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) != FPI_LEVEL_HIGH )
+      {
+        vCONTROLLERstartAutoStop( PERMISSION_ENABLE );
+      }
+      else
+      {
+
+      }
     }
   }
   return;
 }
 /*----------------------------------------------------------------------------*/
-/*----------------------- PABLICK --------------------------------------------*/
+void vCONTROLLERresetAlarm ( void )
+{
+  if ( ( controller.state  == CONTROLLER_STATUS_ERROR ) ||
+       ( controller.state  == CONTROLLER_STATUS_IDLE  ) )
+  {
+    /* Interior statuses and devices */
+    controller.state = CONTROLLER_STATUS_IDLE;
+    vLOGICresetTimer( &controller.timer );
+    vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+    /* Command to devices */
+    vENGINEsendCmd( ENGINE_CMD_RESET_TO_IDLE );
+    vELECTROsendCmd( ELECTRO_CMD_RESET_TO_IDLE );
+    vFPIreset();
+    /* Setup outputs */
+    vFPOsetAlarm( RELAY_OFF );
+    vFPOsetMainsFail( RELAY_OFF );
+    /* Setup log */
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
+    /* Output status */
+    vCONTROLLERprintStatus();
+    if ( eENGINEisStartBan() == PERMISSION_DISABLE )
+    {
+      vSTATUSsetup( DEVICE_STATUS_READY_TO_START, LOGIC_DEFAULT_TIMER_ID );
+    }
+    else
+    {
+      vSTATUSsetup( DEVICE_STATUS_BAN_START, LOGIC_DEFAULT_TIMER_ID );
+    }
+    //vLOGICprintActiveTimers();
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+/*----------------------- PUBLICC --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERinit ( const CONTROLLER_INIT* init )
 {
@@ -426,10 +611,32 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 CONTROLLER_STATE eCONTROLLERgetStatus ( void )
 {
   return controller.state;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERsetMode ( CONTROLLER_MODE mode )
+{
+  if ( mode == CONTROLLER_MODE_AUTO )
+  {
+    controller.mode = CONTROLLER_MODE_AUTO;
+    vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_ON  );
+    vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_OFF );
+  }
+  else
+  {
+    controller.mode = CONTROLLER_MODE_MANUAL;
+    vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF  );
+    vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON );
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+CONTROLLER_MODE eCONTROLLERgetMode ( void )
+{
+  return controller.mode;
 }
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERtask ( void* argument )
@@ -442,7 +649,7 @@ void vCONTROLLERtask ( void* argument )
   FPI_EVENT       inputFpiEvent        = { 0U };
   uint32_t        inputNotifi          = 0U;
   uint8_t         inputKeyboardCommand = HMI_CMD_NONE;
-
+  uint32_t        systemEvent          = 0U;
   for (;;)
   {
     /*--------------------------------------------------------------------------------------------*/
@@ -456,10 +663,13 @@ void vCONTROLLERtask ( void* argument )
     /*--------------------------------------------------------------------------------------------*/
 
     /*--------------------------------------- SYSTEM INPUT ---------------------------------------*/
-    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT ) > 0U )
+    systemEvent = xEventGroupGetBits( xDATAAPIgetEventGroup() );
+    if ( ( systemEvent & DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT ) > 0U )
     {
       vCONTROLLERdataInit();
       vFPOdataInit();
+      vALARMreInit();
+      vCONTROLLERresetAlarm();
       xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT );
     }
     /*-------------------------------------- KEYBOARD INPUT ---------------------------------------*/
@@ -469,16 +679,26 @@ void vCONTROLLERtask ( void* argument )
       switch ( inputKeyboardCommand )
       {
         case HMI_CMD_START:
-          if ( ( controller.state != CONTROLLER_STATUS_ALARM ) && ( controller.mode  == CONTROLLER_MODE_MANUAL ) )
+          if ( ( controller.state != CONTROLLER_STATUS_ERROR ) && ( controller.mode  == CONTROLLER_MODE_MANUAL ) )
           {
             /* START */
             if ( engineState == ENGINE_STATUS_IDLE )
             {
-              vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
-              vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
-              vFPIsetBlock();
-              controller.state = CONTROLLER_STATUS_START;
-              vENGINEsendCmd( ENGINE_CMD_START );
+              if ( eENGINEisStartBan() == PERMISSION_DISABLE )
+              {
+                vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+                vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
+                vFPIsetBlock();
+                controller.state = CONTROLLER_STATUS_START;
+                vENGINEsendCmd( ENGINE_CMD_START );
+              }
+              else
+              {
+                vLOGICprintDebug( ">>Start           : Engine start ban\r\n" );
+                vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
+                osDelay(10U);
+                vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
+              }
             }
             /* LOAD */
             else
@@ -527,28 +747,40 @@ void vCONTROLLERtask ( void* argument )
             {
               switch ( controller.state )
               {
+                case CONTROLLER_STATUS_IDLE:
+                  vCONTROLLERresetAlarm();
+                  break;
+                case CONTROLLER_STATUS_ERROR:
+                  vCONTROLLERresetAlarm();
+                  break;
                 case CONTROLLER_STATUS_WORK:
-                  controller.state = CONTROLLER_STATUS_PLAN_STOP;
-                  stopState        = CONTROLLER_TURNING_IDLE;
+                  if ( eELECTROgetStatus() == ELECTRO_PROC_STATUS_IDLE )
+                  {
+                    controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                    stopState        = CONTROLLER_TURNING_IDLE;
+                  }
                   break;
                 case CONTROLLER_STATUS_START:
-                  controller.state = CONTROLLER_STATUS_PLAN_STOP;
+                  interiorEvent.type   = EVENT_INTERRUPTED_START;
+                  interiorEvent.action = ACTION_EMERGENCY_STOP;
+                  vSYSeventSend( interiorEvent, NULL );
+                  controller.state = CONTROLLER_STATUS_ERROR;
                   stopState        = CONTROLLER_TURNING_IDLE;
                   break;
                 case CONTROLLER_STATUS_PLAN_STOP:
                   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
-                  interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                  interiorEvent.type   = EVENT_INTERRUPTED_STOP;
                   interiorEvent.action = ACTION_EMERGENCY_STOP;
                   vSYSeventSend( interiorEvent, NULL );
-                  controller.state = CONTROLLER_STATUS_ALARM;
+                  controller.state = CONTROLLER_STATUS_ERROR;
                   stopState        = CONTROLLER_TURNING_IDLE;
                   break;
-                case CONTROLLER_STATUS_PLAN_STOP_DELAY:
+                case CONTROLLER_STATUS_PLAN_STOP_WITH_DELAY:
                   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
-                  interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+                  interiorEvent.type   = EVENT_INTERRUPTED_STOP;
                   interiorEvent.action = ACTION_EMERGENCY_STOP;
                   vSYSeventSend( interiorEvent, NULL );
-                  controller.state = CONTROLLER_STATUS_ALARM;
+                  controller.state = CONTROLLER_STATUS_ERROR;
                   stopState        = CONTROLLER_TURNING_IDLE;
                   break;
                 default:
@@ -556,22 +788,22 @@ void vCONTROLLERtask ( void* argument )
               }
             }
           }
+          else
+          {
+            vCONTROLLERresetAlarm();
+          }
           break;
         case HMI_CMD_AUTO:
           /* MANUAL */
           if ( ( CONTROLLER_MANUAL_BTN_EXIST == 0U ) && ( controller.mode == CONTROLLER_MODE_AUTO ) )
           {
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
+            vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
             vFPOsetDpsReady( RELAY_OFF );
-            controller.mode = CONTROLLER_MODE_MANUAL;
           }
           /* AUTO */
           else if ( controller.mode  == CONTROLLER_MODE_MANUAL )
           {
-            controller.mode = CONTROLLER_MODE_AUTO;
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_ON  );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_OFF );
+            vCONTROLLERsetMode( CONTROLLER_MODE_AUTO );
             vCONTROLLERcheckAutoOn ( engineState );
           }
           else
@@ -583,11 +815,12 @@ void vCONTROLLERtask ( void* argument )
         case HMI_CMD_MANUAL:
           if ( controller.mode == CONTROLLER_MODE_AUTO )
           {
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
+            vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
             vFPOsetDpsReady( RELAY_OFF );
-            controller.mode = CONTROLLER_MODE_MANUAL;
           }
+          break;
+        case HMI_CMD_ACK:
+          vCONTROLLERresetAlarm();
           break;
         default:
           break;
@@ -605,20 +838,9 @@ void vCONTROLLERtask ( void* argument )
           break;
         /*------------------------- Сброс аварийного сигнала -------------------------*/
         case FPI_FUN_ALARM_RESET:
-          if ( ( ( controller.state  == CONTROLLER_STATUS_ALARM ) ||
-                 ( controller.state  == CONTROLLER_STATUS_IDLE  ) ) &&
-               ( inputFpiEvent.level == FPI_LEVEL_HIGH ) )
+          if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
-            controller.state = CONTROLLER_STATUS_IDLE;
-            vENGINEsendCmd( ENGINE_CMD_RESET_TO_IDLE );
-            vFPIreset();
-            vFPOsetAlarm( RELAY_OFF );
-            vFPOsetMainsFail( RELAY_OFF );
-            eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
-            controller.mode = CONTROLLER_MODE_MANUAL;
-            vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF );
-            vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON  );
-            vCONTROLLERprintStatus();
+            vCONTROLLERresetAlarm();
           }
           break;
         /*---- Запрет автоматического останова при восстановлении параметров сети ----*/
@@ -664,11 +886,11 @@ void vCONTROLLERtask ( void* argument )
         case FPI_FUN_REMOTE_START:
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
-            vCONTROLLERstartAutoStart();
+            vCONTROLLERstartAutoStart( PERMISSION_ENABLE );
           }
           else
           {
-            vCONTROLLERstartAutoStop();
+            vCONTROLLERstartAutoStop( PERMISSION_ENABLE );
           }
           break;
         /*---------------------- Высокая температура двигателя -----------------------*/
@@ -718,7 +940,7 @@ void vCONTROLLERtask ( void* argument )
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- CONTROLLER PROCESSING -----------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
-    if ( controller.state != CONTROLLER_STATUS_ALARM )
+    if ( controller.state != CONTROLLER_STATUS_ERROR )
     {
       switch( controller.mode )
       {

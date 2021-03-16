@@ -15,13 +15,16 @@
 static StaticQueue_t      xEventQueue;
 static QueueHandle_t      pEventQueue;
 static SemaphoreHandle_t  xSYSTIMERsemaphore = NULL;
+static DEVICE_INFO        deviceInfo         = { 0U };
 /*--------------------------------- Constant ---------------------------------*/
 const fix16_t fix100U = F16( 100U );
 const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",
     "Предупреждение",
     "Аварийная остановка",
+    "Отключение",
     "Плановая остановка",
+    "Остановка до устранения ошибки",
     "Запрет следующего старта",
     "Автостарт",
     "Автостоп"
@@ -62,10 +65,13 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Двигатель запущен",
     "Двигатель остановлен",
     "Сеть востановлена",
-    "Ошибка сети"
+    "Ошибка сети",
+    "Прерванный старт",
+    "Прерванная остановка",
+    "Ошибка общего провода датчиков"
 };
 #if ( DEBUG_SERIAL_ALARM > 0U )
-  const char* eventTypesStr[] =
+  const char* eventTypesStr[LOG_TYPES_SIZE] =
   {
     "NONE",                       /* NONE */
     "EXTERN_EMERGENCY_STOP",      /* EMERGENCY_STOP */
@@ -102,34 +108,113 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "MAINS_ENGINE_START",
     "MAINS_ENGINE_STOP",
     "MAINS_OK",
-    "MAINS_FAIL"
+    "MAINS_FAIL",
+    "INTERRUPTED_START",
+    "INTERRUPTED_STOP",
+    "SENSOR_COMMON_ERROR",
+    "USER_FUNCTION_A",
+    "USER_FUNCTION_B",
+    "USER_FUNCTION_C",
+    "USER_FUNCTION_D",
+    "MAINS_PHASE_SEQUENCE",
+    "GENERATOR_PHASE_SEQUENCE",
   };
-  const char* alarmActionStr[] =
+  const char* alarmActionStr[LOG_ACTION_SIZE] =
   {
     "NONE",
     "WARNING",
     "EMERGENCY_STOP",
+    "SHUTDOWN",
     "PLAN_STOP",
+    "PLAN_STOP_AND_BAN_START",
     "BAN_START",
     "AUTO_START",
     "AUTO_STOP"
   };
 #endif
+
+static const char* deviceStatusDic[DEVICE_STATUS_NUMBER] =
+{
+  "Загрузка...",        /* 00 */
+  "Готов к запуску",    /* 01 */
+  "Дистанционный пуск", /* 02 */
+  "Предпрогрев",        /* 03 */
+  "Работа стартера",    /* 04 */
+  "Пауза стартера",     /* 05 */
+  "Возбуждение",        /* 06 */
+  "Прогрев Х.Х.",       /* 07 */
+  "Прогрев",            /* 08 */
+  "В работе",           /* 09 */
+  "Охлаждение",         /* 10 */
+  "Охлаждение Х.Х.",    /* 11 */
+  "Останов",            /* 12 */
+  "Аварийный останов",  /* 13 */
+  "Запрет пуска"        /* 14 */
+};
 /*-------------------------------- Variables ---------------------------------*/
-static uint8_t   eventBuffer[ EVENT_QUEUE_LENGTH * sizeof( LOG_RECORD_TYPE ) ] = { 0U };
-static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                              = { 0U };
-static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                             = { 0U };
-static timerID_t aciveCounters                                                 = 0U;
-static timerID_t activeNumber                                                  = 0U;
+static uint8_t   eventBuffer[EVENT_QUEUE_LENGTH * sizeof( LOG_RECORD_TYPE )] = { 0U };
+static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                            = { 0U };
+static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                           = { 0U };
+static timerID_t aciveCounters                                               = 0U;
+static timerID_t activeNumber                                                = 0U;
+#ifdef DEBUG
+static char timerNames[LOGIC_COUNTERS_SIZE][TIMER_NAME_LENGTH] = { 0U };
+#endif
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-
-
+PERMISSION eSTATUSisTimer ( DEVICE_STATUS status )
+{
+  PERMISSION res = PERMISSION_ENABLE;
+  if ( ( status == DEVICE_STATUS_IDLE           ) ||
+       ( status == DEVICE_STATUS_READY_TO_START ) ||
+       ( status == DEVICE_STATUS_WORKING        ) ||
+       ( status == DEVICE_STATUS_ERROR ) ||
+       ( status == DEVICE_STATUS_BAN_START      ) )
+  {
+    res = PERMISSION_DISABLE;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+void vSTATUScalcTime ( void )
+{
+  if ( deviceInfo.timerID < LOGIC_COUNTERS_SIZE )
+  {
+    deviceInfo.time = ( uint16_t )( ( targetArray[deviceInfo.timerID] - counterArray[deviceInfo.timerID] ) / 10U ); /* sec */
+  }
+  return;
+}
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+const char* cSTATUSgetString ( DEVICE_STATUS status )
+{
+  return deviceStatusDic[status];
+}
+/*----------------------------------------------------------------------------*/
+DEVICE_STATUS eSTATUSgetStatus ( void )
+{
+  return deviceInfo.status;
+}
+/*----------------------------------------------------------------------------*/
+void vSTATUSget ( DEVICE_INFO* info )
+{
+  vSTATUScalcTime();
+  *info = deviceInfo;
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vSTATUSsetup ( DEVICE_STATUS status, timerID_t id )
+{
+  deviceInfo.status  = status;
+  deviceInfo.timer   = eSTATUSisTimer( status );
+  deviceInfo.timerID = id;
+  vSTATUScalcTime();
+  return;
+}
 /*----------------------------------------------------------------------------*/
 void vLOGICprintTime ( uint32_t time )
 {
@@ -158,7 +243,7 @@ void vLOGICprintLogRecord ( LOG_RECORD_TYPE record )
 void vLOGICprintEvent ( SYSTEM_EVENT event )
 {
   #if ( DEBUG_SERIAL_ALARM > 0U )
-    vSYSSerial( ">>Event: " );
+    vSYSSerial( ">>Event           : " );
     vSYSSerial( eventTypesStr[event.type] );
     vSYSSerial( "; Action: " );
     vSYSSerial( alarmActionStr[event.action] );
@@ -168,12 +253,13 @@ void vLOGICprintEvent ( SYSTEM_EVENT event )
 }
 /*-----------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
+/*----------------------------------  ------------------------------------------*/
 void vLOGICinit ( TIM_HandleTypeDef* tim )
 {
   pEventQueue = xQueueCreateStatic( EVENT_QUEUE_LENGTH, sizeof( LOG_RECORD_TYPE ), eventBuffer, &xEventQueue );
   HAL_TIM_Base_Start_IT( tim );
   xSYSTIMERsemaphore = xSemaphoreCreateMutex();
+  deviceInfo.timerID = LOGIC_DEFAULT_TIMER_ID;
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
@@ -201,32 +287,60 @@ void vLOGICtimerHandler ( void )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
+uint8_t uLOGICisTimerActive ( SYSTEM_TIMER timer )
 {
-  TIMER_ERROR stat = TIMER_OK;
-  uint16_t    inc  = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_to_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
-  uint8_t     i    = 0U;
-
-  if ( activeNumber > 2 )
+  uint8_t res = 0U;
+  if ( timer.id < LOGIC_COUNTERS_SIZE )
   {
-    i = 0U;
+    res = 1U;
   }
+  return res;
+}
+/*-----------------------------------------------------------------------------------------*/
+TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer, char* name )
+{
+  TIMER_ERROR stat         = TIMER_OK;
+  uint16_t    inc          = 0U;
+  uint8_t     i            = 0U;
+  uint8_t     j            = 0U;
+  uint8_t     alreadyExist = 0U;
+
   if ( activeNumber < LOGIC_COUNTERS_SIZE )
   {
-    for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+    inc = ( uint16_t )( fix16_to_int( fix16_mul( timer->delay, fix16_from_float( 1000U / LOGIC_TIMER_STEP ) ) ) ); /* Delay in units of 0.1 milliseconds */
+    /*-----------------------------------------*/
+    if ( timer->id > LOGIC_COUNTERS_SIZE )
     {
-      if ( ( aciveCounters & ( 1U << i ) ) == 0U )
+      for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
       {
-        break;
+        if ( ( aciveCounters & ( 1U << i ) ) == 0U )
+        {
+          break;
+        }
       }
+      timer->id = i;
     }
-    timer->id = i;
+    else
+    {
+      alreadyExist = 1U;
+    }
+    /*-----------------------------------------*/
     if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {
+      #ifdef DEBUG
+        for ( j=0U; j<TIMER_NAME_LENGTH; j++ )
+        {
+          timerNames[i][j] = name[j];
+        }
+        timerNames[i][TIMER_NAME_LENGTH - 1U] = 0x00U;
+      #endif
       targetArray[timer->id]  = inc;
       counterArray[timer->id] = 0U;
-      aciveCounters          |= 1U << timer->id;
-      activeNumber++;
+      if ( alreadyExist == 0U )
+      {
+        aciveCounters          |= 1U << timer->id;
+        activeNumber++;
+      }
       xSemaphoreGive( xSYSTIMERsemaphore );
     }
     else
@@ -241,36 +355,53 @@ TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer )
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER timer )
+TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER* timer ) /* Проверить стоит ли сделать указатель */
 {
   TIMER_ERROR stat = TIMER_OK;
-  if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
+  if ( timer->id <= LOGIC_COUNTERS_SIZE )
   {
-    aciveCounters  &= ~( 1U << timer.id );
-    targetArray[timer.id] = 0U;
-    if ( activeNumber > 0U )
+    if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {
-      activeNumber--;
+      aciveCounters         &= ~( 1U << timer->id );
+      targetArray[timer->id]  = 0U;
+      if ( activeNumber > 0U )
+      {
+        activeNumber--;
+      }
+      else
+      {
+        stat = TIMER_NO_SPACE;
+      }
+      timer->id = LOGIC_DEFAULT_TIMER_ID;
+      xSemaphoreGive( xSYSTIMERsemaphore );
     }
     else
     {
-      stat = TIMER_NO_SPACE;
+      stat = TIMER_ACCESS;
     }
-    xSemaphoreGive( xSYSTIMERsemaphore );
-  }
-  else
-  {
-    stat = TIMER_ACCESS;
   }
   return stat;
 }
 /*-----------------------------------------------------------------------------------------*/
-uint8_t uLOGICisTimer ( SYSTEM_TIMER timer )
+void vLOGICresetAllTimers ( void )
+{
+  uint8_t i = 0U;
+  aciveCounters = 0U;
+  activeNumber  = 0U;
+  for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+  {
+    targetArray[i]  = 0U;
+    counterArray[i] = 0U;
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+uint8_t uLOGICisTimer ( SYSTEM_TIMER* timer )
 {
   uint8_t res = 0U;
-  if ( ( ( 1U << timer.id ) & aciveCounters ) )
+  if ( ( ( 1U << timer->id ) & aciveCounters ) )
   {
-    if ( targetArray[timer.id] <= counterArray[timer.id] )
+    if ( targetArray[timer->id] <= counterArray[timer->id] )
     {
       if ( vLOGICresetTimer( timer ) == TIMER_OK )
       {
@@ -283,6 +414,39 @@ uint8_t uLOGICisTimer ( SYSTEM_TIMER timer )
     res = 1U;
   }
   return res;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vLOGICprintActiveTimers ( void )
+{
+  uint8_t i          = 0U;
+  char    buffer[3U] = { 0U };
+  #ifdef DEBUG
+  if ( ( activeNumber == 0U ) && ( aciveCounters == 0U ) )
+  {
+    vLOGICprintDebug( ">>************************\r\n" );
+    vLOGICprintDebug( ">>No active timers \r\n" );
+    vLOGICprintDebug( ">>************************\r\n" );
+  }
+  else
+  {
+    vLOGICprintDebug( ">>************************\r\n" );
+    sprintf( buffer,  "%d", activeNumber );
+    vLOGICprintDebug( ">>There are " );
+    vLOGICprintDebug( buffer );
+    vLOGICprintDebug( " active timers\r\n" );
+    for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+    {
+      if ( ( aciveCounters & ( 1U << i ) ) > 0U )
+      {
+        vLOGICprintDebug( ">>" );
+        vLOGICprintDebug( timerNames[i] );
+        vLOGICprintDebug( "\r\n" );
+      }
+    }
+    vLOGICprintDebug( ">>************************\r\n" );
+  }
+  #endif
+  return;
 }
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerCallback ( void )
@@ -356,6 +520,16 @@ void vRELAYautoProces ( RELAY_AUTO_DEVICE* device, fix16_t value )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vRELAYset ( RELAY_DEVICE* relay, RELAY_STATUS status )
+{
+  if ( relay->enb == PERMISSION_ENABLE )
+  {
+    relay->set( status );
+    relay->status = status;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void vRELAYdelayTrig ( RELAY_DELAY_DEVICE* device )
 {
   if ( device->triger == 0U )
@@ -374,14 +548,14 @@ void vRELAYdelayProcess ( RELAY_DELAY_DEVICE* device )
       case RELAY_DELAY_IDLE:
         if ( device->triger > 0U )
         {
-          vLOGICstartTimer( &device->timer );
+          vLOGICstartTimer( &device->timer, "Relay device        " );
           device->relay.set( RELAY_ON );
           device->relay.status = RELAY_ON;
           device->status       = RELAY_DELAY_WORK;
         }
         break;
       case RELAY_DELAY_WORK:
-        if ( uLOGICisTimer( device->timer ) > 0U )
+        if ( uLOGICisTimer( &device->timer ) > 0U )
         {
           device->relay.set( RELAY_OFF );
           device->relay.status = RELAY_OFF;
@@ -424,9 +598,9 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
       if ( ( device->relay.status == RELAY_ON ) && ( device->status != RELAY_IMPULSE_START ) )
       {
         device->status = RELAY_IMPULSE_START;
-        vLOGICstartTimer( &device->timer );
+        vLOGICstartTimer( &device->timer, "Relay device        " );
       }
-      if ( ( device->status == RELAY_IMPULSE_START ) && ( uLOGICisTimer( device->timer ) > 0U ) )
+      if ( ( device->status == RELAY_IMPULSE_START ) && ( uLOGICisTimer( &device->timer ) > 0U ) )
       {
         device->status = RELAY_IMPULSE_DONE;
       }

@@ -377,8 +377,9 @@ STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
 /*---------------------------------------------------------------------------------------------------*/
 STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream )
 {
-  LOG_RECORD_TYPE record;
+  LOG_RECORD_TYPE record = { 0U };
   uint8_t         shift  = 0U;
+  uint16_t        adr    = 0U;
   if ( stream->index >= ( stream->size - 1U ) )
   {
     stream->status = STREAM_END;
@@ -391,7 +392,8 @@ STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream )
       restBuffer[0U] = '[';
     }
   }
-  if ( eDATAAPIlog( DATA_API_CMD_LOAD, stream->index, &record ) != DATA_API_STAT_OK )
+  adr = ( uint16_t )stream->index;
+  if ( eDATAAPIlog( DATA_API_CMD_LOAD, &adr, &record ) != DATA_API_STAT_OK )
   {
     stream->status = STREAM_ERROR;
   }
@@ -689,7 +691,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         {
 	        if ( eRESTparsingTime( content, &time ) == REST_OK )
 	        {
-	          if ( vRTCsetTime( &time ) == RTC_OK )
+	          if ( eRTCsetTime( &time ) == RTC_OK )
 	          {
               response->contetntType  = HTTP_CONTENT_JSON;
               response->status        = HTTP_STATUS_OK;
@@ -733,7 +735,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
       case REST_LOG_ERASE:
         if ( eHTTPisAuth( remoteIP ) )
         {
-          if ( eDATAAPIlog( DATA_API_CMD_ERASE, 0U, NULL ) == DATA_API_STAT_OK )
+          if ( eDATAAPIlog( DATA_API_CMD_ERASE, NULL, NULL ) == DATA_API_STAT_OK )
           {
             response->contetntType  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
@@ -837,6 +839,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
   HTTP_STREAM*    stream                     = NULL;
   uint32_t        i                          = 0U;
   uint32_t        ewaLen                     = 0U;
+  uint16_t        logAdr                     = 0U;
   uint8_t         buffer[EEPROM_LENGTH_SIZE] = { 0U };
   DATA_API_STATUS status                     = DATA_API_STAT_OK;
   LOG_RECORD_TYPE record                     = { 0U };
@@ -995,7 +998,8 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->callBack = cHTTPstreamLog;
             for ( i=0U; i<stream->size; i++ )
             {
-              status = eDATAAPIlog( DATA_API_CMD_LOAD, i, &record );
+              logAdr = ( uint16_t )i;
+              status = eDATAAPIlog( DATA_API_CMD_LOAD, &logAdr, &record );
               response->contentLength += uRESTmakeLog( &record, restBuffer );
             }
             response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */

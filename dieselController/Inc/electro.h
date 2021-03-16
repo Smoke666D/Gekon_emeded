@@ -17,19 +17,14 @@
 #define  MAINS_LINE_NUMBER                 3U
 #define  ELECTRO_COMMAND_QUEUE_LENGTH      10U
 #define  POWER_USAGE_CALC_TIMEOUT          5U     /* sec */
+#define  CURRENT_TIMER_STEP                100U  /* ms */
 
-#define  TEMP_PROTECTION_TIME_MULTIPLIER   36U    /* t */
-#define  CUTOUT_PROTECTION_TRIPPING_CURVE  0.001f /* K */
+#define  TEMP_PROTECTION_TRIPPING_CURVE    36U
+#define  TEMP_PROTECTION_MAX_TIME          120U  /* sec */
+#define  CUTOUT_PROTECTION_TRIPPING_CURVE  0.01f
 #define  SHORT_CIRCUIT_CONSTANT            0.14f
 #define  CUTOUT_POWER                      0.02f
 /*------------------------- Enum ---------------------------------------*/
-typedef enum
-{
-  ELECTRO_SCHEME_START,
-  ELECTRO_SCHEME_TRIANGLE,
-  ELECTRO_SCHEME_SINGLE_PHASE,
-} ELECTRO_SCHEME;
-
 typedef enum
 {
   ELECTRO_STATUS_IDLE,
@@ -41,6 +36,7 @@ typedef enum
   ELECTRO_CMD_NONE,
   ELECTRO_CMD_LOAD_MAINS,
   ELECTRO_CMD_LOAD_GENERATOR,
+  ELECTRO_CMD_UNLOAD,
   ELECTRO_CMD_ENABLE_STOP_ALARMS,
   ELECTRO_CMD_DISABLE_START_ALARMS,
   ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS,
@@ -60,9 +56,7 @@ typedef enum
 typedef enum
 {
   ELECTRO_CURRENT_STATUS_IDLE,
-  ELECTRO_CURRENT_STATUS_OVER_TRIG,
-  ELECTRO_CURRENT_STATUS_OVER_COOLDOWN,
-  ELECTRO_CURRENT_STATUS_CUTOUT_TRIG,
+  ELECTRO_CURRENT_STATUS_TRIG,
   ELECTRO_CURRENT_STATUS_ALARM,
 } ELECTRO_CURRENT_STATUS;
 
@@ -86,7 +80,6 @@ typedef struct __packed
 {
   getValueCallBack  getVoltage;
   getValueCallBack  getCurrent;
-  getValueCallBack  getPower;
 } ELECTRO_CHANNEL;
 
 typedef struct __packed
@@ -98,51 +91,49 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  fix16_t primary;
-  fix16_t nominal;
-} RATING_CURRENT;
-
-typedef struct __packed
-{
-  POWER_TYPE     power;
-  fix16_t        cosFi;
-  fix16_t        freq;
-  RATING_CURRENT current;
+  POWER_TYPE power;
+  fix16_t    cosFi;
+  fix16_t    freq;
+  fix16_t    current;
 } GENERATOR_RATING;
 
 typedef struct __packed
 {
   fix16_t      current;
-  fix16_t      delay;
+  uint32_t     delay;
+  uint32_t     counter;
+  PERMISSION   active  : 1U;
   SYSTEM_EVENT event;
 } CURRENT_SETTING_TYPE;
 
 typedef struct __packed
 {
-  ELECTRO_CURRENT_STATUS state;
-  CURRENT_SETTING_TYPE   over;
+  ELECTRO_CURRENT_STATUS state  : 3U;
+  CURRENT_SETTING_TYPE   thermal;
   CURRENT_SETTING_TYPE   cutout;
   TIM_HandleTypeDef*     tim;
 } CURRENT_ALARM_TYPE;
 
 typedef struct __packed
 {
-  ELECTRO_COMMAND         cmd;
-  ELECTRO_SCHEME          scheme;
-  ELECTRO_PROCESS_STATUS  state;
-  ELECTRO_ALARM_STATUS    alarmState;
+  ELECTRO_COMMAND         cmd        : 4U;
+  ELECTRO_SCHEME          scheme     : 2U;
+  ELECTRO_PROCESS_STATUS  state      : 2U;
+  ELECTRO_ALARM_STATUS    alarmState : 3U;
   SYSTEM_TIMER            timer;
 } ELECTRO_SYSTEM_TYPE;
 
 typedef struct __packed
 {
-  uint8_t            enb;
-  ELECTRO_STATUS     state;
+  PERMISSION         enb    : 1U;
+  ELECTRO_STATUS     state  : 1U;
+  SYSTEM_TIMER       timer;
+  /*----------- DATA -----------*/
   GENERATOR_RATING   rating;
+  /*---------- INPUT -----------*/
+  getValueCallBack   getPower;
   ELECTRO_CHANNEL    line[GENERATOR_LINE_NUMBER];
   getValueCallBack   getFreq;
-
-  SYSTEM_TIMER       timer;
   /*---------- ALARMS ----------*/
   ALARM_TYPE         lowVoltageAlarm;
   ALARM_TYPE         lowVoltagePreAlarm;
@@ -152,9 +143,11 @@ typedef struct __packed
   ALARM_TYPE         lowFreqPreAlarm;
   ALARM_TYPE         hightFreqAlarm;
   ALARM_TYPE         hightFreqPreAlarm;
-  ALARM_TYPE         overloadAlarm;
-  ALARM_TYPE         phaseImbalanceAlarm;
+  ALARM_TYPE         powerAlarm;            /* Power protection */
+  ALARM_TYPE         phaseImbalanceAlarm;   /* Phase imbalance protection */
+  ALARM_TYPE         currentWarningAlarm;   /* Simple level alarm */
   CURRENT_ALARM_TYPE currentAlarm;
+  ERROR_TYPE         phaseSequenceError;
   /*---------- OUTPUT ----------*/
   RELAY_DEVICE       relay;
   RELAY_DELAY_DEVICE relayOn;
@@ -163,16 +156,17 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  uint8_t            enb;
-  ELECTRO_STATUS     state;
+  PERMISSION         enb         : 1U;
+  ELECTRO_STATUS     state       : 1U;
+  PERMISSION         alarmsIgnor : 1U;
   ELECTRO_CHANNEL    line[MAINS_LINE_NUMBER];
   getValueCallBack   getFreq;
   /*---------- ALARMS ----------*/
-  PERMISSION         alarmsIgnor;
   ALARM_TYPE         lowVoltageAlarm;
   ALARM_TYPE         hightVoltageAlarm;
   ALARM_TYPE         lowFreqAlarm;
   ALARM_TYPE         hightFreqAlarm;
+  ERROR_TYPE         phaseSequenceError;
   /*---------- EVENTS ----------*/
   ERROR_TYPE         autoStart;
   ERROR_TYPE         autoStop;
@@ -184,13 +178,15 @@ typedef struct __packed
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
-void                 vELECTROinit ( void );
-ELECTRO_STATUS       eELECTROgetGeneratorStatus ( void );
-ELECTRO_STATUS       eELECTROgetMainsStatus ( void );
-ELECTRO_ALARM_STATUS eELECTROgetAlarmStatus ( void );
-QueueHandle_t        pELECTROgetCommandQueue ( void );
-void                 vELECTROsendCmd ( ELECTRO_COMMAND cmd );
-fix16_t              fELECTROgetMaxGenVoltage ( void );
-TRIGGER_STATE        eELECTROgetMainsErrorFlag ( void );
+void                   vELECTROtimCallback ( void );
+void                   vELECTROinit ( TIM_HandleTypeDef* tim );
+ELECTRO_STATUS         eELECTROgetGeneratorStatus ( void );
+ELECTRO_STATUS         eELECTROgetMainsStatus ( void );
+ELECTRO_PROCESS_STATUS eELECTROgetStatus( void );
+ELECTRO_ALARM_STATUS   eELECTROgetAlarmStatus ( void );
+QueueHandle_t          pELECTROgetCommandQueue ( void );
+void                   vELECTROsendCmd ( ELECTRO_COMMAND cmd );
+fix16_t                fELECTROgetMaxGenVoltage ( void );
+TRIGGER_STATE          eELECTROgetMainsErrorFlag ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

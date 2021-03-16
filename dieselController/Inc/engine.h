@@ -17,113 +17,100 @@
 /*------------------------ Define --------------------------------------*/
 #define  ENGINE_EVENT_QUEUE_LENGTH      16U
 #define  ENGINE_COMMAND_QUEUE_LENGTH    8U
-#define  ENGINE_OIL_PRESSURE_TRESH_HOLD 3000U
-#define  SENSOR_CUTOUT_LEVEL            ( fix16_from_int( MAX_RESISTANCE - 200U ) )
-#define  CHARGER_IMPULSE_DURATION       5U                                          /* sec */
+#define  SENSOR_CUTOUT_LEVEL            1U //( MAX_RESISTANCE )
+#define  CHARGER_IMPULSE_DURATION       5U /* sec */
 #define  CHARGER_ATTEMPTS_NUMBER        5U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  SENSOR_TYPE_NONE,
-  SENSOR_TYPE_NORMAL_OPEN,
-  SENSOR_TYPE_NORMAL_CLOSE,
-  SENSOR_TYPE_RESISTIVE,
-  SENSOR_TYPE_CURRENT,
-} SENSOR_TYPE;
-
-typedef enum
-{
-  SENSOR_STATUS_NORMAL,
-  SENSOR_STATUS_ERROR,
-  SENSOR_STATUS_LINE_ERROR,
-  SENSOR_STATUS_COMMON_ERROR,
-} SENSOR_STATUS;
-
-typedef enum
-{
-  ENGINE_CMD_NONE,
-  ENGINE_CMD_START,          /* Ignition */
-  ENGINE_CMD_PLAN_STOP,
-  ENGINE_CMD_PLAN_STOP_WITH_DELAY,
-  ENGINE_CMD_GOTO_IDLE,
-  ENGINE_CMD_GOTO_NORMAL,
-  ENGINE_CMD_EMEGENCY_STOP,
-  ENGINE_CMD_RESET_TO_IDLE,
-  ENGINE_CMD_BAN_START,
-  ENGINE_CMD_ALLOW_START,
+  ENGINE_CMD_NONE,                    /* 00 None                                                      */
+  ENGINE_CMD_START,                   /* 01 Ignition                                                  */
+  ENGINE_CMD_PLAN_STOP,               /* 02 Cool down stop process without error                      */
+  ENGINE_CMD_GOTO_IDLE,               /* 03 Switch engine to idle from work                           */
+  ENGINE_CMD_GOTO_NORMAL,             /* 04 Switch engine to work from idle                           */
+  ENGINE_CMD_EMEGENCY_STOP,           /* 05 Immediate engine stop with error                          */
+  ENGINE_CMD_RESET_TO_IDLE,           /* 06 Reset all errors                                          */
+  ENGINE_CMD_BAN_START,               /* 07 Ban next start without stop                               */
 } ENGINE_COMMAND;
 
 typedef enum
 {
-  ENGINE_STATUS_IDLE,
-  ENGINE_STATUS_EMERGENCY_STOP,
-  ENGINE_STATUS_BUSY_STARTING,
-  ENGINE_STATUS_BUSY_STOPPING,
-  ENGINE_STATUS_WORK,
-  ENGINE_STATUS_WORK_WAIT_ELECTRO,
-  ENGINE_STATUS_WORK_ON_IDLE,
-  ENGINE_STATUS_WORK_GOTO_NOMINAL,
-  ENGINE_STATUS_FAIL_STARTING,
-  ENGINE_STATUS_FAIL_STOPPING,
+  ENGINE_STATUS_IDLE,                 /* 00 Engine ready to start                                     */
+  ENGINE_STATUS_ERROR,                /* 01 Engine error, need to reset to idle                       */
+  ENGINE_STATUS_BUSY_STARTING,        /* 02 Engine is starting                                        */
+  ENGINE_STATUS_BUSY_STOPPING,        /* 03 Engine is stopping                                        */
+  ENGINE_STATUS_WORK,                 /* 04 Engine is working normal                                  */
+  ENGINE_STATUS_WORK_GOTO_IDLE,       /* 05 Engine go to idle from normal                             */
+  ENGINE_STATUS_WORK_ON_IDLE,         /* 06 Engine work on idle                                       */
+  ENGINE_STATUS_WORK_GOTO_NOMINAL,    /* 07 Engine go to normal from idle                             */
 } ENGINE_STATUS;
 
 typedef enum
 {
-  STARTER_IDLE,
-  STARTER_START_DELAY,
-  STARTER_READY,
-  STARTER_CRANKING,
-  STARTER_CRANK_DELAY,
-  STARTER_CONTROL_BLOCK,
-  STARTER_IDLE_WORK,
-  STARTER_MOVE_TO_NOMINAL,
-  STARTER_WARMING,
-  STARTER_FAIL,
-  STARTER_OK,
+  STARTER_STATUS_IDLE,                /* 00 Starter don't active                                      */
+  STARTER_STATUS_PREHEATING,          /* 01 Engine preheating process                                 */
+  STARTER_STATUS_FUEL_PREPUMPING,     /* 02 Fuel pumping without cranking                             */
+  STARTER_STATUS_START_PREPARATION,   /* 03 Waiting electrical system ready                           */
+  STARTER_STATUS_READY,               /* 04 Starter ready for cranking                                */
+  STARTER_STATUS_CRANKING,            /* 05 Cranking iteration                                        */
+  STARTER_STATUS_CRANK_DELAY,         /* 06 Delay between cranking iterations                         */
+  STARTER_STATUS_CONTROL_BLOCK,       /* 07 Engine have started, wait valid data                      */
+  STARTER_STATUS_IDLE_WORK,           /* 08 Engine warming on idle                                    */
+  STARTER_STATUS_MOVE_TO_NOMINAL,     /* 09 Move from idle to nominal                                 */
+  STARTER_STATUS_WARMING,             /* 10 Engine warming on nominal                                 */
+  STARTER_STATUS_FAIL,                /* 11 Starting process fail                                     */
+  STARTER_STATUS_OK,                  /* 12 Starting process finish successfully                      */
 } STARTER_STATUS;
 
 typedef enum
 {
-  STOP_IDLE,
-  STOP_COOLDOWN,
-  STOP_WAIT_ELECTRO,
-  STOP_IDLE_COOLDOWN,
-  STOP_PROCESSING,
-  STOP_FAIL,
-  STOP_OK,
-} PLAN_STOP_STATUS;
+  STOP_STATUS_IDLE,                   /* 00 Stop process inactive                                     */
+  STOP_STATUS_COOLDOWN,               /* 01 Engine cool down on nominal                               */
+  STOP_STATUS_WAIT_ELECTRO,           /* 02 Waiting for electrical system ready                       */
+  STOP_STATUS_IDLE_COOLDOWN,          /* 03 Engine cool down on idle                                  */
+  STOP_STATUS_PROCESSING,             /* 04 Switch of fuel, waiting for stop state                    */
+  STOP_STATUS_FAIL,                   /* 05 Stopping process fail                                     */
+  STOP_STATUS_OK,                     /* 06 Stopping process finish successfully                      */
+} STOP_STATUS;
 
 typedef enum
 {
-  MAINTENCE_STATUS_STOP,
-  MAINTENCE_STATUS_RUN,
-  MAINTENCE_STATUS_CHECK,
-} MAINTENCE_STATUS;
+  EMERGENCY_STATUS_IDLE,              /* 00 Emergency stop process inactive                           */
+  EMERGENCY_STATUS_PROCESSING,        /* 01 Fuel have switched off, waiting for stop state            */
+  EMERGENCY_STATUS_END,               /* 02 Finish Emergency stop process                             */
+} EMERGENCY_STATUS;
 
 typedef enum
 {
-  CHARGER_STATUS_IDLE,
-  CHARGER_STATUS_STARTUP,
-  CHARGER_STATUS_IMPULSE,
-  CHARGER_STATUS_DELAY,
-  CHARGER_STATUS_MEASURING,
-  CHARGER_STATUS_ERROR,
+  MAINTENANCE_STATUS_STOP,            /* 00 Maintenance checker process inactive                      */
+  MAINTENANCE_STATUS_RUN,             /* 01 Maintenance checker waiting time delay                    */
+  MAINTENANCE_STATUS_CHECK,           /* 02 Maintenance checker check current state                   */
+} MAINTENANCE_STATUS;
+
+typedef enum
+{
+  CHARGER_STATUS_IDLE,                /* 00 Charger controller analysis charger voltage               */
+  CHARGER_STATUS_DELAY,               /* 01 Charger controller excites the charger                    */
+  CHARGER_STATUS_MEASURING,           /* 02 Charger controller measuring charger voltage              */
 } CHARGER_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  SENSOR_TYPE       type;
-  SENSOR_STATUS     status;
+  SENSOR_TYPE       type    : 3U;
+  SENSOR_STATUS     status  : 2U;
+  SENSOR_CHANNEL    channel : 2U;
+  TRIGGER_STATE     trig    : 1U; /* Only for DI mode*/
   eChartData*       chart;
   getValueCallBack  get;
-  ALARM_TYPE        cutout;
+  ERROR_TYPE        cutout;
 } SENSOR;
 
 typedef struct __packed
 {
   SENSOR      pressure;
+  fix16_t     trashhold;
   ALARM_TYPE  alarm;
   ALARM_TYPE  preAlarm;
 } OIL_TYPE;
@@ -132,6 +119,7 @@ typedef struct __packed
 {
   SENSOR             temp;
   ALARM_TYPE         alarm;
+  ALARM_TYPE         electroAlarm;
   ALARM_TYPE         preAlarm;
   RELAY_AUTO_DEVICE  cooler;
   RELAY_AUTO_DEVICE  heater;
@@ -150,11 +138,12 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION        enb;
-  SENSOR_STATUS     status;
+  PERMISSION        enb         : 1U;
+  SENSOR_STATUS     status      : 2U;
   getValueCallBack  get;
   ALARM_TYPE        lowAlarm;
   ALARM_TYPE        hightAlarm;
+  fix16_t           polePairs;
 } SPEED_TYPE;
 
 typedef struct __packed
@@ -166,37 +155,47 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  PERMISSION        enb;
-  CHARGER_STATUS    status;
-  uint8_t           attempts;
-  uint8_t           iteration;
+  PERMISSION        enb    : 1U;
+  PERMISSION        start  : 1U;
+  CHARGER_STATUS    status : 3U;
   getValueCallBack  get;
   RELAY_DEVICE      relay;
   SYSTEM_TIMER      timer;
-  fix16_t           setpoint;
-  ERROR_TYPE        error;
-  ALARM_TYPE        warning;
+  ALARM_TYPE        alarm;
 } CHARGER_TYPE;
 
 typedef struct __packed
 {
-  PERMISSION  critGenFreqEnb;
+  RELAY_DEVICE relay;
+  fix16_t      level;
+  fix16_t      delay;
+} PREHEATER_TYPE;
+
+typedef struct __packed
+{
+  PERMISSION  critGenFreqEnb    : 1U;
+  PERMISSION  critOilPressEnb   : 1U;
+  PERMISSION  critChargeEnb     : 1U;
+  PERMISSION  critSpeedEnb      : 1U;
   fix16_t     critGenFreqLevel;
-  PERMISSION  critOilPressEnb;
   fix16_t     critOilPressLevel;
-  PERMISSION  critChargeEnb;
   fix16_t     critChargeLevel;
-  PERMISSION  critSpeedEnb;
   fix16_t     critSpeedLevel;
 } START_CRITERIONS_TYPE;
 
 typedef struct __packed
 {
-  MAINTENCE_STATUS status;
+  ALARM_TYPE alarm;
+  uint16_t   data;
+} MAINTENCE_VALUE;
+
+typedef struct __packed
+{
+  MAINTENANCE_STATUS status;
   SYSTEM_TIMER     timer;
-  ALARM_TYPE       oil;
-  ALARM_TYPE       air;
-  ALARM_TYPE       fuel;
+  MAINTENCE_VALUE  oil;
+  MAINTENCE_VALUE  air;
+  MAINTENCE_VALUE  fuel;
 } MAINTENCE_TYPE;
 
 typedef struct __packed
@@ -204,7 +203,6 @@ typedef struct __packed
   /* Callback */
   setRelayCallBack       set;
   /* Delays */
-  fix16_t                startDelay;      /* sec */
   fix16_t                crankingDelay;   /* sec */
   fix16_t                crankDelay;      /* sec */
   fix16_t                blockDelay;      /* sec */
@@ -217,34 +215,43 @@ typedef struct __packed
   /* Structures */
   START_CRITERIONS_TYPE  startCrit;
   /* Status */
-  STARTER_STATUS         status;
+  STARTER_STATUS         status       : 4U;
 } STARTER_TYPE;
 
 typedef struct __packed
 {
-  fix16_t           coolingDelay;      /* sec */
-  fix16_t           coolingIdleDelay;  /* sec */
-  fix16_t           processDelay;      /* sec */
-  PLAN_STOP_STATUS  status;
+  fix16_t           coolingDelay;          /* sec */
+  fix16_t           coolingIdleDelay;      /* sec */
+  fix16_t           processDelay;          /* sec */
+  STOP_STATUS  status           : 4U;
 } PLAN_STOP_TYPE;
 
 typedef struct __packed
 {
-  ENGINE_COMMAND  cmd;
-  PERMISSION      startCheckOil;
-  PERMISSION      banStart;
-  ENGINE_STATUS   status;
+  ENGINE_COMMAND  cmd               : 4U;
+  ENGINE_STATUS   status            : 4U;
+  PERMISSION      startCheckOil     : 1U;
+  PERMISSION      banStart          : 1U;
+  ERROR_TYPE      sensorCommonError;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
 } ENGINE_TYPE;
 /*----------------------- Extern ---------------------------------------*/
 extern osThreadId_t engineHandle;
 /*----------------------- Functions ------------------------------------*/
-void          vENGINEinit ( void );
-void          vENGINEsendCmd ( ENGINE_COMMAND cmd );
-QueueHandle_t pENGINEgetCommandQueue ( void );
-uint8_t       uENGINEisStarterScrollFinish ( void );
-uint8_t       uENGINEisBlockTimerFinish ( void );
-ENGINE_STATUS eENGINEgetEngineStatus ( void );
+void             vENGINEinit ( void );
+void             vENGINEsendCmd ( ENGINE_COMMAND cmd );
+QueueHandle_t    pENGINEgetCommandQueue ( void );
+TRIGGER_STATE    uENGINEisStarterScrollFinish ( void );
+TRIGGER_STATE    uENGINEisBlockTimerFinish ( void );
+PERMISSION       eENGINEisStartBan ( void );
+ENGINE_STATUS    eENGINEgetEngineStatus ( void );
+STARTER_STATUS   eENGINEgetStarterStatus ( void );
+EMERGENCY_STATUS eENGINEgetEmergencyStatus ( void );
+STOP_STATUS      eENGINEgetPlanStopStatus ( void );
+TRIGGER_STATE    eENGINEgetOilSensorState ( void );
+TRIGGER_STATE    eENGINEgetCoolantSensorState ( void );
+TRIGGER_STATE    eENGINEgetFuelSensorState ( void );
+fix16_t          fENGINEspeedGet ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

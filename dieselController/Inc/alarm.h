@@ -26,16 +26,19 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  ERROR_LIST_STATUS status;
+  ERROR_LIST_STATUS status : 2U;
   LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
   uint8_t           counter;
 } ACTIVE_ERROR_LIST;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
 void              vALARMinit ( void );
+void              vALARMreInit ( void );
 void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
+void              vALARMreset ( ALARM_TYPE* alarm );
 void              vERRORreset ( ERROR_TYPE* error );
 void              vERRORcheck ( ERROR_TYPE* error, uint8_t flag );
+void              vERRORrelax ( ERROR_TYPE* error );
 ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr );
 TRIGGER_STATE     eERRORisActive ( ERROR_TYPE* error );
 /*----------------------------------------------------------------------*/

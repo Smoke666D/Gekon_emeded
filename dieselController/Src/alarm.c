@@ -44,6 +44,12 @@ void vALARMinit ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vALARMreInit ( void )
+{
+  hysteresis = fix16_div( getValue( &hysteresisLevel ), fix100U );
+  return;
+}
+/*----------------------------------------------------------------------------*/
 /*
  * API for active error list control
  * input:  cmd    - command for the list
@@ -63,11 +69,12 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
 {
   uint8_t i              = 0U;
   uint8_t warningCounter = 0U;
-  if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+  uint8_t number         = 0U;
+  switch ( cmd )
   {
-    switch ( cmd )
-    {
-      case ERROR_LIST_CMD_ERASE:
+    case ERROR_LIST_CMD_ERASE:
+      if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+      {
         for ( i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
         {
           activeErrorList.array[i].event.action = ACTION_NONE;
@@ -78,48 +85,64 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
         activeErrorList.status  = ERROR_LIST_STATUS_EMPTY;
         vFPOsetWarning( RELAY_OFF );
         xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_ACK:
-        /*------------------- ACK -------------------*/
-        if ( *adr < activeErrorList.counter )
+      }
+      break;
+    case ERROR_LIST_CMD_ACK:
+      /*------------------- ACK -------------------*/
+      if ( activeErrorList.counter > 0U )
+      {
+        if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
         {
-          for ( i=*adr; i<activeErrorList.counter; i++ )
+          for ( i=0U; i<activeErrorList.counter; i++ )
+          {
+            if ( ( activeErrorList.array[i].event.type   == record->event.type   ) &&
+                 ( activeErrorList.array[i].event.action == record->event.action ) )
+            {
+              number = i;
+              break;
+            }
+          }
+          for ( i=number; i<activeErrorList.counter; i++ )
           {
             activeErrorList.array[i] = activeErrorList.array[i + 1U];
           }
-          activeErrorList.counter--;
-          *adr = DEFINE_ERROR_LIST_ADR;
-        }
-        /*------------- Check warnings --------------*/
-        warningCounter = 0U;
-        for ( i=0U; i<activeErrorList.counter; i++ )
-        {
-          if ( vALARMisWarning( activeErrorList.array[i] ) > 0U )
+          if ( number < activeErrorList.counter )
           {
-            warningCounter++;
+            activeErrorList.counter--;
           }
-        }
-        /*------------- Check status ----------------*/
-        if ( activeErrorList.counter > 0U )
-        {
-          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
-          if ( warningCounter > 0U )
+          /*------------- Check warnings --------------*/
+          warningCounter = 0U;
+          for ( i=0U; i<activeErrorList.counter; i++ )
           {
+            if ( vALARMisWarning( activeErrorList.array[i] ) > 0U )
+            {
+              warningCounter++;
+            }
+          }
+          /*------------- Check status ----------------*/
+          if ( activeErrorList.counter > 0U )
+          {
+            activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
+            if ( warningCounter > 0U )
+            {
+              vFPOsetWarning( RELAY_ON );
+            }
+          }
+          else
+          {
+            activeErrorList.status = ERROR_LIST_STATUS_EMPTY;
             vFPOsetWarning( RELAY_OFF );
           }
+          xSemaphoreGive( xAELsemaphore );
         }
-        else
-        {
-          activeErrorList.status = ERROR_LIST_STATUS_EMPTY;
-          vFPOsetWarning( RELAY_OFF );
-        }
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_COUNTER:
-        *adr = activeErrorList.counter;
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_ADD:
+      }
+      break;
+    case ERROR_LIST_CMD_COUNTER:
+      *adr = activeErrorList.counter;
+      break;
+    case ERROR_LIST_CMD_ADD:
+      if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
+      {
         if ( activeErrorList.counter <= ACTIV_ERROR_LIST_SIZE )
         {
           if ( vALARMisWarning( *record ) > 0U )
@@ -127,7 +150,6 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
             vFPOsetWarning( RELAY_ON );
           }
           activeErrorList.array[activeErrorList.counter] = *record;
-          *adr = activeErrorList.counter;
           activeErrorList.counter++;
           activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
         }
@@ -136,14 +158,13 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           activeErrorList.status = ERROR_LIST_STATUS_OVER;
         }
         xSemaphoreGive( xAELsemaphore );
-        break;
-      case ERROR_LIST_CMD_READ:
-        *record = activeErrorList.array[*adr];
-        xSemaphoreGive( xAELsemaphore );
-        break;
-      default:
-        break;
-    }
+      }
+      break;
+    case ERROR_LIST_CMD_READ:
+      *record = activeErrorList.array[*adr];
+      break;
+    default:
+      break;
   }
   return activeErrorList.status;
 }
@@ -168,31 +189,48 @@ void vCONTROLLERprintActiveErrorList ( void )
 uint8_t uALARMisForList ( SYSTEM_EVENT* event )
 {
   uint8_t res = 0U;
-  if ( ( event->action == ACTION_WARNING ) || ( event->action == ACTION_EMERGENCY_STOP ) )
+  if ( ( event->action == ACTION_BAN_START      ) ||
+       ( event->action == ACTION_WARNING        ) ||
+       ( event->action == ACTION_SHUTDOWN       ) ||
+       ( event->action == ACTION_EMERGENCY_STOP ) )
   {
     res = 1U;
   }
   return res;
 }
 /*-----------------------------------------------------------------------------------------*/
+void vERRORreset ( ERROR_TYPE* error )
+{
+  error->trig   = TRIGGER_IDLE;
+  error->status = ALARM_STATUS_IDLE;
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 void vERRORrelax ( ERROR_TYPE* error )
 {
-  if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( &error->event ) > 0U ) )
+  LOG_RECORD_TYPE rec = { 0U };
+  if ( error->trig != TRIGGER_IDLE )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, NULL, &error->id );
+    rec.event = error->event;
+    if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( &error->event ) > 0U ) )
+    {
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, &rec, NULL );
+    }
+    vERRORreset( error );
   }
-  error->status = ALARM_STATUS_IDLE;
-  error->trig   = TRIGGER_IDLE;
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
 void vERRORtriggering ( ERROR_TYPE* error )
 {
   LOG_RECORD_TYPE record   = { 0U };
-  vSYSeventSend( error->event, &record );
-  if ( uALARMisForList( &error->event ) > 0U )
+  if ( error->ignor == PERMISSION_DISABLE )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, &error->id );
+    vSYSeventSend( error->event, &record );
+    if ( uALARMisForList( &error->event ) > 0U )
+    {
+      eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+    }
   }
   error->trig = TRIGGER_SET;
   return;
@@ -207,10 +245,10 @@ void vERRORholding ( ERROR_TYPE* error )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vERRORreset ( ERROR_TYPE* error )
+void vALARMreset ( ALARM_TYPE* alarm )
 {
-  error->trig   = TRIGGER_IDLE;
-  error->status = ALARM_STATUS_IDLE;
+  vLOGICresetTimer( &alarm->timer );
+  vERRORrelax( &alarm->error );
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
@@ -289,14 +327,28 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
              ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val >= alarm->level ) ) )
         {
           alarm->error.status = ALARM_STATUS_WAIT_DELAY;
-          vLOGICstartTimer( &alarm->timer );
+          if ( alarm->timer.delay == 0U )
+          {
+            if ( alarm->error.trig == TRIGGER_IDLE )
+            {
+              alarm->error.status = ALARM_STATUS_TRIG;
+            }
+            else
+            {
+              alarm->error.status = ALARM_STATUS_RELAX;
+            }
+          }
+          else
+          {
+            vLOGICstartTimer( &alarm->timer, "Alarm timer         " );
+          }
         }
         break;
       /*-----------------------------------------------------------------------------------*/
       /*--------------------------------- Delay of trigger --------------------------------*/
       /*-----------------------------------------------------------------------------------*/
       case ALARM_STATUS_WAIT_DELAY:
-        if ( uLOGICisTimer( alarm->timer ) > 0U )
+        if ( uLOGICisTimer( &alarm->timer ) > 0U )
         {
           if ( alarm->error.trig == TRIGGER_IDLE )
           {
@@ -311,7 +363,7 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
                   ( ( alarm->type == ALARM_LEVEL_HIGHT ) && ( val < alarm->level ) ) )
         {
           alarm->error.status = ALARM_STATUS_IDLE;
-          vLOGICresetTimer( alarm->timer );
+          vLOGICresetTimer( &alarm->timer );
         }
         else
         {

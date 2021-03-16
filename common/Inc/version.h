@@ -8,7 +8,7 @@
 #ifndef INC_VERSION_H_
 #define INC_VERSION_H_
 /*------------------------ Define --------------------------------------*/
-#define SOFTWARE_VERSION	00001U
+#define SOFTWARE_VERSION	00004U
 #define HARDWARE_VERSION	00002U
 /*----------------------------------------------------------------------*/
 #endif /* INC_VERSION_H_ */

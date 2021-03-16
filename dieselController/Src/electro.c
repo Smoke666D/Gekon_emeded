@@ -700,11 +700,11 @@ void vELECTROdataInit ( void )
   mains.relayOff.status       = RELAY_DELAY_IDLE;
   /*----------------------------------------------------------------------------*/
   mains.getFreq               = xADCGetNETLFreq;
-  mains.line[0U].getVoltage   = xADCGetNETL1;
+  mains.line[0U].getVoltage   = xADCGetNETL1Lin;
   mains.line[0U].getCurrent   = NULL;
-  mains.line[1U].getVoltage   = xADCGetNETL2;
+  mains.line[1U].getVoltage   = xADCGetNETL2Lin;
   mains.line[1U].getCurrent   = NULL;
-  mains.line[2U].getVoltage   = xADCGetNETL3;
+  mains.line[2U].getVoltage   = xADCGetNETL3Lin;
   mains.line[2U].getCurrent   = NULL;
   /*----------------------------------------------------------------------------*/
   return;

@@ -358,7 +358,7 @@ fix16_t fGENERATORprocess ( void )
   vALARMcheck( &generator.hightFreqAlarm,    freq );
   vALARMcheck( &generator.hightFreqPreAlarm, freq );
   /*--------------------- Phase sequence control ----------------------*/
-  vERRORcheck( &generator.phaseSequenceError, ( xADCGetNetFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
+  vERRORcheck( &generator.phaseSequenceError, ( xADCGetGenFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
   /*------------------------- Current alarms --------------------------*/
   vALARMcheck( &generator.powerAlarm,          power      );
   vALARMcheck( &generator.currentWarningAlarm, maxCurrent );

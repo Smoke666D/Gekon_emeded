@@ -9,13 +9,13 @@
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_LENGTH             4U
-#define   MAX_BIT_MAP_LENGTH           14U
-#define   SETTING_REGISTER_NUMBER      122U
+#define   MAX_BIT_MAP_LENGTH           10U
+#define   SETTING_REGISTER_NUMBER      123U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              83U     // bytes
-#define   CONFIG_TOTAL_SIZE            496U   // bytes
+#define   CONFIG_MAX_SIZE              71U     // bytes
+#define   CONFIG_TOTAL_SIZE            499U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )
@@ -199,7 +199,8 @@ typedef struct __packed
 #define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        118U
 #define   LOG_SETUP_ADR                                          119U
 #define   RECORD_SETUP_ADR                                       120U
-#define   RECORD_INTERVAL_ADR                                    121U
+#define   RECORD_SETUP1_ADR                                      121U
+#define   RECORD_INTERVAL_ADR                                    122U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   PASSWORD_ENB_ADR                             0U
 #define   OIL_PRESSURE_SENSOR_TYPE_ADR                 0U
@@ -290,15 +291,20 @@ typedef struct __packed
 #define   RECORD_COOLANT_TEMP_ENB_ADR                  2U
 #define   RECORD_FUEL_LEVEL_ENB_ADR                    3U
 #define   RECORD_SPEED_ENB_ADR                         4U
-#define   RECORD_INPUT_A_ENB_ADR                       5U
-#define   RECORD_INPUT_B_ENB_ADR                       6U
-#define   RECORD_INPUT_C_ENB_ADR                       7U
-#define   RECORD_INPUT_D_ENB_ADR                       8U
-#define   RECORD_VOLTAGE_GEN_ENB_ADR                   9U
-#define   RECORD_FREQ_GEN_ENB_ADR                      10U
-#define   RECORD_VOLTAGE_NET_ENB_ADR                   11U
-#define   RECORD_FREQ_NET_ENB_ADR                      12U
-#define   RECORD_VOLTAGE_ACC_ENB_ADR                   13U
+#define   RECORD_INPUTS_ENB_ADR                        5U
+#define   RECORD_OUTPUTS_ENB_ADR                       6U
+#define   RECORD_GEN_PHASE_VOLTAGE_ENB_ADR             7U
+#define   RECORD_GEN_LINE_VOLTAGE_ENB_ADR              8U
+#define   RECORD_CURRENT_ENB_ADR                       0U
+#define   RECORD_FREQ_GEN_ENB_ADR                      1U
+#define   RECORD_COS_FI_ENB_ADR                        2U
+#define   RECORD_POWER_ACTIVE_ENB_ADR                  3U
+#define   RECORD_POWER_REACTIVE_ENB_ADR                4U
+#define   RECORD_POWER_FULL_ENB_ADR                    5U
+#define   RECORD_MAINS_PHASE_VOLTAGE_ENB_ADR           6U
+#define   RECORD_MAINS_LINE_VOLTAGE_ENB_ADR            7U
+#define   RECORD_MAINS_FREQ_ENB_ADR                    8U
+#define   RECORD_VOLTAGE_ACC_ENB_ADR                   9U
 /*------------------------- Extern -------------------------------------*/
 extern const eConfigReg versionController;
 extern const eConfigReg versionFirmware;
@@ -421,6 +427,7 @@ extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg logSetup;
 extern eConfigReg recordSetup;
+extern eConfigReg recordSetup1;
 extern eConfigReg recordInterval;
 extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];
 extern const char*       dictionaryArray[SETTING_REGISTER_NUMBER];

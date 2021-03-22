@@ -9,6 +9,10 @@
 #include "config.h"
 #include "dataProces.h"
 #include "storage.h"
+#include "engine.h"
+#include "adc.h"
+#include "fpo.h"
+#include "fpi.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static MEASUREMENT_TYPE measurement              = { 0U };
 static osThreadId_t     measurementHandle        = NULL;
@@ -19,21 +23,34 @@ fix16_t fMEASUREMENTgetNone ( void );
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const getValueCallBack measurementCallbacks[MEASUREMENT_CHANNEL_NUMBER] =
 {
-  fMEASUREMENTgetNone,  /*  0 */
-  fMEASUREMENTgetNone,  /*  1 */
-  fMEASUREMENTgetNone,  /*  2 */
-  fMEASUREMENTgetNone,  /*  3 */
-  fMEASUREMENTgetNone,  /*  4 */
-  fMEASUREMENTgetNone,  /*  5 */
-  fMEASUREMENTgetNone,  /*  6 */
-  fMEASUREMENTgetNone,  /*  7 */
-  fMEASUREMENTgetNone,  /*  8 */
-  fMEASUREMENTgetNone,  /*  9 */
-  fMEASUREMENTgetNone,  /* 10 */
-  fMEASUREMENTgetNone,  /* 11 */
-  fMEASUREMENTgetNone,  /* 12 */
-  fMEASUREMENTgetNone,  /* 13 */
-  fMEASUREMENTgetNone   /* 14 */
+  xADCGetSOP,               /*  0 Oil pressure               */
+  xADCGetSCT,               /*  1 Coolant temperature        */
+  xADCGetSFL,               /*  2 Fuel level                 */
+  fENGINEgetSpeed,          /*  3 Speed                      */
+  fFPIgetData,              /*  4 Digital inputs             */
+  fFPOgetData,              /*  5 Digital outputs            */
+  xADCGetGENL1,             /*  6 Generator phase voltage L1 */
+  xADCGetGENL2,             /*  7 Generator phase voltage L2 */
+  xADCGetGENL3,             /*  8 Generator phase voltage L3 */
+  xADCGetGENL1Lin,          /*  9 Generator Line voltage L1  */
+  xADCGetGENL2Lin,          /* 10 Generator Line voltage L2  */
+  xADCGetGENL3Lin,          /* 11 Generator Line voltage L3  */
+  xADCGetGENL1Cur,          /* 12 Current L1                 */
+  xADCGetGENL2Cur,          /* 13 Current L2                 */
+  xADCGetGENL3Cur,          /* 14 Current L3                 */
+  xADCGetGENLFreq,          /* 15 Frequency generator        */
+  xADCGetCOSFi,             /* 16 Cos Fi                     */
+  xADCGetGENActivePower,    /* 17 Power active               */
+  xADCGetGENReactivePower,  /* 18 Power reactive             */
+  xADCGetGENRealPower,      /* 19 Power full                 */
+  xADCGetNETL1,             /* 20 Mains phase voltage L1     */
+  xADCGetNETL2,             /* 21 Mains phase voltage L2     */
+  xADCGetNETL3,             /* 22 Mains phase voltage L3     */
+  xADCGetNETL1Lin,          /* 23 Mains line voltage L1      */
+  xADCGetNETL2Lin,          /* 24 Mains line voltage L2      */
+  xADCGetNETL3Lin,          /* 25 Mains line voltage L3      */
+  xADCGetNETLFreq,          /* 26 Mains frequency            */
+  xADCGetVDD,               /* 27 Voltage accumulator        */
 };
 static const eConfigReg* measurementRegs[MEASUREMENT_CHANNEL_NUMBER] = { 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -54,7 +71,7 @@ void vMEASUREMENTinit ( void )
   DATA_API_STATUS res = DATA_API_STAT_BUSY;
   if ( MEASUREMENT_ENB > 0U )
   {
-    measurement.enb = getBitMap( &recordSetup, RECORD_ENB_ADR );
+    measurement.enb = getBitMap( &recordSetup0, RECORD_ENB_ADR );
     if ( measurement.enb == PERMISSION_ENABLE )
     {
       while ( res != DATA_API_STAT_OK )

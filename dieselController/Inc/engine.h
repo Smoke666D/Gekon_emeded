@@ -252,6 +252,6 @@ STOP_STATUS      eENGINEgetPlanStopStatus ( void );
 TRIGGER_STATE    eENGINEgetOilSensorState ( void );
 TRIGGER_STATE    eENGINEgetCoolantSensorState ( void );
 TRIGGER_STATE    eENGINEgetFuelSensorState ( void );
-fix16_t          fENGINEspeedGet ( void );
+fix16_t          fENGINEgetSpeed ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

@@ -496,6 +496,74 @@ eConfigReg batteryVoltage =
    .value = batteryVoltageValue,
 };
 /*----------------------------------------------------------------*/
+const eConfigBitMap digitalOutputBitMap[12U] = 
+{
+   { 1U, 0U },     // digitalOutputA
+   { 2U, 1U },     // digitalOutputB
+   { 4U, 2U },     // digitalOutputC
+   { 8U, 3U },     // digitalOutputD
+   { 16U, 4U },     // digitalOutputE
+   { 32U, 5U },     // digitalOutputF
+   { 64U, 6U },     // digitalOutputG
+   { 128U, 7U },     // digitalOutputH
+   { 256U, 8U },     // digitalOutputI
+   { 512U, 9U },     // digitalOutputJ
+   { 1024U, 10U },     // digitalOutputK
+   { 2048U, 11U },     // digitalOutputL
+};
+uint16_t digitalOutputValue[1U] = { 0U };
+const eConfigAttributes digitalOutputAtrib =
+{
+   .adr        = 26U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_BITMAP,
+   .len        = 1U,
+   .bitMapSize = 12U,
+   .bitMap     = digitalOutputBitMap
+};
+eConfigReg digitalOutput =
+{
+   .atrib = &digitalOutputAtrib,
+   .value = digitalOutputValue,
+};
+/*----------------------------------------------------------------*/
+const eConfigBitMap digitalInputBitMap[12U] = 
+{
+   { 1U, 0U },     // digitalInputA
+   { 2U, 1U },     // digitalInputB
+   { 4U, 2U },     // digitalInputC
+   { 8U, 3U },     // digitalInputD
+   { 16U, 4U },     // digitalInputE
+   { 32U, 5U },     // digitalInputF
+   { 64U, 6U },     // digitalInputG
+   { 128U, 7U },     // digitalInputH
+   { 256U, 8U },     // digitalInputI
+   { 512U, 9U },     // digitalInputJ
+   { 1024U, 10U },     // digitalInputK
+   { 2048U, 11U },     // digitalInputL
+};
+uint16_t digitalInputValue[1U] = { 0U };
+const eConfigAttributes digitalInputAtrib =
+{
+   .adr        = 27U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_BITMAP,
+   .len        = 1U,
+   .bitMapSize = 12U,
+   .bitMap     = digitalInputBitMap
+};
+eConfigReg digitalInput =
+{
+   .atrib = &digitalInputAtrib,
+   .value = digitalInputValue,
+};
+/*----------------------------------------------------------------*/
 const eConfigBitMap controllBitMap[6U] = 
 {
    { 1U, 0U },     // controllSwitchMode
@@ -508,7 +576,7 @@ const eConfigBitMap controllBitMap[6U] =
 uint16_t controllValue[1U] = { 0U };
 const eConfigAttributes controllAtrib =
 {
-   .adr        = 26U,
+   .adr        = 28U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -536,7 +604,7 @@ const eConfigBitMap statusBitMap[6U] =
 uint16_t statusValue[1U] = { 0U };
 const eConfigAttributes statusAtrib =
 {
-   .adr        = 27U,
+   .adr        = 29U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -555,7 +623,7 @@ eConfigReg status =
 uint16_t logAdrValue[1U] = { 0U };
 const eConfigAttributes logAdrAtrib =
 {
-   .adr        = 28U,
+   .adr        = 30U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -574,7 +642,7 @@ eConfigReg logAdr =
 uint16_t logRecordData0Value[1U] = { 0U };
 const eConfigAttributes logRecordData0Atrib =
 {
-   .adr        = 29U,
+   .adr        = 31U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -593,7 +661,7 @@ eConfigReg logRecordData0 =
 uint16_t logRecordData1Value[1U] = { 0U };
 const eConfigAttributes logRecordData1Atrib =
 {
-   .adr        = 30U,
+   .adr        = 32U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -612,7 +680,7 @@ eConfigReg logRecordData1 =
 uint16_t logRecordEventValue[1U] = { 0U };
 const eConfigAttributes logRecordEventAtrib =
 {
-   .adr        = 31U,
+   .adr        = 33U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -631,7 +699,7 @@ eConfigReg logRecordEvent =
 uint16_t errorAdrValue[1U] = { 0U };
 const eConfigAttributes errorAdrAtrib =
 {
-   .adr        = 32U,
+   .adr        = 34U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -650,7 +718,7 @@ eConfigReg errorAdr =
 uint16_t errorRecordValue[1U] = { 0U };
 const eConfigAttributes errorRecordAtrib =
 {
-   .adr        = 33U,
+   .adr        = 35U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -667,5 +735,5 @@ eConfigReg errorRecord =
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &controll, &status, &logAdr, &logRecordData0, &logRecordData1, &logRecordEvent, &errorAdr, &errorRecord};
-const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Регистр управления", "Регистр статуса", "Адрес записи в журнале", "Дата записи журнала 0", "Дата записи журнала 1", "Событие записи журнала", "Адрес ошибки", "Событие ошибки"};
+eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &digitalOutput, &digitalInput, &controll, &status, &logAdr, &logRecordData0, &logRecordData1, &logRecordEvent, &errorAdr, &errorRecord};
+const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Цифровые выходы", "Цифровые входы", "Регистр управления", "Регистр статуса", "Адрес записи в журнале", "Дата записи журнала 0", "Дата записи журнала 1", "Событие записи журнала", "Адрес ошибки", "Событие ошибки"};

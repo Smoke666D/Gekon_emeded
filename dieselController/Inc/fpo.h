@@ -90,6 +90,7 @@ typedef struct __packed
   GPIO_TypeDef*  port;   /* GPIO port*/
   uint16_t       pin;    /* Pin number */
   /* Logic */
+  uint8_t        mask;
   FPO_FUNCTION   function : 5U;
   FPO_POLARITY   polarity : 1U;
   TRIGGER_STATE  state    : 1U;
@@ -125,5 +126,6 @@ void          vFPOsetGenReady ( RELAY_STATUS stat );
 void          vFPOsetReadyToStart ( RELAY_STATUS stat );
 void          vFPOsetDpsReady ( RELAY_STATUS stat );
 TRIGGER_STATE eFPOgetState ( uint8_t n );
+fix16_t       fFPOgetData ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FPO_H_ */

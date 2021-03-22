@@ -9,12 +9,12 @@
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_OUTPUT_LENGTH             4U
-#define   MAX_BIT_MAP_OUTPUT_LENGTH           6U
-#define   OUTPUT_DATA_REGISTER_NUMBER         29U
+#define   MAX_BIT_MAP_OUTPUT_LENGTH           12U
+#define   OUTPUT_DATA_REGISTER_NUMBER         31U
 #define   FILDS_TO_WRITE_OUTPUT_NUMBER        3U
 #define   MAX_VALUE_OUTPUT_LENGTH             1U
-#define   OUTPUT_DATA_MAX_SIZE                29U     // bytes
-#define   OUTPUT_DATA_TOTAL_SIZE              102U   // bytes
+#define   OUTPUT_DATA_MAX_SIZE                47U     // bytes
+#define   OUTPUT_DATA_TOTAL_SIZE              108U   // bytes
 #define   MIN_OUTPUT_DATA_SCALE               ( -2 )
 #define   MAX_OUTPUT_DATA_SCALE               ( 0 )
 #define   OUTPUT_DATA_SCALE_NUM               ( 3 )
@@ -47,15 +47,41 @@
 #define   GENERATOR_POWER_REACTIVE_ADR                           23U
 #define   GENERATOR_POWER_FULL_ADR                               24U
 #define   BATTERY_VOLTAGE_ADR                                    25U
-#define   CONTROLL_ADR                                           26U
-#define   STATUS_ADR                                             27U
-#define   LOG_ADR_ADR                                            28U
-#define   LOG_RECORD_DATA0_ADR                                   29U
-#define   LOG_RECORD_DATA1_ADR                                   30U
-#define   LOG_RECORD_EVENT_ADR                                   31U
-#define   ERROR_ADR_ADR                                          32U
-#define   ERROR_RECORD_ADR                                       33U
+#define   DIGITAL_OUTPUT_ADR                                     26U
+#define   DIGITAL_INPUT_ADR                                      27U
+#define   CONTROLL_ADR                                           28U
+#define   STATUS_ADR                                             29U
+#define   LOG_ADR_ADR                                            30U
+#define   LOG_RECORD_DATA0_ADR                                   31U
+#define   LOG_RECORD_DATA1_ADR                                   32U
+#define   LOG_RECORD_EVENT_ADR                                   33U
+#define   ERROR_ADR_ADR                                          34U
+#define   ERROR_RECORD_ADR                                       35U
 /*---------------------- Bitmap addresses ------------------------------*/
+#define   DIGITAL_OUTPUT_A_ADR                         0U
+#define   DIGITAL_OUTPUT_B_ADR                         1U
+#define   DIGITAL_OUTPUT_C_ADR                         2U
+#define   DIGITAL_OUTPUT_D_ADR                         3U
+#define   DIGITAL_OUTPUT_E_ADR                         4U
+#define   DIGITAL_OUTPUT_F_ADR                         5U
+#define   DIGITAL_OUTPUT_G_ADR                         6U
+#define   DIGITAL_OUTPUT_H_ADR                         7U
+#define   DIGITAL_OUTPUT_I_ADR                         8U
+#define   DIGITAL_OUTPUT_J_ADR                         9U
+#define   DIGITAL_OUTPUT_K_ADR                         10U
+#define   DIGITAL_OUTPUT_L_ADR                         11U
+#define   DIGITAL_INPUT_A_ADR                          0U
+#define   DIGITAL_INPUT_B_ADR                          1U
+#define   DIGITAL_INPUT_C_ADR                          2U
+#define   DIGITAL_INPUT_D_ADR                          3U
+#define   DIGITAL_INPUT_E_ADR                          4U
+#define   DIGITAL_INPUT_F_ADR                          5U
+#define   DIGITAL_INPUT_G_ADR                          6U
+#define   DIGITAL_INPUT_H_ADR                          7U
+#define   DIGITAL_INPUT_I_ADR                          8U
+#define   DIGITAL_INPUT_J_ADR                          9U
+#define   DIGITAL_INPUT_K_ADR                          10U
+#define   DIGITAL_INPUT_L_ADR                          11U
 #define   CONTROLL_SWITCH_MODE_ADR                     0U
 #define   CONTROLL_REMOTE_START_ADR                    1U
 #define   CONTROLL_BAN_AUTO_START_ADR                  2U
@@ -95,6 +121,8 @@ extern eConfigReg generatorPowerActive;
 extern eConfigReg generatorPowerReactive;
 extern eConfigReg generatorPowerFull;
 extern eConfigReg batteryVoltage;
+extern eConfigReg digitalOutput;
+extern eConfigReg digitalInput;
 extern eConfigReg controll;
 extern eConfigReg status;
 extern eConfigReg logAdr;

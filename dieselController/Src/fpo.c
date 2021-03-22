@@ -95,6 +95,7 @@ static FPO* pumpFPO         = NULL;  /* 17 */
 static FPO* starterFPO      = NULL;  /* 18 */
 static FPO* preheaterFPO    = NULL;  /* 19 */
 static FPO* idleFPO         = NULL;  /* 20 */
+static uint16_t fpoDataReg  = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun );
 void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat );
@@ -128,12 +129,14 @@ void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat )
     if ( ( ( stat == RELAY_ON  ) && ( fpo->polarity == FPO_POL_NORMAL_OPEN  ) ) ||
          ( ( stat == RELAY_OFF ) && ( fpo->polarity == FPO_POL_NORMAL_CLOSE ) ) )
     {
-      cmd        = GPIO_PIN_SET;
-      fpo->state = TRIGGER_SET;
+      fpoDataReg |= fpo->mask;
+      cmd         = GPIO_PIN_SET;
+      fpo->state  = TRIGGER_SET;
     }
     else
     {
-      fpo->state = TRIGGER_IDLE;
+      fpoDataReg &= ~fpo->mask;
+      fpo->state  = TRIGGER_IDLE;
     }
     HAL_GPIO_WritePin( fpo->port, fpo->pin, cmd );
   }
@@ -198,6 +201,11 @@ void vFPOsetupStartup ( void )
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+fix16_t fFPOgetData ( void )
+{
+  return fix16_from_int( fpoDataReg );
+}
 /*----------------------------------------------------------------------------*/
 TRIGGER_STATE eFPOgetState ( uint8_t n )
 {
@@ -346,6 +354,7 @@ void vFPOsetMainsOffImp ( RELAY_STATUS stat )
 /*----------------------------------------------------------------------------*/
 void vFPOdataInit ( void )
 {
+  uint8_t i = 0U;
   /* Read parameters form memory */
   fpos[FPO_A].polarity = getBitMap( &doSetup,  DOA_N_O_C_ADR );
   fpos[FPO_B].polarity = getBitMap( &doSetup,  DOB_N_O_C_ADR );
@@ -359,6 +368,11 @@ void vFPOdataInit ( void )
   fpos[FPO_D].function = getBitMap( &docdType, DOD_TYPE_ADR );
   fpos[FPO_E].function = getBitMap( &doefType, DOE_TYPE_ADR );
   fpos[FPO_F].function = getBitMap( &doefType, DOF_TYPE_ADR );
+  /* Setup masks */
+  for ( i=0U; i<FPO_NUMBER; i++ )
+  {
+    fpos[i].mask = ( uint8_t )( 1U << i );
+  }
   /* GPIO start conditions */
   vFPOdisSetup();
   vFPOsetupStartup();

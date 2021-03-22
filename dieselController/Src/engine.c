@@ -1458,7 +1458,7 @@ TRIGGER_STATE eENGINEgetFuelSensorState ( void )
   return fuel.level.trig;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fENGINEspeedGet ( void )
+fix16_t fENGINEgetSpeed ( void )
 {
   return currentSpeed;
 }

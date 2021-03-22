@@ -9,11 +9,10 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #include "dataAPI.h"
-
 #include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
 #define MEASUREMENT_ENB                  1U
-#define MEASUREMENT_CHANNEL_NUMBER       15U
+#define MEASUREMENT_CHANNEL_NUMBER       28U
 #define MEASUREMENT_COMMAND_QUEUE_LENGTH 8U
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/

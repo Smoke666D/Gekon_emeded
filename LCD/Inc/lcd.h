@@ -45,7 +45,7 @@
 
 void vLCDBrigthInit(void);
 void vLCD_Init( void );
-void vLCDRedraw( void );
+void vLCDRedraw( void ) __attribute__((optimize("-O1")));
 void vLCDDelay( void );
 void vST7920init(void);
 uint8_t ucLCDGetLedBrigth(void);

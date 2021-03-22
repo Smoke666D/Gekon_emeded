@@ -20,16 +20,17 @@ static SemaphoreHandle_t  xSemaphore = NULL;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t  u8g2;
 static uint8_t LCD_Buffer[LCD_DATA_BUFFER_SIZE];
-static uint8_t lcd_delay=0;
+static uint32_t lcd_delay=0;
 static uint8_t lcd_brigth_counter =0;
 static uint8_t lcd_brigth =0;
+uint8_t Data[33U] ={0xFA,};
 /*------------------------ Extern -------------------------------------------------------------------*/
 extern TIM_HandleTypeDef htim7;
 extern SPI_HandleTypeDef hspi3;
 
 
-void vLCDWriteCommand( uint8_t data );
-void vLCDSend16Data( uint8_t *arg_prt );
+void vLCDWriteCommand( uint8_t data ) __attribute__((optimize("-O1")));
+void vLCDSend16Data( uint8_t *arg_prt )__attribute__((optimize("-O1")));
 
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -327,7 +328,7 @@ error :
 
 
 /*---------------------------------------------------------------------------------------------------*/
-static uint8_t Data[33U] ={0xFA,};
+
 inline void vLCDSend16Data( uint8_t *arg_prt )
 {
   uint8_t *data;
@@ -348,10 +349,11 @@ inline void vLCDSend16Data( uint8_t *arg_prt )
 /*
  * LCD Write Command
  */
-static uint8_t DataC[3U]={0xF8};
+//static uint8_t DataC[3U]={0xF8};
 
 inline void vLCDWriteCommand( uint8_t com )
 {
+  uint8_t DataC[3U]={0xF8};
   DataC[1U] = 0xF0U & com;
   DataC[2U] = 0xF0U & ( com << 4U );
   SPI_Transmit_DMA( &hspi3, DataC, 3U );

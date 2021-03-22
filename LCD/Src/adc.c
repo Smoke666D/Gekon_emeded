@@ -94,7 +94,7 @@ void     vADCSetFreqDetectParam(int16_t AMP,uint8_t * del,uint8_t * fd);
 void     vADC3FrInit(uint16_t freq);
 void     vADC12FrInit(uint16_t freq);
 void     vADCConvertToVDD(uint8_t AnalogSwitch);
-void     vDecNetural(int16_t * data);
+void     vDecNetural(int16_t * data)  __attribute__((optimize("-O1")));
 uint8_t   vADCGeneratorDataUpdate();
 uint16_t  uADCRMS(int16_t * source, uint8_t off, uint16_t size, uint8_t cc );
 

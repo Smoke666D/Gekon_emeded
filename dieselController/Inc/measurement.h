@@ -10,9 +10,9 @@
 #include "stm32f2xx_hal.h"
 #include "dataAPI.h"
 #include "controllerTypes.h"
+#include "outputProcessing.h"
 /*------------------------ Define --------------------------------------*/
 #define MEASUREMENT_ENB                  1U
-#define MEASUREMENT_CHANNEL_NUMBER       28U
 #define MEASUREMENT_COMMAND_QUEUE_LENGTH 8U
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/
@@ -36,7 +36,6 @@ typedef enum
 typedef struct __packed
 {
   PERMISSION       enb : 1U; /* Enable flag of measurement channel */
-  getValueCallBack get;      /* Callback to get data of channel    */
 } MEASURMENT_CHANNEL;
 
 typedef struct __packed

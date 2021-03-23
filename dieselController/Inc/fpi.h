@@ -122,7 +122,7 @@ QueueHandle_t     pFPIgetQueue ( void );
 void              vFPIsetBlock ( void );
 TRIGGER_STATE     eFPIgetState ( uint8_t n );
 uint16_t*         uFPIgetMessage ( uint8_t n );
-fix16_t           fFPIgetData ( void );
+uint16_t          uFPIgetData ( void );
 SYSTEM_EVENT_TYPE eFPIgetUserEventType ( uint8_t n );
 FPI_LEVEL         eFPIcheckLevel ( FPI_FUNCTION function );
 /*----------------------------------------------------------------------*/

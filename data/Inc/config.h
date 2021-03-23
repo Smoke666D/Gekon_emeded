@@ -198,7 +198,7 @@ typedef struct __packed
 #define   MAINTENANCE_ALARM_AIR_TIME_ADR                         117U
 #define   MAINTENANCE_ALARM_FUEL_TIME_ADR                        118U
 #define   LOG_SETUP_ADR                                          119U
-#define   RECORD_SETUP_ADR                                       120U
+#define   RECORD_SETUP0_ADR                                      120U
 #define   RECORD_SETUP1_ADR                                      121U
 #define   RECORD_INTERVAL_ADR                                    122U
 /*---------------------- Bitmap addresses ------------------------------*/
@@ -426,7 +426,7 @@ extern eConfigReg maintenanceAlarmOilTime;
 extern eConfigReg maintenanceAlarmAirTime;
 extern eConfigReg maintenanceAlarmFuelTime;
 extern eConfigReg logSetup;
-extern eConfigReg recordSetup;
+extern eConfigReg recordSetup0;
 extern eConfigReg recordSetup1;
 extern eConfigReg recordInterval;
 extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];

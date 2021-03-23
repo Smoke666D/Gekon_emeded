@@ -564,34 +564,6 @@ eConfigReg digitalInput =
    .value = digitalInputValue,
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap controllBitMap[6U] = 
-{
-   { 1U, 0U },     // controllSwitchMode
-   { 2U, 1U },     // controllRemoteStart
-   { 4U, 2U },     // controllBanAutoStart
-   { 8U, 3U },     // controllBanGeneratorLoad
-   { 16U, 4U },     // controllBanAutoShutdown
-   { 32U, 5U },     // controllGoToIdling
-};
-uint16_t controllValue[1U] = { 0U };
-const eConfigAttributes controllAtrib =
-{
-   .adr        = 28U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
-   .type       = CONFIG_TYPE_BITMAP,
-   .len        = 1U,
-   .bitMapSize = 6U,
-   .bitMap     = controllBitMap
-};
-eConfigReg controll =
-{
-   .atrib = &controllAtrib,
-   .value = controllValue,
-};
-/*----------------------------------------------------------------*/
 const eConfigBitMap statusBitMap[6U] = 
 {
    { 1U, 0U },     // statusAlarm
@@ -604,7 +576,7 @@ const eConfigBitMap statusBitMap[6U] =
 uint16_t statusValue[1U] = { 0U };
 const eConfigAttributes statusAtrib =
 {
-   .adr        = 29U,
+   .adr        = 28U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -620,8 +592,27 @@ eConfigReg status =
    .value = statusValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t logAdrValue[1U] = { 0U };
-const eConfigAttributes logAdrAtrib =
+uint16_t logLenValue[1U] = { 0U };
+const eConfigAttributes logLenAtrib =
+{
+   .adr        = 29U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg logLen =
+{
+   .atrib = &logLenAtrib,
+   .value = logLenValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t errorLenValue[1U] = { 0U };
+const eConfigAttributes errorLenAtrib =
 {
    .adr        = 30U,
    .scale      = 0U,
@@ -633,10 +624,10 @@ const eConfigAttributes logAdrAtrib =
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
-eConfigReg logAdr =
+eConfigReg errorLen =
 {
-   .atrib = &logAdrAtrib,
-   .value = logAdrValue,
+   .atrib = &errorLenAtrib,
+   .value = errorLenValue,
 };
 /*----------------------------------------------------------------*/
 uint16_t logRecordData0Value[1U] = { 0U };
@@ -696,10 +687,113 @@ eConfigReg logRecordEvent =
    .value = logRecordEventValue,
 };
 /*----------------------------------------------------------------*/
+uint16_t errorRecordData0Value[1U] = { 0U };
+const eConfigAttributes errorRecordData0Atrib =
+{
+   .adr        = 34U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg errorRecordData0 =
+{
+   .atrib = &errorRecordData0Atrib,
+   .value = errorRecordData0Value,
+};
+/*----------------------------------------------------------------*/
+uint16_t errorRecordData1Value[1U] = { 0U };
+const eConfigAttributes errorRecordData1Atrib =
+{
+   .adr        = 35U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg errorRecordData1 =
+{
+   .atrib = &errorRecordData1Atrib,
+   .value = errorRecordData1Value,
+};
+/*----------------------------------------------------------------*/
+uint16_t errorRecordEventValue[1U] = { 0U };
+const eConfigAttributes errorRecordEventAtrib =
+{
+   .adr        = 36U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg errorRecordEvent =
+{
+   .atrib = &errorRecordEventAtrib,
+   .value = errorRecordEventValue,
+};
+/*----------------------------------------------------------------*/
+const eConfigBitMap controllBitMap[5U] = 
+{
+   { 1U, 0U },     // controllSwitchMode
+   { 2U, 1U },     // controllStart
+   { 4U, 2U },     // controllStop
+   { 8U, 3U },     // controllResetErrors
+   { 16U, 4U },     // controllSwitchLoad
+};
+uint16_t controllValue[1U] = { 0U };
+const eConfigAttributes controllAtrib =
+{
+   .adr        = 37U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_BITMAP,
+   .len        = 1U,
+   .bitMapSize = 5U,
+   .bitMap     = controllBitMap
+};
+eConfigReg controll =
+{
+   .atrib = &controllAtrib,
+   .value = controllValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t logAdrValue[1U] = { 0U };
+const eConfigAttributes logAdrAtrib =
+{
+   .adr        = 38U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg logAdr =
+{
+   .atrib = &logAdrAtrib,
+   .value = logAdrValue,
+};
+/*----------------------------------------------------------------*/
 uint16_t errorAdrValue[1U] = { 0U };
 const eConfigAttributes errorAdrAtrib =
 {
-   .adr        = 34U,
+   .adr        = 39U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -715,25 +809,6 @@ eConfigReg errorAdr =
    .value = errorAdrValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t errorRecordValue[1U] = { 0U };
-const eConfigAttributes errorRecordAtrib =
-{
-   .adr        = 35U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg errorRecord =
-{
-   .atrib = &errorRecordAtrib,
-   .value = errorRecordValue,
-};
-/*----------------------------------------------------------------*/
 
-eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &digitalOutput, &digitalInput, &controll, &status, &logAdr, &logRecordData0, &logRecordData1, &logRecordEvent, &errorAdr, &errorRecord};
-const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Цифровые выходы", "Цифровые входы", "Регистр управления", "Регистр статуса", "Адрес записи в журнале", "Дата записи журнала 0", "Дата записи журнала 1", "Событие записи журнала", "Адрес ошибки", "Событие ошибки"};
+eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &digitalOutput, &digitalInput, &status, &logLen, &errorLen, &logRecordData0, &logRecordData1, &logRecordEvent, &errorRecordData0, &errorRecordData1, &errorRecordEvent, &controll, &logAdr, &errorAdr};
+const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Цифровые выходы", "Цифровые входы", "Регистр статуса", "Кол-во записей в журнале", "Кол-во ошибок", "Дата записи журнала 0", "Дата записи журнала 1", "Событие записи журнала", "Дата ошибки 0", "Дата ошибки 1", "Событие ошибки", "Регистр управления", "Адрес записи в журнале", "Адрес ошибки"};

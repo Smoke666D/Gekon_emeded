@@ -21,38 +21,6 @@ static StaticQueue_t    xMeasurementCommandQueue = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
 fix16_t fMEASUREMENTgetNone ( void );
 /*----------------------- Constant ------------------------------------------------------------------*/
-static const getValueCallBack measurementCallbacks[MEASUREMENT_CHANNEL_NUMBER] =
-{
-  xADCGetSOP,               /*  0 Oil pressure               */
-  xADCGetSCT,               /*  1 Coolant temperature        */
-  xADCGetSFL,               /*  2 Fuel level                 */
-  fENGINEgetSpeed,          /*  3 Speed                      */
-  fFPIgetData,              /*  4 Digital inputs             */
-  fFPOgetData,              /*  5 Digital outputs            */
-  xADCGetGENL1,             /*  6 Generator phase voltage L1 */
-  xADCGetGENL2,             /*  7 Generator phase voltage L2 */
-  xADCGetGENL3,             /*  8 Generator phase voltage L3 */
-  xADCGetGENL1Lin,          /*  9 Generator Line voltage L1  */
-  xADCGetGENL2Lin,          /* 10 Generator Line voltage L2  */
-  xADCGetGENL3Lin,          /* 11 Generator Line voltage L3  */
-  xADCGetGENL1Cur,          /* 12 Current L1                 */
-  xADCGetGENL2Cur,          /* 13 Current L2                 */
-  xADCGetGENL3Cur,          /* 14 Current L3                 */
-  xADCGetGENLFreq,          /* 15 Frequency generator        */
-  xADCGetCOSFi,             /* 16 Cos Fi                     */
-  xADCGetGENActivePower,    /* 17 Power active               */
-  xADCGetGENReactivePower,  /* 18 Power reactive             */
-  xADCGetGENRealPower,      /* 19 Power full                 */
-  xADCGetNETL1,             /* 20 Mains phase voltage L1     */
-  xADCGetNETL2,             /* 21 Mains phase voltage L2     */
-  xADCGetNETL3,             /* 22 Mains phase voltage L3     */
-  xADCGetNETL1Lin,          /* 23 Mains line voltage L1      */
-  xADCGetNETL2Lin,          /* 24 Mains line voltage L2      */
-  xADCGetNETL3Lin,          /* 25 Mains line voltage L3      */
-  xADCGetNETLFreq,          /* 26 Mains frequency            */
-  xADCGetVDD,               /* 27 Voltage accumulator        */
-};
-static const eConfigReg* measurementRegs[MEASUREMENT_CHANNEL_NUMBER] = { 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
 static MEASURMENT_CMD measurementCommandBuffer[MEASUREMENT_COMMAND_QUEUE_LENGTH] = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
@@ -88,7 +56,6 @@ void vMEASUREMENTinit ( void )
       for ( i=0U; i<MEASUREMENT_CHANNEL_NUMBER; i++ )
       {
         measurement.channels[i].enb = getBitMap( &recordSetup, ( RECORD_ENB_ADR + 1U + i ) );
-        measurement.channels[i].get = measurementCallbacks[i];
         if ( measurement.channels[i].enb == PERMISSION_ENABLE )
         {
           measurement.length++;

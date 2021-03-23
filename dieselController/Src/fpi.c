@@ -278,9 +278,9 @@ void vFPIinit ( const FPI_INIT* init )
   return;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fFPIgetData ( void )
+uint16_t uFPIgetData ( void )
 {
-  return fix16_from_int( fpiDataReg );
+  return fpiDataReg;
 }
 /*----------------------------------------------------------------------------*/
 QueueHandle_t pFPIgetQueue ( void )

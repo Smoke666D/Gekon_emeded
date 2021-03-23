@@ -10,11 +10,11 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_OUTPUT_LENGTH             4U
 #define   MAX_BIT_MAP_OUTPUT_LENGTH           12U
-#define   OUTPUT_DATA_REGISTER_NUMBER         31U
+#define   OUTPUT_DATA_REGISTER_NUMBER         40U
 #define   FILDS_TO_WRITE_OUTPUT_NUMBER        3U
 #define   MAX_VALUE_OUTPUT_LENGTH             1U
 #define   OUTPUT_DATA_MAX_SIZE                47U     // bytes
-#define   OUTPUT_DATA_TOTAL_SIZE              108U   // bytes
+#define   OUTPUT_DATA_TOTAL_SIZE              120U   // bytes
 #define   MIN_OUTPUT_DATA_SCALE               ( -2 )
 #define   MAX_OUTPUT_DATA_SCALE               ( 0 )
 #define   OUTPUT_DATA_SCALE_NUM               ( 3 )
@@ -49,14 +49,18 @@
 #define   BATTERY_VOLTAGE_ADR                                    25U
 #define   DIGITAL_OUTPUT_ADR                                     26U
 #define   DIGITAL_INPUT_ADR                                      27U
-#define   CONTROLL_ADR                                           28U
-#define   STATUS_ADR                                             29U
-#define   LOG_ADR_ADR                                            30U
+#define   STATUS_ADR                                             28U
+#define   LOG_LEN_ADR                                            29U
+#define   ERROR_LEN_ADR                                          30U
 #define   LOG_RECORD_DATA0_ADR                                   31U
 #define   LOG_RECORD_DATA1_ADR                                   32U
 #define   LOG_RECORD_EVENT_ADR                                   33U
-#define   ERROR_ADR_ADR                                          34U
-#define   ERROR_RECORD_ADR                                       35U
+#define   ERROR_RECORD_DATA0_ADR                                 34U
+#define   ERROR_RECORD_DATA1_ADR                                 35U
+#define   ERROR_RECORD_EVENT_ADR                                 36U
+#define   CONTROLL_ADR                                           37U
+#define   LOG_ADR_ADR                                            38U
+#define   ERROR_ADR_ADR                                          39U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   DIGITAL_OUTPUT_A_ADR                         0U
 #define   DIGITAL_OUTPUT_B_ADR                         1U
@@ -82,18 +86,17 @@
 #define   DIGITAL_INPUT_J_ADR                          9U
 #define   DIGITAL_INPUT_K_ADR                          10U
 #define   DIGITAL_INPUT_L_ADR                          11U
-#define   CONTROLL_SWITCH_MODE_ADR                     0U
-#define   CONTROLL_REMOTE_START_ADR                    1U
-#define   CONTROLL_BAN_AUTO_START_ADR                  2U
-#define   CONTROLL_BAN_GENERATOR_LOAD_ADR              3U
-#define   CONTROLL_BAN_AUTO_SHUTDOWN_ADR               4U
-#define   CONTROLL_GO_TO_IDLING_ADR                    5U
 #define   STATUS_ALARM_ADR                             0U
 #define   STATUS_WARNING_ADR                           1U
 #define   STATUS_MAINS_FAIL_ADR                        2U
 #define   STATUS_D_P_SREADY_ADR                        3U
 #define   STATUS_READY_TO_START_ADR                    4U
 #define   STATUS_GENERATOR_REDY_ADR                    5U
+#define   CONTROLL_SWITCH_MODE_ADR                     0U
+#define   CONTROLL_START_ADR                           1U
+#define   CONTROLL_STOP_ADR                            2U
+#define   CONTROLL_RESET_ERRORS_ADR                    3U
+#define   CONTROLL_SWITCH_LOAD_ADR                     4U
 /*------------------------- Extern -------------------------------------*/
 extern eConfigReg oilPressure;
 extern eConfigReg coolantTemp;
@@ -123,14 +126,18 @@ extern eConfigReg generatorPowerFull;
 extern eConfigReg batteryVoltage;
 extern eConfigReg digitalOutput;
 extern eConfigReg digitalInput;
-extern eConfigReg controll;
 extern eConfigReg status;
-extern eConfigReg logAdr;
+extern eConfigReg logLen;
+extern eConfigReg errorLen;
 extern eConfigReg logRecordData0;
 extern eConfigReg logRecordData1;
 extern eConfigReg logRecordEvent;
+extern eConfigReg errorRecordData0;
+extern eConfigReg errorRecordData1;
+extern eConfigReg errorRecordEvent;
+extern eConfigReg controll;
+extern eConfigReg logAdr;
 extern eConfigReg errorAdr;
-extern eConfigReg errorRecord;
 extern eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER];
 extern const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER];
 extern const fix16_t     scaleMulArray[OUTPUT_DATA_SCALE_NUM];

@@ -31,8 +31,8 @@
 #include "alarm.h"
 #include "dataAPI.h"
 /*-------------------------------- Structures --------------------------------*/
-CONTROLLER_INIT controllerGPIO = { 0U };
-CONTROLLER_TYPE controller     = { 0U };
+static CONTROLLER_INIT   controllerGPIO      = { 0U };
+static CONTROLLER_TYPE   controller          = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 
 /*--------------------------------- Constant ---------------------------------*/
@@ -43,7 +43,6 @@ static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
 osThreadId_t controllerHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
 void vCONTROLLERsetLED ( HMI_COMMAND led, uint8_t state );
-void vCONTROLLERsetMode ( CONTROLLER_MODE mode );
 void vCONTROLLERstartAutoStop ( PERMISSION delay );
 void vCONTROLLERstartAutoStart ( PERMISSION delay );
 void vCONTROLLERtask ( void* argument );
@@ -590,6 +589,23 @@ void vCONTROLLERresetAlarm ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vCONTROLLERsetMode ( CONTROLLER_MODE mode )
+{
+  if ( mode == CONTROLLER_MODE_AUTO )
+  {
+    controller.mode = CONTROLLER_MODE_AUTO;
+    vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_ON  );
+    vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_OFF );
+  }
+  else
+  {
+    controller.mode = CONTROLLER_MODE_MANUAL;
+    vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF  );
+    vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON );
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------- PUBLICC --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERinit ( const CONTROLLER_INIT* init )
@@ -617,26 +633,39 @@ CONTROLLER_STATE eCONTROLLERgetStatus ( void )
   return controller.state;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERsetMode ( CONTROLLER_MODE mode )
-{
-  if ( mode == CONTROLLER_MODE_AUTO )
-  {
-    controller.mode = CONTROLLER_MODE_AUTO;
-    vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_ON  );
-    vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_OFF );
-  }
-  else
-  {
-    controller.mode = CONTROLLER_MODE_MANUAL;
-    vCONTROLLERsetLED( HMI_CMD_AUTO,   RELAY_OFF  );
-    vCONTROLLERsetLED( HMI_CMD_MANUAL, RELAY_ON );
-  }
-  return;
-}
-/*----------------------------------------------------------------------------*/
 CONTROLLER_MODE eCONTROLLERgetMode ( void )
 {
   return controller.mode;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERswitchMode ( void )
+{
+  xTaskNotify( controllerHandle, ( uint32_t )HMI_CMD_AUTO, eSetBits );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTRILLERsetStart ( void )
+{
+  xTaskNotify( controllerHandle, ( uint32_t )HMI_CMD_START, eSetBits );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERsetStop ( void )
+{
+  xTaskNotify( controllerHandle, ( uint32_t )HMI_CMD_STOP, eSetBits );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERsetACK ( void )
+{
+  xTaskNotify( controllerHandle, ( uint32_t )HMI_CMD_ACK, eSetBits );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vCONTROLLERsetSwitchLoad ( uint8_t cmd )
+{
+  xTaskNotify( controllerHandle, ( uint32_t )HMI_CMD_LOAD, eSetBits );
+  return;
 }
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERtask ( void* argument )

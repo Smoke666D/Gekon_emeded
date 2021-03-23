@@ -12,8 +12,9 @@
 #include "controllerTypes.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
-#define  CONTROLLER_LOAD_BTN_EXIST   0U
-#define  CONTROLLER_MANUAL_BTN_EXIST 0U
+#define  CONTROLLER_LOAD_BTN_EXIST     0U
+#define  CONTROLLER_MANUAL_BTN_EXIST   0U
+#define  CONTROLLER_HMI_EXTERN_TIMEOUT ( ( TickType_t ) 1000U )
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -78,5 +79,10 @@ extern osThreadId_t controllerHandle;
 void             vCONTROLLERinit ( const CONTROLLER_INIT* init );
 CONTROLLER_STATE eCONTROLLERgetStatus ( void );
 CONTROLLER_MODE  eCONTROLLERgetMode ( void );
+void             vCONTROLLERswitchMode ( void );
+void             vCONTRILLERsetStart ( void );
+void             vCONTROLLERsetStop ( void );
+void             vCONTROLLERsetACK ( void );
+void             vCONTROLLERsetSwitchLoad ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

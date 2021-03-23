@@ -13,6 +13,7 @@
 #include "adc.h"
 #include "fpo.h"
 #include "fpi.h"
+#include "journal.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static MEASUREMENT_TYPE measurement              = { 0U };
 static osThreadId_t     measurementHandle        = NULL;
@@ -175,16 +176,13 @@ uint16_t uMEASUREMENTgetData ( uint8_t chanel )
   else
   {
     time = uLOGgetTime();
-    if ( eRTCgetTime( &time ) == RTC_OK )
+    if ( chanel == MEASUREMENT_TIME_CHANEL )
     {
-      if ( chanel == MEASUREMENT_TIME_CHANEL )
-      {
-        res = ( uint16_t )time;
-      }
-      else
-      {
-        res = ( uint16_t )( time >> 16U );
-      }
+      res = ( uint16_t )time;
+    }
+    else
+    {
+      res = ( uint16_t )( time >> 16U );
     }
   }
   return res;
@@ -195,7 +193,6 @@ void vMEASUREMENTdataInit ( void )
   uint8_t         i    = 0U;
   uint8_t         j    = 0U;
   DATA_API_STATUS res  = DATA_API_STAT_BUSY;
-  uint16_t        data = 0U;
   measurement.enb = getBitMap( &recordSetup0, RECORD_ENB_ADR );
   if ( measurement.enb == PERMISSION_ENABLE )
   {
@@ -217,7 +214,7 @@ void vMEASUREMENTdataInit ( void )
     {
       if ( getBitMap( &recordSetup0, ( RECORD_ENB_ADR + 1U + i ) ) > 0U )
       {
-        measurement.length += vMEASUREMENTgetChannel( j, measurement.channels, &measurement.length );
+        measurement.length += vMEASUREMENTgetChannel( j, measurement.channels, measurement.length );
       }
       j++;
     }
@@ -225,7 +222,7 @@ void vMEASUREMENTdataInit ( void )
     {
       if ( getBitMap( &recordSetup1, ( RECORD_CURRENT_ENB_ADR + i ) ) > 0U )
       {
-        measurement.length += vMEASUREMENTgetChannel( j, measurement.channels, &measurement.length );
+        measurement.length += vMEASUREMENTgetChannel( j, measurement.channels, measurement.length );
       }
       j++;
     }

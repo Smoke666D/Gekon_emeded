@@ -32,6 +32,7 @@ typedef enum
 } OUTPUT_REGISTER_TYPE;
 /*----------------------- Structures -----------------------------------*/
 /*------------------------ Functions -----------------------------------*/
-fix16_t fOUTPUTgetData ( uint8_t channel );
+void                 vOUTPUTupdate ( uint8_t chanel );
+OUTPUT_REGISTER_TYPE eOUTPUTgetType ( uint8_t number );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OUTPUTPROCESSING_H_ */

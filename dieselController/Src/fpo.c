@@ -403,7 +403,7 @@ void vFPOsetGenOnImp ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
-TRIGGER_STATE eFPOgetGenOnImp ( vpid )
+TRIGGER_STATE eFPOgetGenOnImp ( void )
 {
   return genImpOnFPO->state;
 }

@@ -61,7 +61,7 @@ static uint16_t controllBuffer = 0U;
 /*----------------------------------------------------------------------------*/
 uint16_t uOUTPUTcodeEvent ( SYSTEM_EVENT event )
 {
-  return ( uint16_t )( event.type ) || ( ( uint16_t )( event.action ) << 8U );
+  return ( uint16_t )( event.type ) | ( ( uint16_t )( event.action ) << 8U );
 }
 /*----------------------------------------------------------------------------*/
 void vOUTPUTprocessControll ( void )
@@ -213,7 +213,7 @@ void vOUTPUTupdate ( uint8_t chanel )
         vOUTPUTupdateErrorLength();
         break;
       case ERROR_ADR_ADR:
-        vOUTPUTupdateError();
+        vOUTPUTupdateErrorRecord();
         break;
       default:
         break;

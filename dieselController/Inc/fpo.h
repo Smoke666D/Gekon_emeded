@@ -124,7 +124,7 @@ TRIGGER_STATE eFPOgeyIdle ( void );
 void          vFPOsetGenSw ( RELAY_STATUS stat );
 TRIGGER_STATE eFPOgetGenSw ( void );
 void          vFPOsetGenOnImp ( RELAY_STATUS stat );
-TRIGGER_STATE eFPOgetGenOnImp ( vpid );
+TRIGGER_STATE eFPOgetGenOnImp ( void );
 void          vFPOsetGenOffImp ( RELAY_STATUS stat );
 TRIGGER_STATE eFPOgetGenOffImp ( void );
 void          vFPOsetMainsSw ( RELAY_STATUS stat );

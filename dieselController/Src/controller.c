@@ -47,6 +47,7 @@ void vCONTROLLERstartAutoStop ( PERMISSION delay );
 void vCONTROLLERstartAutoStart ( PERMISSION delay );
 void vCONTROLLERtask ( void* argument );
 void vCONTROLLERsetErrorOutputs ( void );
+void vCONTROLLERsetMode ( CONTROLLER_MODE mode );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -662,7 +663,7 @@ void vCONTROLLERsetACK ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERsetSwitchLoad ( uint8_t cmd )
+void vCONTROLLERsetSwitchLoad ( void )
 {
   xTaskNotify( controllerHandle, ( uint32_t )HMI_CMD_LOAD, eSetBits );
   return;

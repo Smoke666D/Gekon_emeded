@@ -18,6 +18,7 @@
 #define CONTROL_CMD_NUMBER               6U
 #define CONTROL_STATUS_NUMBER            6U
 #define CONTROL_READ_ONLY_NUMBER         37U
+#define OUTPUT_SEMAPHORE_TAKE_DELAY      ( ( TickType_t ) 1000U )
 /*-------------------------- CHECK -------------------------------------*/
 #if ( ( MEASUREMENT_CHANNEL_NUMBER + CONTROL_CHANNEL_NUMBER ) != OUTPUT_DATA_REGISTER_NUMBER )
  #error Wrong channel number
@@ -28,11 +29,21 @@ typedef enum
   OUTPUT_REGISTER_TYPE_RESERVED,
   OUTPUT_REGISTER_TYPE_READ_ONLY,
   OUTPUT_REGISTER_TYPE_READ_WRITE,
-  OUTPUT_REGISTER_TYPE_WRITE_ONLY,
 } OUTPUT_REGISTER_TYPE;
+
+typedef enum
+{
+  OUTPUT_STATUS_OK,
+  OUTPUT_STATUS_BUSY,
+  OUTPUT_STATUS_INIT_ERROR,
+  OUTPUT_STATUS_ACCESS_DENIED,
+} OUTPUT_STATUS;
 /*----------------------- Structures -----------------------------------*/
 /*------------------------ Functions -----------------------------------*/
-void                 vOUTPUTupdate ( uint8_t chanel );
+void                 vOUTPUTinit ( void );
 OUTPUT_REGISTER_TYPE eOUTPUTgetType ( uint8_t number );
+void                 vOUTPUTupdate ( uint8_t chanel );
+OUTPUT_STATUS        vOUTPUTwrite ( uint8_t chanel, uint16_t data );
+
 /*----------------------------------------------------------------------*/
 #endif /* INC_OUTPUTPROCESSING_H_ */

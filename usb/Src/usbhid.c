@@ -18,6 +18,8 @@
 #include "measurement.h"
 #include "config.h"
 #include "dataProces.h"
+#include "OutputData.h"
+#include "outputProcessing.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -175,22 +177,19 @@ void vUSBlogToReport ( USB_REPORT* report )
 void vUSBconfigToReport ( USB_REPORT* report )
 {
   uint8_t i     = 0U;
-  uint8_t count = 0U;
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {
-    report->stat = USB_REPORT_STATE_OK;
-    /*----------- Configuration value -----------*/
     for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
     {
-      vUint16ToBytes( configReg[report->adr]->value[i], &report->data[count + ( 2U * i )] );
+      vUint16ToBytes( configReg[report->adr]->value[i], &report->data[ 2U * i ] );
     }
-    count += 2U * configReg[report->adr]->atrib->len;
-    /*-------------------------------------------*/
-    report->length = count;
+    report->length = 2U * configReg[report->adr]->atrib->len;
+    report->stat   = USB_REPORT_STATE_OK;
   }
   else
   {
-    report->stat = USB_REPORT_STATE_NON_CON;
+    report->length = 0U;
+    report->stat   = USB_REPORT_STATE_NON_CON;
   }
   return;
 }
@@ -627,7 +626,6 @@ void vUSBparseReport ( USB_REPORT* report )
   report->cmd    = report->buf[USB_CMD_BYTE];
   report->stat   = report->buf[USB_STAT_BYTE];
   report->adr    = uBytesToUnit16( &report->buf[USB_ADR0_BYTE] );
-  //report->length = uByteToUint24( &report->buf[USB_LEN0_BYTE] );
   report->length = ( ( ( uint32_t )( report->buf[USB_LEN2_BYTE] ) ) << 16U ) |
                    ( ( ( uint32_t )( report->buf[USB_LEN1_BYTE] ) ) <<  8U ) |
 		               ( ( ( uint32_t )( report->buf[USB_LEN0_BYTE] ) )        );
@@ -717,7 +715,7 @@ void vUSBmemorySizeToReport ( USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void eUSBmeasurementToReport ( USB_REPORT* report )
+void vUSBmeasurementToReport ( USB_REPORT* report )
 {
   uint8_t         i                                = 0U;
   uint16_t        data[MEASUREMENT_CHANNEL_NUMBER] = { 0U };
@@ -742,7 +740,7 @@ void eUSBmeasurementToReport ( USB_REPORT* report )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void eUSBmeasurementLengthToReport ( USB_REPORT* report )
+void vUSBmeasurementLengthToReport ( USB_REPORT* report )
 {
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
   uint16_t        data   = 0U;
@@ -782,6 +780,49 @@ USB_STATUS eUSBeraseMeasurement ( const USB_REPORT* report )
     {
       res = USB_STATUS_DONE;
     }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vUSBoutputToReport ( USB_REPORT* report )
+{
+  if ( report->adr < OUTPUT_DATA_REGISTER_NUMBER )
+  {
+    vOUTPUTupdate( report->adr );
+    vUint16ToBytes( outputDataReg[report->adr]->value[0U], &report->data[0U] );
+    report->length = 2U;
+    report->stat   = USB_REPORT_STATE_OK;
+  }
+  else
+  {
+    report->length = 0U;
+    report->stat   = USB_REPORT_STATE_NON_CON;
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+USB_STATUS eUSBreportToOutput ( const USB_REPORT* report )
+{
+  USB_STATUS    res  = USB_STATUS_DONE;
+  OUTPUT_STATUS stat = OUTPUT_STATUS_OK;
+  stat = vOUTPUTwrite( report->adr, *( uint16_t* )report->data );
+  switch ( stat )
+  {
+    case OUTPUT_STATUS_OK:
+      res = USB_STATUS_DONE;
+      vOUTPUTupdate( report->adr );
+      break;
+    case OUTPUT_STATUS_BUSY:
+      res = USB_STATUS_FORBIDDEN;
+      break;
+    case OUTPUT_STATUS_INIT_ERROR:
+      res = USB_STATUS_STORAGE_ERROR;
+      break;
+    case OUTPUT_STATUS_ACCESS_DENIED:
+      res = USB_STATUS_ERROR_ADR;
+      break;
+    default:
+      break;
   }
   return res;
 }
@@ -997,13 +1038,19 @@ void vStartUsbTask ( void *argument )
           vUSBsend( &report, vUSBmemorySizeToReport );
           break;
         case USB_REPORT_CMD_GET_MEASUREMENT:
-          vUSBsend( &report, eUSBmeasurementToReport );
+          vUSBsend( &report, vUSBmeasurementToReport );
           break;
         case USB_REPORT_CMD_ERASE_MEASUREMENT:
           vUSBget( &report, eUSBeraseMeasurement );
           break;
         case USB_REPORT_CMD_GET_MEASUREMENT_LENGTH:
-          vUSBsend( &report, eUSBmeasurementLengthToReport );
+          vUSBsend( &report, vUSBmeasurementLengthToReport );
+          break;
+        case USB_REPORT_CMD_GET_OUTPUT:
+          vUSBsend( &report, vUSBoutputToReport );
+          break;
+        case USB_REPORT_CMD_PUT_OUTPUT:
+          vUSBget( &report, eUSBreportToOutput );
           break;
         default:
           break;

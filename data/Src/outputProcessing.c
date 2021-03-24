@@ -16,6 +16,7 @@
 #include "fpi.h"
 #include "controller.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
+static SemaphoreHandle_t xWriteOutputSemaphore = NULL;
 /*----------------------- Functions -----------------------------------------------------------------*/
 static const getValueCallBack measurementCallbacks[MEASUREMENT_CHANNEL_NUMBER] =
 {
@@ -167,16 +168,51 @@ void vOUTPUTupdateErrorRecord ( void )
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-OUTPUT_REGISTER_TYPE eOUTPUTgetType ( uint8_t number )
+void vOUTPUTinit ( void )
+{
+  xWriteOutputSemaphore = xSemaphoreCreateMutex();
+  return;
+}
+/*----------------------------------------------------------------------------*/
+OUTPUT_REGISTER_TYPE eOUTPUTgetType ( uint8_t chanel )
 {
   OUTPUT_REGISTER_TYPE res = OUTPUT_REGISTER_TYPE_RESERVED;
-  if ( number <  CONTROL_READ_ONLY_NUMBER )
+  if ( chanel <  CONTROL_READ_ONLY_NUMBER )
   {
     res = OUTPUT_REGISTER_TYPE_READ_ONLY;
   }
   else
   {
     res = OUTPUT_REGISTER_TYPE_READ_WRITE;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+OUTPUT_STATUS vOUTPUTwrite ( uint8_t chanel, uint16_t data )
+{
+  OUTPUT_STATUS res = OUTPUT_STATUS_OK;
+  if ( eOUTPUTgetType( chanel ) == OUTPUT_REGISTER_TYPE_READ_WRITE )
+  {
+    if ( xWriteOutputSemaphore != NULL )
+    {
+      if ( xSemaphoreTake( xWriteOutputSemaphore, OUTPUT_SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+      {
+        outputDataReg[chanel]->value[0U] = data;
+        xSemaphoreGive( xWriteOutputSemaphore );
+      }
+      else
+      {
+        res = OUTPUT_STATUS_BUSY;
+      }
+    }
+    else
+    {
+      res = OUTPUT_STATUS_INIT_ERROR;
+    }
+  }
+  else
+  {
+    res = OUTPUT_STATUS_ACCESS_DENIED;
   }
   return res;
 }

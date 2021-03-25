@@ -27,7 +27,6 @@ extern "C" {
 
 #include "co_types.h"
 #include "co_cfg.h"
-
 #include "co_dict.h"
 #include "co_if.h"
 #include "co_emcy.h"

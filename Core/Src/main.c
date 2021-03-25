@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 #include "cmsis_os.h"
 #include "lwip.h"
@@ -26,6 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include "task.h"
 #include "common.h"
 #include "menu.h"
@@ -52,6 +54,9 @@
 #include "alarm.h"
 #include "measurement.h"
 #include "charger.h"
+#include "can_open.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -285,14 +290,17 @@ int main(void)
   MX_TIM7_Init();
   MX_TIM8_Init();
   MX_TIM12_Init();
+  MX_CAN1_Init( );
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
   vCHARTinitCharts();                                           /* Charts data initialization */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
   vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit();                                               /* Data API initialization */
-  vCanOpenInit();
+  vDATAAPIinit();
+
+  /* Data API initialization */
+  vCan_Open_Inti( &hcan1);
   /*--------------------------------------------------------------------------*/
   vSYSSerial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */

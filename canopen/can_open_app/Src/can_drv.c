@@ -1,44 +1,13 @@
 /*
- * can_open.c
+ * can_drv.c
  *
- *  Created on: 23 мар. 2021 г.
+ *  Created on: 26 мар. 2021 г.
  *      Author: 45
  */
 
-#include "can_open.h"
 
+#include "can_drv.h"
 
-void CONodeFatalError(void)
-{
-
-
-}
-
-int16_t COLssLoad(uint32_t *baudrate, uint8_t *nodeId)
-{
-
-
-}
-
-void COPdoTransmit(CO_IF_FRM *frm)
-{
-
-
-}
-void COTmrLock(void)
-{
-
-}
-
-void COTmrUnlock(void)
-{
-
-}
-void CONmtModeChange(CO_NMT *nmt, CO_MODE mode)
-{
-
-
-}
 /******************************************************************************
 * PRIVATE FUNCTIONS
 ******************************************************************************/
@@ -49,17 +18,8 @@ static int16_t STM32F2CanSend   (CO_IF_FRM *frm);
 static int16_t STM32F2CanRead   (CO_IF_FRM *frm);
 static void    STM32F2CanReset  (void);
 static void    STM32F2CanClose  (void);
-CO_NODE  xENRG_NODE;
-CO_NODE_SPEC spec;
 
-CAN_HandleTypeDef * pcan;
 
-/*static struct CO_IF_DRV_T AppDriver = {
-    &STM32F2CanDriver,
-    &STM32F2TimerDriver,
-    &STM32F2NvmDriver
-};
-*/
 const CO_IF_CAN_DRV STM32F2CanDriver = {
     STM32F2CanInit,
     STM32F2CanEnable,
@@ -69,27 +29,23 @@ const CO_IF_CAN_DRV STM32F2CanDriver = {
     STM32F2CanClose
 };
 
-
-
+/*
+ * Локальные переменные
+ */
+static CAN_FilterTypeDef sCAN1FilterConfig;
 static StaticQueue_t  pxRXQ_CAN_MSG;
 static QueueHandle_t  xRXQ_CAN_MSG = NULL;
 static StaticQueue_t  pxTXQ_CAN_MSG;
 static QueueHandle_t  xTXQ_CAN_MSG = NULL;
-uint8_t  xRXQ_CAN_BUFFER[CAN_RECIVE_QUEUE_SIZE*sizeof(CO_IF_FRM)];
-uint8_t  xTXQ_CAN_BUFFER[CAN_TRANSMIT_QUEUE_SIZE*sizeof(CO_IF_FRM)];
-CO_NODE  xENRG_NODE;
-CO_NODE_SPEC spec;
+static uint8_t  xRXQ_CAN_BUFFER[CAN_RECIVE_QUEUE_SIZE*sizeof(CO_IF_FRM)];
+static uint8_t  xTXQ_CAN_BUFFER[CAN_TRANSMIT_QUEUE_SIZE*sizeof(CO_IF_FRM)];
 
 
-CAN_FilterTypeDef sCAN1FilterConfig;
 
-
-void vCan_Open_Inti(CAN_HandleTypeDef *hcan)
+void vCanDrvInit()
 {
-  pcan = hcan;
   xRXQ_CAN_MSG = xQueueCreateStatic( CAN_RECIVE_QUEUE_SIZE, sizeof( CO_IF_FRM ), xRXQ_CAN_BUFFER, &pxRXQ_CAN_MSG );/*Созадем очередь входящих данных*/
   xTXQ_CAN_MSG = xQueueCreateStatic( CAN_TRANSMIT_QUEUE_SIZE, sizeof( CO_IF_FRM ), xTXQ_CAN_BUFFER, &pxTXQ_CAN_MSG );/*Созадем очередь исходящих данных*/
-  CONodeInit(&xENRG_NODE,&spec);
 }
 
 

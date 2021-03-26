@@ -92,6 +92,7 @@ TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim8;
+TIM_HandleTypeDef htim11;
 TIM_HandleTypeDef htim12;
 
 UART_HandleTypeDef huart2;
@@ -173,6 +174,7 @@ static void MX_TIM5_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM8_Init(void);
+static void MX_TIM11_Init(void);
 static void MX_TIM12_Init ( void );
 
 
@@ -289,6 +291,7 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   MX_TIM8_Init();
+  MX_TIM11_Init();
   MX_TIM12_Init();
   MX_CAN1_Init( );
   /* USER CODE BEGIN 2 */
@@ -1060,6 +1063,37 @@ static void MX_TIM8_Init(void)
 
   /* USER CODE END TIM8_Init 2 */
 
+}
+
+
+static void MX_TIM11_Init ( void )
+{
+
+  TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig      = {0};
+
+  htim11.Instance               = TIM11;
+  htim11.Init.Prescaler         = 30001U;
+  htim11.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim11.Init.Period            = 201U;
+  htim11.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim11, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim11, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  return;
 }
 
 static void MX_TIM12_Init ( void )

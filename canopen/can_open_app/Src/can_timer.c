@@ -41,42 +41,95 @@ const CO_IF_TIMER_DRV STM32F2TimerDriver = {
 };
 
 /******************************************************************************
-* PRIVATE FUNCTIONS
+* PRIVATE VARIABLE
 ******************************************************************************/
 
+static SemaphoreHandle_t xTimerSemph = NULL;
+static StaticSemaphore_t xTimerSemphBuffer;
+static uint32_t TimerCounter = 0U;
 
+void vCan_TimerInit()
+{
+  xTimerSemph = xSemaphoreCreateBinaryStatic( &xTimerSemphBuffer);
+}
 
 static void STM32F2TimerInit(uint32_t freq)
 {
     /* TODO: initialize timer, clear counter and keep timer stopped */
+  HAL_TIM_Base_Stop_IT(ptim);
   ptim->Init.Period = 60000000U / ( freq  );
+  ptim->Instance->CNT = 0;
   HAL_TIM_Base_Init(ptim);
-  HAL_TIM_Base_Start_IT( ptim );
+  TimerCounter = 0U;
+  return;
 }
 
 static void STM32F2TimerStart(void)
 {
-    /* TODO: start hardware timer */
+    HAL_TIM_Base_Start_IT(ptim);
+    return;
 }
 
 static uint8_t STM32F2TimerUpdate(void)
 {
-    /* TODO: return 1 if timer event is elapsed, otherwise 0 */
-    return (0u);
+    /* TODO: return 1 if timer e vent is elapsed, otherwise 0 */
+   uint8_t result = 0u;
+   if (TimerCounter > 0u)
+   {
+     TimerCounter--;
+     if (TimerCounter == 0u)
+     {
+       result = 1u;
+     }
+   }
+   return (result);
+
 }
 
 static uint32_t STM32F2TimerDelay(void)
 {
     /* TODO: return current timer counter value */
-    return (0u);
+  return (TimerCounter);
 }
 
 static void STM32F2TimerReload(uint32_t reload)
 {
     /* TODO: reload timer counter value with given reload value */
+    TimerCounter = reload;
 }
 
 static void STM32F2TimerStop(void)
 {
-    /* TODO: stop timer and clear counter value */
+    TimerCounter = 0U;
+    HAL_TIM_Base_Stop_IT(ptim);
+    return;
+}
+
+
+/*
+ *  CALLBAKC из обработчика прервыания
+ *
+
+ */
+void vCanTimerCallback()
+{
+
+  static portBASE_TYPE xHigherPriorityTaskWoken;
+  if (COTmrService(&(xENRG_NODE.Tmr)) >0 )
+  {
+    xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR( xTimerSemph, &xHigherPriorityTaskWoken );
+    portEND_SWITCHING_ISR( xHigherPriorityTaskWoken );
+  }
+}
+
+
+void StartCANOPENTimeTask(void *argument)
+{
+
+    for (;;)
+    {
+      xSemaphoreTake( xTimerSemph, portMAX_DELAY );
+      COTmrProcess(&(xENRG_NODE.Tmr));
+    }
 }

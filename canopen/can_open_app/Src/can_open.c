@@ -23,6 +23,7 @@ void vCan_Open_Inti(CAN_HandleTypeDef *hcan)
   pcan = hcan;
   vCanDrvInit();
   CONodeInit(&xENRG_NODE,&AppSpec);
+  CONodeStart(&xENRG_NODE);
 }
 
 

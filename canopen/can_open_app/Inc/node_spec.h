@@ -14,6 +14,14 @@
 * PUBLIC DEFINES
 ******************************************************************************/
 
+#define   DEV_POF_NUMBER    0x194  /* Стандартный профиль 404 Messuring devicr */
+#define   DI_BLOCK          0x1000
+#define   AI_BLOCK          0x2000
+#define   DO_BLOCK          0x4000
+#define   AO_BLOCK          0x8000
+#define   CNTR_BLOCK        0x10000
+#define   ALARM_BLOCK       0X20000
+
 /* Specify the EMCY-IDs for the application */
 enum EMCY_CODES {
     APP_ERR_ID_SOMETHING = 0,

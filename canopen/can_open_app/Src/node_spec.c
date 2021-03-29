@@ -24,6 +24,9 @@
 * PRIVATE VARIABLES
 ******************************************************************************/
 
+static uint32_t DeviceTypeObject = DEV_POF_NUMBER | AI_BLOCK;
+
+
 /* allocate global variables for runtime value of objects */
 static uint8_t  Obj1001_00_08 = 0;
 
@@ -31,9 +34,13 @@ static uint32_t Obj2100_01_20 = 0;
 static uint8_t  Obj2100_02_08 = 0;
 static uint8_t  Obj2100_03_08 = 0;
 
+
+
+
+
 /* define the static object dictionary */
 static struct CO_OBJ_T ClockOD[APP_OBJ_N] = {
-    {CO_KEY(0x1000, 0, CO_UNSIGNED32|CO_OBJ_D__R_), 0, (uintptr_t)0},
+    {CO_KEY(0x1000, 0, CO_UNSIGNED32|CO_OBJ_D__R_), 0, (uintptr_t)&DeviceTypeObject},   /*DeviceType*/
     {CO_KEY(0x1001, 0, CO_UNSIGNED8 |CO_OBJ____R_), 0, (uintptr_t)&Obj1001_00_08},
     {CO_KEY(0x1005, 0, CO_UNSIGNED32|CO_OBJ_D__R_), 0, (uintptr_t)0x80},
     {CO_KEY(0x1017, 0, CO_UNSIGNED16|CO_OBJ_D__R_), 0, (uintptr_t)0},

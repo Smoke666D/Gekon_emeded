@@ -170,7 +170,12 @@ void vOUTPUTupdateErrorRecord ( void )
 /*----------------------------------------------------------------------------*/
 void vOUTPUTinit ( void )
 {
+  uint8_t i = 0U;
   xWriteOutputSemaphore = xSemaphoreCreateMutex();
+  for ( i=0U; i<OUTPUT_DATA_REGISTER_NUMBER; i++ )
+  {
+    vOUTPUTupdate( i );
+  }
   return;
 }
 /*----------------------------------------------------------------------------*/

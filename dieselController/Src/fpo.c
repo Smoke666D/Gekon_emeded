@@ -95,7 +95,8 @@ static FPO* pumpFPO         = NULL;  /* 17 */
 static FPO* starterFPO      = NULL;  /* 18 */
 static FPO* preheaterFPO    = NULL;  /* 19 */
 static FPO* idleFPO         = NULL;  /* 20 */
-static uint16_t fpoDataReg  = 0U;
+
+static uint16_t fpoDataReg      = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun );
 void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat );

@@ -46,6 +46,7 @@ static const getValueCallBack measurementCallbacks[MEASUREMENT_CHANNEL_NUMBER] =
   xADCGetGENReactivePower,  /* 23 Power reactive             */
   xADCGetGENRealPower,      /* 24 Power full                 */
   xADCGetVDD,               /* 25 Voltage accumulator        */
+  xADCGetCAC,               /* 26 Voltage charger            */
 };
 static const commandCallBack controllCallBacks[CONTROL_CMD_NUMBER] =
 {
@@ -84,7 +85,35 @@ void vOUTPUTprocessControll ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void uOUTPUTupdateStatus ( void )
+void vOUTPUTupdateExternDevice ( void )
+{
+  uint16_t res = 0U;
+
+  if ( eENGINEgetChargerState() == RELAY_ON )
+  {
+    res |= outputDataReg[EXTERNAL_DEVICES_ADR]->atrib->bitMap[EXTERNAL_CHARGER_ADR].mask;
+  }
+  if ( eFPOgetHeater()    == TRIGGER_SET )
+  {
+    res |= outputDataReg[EXTERNAL_DEVICES_ADR]->atrib->bitMap[EXTERNAL_COOLANT_HEATER_ADR].mask;
+  }
+  if ( eFPOgetCooler()    == TRIGGER_SET )
+  {
+    res |= outputDataReg[EXTERNAL_DEVICES_ADR]->atrib->bitMap[EXTERNAL_COOLANT_COOLER_ADR].mask;
+  }
+  if ( eFPOgetBooster()   == TRIGGER_SET )
+  {
+    res |= outputDataReg[EXTERNAL_DEVICES_ADR]->atrib->bitMap[EXTERNAL_FUEL_PUMP_ADR].mask;
+  }
+  if ( eFPOgetPreheater() == TRIGGER_SET )
+  {
+    res |= outputDataReg[EXTERNAL_DEVICES_ADR]->atrib->bitMap[EXTERNAL_PRE_HEATER_ADR].mask;
+  }
+  outputDataReg[EXTERNAL_DEVICES_ADR]->value[0U] = res;
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vOUTPUTupdateStatus ( void )
 {
   uint16_t res = 0U;
   if ( eFPOgetAlarm() == TRIGGER_IDLE )
@@ -112,6 +141,14 @@ void uOUTPUTupdateStatus ( void )
     res |= outputDataReg[STATUS_ADR]->atrib->bitMap[STATUS_GENERATOR_REDY_ADR].mask;
   }
   outputDataReg[STATUS_ADR]->value[0U] = res;
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vOUTPUTupdateDeviceStatus ( void )
+{
+  DEVICE_INFO info = { 0U };
+  vSTATUSget( &info );
+  outputDataReg[DEVICE_STATUS_ADR]->value[0U] = ( uint16_t )( info.status ) | ( ( info.time << OUTPUT_TIME_SHIFT ) & OUTPUT_TIME_MASK );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -146,25 +183,7 @@ void vOUTPUTupdateLogRecord ( void )
   }
   return;
 }
-/*----------------------------------------------------------------------------*/
-void vOUTPUTupdateErrorLength ( void )
-{
-  uint8_t length = 0U;
-  eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, NULL, &length );
-  outputDataReg[ERROR_LEN_ADR]->value[0U] = ( uint16_t )( length );
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vOUTPUTupdateErrorRecord ( void )
-{
-  LOG_RECORD_TYPE record = { 0U };
-  uint8_t         adr    = outputDataReg[ERROR_ADR_ADR]->value[0U];
-  eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &adr );
-  outputDataReg[ERROR_RECORD_DATA0_ADR]->value[0U] = ( uint16_t )( record.time );
-  outputDataReg[ERROR_RECORD_DATA1_ADR]->value[0U] = ( uint16_t )( record.time >> 16U );
-  outputDataReg[ERROR_RECORD_EVENT_ADR]->value[0U] = uOUTPUTcodeEvent( record.event );
-  return;
-}
+
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -232,17 +251,20 @@ void vOUTPUTupdate ( uint8_t chanel )
   {
     switch ( chanel )
     {
+      case EXTERNAL_DEVICES_ADR:
+        vOUTPUTupdateExternDevice();
+        break;
       case DIGITAL_OUTPUT_ADR:
         outputDataReg[chanel]->value[0U] = uFPOgetData();
         break;
       case DIGITAL_INPUT_ADR:
         outputDataReg[chanel]->value[0U] = uFPIgetData();
         break;
-      case STATUS_ADR:
-        uOUTPUTupdateStatus();
+      case DEVICE_STATUS_ADR:
+        vOUTPUTupdateDeviceStatus();
         break;
-      case CONTROLL_ADR:
-        vOUTPUTprocessControll();
+      case STATUS_ADR:
+        vOUTPUTupdateStatus();
         break;
       case LOG_LEN_ADR:
         vOUTPUTupdateLogLength();
@@ -250,11 +272,23 @@ void vOUTPUTupdate ( uint8_t chanel )
       case LOG_ADR_ADR:
         vOUTPUTupdateLogRecord();
         break;
-      case ERROR_LEN_ADR:
-        vOUTPUTupdateErrorLength();
+      case ERROR0_ADR:
+        /* no need to update */
         break;
-      case ERROR_ADR_ADR:
-        vOUTPUTupdateErrorRecord();
+      case ERROR1_ADR:
+        /* no need to update */
+        break;
+      case ERROR2_ADR:
+        /* no need to update */
+        break;
+      case WARNING0_ADR:
+        /* no need to update */
+        break;
+      case WARNING1_ADR:
+        /* no need to update */
+        break;
+      case CONTROLL_ADR:
+        vOUTPUTprocessControll();
         break;
       default:
         break;

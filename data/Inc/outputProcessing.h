@@ -13,12 +13,14 @@
 #include "controllerTypes.h"
 #include "outputData.h"
 /*------------------------ Define --------------------------------------*/
-#define MEASUREMENT_CHANNEL_NUMBER       26U
-#define CONTROL_CHANNEL_NUMBER           14U
+#define MEASUREMENT_CHANNEL_NUMBER       27U
+#define CONTROL_CHANNEL_NUMBER           16U
 #define CONTROL_CMD_NUMBER               6U
 #define CONTROL_STATUS_NUMBER            6U
 #define CONTROL_READ_ONLY_NUMBER         37U
 #define OUTPUT_SEMAPHORE_TAKE_DELAY      ( ( TickType_t ) 1000U )
+#define OUTPUT_TIME_MASK                 0xFFF0U
+#define OUTPUT_TIME_SHIFT                4U
 /*-------------------------- CHECK -------------------------------------*/
 #if ( ( MEASUREMENT_CHANNEL_NUMBER + CONTROL_CHANNEL_NUMBER ) != OUTPUT_DATA_REGISTER_NUMBER )
  #error Wrong channel number

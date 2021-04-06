@@ -253,5 +253,6 @@ TRIGGER_STATE    eENGINEgetOilSensorState ( void );
 TRIGGER_STATE    eENGINEgetCoolantSensorState ( void );
 TRIGGER_STATE    eENGINEgetFuelSensorState ( void );
 fix16_t          fENGINEgetSpeed ( void );
+RELAY_STATUS     eENGINEgetChargerState ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

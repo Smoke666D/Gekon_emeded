@@ -118,9 +118,21 @@ fix16_t fix16_pow ( fix16_t x, fix16_t y )
   return res;
 }
 /*----------------------------------------------------------------------------*/
-uint8_t getBitMap( const eConfigReg* reg, uint8_t bit )
+uint8_t getBitMap ( const eConfigReg* reg, uint8_t bit )
 {
   return ( uint8_t )( ( reg->value[0U] & reg->atrib->bitMap[bit].mask ) >> reg->atrib->bitMap[bit].shift );
+}
+/*----------------------------------------------------------------------------*/
+void setBitMap ( const eConfigReg* reg, uint8_t bit )
+{
+  reg->value[0U] |= reg->atrib->bitMap[bit].mask;
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void resetBitMap ( const eConfigReg* reg, uint8_t bit )
+{
+  reg->value[0U] &= ~reg->atrib->bitMap[bit].mask;
+  return;
 }
 /*----------------------------------------------------------------------------*/
 uint16_t getUintValue ( const eConfigReg* reg )

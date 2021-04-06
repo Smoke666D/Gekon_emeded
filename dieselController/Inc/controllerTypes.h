@@ -32,6 +32,8 @@
 #define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
 #define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
 #define  SEMAPHORE_AEL_TAKE_DELAY   10U
+#define  ERROR_NUMBER               27U
+#define  WARNING_NUMBER             16U
 /*------------------------ Tasks ---------------------------------------*/
 #define  FPI_TASK_PRIORITY           osPriorityLow
 #define  ENGINE_TASK_PRIORITY        osPriorityLow     /* Engine and Electro priority need to be equal */

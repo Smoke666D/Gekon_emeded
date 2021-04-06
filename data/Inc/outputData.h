@@ -10,59 +10,60 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_OUTPUT_LENGTH             4U
 #define   MAX_BIT_MAP_OUTPUT_LENGTH           16U
-#define   OUTPUT_DATA_REGISTER_NUMBER         42U
+#define   OUTPUT_DATA_REGISTER_NUMBER         43U
 #define   FILDS_TO_WRITE_OUTPUT_NUMBER        3U
 #define   MAX_VALUE_OUTPUT_LENGTH             1U
 #define   OUTPUT_DATA_MAX_SIZE                59U     // bytes
-#define   OUTPUT_DATA_TOTAL_SIZE              126U   // bytes
+#define   OUTPUT_DATA_TOTAL_SIZE              129U   // bytes
 #define   MIN_OUTPUT_DATA_SCALE               ( -2 )
 #define   MAX_OUTPUT_DATA_SCALE               ( 0 )
 #define   OUTPUT_DATA_SCALE_NUM               ( 3 )
 
 /*----------------------- Structures -----------------------------------*/
 /*---------------------- Register addresses ----------------------------*/
-#define   DEVICE_STATUS_ADR                                      0U
-#define   OIL_PRESSURE_ADR                                       1U
-#define   COOLANT_TEMP_ADR                                       2U
-#define   FUEL_LEVEL_ADR                                         3U
-#define   SPEED_LEVEL_ADR                                        4U
-#define   MAINS_PHASE_VOLTAGE_L1_ADR                             5U
-#define   MAINS_PHASE_VOLTAGE_L2_ADR                             6U
-#define   MAINS_PHASE_VOLTAGE_L3_ADR                             7U
-#define   MAINS_LINE_VOLTAGE_L1_ADR                              8U
-#define   MAINS_LINE_VOLTAGE_L2_ADR                              9U
-#define   MAINS_LINE_VOLTAGE_L3_ADR                              10U
-#define   MAINS_FREQ_ADR                                         11U
-#define   GENERATOR_PHASE_VOLTAGE_L1_ADR                         12U
-#define   GENERATOR_PHASE_VOLTAGE_L2_ADR                         13U
-#define   GENERATOR_PHASE_VOLTAGE_L3_ADR                         14U
-#define   GENERATOR_LINE_VOLTAGE_L1_ADR                          15U
-#define   GENERATOR_LINE_VOLTAGE_L2_ADR                          16U
-#define   GENERATOR_LINE_VOLTAGE_L3_ADR                          17U
-#define   GENERATOR_CURRENT_L1_ADR                               18U
-#define   GENERATOR_CURRENT_L2_ADR                               19U
-#define   GENERATOR_CURRENT_L3_ADR                               20U
-#define   GENERATOR_FREQ_ADR                                     21U
-#define   GENERATOR_COS_FI_ADR                                   22U
-#define   GENERATOR_POWER_ACTIVE_ADR                             23U
-#define   GENERATOR_POWER_REACTIVE_ADR                           24U
-#define   GENERATOR_POWER_FULL_ADR                               25U
-#define   BATTERY_VOLTAGE_ADR                                    26U
-#define   CHARGER_VOLTAGE_ADR                                    27U
-#define   EXTERNAL_DEVICES_ADR                                   28U
-#define   DIGITAL_OUTPUT_ADR                                     29U
-#define   DIGITAL_INPUT_ADR                                      30U
+#define   OIL_PRESSURE_ADR                                       0U
+#define   COOLANT_TEMP_ADR                                       1U
+#define   FUEL_LEVEL_ADR                                         2U
+#define   SPEED_LEVEL_ADR                                        3U
+#define   MAINS_PHASE_VOLTAGE_L1_ADR                             4U
+#define   MAINS_PHASE_VOLTAGE_L2_ADR                             5U
+#define   MAINS_PHASE_VOLTAGE_L3_ADR                             6U
+#define   MAINS_LINE_VOLTAGE_L1_ADR                              7U
+#define   MAINS_LINE_VOLTAGE_L2_ADR                              8U
+#define   MAINS_LINE_VOLTAGE_L3_ADR                              9U
+#define   MAINS_FREQ_ADR                                         10U
+#define   GENERATOR_PHASE_VOLTAGE_L1_ADR                         11U
+#define   GENERATOR_PHASE_VOLTAGE_L2_ADR                         12U
+#define   GENERATOR_PHASE_VOLTAGE_L3_ADR                         13U
+#define   GENERATOR_LINE_VOLTAGE_L1_ADR                          14U
+#define   GENERATOR_LINE_VOLTAGE_L2_ADR                          15U
+#define   GENERATOR_LINE_VOLTAGE_L3_ADR                          16U
+#define   GENERATOR_CURRENT_L1_ADR                               17U
+#define   GENERATOR_CURRENT_L2_ADR                               18U
+#define   GENERATOR_CURRENT_L3_ADR                               19U
+#define   GENERATOR_FREQ_ADR                                     20U
+#define   GENERATOR_COS_FI_ADR                                   21U
+#define   GENERATOR_POWER_ACTIVE_ADR                             22U
+#define   GENERATOR_POWER_REACTIVE_ADR                           23U
+#define   GENERATOR_POWER_FULL_ADR                               24U
+#define   BATTERY_VOLTAGE_ADR                                    25U
+#define   CHARGER_VOLTAGE_ADR                                    26U
+#define   EXTERNAL_DEVICES_ADR                                   27U
+#define   DIGITAL_OUTPUT_ADR                                     28U
+#define   DIGITAL_INPUT_ADR                                      29U
+#define   DEVICE_STATUS_ADR                                      30U
 #define   STATUS_ADR                                             31U
 #define   LOG_LEN_ADR                                            32U
-#define   LOG_RECORD_DATA0_ADR                                   33U
-#define   LOG_RECORD_DATA1_ADR                                   34U
-#define   LOG_RECORD_EVENT_ADR                                   35U
-#define   ERROR0_ADR                                             36U
-#define   ERROR1_ADR                                             37U
-#define   WARNING0_ADR                                           38U
-#define   CONTROLL_ADR                                           39U
-#define   LOG_ADR_ADR                                            40U
-#define   ERROR_ADR_ADR                                          41U
+#define   LOG_ADR_ADR                                            33U
+#define   LOG_RECORD_DATA0_ADR                                   34U
+#define   LOG_RECORD_DATA1_ADR                                   35U
+#define   LOG_RECORD_EVENT_ADR                                   36U
+#define   ERROR0_ADR                                             37U
+#define   ERROR1_ADR                                             38U
+#define   ERROR2_ADR                                             39U
+#define   WARNING0_ADR                                           40U
+#define   WARNING1_ADR                                           41U
+#define   CONTROLL_ADR                                           42U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   EXTERNAL_CHARGER_ADR                         0U
 #define   EXTERNAL_COOLANT_HEATER_ADR                  1U
@@ -126,10 +127,12 @@
 #define   ERROR_MAINTENANCE_AIR_ADR                    8U
 #define   ERROR_MAINTENANCE_FUEL_ADR                   9U
 #define   ERROR_SENSOR_COMMON_ADR                      10U
-#define   ERROR_USER_A_ADR                             11U
-#define   ERROR_USER_B_ADR                             12U
-#define   ERROR_USER_C_ADR                             13U
-#define   ERROR_USER_D_ADR                             14U
+#define   ERROR_ITERRUPTED_START_ADR                   11U
+#define   ERROR_ITERRUPTED_STOP_ADR                    12U
+#define   ERROR_USER_A_ADR                             13U
+#define   ERROR_USER_B_ADR                             14U
+#define   ERROR_USER_C_ADR                             15U
+#define   ERROR_USER_D_ADR                             0U
 #define   WARNING_MAINS_LOW_VOLTAGE_ADR                0U
 #define   WARNING_MAINS_HIGHT_VOLTAGE_ADR              1U
 #define   WARNING_MAINS_LOW_FREQ_ADR                   2U
@@ -146,13 +149,15 @@
 #define   WARNING_FUEL_HIGHT_LEVEL_ADR                 13U
 #define   WARNING_TEMP_HIGHT_ADR                       14U
 #define   WARNING_OIL_LOW_PRESSURE_ADR                 15U
+#define   WARNING_MAINTENANCE_OIL_ADR                  0U
+#define   WARNING_MAINTENANCE_AIR_ADR                  1U
+#define   WARNING_MAINTENANCE_FUEL_ADR                 2U
 #define   CONTROLL_SWITCH_MODE_ADR                     0U
 #define   CONTROLL_START_ADR                           1U
 #define   CONTROLL_STOP_ADR                            2U
 #define   CONTROLL_RESET_ERRORS_ADR                    3U
 #define   CONTROLL_SWITCH_LOAD_ADR                     4U
 /*------------------------- Extern -------------------------------------*/
-extern eConfigReg deviceStatus;
 extern eConfigReg oilPressure;
 extern eConfigReg coolantTemp;
 extern eConfigReg fuelLevel;
@@ -183,17 +188,19 @@ extern eConfigReg chargerVoltage;
 extern eConfigReg externalDevices;
 extern eConfigReg digitalOutput;
 extern eConfigReg digitalInput;
+extern eConfigReg deviceStatus;
 extern eConfigReg status;
 extern eConfigReg logLen;
+extern eConfigReg logAdr;
 extern eConfigReg logRecordData0;
 extern eConfigReg logRecordData1;
 extern eConfigReg logRecordEvent;
 extern eConfigReg error0;
 extern eConfigReg error1;
+extern eConfigReg error2;
 extern eConfigReg warning0;
+extern eConfigReg warning1;
 extern eConfigReg controll;
-extern eConfigReg logAdr;
-extern eConfigReg errorAdr;
 extern eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER];
 extern const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER];
 extern const fix16_t     scaleMulArray[OUTPUT_DATA_SCALE_NUM];

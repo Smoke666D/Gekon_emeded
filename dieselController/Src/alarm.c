@@ -13,18 +13,19 @@
 #include "fpo.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
+#include "outputData.h"
 /*-------------------------------- Structures --------------------------------*/
 static ACTIVE_ERROR_LIST  activeErrorList = { 0U };
 static SemaphoreHandle_t  xAELsemaphore   = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
-static fix16_t   hysteresis = 0U;
+static fix16_t  hysteresis = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-uint8_t vALARMisWarning ( LOG_RECORD_TYPE record )
+uint8_t uALARMisWarning ( LOG_RECORD_TYPE record )
 {
   uint8_t res = 0U;
   if ( ( record.event.action == ACTION_WARNING   ) ||
@@ -33,6 +34,290 @@ uint8_t vALARMisWarning ( LOG_RECORD_TYPE record )
     res = 1U;
   }
   return res;
+}
+/*----------------------------------------------------------------------------*/
+uint8_t uALARMisError ( LOG_RECORD_TYPE record )
+{
+  uint8_t res = 0U;
+  if ( ( record.event.action == ACTION_EMERGENCY_STOP ) ||
+       ( record.event.action == ACTION_SHUTDOWN       ) )
+  {
+    res = 1U;
+  }
+  return res;
+}
+/*----------------------------------------------------------------------------*/
+void vALARMsetError ( SYSTEM_EVENT_TYPE event, ERROR_LIST_CMD cmd )
+{
+  uint8_t adr = 0U;
+  uint8_t bit = 0U;
+  if ( cmd == ERROR_LIST_CMD_ERASE )
+  {
+    outputDataReg[ERROR0_ADR]->value = 0U;
+    outputDataReg[ERROR1_ADR]->value = 0U;
+  }
+  else
+  {
+    switch ( event )
+    {
+      case EVENT_EXTERN_EMERGENCY_STOP:
+        adr = ERROR0_ADR;
+        bit = ERROR_EXTERN_EMEGENCY_STOP_ADR;
+        break;
+      case EVENT_START_FAIL:
+        adr = ERROR0_ADR;
+        bit = ERROR_START_FAIL_ADR;
+        break;
+      case EVENT_STOP_FAIL:
+        adr = ERROR0_ADR;
+        bit = ERROR_STOP_FAIL_ADR;
+        break;
+      case EVENT_OIL_LOW_PRESSURE:
+        adr = ERROR0_ADR;
+        bit = ERROR_OIL_LOW_PRESSURE_ADR;
+        break;
+      case EVENT_OIL_SENSOR_ERROR:
+        adr = ERROR0_ADR;
+        bit = ERROR_OIL_SENSOR_ADR;
+        break;
+      case EVENT_ENGINE_HIGHT_TEMP:
+        adr = ERROR0_ADR;
+        bit = ERROR_TEMP_HIGHT_ADR;
+        break;
+      case EVENT_ENGINE_TEMP_SENSOR_ERROR:
+        adr = ERROR0_ADR;
+        bit = ERROR_TEMP_SENSOR_ADR;
+        break;
+      case EVENT_FUEL_LOW_LEVEL:
+        adr = ERROR0_ADR;
+        bit = ERROR_FUEL_LOW_LEVEL_ADR;
+        break;
+      case EVENT_FUEL_HIGHT_LEVEL:
+        adr = ERROR0_ADR;
+        bit = ERROR_FUEL_HIGHT_LEVEL_ADR;
+        break;
+      case EVENT_FUEL_LEVEL_SENSOR_ERROR:
+        adr = ERROR0_ADR;
+        bit = ERROR_FUEL_SENSOR_ADR;
+        break;
+      case EVENT_SPEED_HIGHT:
+        adr = ERROR0_ADR;
+        bit = ERROR_SPEED_HIGHT_ADR;
+        break;
+      case EVENT_SPEED_LOW:
+        adr = ERROR0_ADR;
+        bit = ERROR_SPEED_LOW_ADR;
+        break;
+      case EVENT_SPEED_SENSOR_ERROR:
+        adr = ERROR0_ADR;
+        bit = ERROR_SPEED_SENSOR_ADR;
+        break;
+      case EVENT_GENERATOR_LOW_VOLTAGE:
+        adr = ERROR0_ADR;
+        bit = ERROR_GEN_LOW_VOLTAGE_ADR;
+        break;
+      case EVENT_GENERATOR_HIGHT_VOLTAGE:
+        adr = ERROR0_ADR;
+        bit = ERROR_GEN_HIGHT_VOLTAGE_ADR;
+        break;
+      case EVENT_GENERATOR_LOW_FREQUENCY:
+        adr = ERROR0_ADR;
+        bit = ERROR_GEN_LOW_FREQ_ADR;
+        break;
+      case EVENT_GENERATOR_HIGHT_FREQUENCY:
+        adr = ERROR1_ADR;
+        bit = ERROR_GEN_HIGHT_FREQ_ADR;
+        break;
+      case EVENT_PHASE_IMBALANCE:
+        adr = ERROR1_ADR;
+        bit = ERROR_PHASE_IMBALANCE_ADR;
+        break;
+      case EVENT_OVER_CURRENT:
+        adr = ERROR1_ADR;
+        bit = ERROR_OVER_CURRENT_ADR;
+        break;
+      case EVENT_OVER_POWER:
+        adr = ERROR1_ADR;
+        bit = ERROR_OVER_POWER_ADR;
+        break;
+      case EVENT_SHORT_CIRCUIT:
+        adr = ERROR1_ADR;
+        bit = ERROR_SHORT_CIRCUIT_ADR;
+        break;
+      case EVENT_MAINTENANCE_OIL:
+        adr = ERROR1_ADR;
+        bit = ERROR_MAINTENANCE_OIL_ADR;
+        break;
+      case EVENT_MAINTENANCE_AIR:
+        adr = ERROR1_ADR;
+        bit = ERROR_MAINTENANCE_AIR_ADR;
+        break;
+      case EVENT_MAINTENANCE_FUEL:
+        adr = ERROR1_ADR;
+        bit = ERROR_MAINTENANCE_FUEL_ADR;
+        break;
+      case EVENT_INTERRUPTED_START:
+        adr = ERROR1_ADR;
+        bit = ERROR_ITERRUPTED_START_ADR;
+        break;
+      case EVENT_INTERRUPTED_STOP:
+        adr = ERROR1_ADR;
+        bit = ERROR_ITERRUPTED_STOP_ADR;
+        break;
+      case EVENT_SENSOR_COMMON_ERROR:
+        adr = ERROR1_ADR;
+        bit = ERROR_SENSOR_COMMON_ADR;
+        break;
+      case EVENT_USER_FUNCTION_A:
+        adr = ERROR1_ADR;
+        bit = ERROR_USER_A_ADR;
+        break;
+      case EVENT_USER_FUNCTION_B:
+        adr = ERROR1_ADR;
+        bit = ERROR_USER_B_ADR;
+        break;
+      case EVENT_USER_FUNCTION_C:
+        adr = ERROR1_ADR;
+        bit = ERROR_USER_C_ADR;
+        break;
+      case EVENT_USER_FUNCTION_D:
+        adr = ERROR2_ADR;
+        bit = ERROR_USER_D_ADR;
+        break;
+      case EVENT_MAINS_PHASE_SEQUENCE:
+        adr = ERROR1_ADR;
+        bit = ERROR_MAINS_PHASE_SEQ_ADR;
+        break;
+      case EVENT_GENERATOR_PHASE_SEQUENCE:
+        adr = ERROR1_ADR;
+        bit = ERROR_GEN_PHASE_SEQ_ADR;
+        break;
+      default:
+        break;
+    }
+    if ( adr > 0U )
+    {
+      switch ( cmd )
+      {
+        case ERROR_LIST_CMD_ADD:
+          setBitMap( outputDataReg[adr], bit );
+          break;
+        case ERROR_LIST_CMD_ACK:
+          resetBitMap( outputDataReg[adr], bit );
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
+void vALARMsetWarning ( SYSTEM_EVENT_TYPE event, ERROR_LIST_CMD cmd )
+{
+  uint8_t adr = 0U;
+  uint8_t bit = 0U;
+  if ( cmd == ERROR_LIST_CMD_ERASE )
+  {
+    outputDataReg[WARNING0_ADR]->value = 0U;
+  } else {
+    switch ( event )
+    {
+      case EVENT_OIL_LOW_PRESSURE:
+        adr = WARNING0_ADR;
+        bit = WARNING_OIL_LOW_PRESSURE_ADR;
+        break;
+      case EVENT_ENGINE_HIGHT_TEMP:
+        adr = WARNING0_ADR;
+        bit = WARNING_TEMP_HIGHT_ADR;
+        break;
+      case EVENT_FUEL_LOW_LEVEL:
+        adr = WARNING0_ADR;
+        bit = WARNING_FUEL_LOW_LEVEL_ADR;
+        break;
+      case EVENT_FUEL_HIGHT_LEVEL:
+        adr = WARNING0_ADR;
+        bit = WARNING_FUEL_HIGHT_LEVEL_ADR;
+        break;
+      case EVENT_CHARGER_FAIL:
+        adr = WARNING0_ADR;
+        bit = WARNING_CHARGER_FAIL_ADR;
+        break;
+      case EVENT_BATTERY_LOW:
+        adr = WARNING0_ADR;
+        bit = WARNING_BATTERY_LOW_ADR;
+        break;
+      case EVENT_BATTERY_HIGHT:
+        adr = WARNING0_ADR;
+        bit = WARNING_BATTERY_HIGHT_ADR;
+        break;
+      case EVENT_GENERATOR_LOW_VOLTAGE:
+        adr = WARNING0_ADR;
+        bit = WARNING_GEN_LOW_VOLTAGE_ADR;
+        break;
+      case EVENT_GENERATOR_HIGHT_VOLTAGE:
+        adr = WARNING0_ADR;
+        bit = WARNING_GEN_HIGHT_VOLTAGE_ADR;
+        break;
+      case EVENT_GENERATOR_LOW_FREQUENCY:
+        adr = WARNING0_ADR;
+        bit = WARNING_GEN_LOW_FREQ_ADR;
+        break;
+      case EVENT_GENERATOR_HIGHT_FREQUENCY:
+        adr = WARNING0_ADR;
+        bit = WARNING_GEN_HIGHT_FREQ_ADR;
+        break;
+      case EVENT_OVER_CURRENT:
+        adr = WARNING0_ADR;
+        bit = WARNING_OVER_CURRENT_ADR;
+        break;
+      case EVENT_MAINS_LOW_VOLTAGE:
+        adr = WARNING0_ADR;
+        bit = WARNING_MAINS_LOW_VOLTAGE_ADR;
+        break;
+      case EVENT_MAINS_HIGHT_VOLTAGE:
+        adr = WARNING0_ADR;
+        bit = WARNING_MAINS_HIGHT_VOLTAGE_ADR;
+        break;
+      case EVENT_MAINS_LOW_FREQUENCY:
+        adr = WARNING0_ADR;
+        bit = WARNING_MAINS_LOW_FREQ_ADR;
+        break;
+      case EVENT_MAINS_HIGHT_FREQUENCY:
+        adr = WARNING0_ADR;
+        bit = WARNING_MAINS_HIGHT_FREQ_ADR;
+        break;
+      case EVENT_MAINTENANCE_OIL:
+        adr = WARNING1_ADR;
+        bit = WARNING_MAINTENANCE_OIL_ADR;
+        break;
+      case EVENT_MAINTENANCE_AIR:
+        adr = WARNING1_ADR;
+        bit = WARNING_MAINTENANCE_AIR_ADR;
+        break;
+      case EVENT_MAINTENANCE_FUEL:
+        adr = WARNING1_ADR;
+        bit = WARNING_MAINTENANCE_FUEL_ADR;
+        break;
+      default:
+        break;
+    }
+    if ( adr > 0U )
+    {
+      switch ( cmd )
+      {
+        case ERROR_LIST_CMD_ADD:
+          setBitMap( outputDataReg[adr], bit );
+          break;
+        case ERROR_LIST_CMD_ACK:
+          resetBitMap( outputDataReg[adr], bit );
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  return;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
@@ -84,6 +369,8 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
         activeErrorList.counter = 0U;
         activeErrorList.status  = ERROR_LIST_STATUS_EMPTY;
         vFPOsetWarning( RELAY_OFF );
+        vALARMsetError( EVENT_NONE, cmd );
+        vALARMsetWarning( EVENT_NONE, cmd );
         xSemaphoreGive( xAELsemaphore );
       }
       break;
@@ -110,11 +397,19 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           {
             activeErrorList.counter--;
           }
+          if ( uALARMisWarning( *record ) > 0U )
+          {
+            vALARMsetWarning( record->event.type, cmd );
+          }
+          if ( uALARMisError( *record ) > 0U )
+          {
+            vALARMsetError( record->event.type, cmd );
+          }
           /*------------- Check warnings --------------*/
           warningCounter = 0U;
           for ( i=0U; i<activeErrorList.counter; i++ )
           {
-            if ( vALARMisWarning( activeErrorList.array[i] ) > 0U )
+            if ( uALARMisWarning( activeErrorList.array[i] ) > 0U )
             {
               warningCounter++;
             }
@@ -145,7 +440,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
       {
         if ( activeErrorList.counter <= ACTIV_ERROR_LIST_SIZE )
         {
-          if ( vALARMisWarning( *record ) > 0U )
+          if ( uALARMisWarning( *record ) > 0U )
           {
             vFPOsetWarning( RELAY_ON );
           }
@@ -156,6 +451,14 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
         else
         {
           activeErrorList.status = ERROR_LIST_STATUS_OVER;
+        }
+        if ( uALARMisWarning( *record ) > 0U )
+        {
+          vALARMsetWarning( record->event.type, cmd );
+        }
+        if ( uALARMisError( *record ) > 0U )
+        {
+          vALARMsetError( record->event.type, cmd );
         }
         xSemaphoreGive( xAELsemaphore );
       }

@@ -356,7 +356,7 @@ fix16_t fCHARGERprocess ( void )
         case CHARGER_STATUS_IDLE:
           if ( charger.get() < charger.alarm.level )
           {
-            charger.relay.set( RELAY_ON );
+            vRELAYset( &charger.relay, RELAY_ON );
             vLOGICstartTimer( &charger.timer, "Charger timer       " );
             charger.status = CHARGER_STATUS_DELAY;
           }
@@ -368,7 +368,7 @@ fix16_t fCHARGERprocess ( void )
         case CHARGER_STATUS_DELAY:
           if ( uLOGICisTimer( &charger.timer ) > 0U )
           {
-            charger.relay.set( RELAY_OFF );
+            vRELAYset( &charger.relay, RELAY_OFF );
             charger.status = CHARGER_STATUS_MEASURING;
           }
           break;
@@ -377,7 +377,7 @@ fix16_t fCHARGERprocess ( void )
           vALARMcheck( &charger.alarm, value );
           break;
         default:
-          charger.relay.set( RELAY_OFF );
+          vRELAYset( &charger.relay, RELAY_OFF );
           charger.status = CHARGER_STATUS_IDLE;
           break;
       }
@@ -386,7 +386,7 @@ fix16_t fCHARGERprocess ( void )
     {
       if ( charger.status != CHARGER_STATUS_IDLE )
       {
-        charger.relay.set( RELAY_OFF );
+        vRELAYset( &charger.relay, RELAY_OFF );
         vERRORrelax( &charger.alarm.error );
         charger.status = CHARGER_STATUS_IDLE;
       }
@@ -1461,6 +1461,11 @@ TRIGGER_STATE eENGINEgetFuelSensorState ( void )
 fix16_t fENGINEgetSpeed ( void )
 {
   return currentSpeed;
+}
+/*----------------------------------------------------------------------------*/
+RELAY_STATUS eENGINEgetChargerState ( void )
+{
+  return charger.relay.status;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/

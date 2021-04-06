@@ -16,6 +16,8 @@
 #define SERIES_LN_SIZE 15U
 /*----------------------- Functions ------------------------------------*/
 uint8_t  getBitMap( const eConfigReg* reg, uint8_t bit );
+void     setBitMap ( const eConfigReg* reg, uint8_t bit );
+void     resetBitMap ( const eConfigReg* reg, uint8_t bit );
 uint16_t getUintValue ( const eConfigReg* reg );
 fix16_t  getValue( const eConfigReg* reg );
 uint16_t setValue ( const eConfigReg* reg, fix16_t data );

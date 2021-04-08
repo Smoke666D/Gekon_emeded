@@ -127,11 +127,19 @@ typedef struct __packed
 
 typedef struct __packed
 {
+
+
+} FUEL_TANK_TYPE;
+
+typedef struct __packed
+{
   SENSOR             level;
+  fix16_t            tank;
   ALARM_TYPE         lowAlarm;
   ALARM_TYPE         lowPreAlarm;
   ALARM_TYPE         hightAlarm;
   ALARM_TYPE         hightPreAlarm;
+  ALARM_TYPE         leakAlarm;
   RELAY_AUTO_DEVICE  booster;
   RELAY_DEVICE       pump;
 } FUEL_TYPE;

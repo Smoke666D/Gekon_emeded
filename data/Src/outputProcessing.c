@@ -20,9 +20,9 @@ static SemaphoreHandle_t xWriteOutputSemaphore = NULL;
 /*----------------------- Functions -----------------------------------------------------------------*/
 static const getValueCallBack measurementCallbacks[MEASUREMENT_CHANNEL_NUMBER] =
 {
-  xADCGetSOP,               /*  0 Oil pressure               */
-  xADCGetSCT,               /*  1 Coolant temperature        */
-  xADCGetSFL,               /*  2 Fuel level                 */
+  fENGINEgetOilPressure,    /*  0 Oil pressure               */
+  fENGINEgetCoolantTemp,    /*  1 Coolant temperature        */
+  fENGINEgeyFuelLevel,      /*  2 Fuel level                 */
   fENGINEgetSpeed,          /*  3 Speed                      */
   xADCGetNETL1,             /*  4 Mains phase voltage L1     */
   xADCGetNETL2,             /*  5 Mains phase voltage L2     */

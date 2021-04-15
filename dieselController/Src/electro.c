@@ -295,7 +295,10 @@ void vMAINSprocess ( void )
   vALARMcheck( &mains.lowFreqAlarm, freq );
   vALARMcheck( &mains.hightFreqAlarm, freq );
   /*-------------------- Phase sequence control ------------------------*/
-  vERRORcheck( &mains.phaseSequenceError, ( xADCGetNetFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
+  if ( electro.scheme != ELECTRO_SCHEME_SINGLE_PHASE )
+  {
+    vERRORcheck( &mains.phaseSequenceError, ( xADCGetNetFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
+  }
   /*--------------------------- Events ---------------------------------*/
   if ( ( eERRORisActive( &mains.lowVoltageAlarm.error   ) == TRIGGER_IDLE ) &&
        ( eERRORisActive( &mains.hightVoltageAlarm.error ) == TRIGGER_IDLE ) &&

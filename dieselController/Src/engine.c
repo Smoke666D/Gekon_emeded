@@ -116,6 +116,9 @@ static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
 static TRIGGER_STATE  starterFinish                                    = TRIGGER_IDLE;
 static TRIGGER_STATE  blockTimerFinish                                 = TRIGGER_IDLE;
 static fix16_t        currentSpeed                                     = 0U;
+static fix16_t        oilVal                                           = 0U;
+static fix16_t        coolantVal                                       = 0U;
+static fix16_t        fuelVal                                          = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -1468,12 +1471,25 @@ RELAY_STATUS eENGINEgetChargerState ( void )
   return charger.relay.status;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fENGINEgetOilPressure ( void )
+{
+  return oilVal;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fENGINEgetCoolantTemp ( void )
+{
+  return coolantVal;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fENGINEgeyFuelLevel ( void )
+{
+  return fuelVal;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
 {
-  fix16_t         oilVal      = 0U;
-  fix16_t         coolantVal  = 0U;
   fix16_t         chargerVal  = 0U;
   fix16_t         genFreqVal  = 0U;
   SYSTEM_TIMER    commonTimer = { 0U };
@@ -1567,7 +1583,7 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     oilVal       = fOILprocess();
     coolantVal   = fCOOLANTprocess();
-    fFUELprocess();
+    fuelVal      = fFUELprocess();
     chargerVal   = fCHARGERprocess();
     fBATTERYprocess();
     genFreqVal   = xADCGetGENLFreq();

@@ -8,39 +8,30 @@
 #include "mb.h"
 #include "mbcrc.h"
 #include "mbfunc.h"
-#include "mbmemory.h"
 #include "mbregister.h"
 #include "mbrtu.h"
 #include "mbuart.h"
 #include "mbport.h"
-
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
 #include "semphr.h"
 #include "stream_buffer.h"
-
 #include "string.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static 	osThreadId_t 						MBpollTaskHandle = NULL; 						/* eMBPoll task */
-static 	eMBException 						eException       = MB_EX_NONE;			/* ModBus states */
+static osThreadId_t   MBpollTaskHandle = NULL;             /* eMBPoll task */
+static eMBException   eException       = MB_EX_NONE;      /* ModBus states */
+static MB_FRAME_TYPE  mbFrame          = { 0U };
+static MB_STATES_TYPE mbState          = { 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
-static 	uint8_t 								ListenOnlyMode 	 = 0U;							/* Listen ModBus mode flag */
-static 	uint8_t 								MasterMode     	 = 0U;							/* Master ModBus mode flag */
-static 	uint8_t 								ucRcvAddress   	 = 0U;							/* Static buffer for address of the frame */
-/*---------- OS -------*/
-static	UCHAR										inputMessage[OS_MB_MESSAGE_SIZE];		/* Input frame buffer */
-static	size_t 									xReceivedBytes = 0U;								/* Number of received bytes from stream buffer */
-static  uint32_t								taskTime       = 0U;								/* System variable for processor loading calculation */
-/*--------- TASK VAR ------*/
-static 	uint8_t 								ucMBFrame[MB_PDU_SIZE_MAX]; 				/* Static buffer for the frame */
-static 	UCHAR 									PDULength      = 0U;								/* PDU frame length */
-static 	UCHAR 									ucFunctionCode = 0U;								/* Function code from ModBus frame */
+static uint8_t  inputMessage[OS_MB_MESSAGE_SIZE] = { 0U }; /* Input frame buffer */
+static size_t   xReceivedBytes                   = 0U;     /* Number of received bytes from stream buffer */
+static uint32_t taskTime                         = 0U;     /* System variable for processor loading calculation */
 /*----------------------- Functions -----------------------------------------------------------------*/
-void eMBPoll( void *argument );
+void eMBPoll ( void *argument );
 /*----------------------- Structures ----------------------------------------------------------------*/
-static MBFunctionHandlerTable eMBFuncHandlers[]=
+static MBFunctionHandlerTable eMBFuncHandlers[] =
 {
   /*------------------- 00 -------------------*/
   eMBNoFunction,
@@ -83,11 +74,11 @@ static MBFunctionHandlerTable eMBFuncHandlers[]=
   /*------------------- 07 -------------------*/
   eMBNoFunction,        // Read Exception Status
   /*------------------- 08 -------------------*/
-	#if ( MB_FUNC_DIAGNOSTICS_ENEBLED )
-		eMBNoFunction,        // Read Diagnostic
-	#else
-		eMBNoFunction,
-	#endif
+  #if ( MB_FUNC_DIAGNOSTICS_ENEBLED )
+    eMBNoFunction,        // Read Diagnostic
+  #else
+    eMBNoFunction,
+  #endif
   /*------------------- 09 -------------------*/
   eMBNoFunction,        // 09
   /*------------------- 10 -------------------*/
@@ -175,113 +166,113 @@ static MBFunctionHandlerTable eMBFuncHandlers[]=
   /*------------------- 43 -------------------*/
   eMBNoFunction, // Read device Identification
   /*------------------- 44 -------------------*/
-	#if ( MB_FUNC_SET_RS_PARAMETERS_ENEBLED )
-		eMBFuncSetRSParameters,
-	#else
+  #if ( MB_FUNC_SET_RS_PARAMETERS_ENEBLED )
+    eMBFuncSetRSParameters,
+  #else
     eMBNoFunction,
   #endif
 };
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Enable listen only mode
-* @param 	none
+* @brief   Enable listen only mode
+* @param   none
 * @retval none
 */
 void vMBListenOnlyModeEnablae( void )
 {
-  ListenOnlyMode = 1U;
+  mbState.ListenOnlyMode = 1U;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Disable listen only mode
-* @param 	none
+* @brief   Disable listen only mode
+* @param   none
 * @retval none
 */
 void vMBListenOnlyModeDisable( void )
 {
-  ListenOnlyMode = 0U;
+  mbState.ListenOnlyMode = 0U;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Initialization of ModBus
-* @param 	none
+* @brief   Initialization of ModBus
+* @param   none
 * @retval none
 */
 void vMBStartUpMB( void )
 {
-  ListenOnlyMode = 0U;
-  vMBStartHalfCharTimer();
+  mbState.ListenOnlyMode = 0U;
+  vMBstartHalfCharTimer();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Set ModBus to Master mode
-* @param 	none
+* @brief   Set ModBus to Master mode
+* @param   none
 * @retval none
 */
 void vMBSetMasterMode( void )
 {
-  MasterMode = 1U;
+  mbState.MasterMode = 1U;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Return master/slave state of ModBus
-* @param 	none
+* @brief   Return master/slave state of ModBus
+* @param   none
 * @retval state of ModBus
 */
-UCHAR ucMBIfMasterMode( void )
+uint8_t ucMBIfMasterMode ( void )
 {
-  return MasterMode;
+  return mbState.MasterMode;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	No ModBus function
-* @param 	pucFrame - pointer to static frame buffer
-* 				usLen    - pointer to static frame length buffer
+* @brief   No ModBus function
+* @param   pucFrame - pointer to static frame buffer
+*         usLen    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBNoFunction( UCHAR * pucFrame, UCHAR * usLen )
+eMBException eMBNoFunction ( uint8_t* pucFrame, uint8_t* len )
 {
   return MB_EX_ILLEGAL_FUNCTION;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Get static buffer data of
-* 				frame address
-* @param 	none
+* @brief   Get static buffer data of
+*         frame address
+* @param   none
 * @retval frame address
 */
-UCHAR ucMBGetRequestAdress( void )
+uint8_t uMBGetRequestAdress ( void )
 {
-  return ucRcvAddress;
+  return mbFrame.adr;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	ModBus Queues initialization
-* @param 	none
+* @brief   ModBus Queues initialization
+* @param   none
 * @retval none
 */
-eMBInitState eMBQueueInit( void )
+eMBInitState eMBQueueInit ( void )
 {
-	eMBInitState 	res = EBInit_OK;
+  eMBInitState res = EBInit_OK;
 
-	res =  eMBReceiveMessageInit();
-	if ( res == EBInit_OK )
-	{
-		res = eMBEventGroupInit();
-	}
-	return res;
+  res = eMBreceiveMessageInit();
+  if ( res == EBInit_OK )
+  {
+    res = eMBeventGroupInit();
+  }
+  return res;
 }
 /**
-* @brief 	ModBus main task initialization
-* @param 	none
+* @brief   ModBus main task initialization
+* @param   none
 * @retval none
 */
 
-void vMBTaskInit( void )
+void vMBTaskInit ( void )
 {
   /* definition and creation of MBModBusTask */
   const osThreadAttr_t MBpollTask_attributes = {
@@ -291,124 +282,121 @@ void vMBTaskInit( void )
   };
   MBpollTaskHandle = osThreadNew( eMBPoll, NULL, &MBpollTask_attributes );
   vMBStartUpMB();
-	return;
+  return;
 }
 
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Get system task time counter
-* @param 	none
+* @brief   Get system task time counter
+* @param   none
 * @retval task counter
 */
-uint32_t uMBGetTaskTime( void )
+uint32_t uMBGetTaskTime ( void )
 {
-	return taskTime;
+  return taskTime;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Increment system task counter
-* @param 	none
+* @brief   Increment system task counter
+* @param   none
 * @retval none
 */
-void vMBIncTaskTime( void )
+void vMBIncTaskTime ( void )
 {
-	taskTime++;
-	return;
+  taskTime++;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Reset system task counter
-* @param 	none
+* @brief   Reset system task counter
+* @param   none
 * @retval none
 */
-void vMBResetTaskTime( void )
+void vMBResetTaskTime ( void )
 {
-	taskTime = 0U;
-	return;
+  taskTime = 0U;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	ModBus main task function
-* @param 	none
+* @brief   ModBus main task function
+* @param   none
 * @retval none
 */
-void eMBPoll( void *argument )
+void eMBPoll ( void *argument )
 {
   for(;;)
   {
-  	vMBWatchDogReset();
-  	vMBIncTaskTime();
-  	if ( ucMBCheckMessage() > 0U )
-  	{
-  		xReceivedBytes = vMBReceiveMessage( inputMessage, sizeof( inputMessage ) );
-  		if ( xReceivedBytes > 0U )
-  		{
-  			if ( eMBRTUReceive( inputMessage, &ucRcvAddress, ucMBFrame, &PDULength ) == VALID_FRAME )  	/* Frame valid checking and copy frame to buffer */
-  			{
-  				ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];																							/* Get function code from the frame */
-  				/* Standard ModBus functions */
-  				if ( ucFunctionCode < MAX_FUN_NUM )                                         							/* Function number validation */
-  				{
-  					eException = eMBFuncHandlers[ucFunctionCode].pxHandler( ucMBFrame, &PDULength );				/* Run command */
-  				}
-  				/* Custom ModBus functions */
-  				else if ( ucFunctionCode >= CUSTOM_FUN_START )
-  				{
-  					switch ( ucFunctionCode )
-  					{
-  						case MB_FUNC_SET_RS_PARAMETERS_CODE:
-  							eException = eMBFuncHandlers[MB_FUNC_SET_RS_PARAMETERS_NUMBER].pxHandler( ucMBFrame, &PDULength );
-  							break;
-  						default:
-  							eException = MB_EX_ILLEGAL_FUNCTION;
-  							break;
-  					}
-  				}
-  				/* Invalid ModBus functions */
-  				else
-  				{
-  					eException = MB_EX_ILLEGAL_FUNCTION;                                    					/* Illegal function number */
-  				}
-  				if ( eException != MB_EX_NONE )                                            					/* Error */
-  				{
-  					vMBCounterErrorInc();																															/* Increment error counter  */
-  				}
-  				if ( ( ucRcvAddress == MB_ADDRESS_BROADCAST ) || ListenOnlyMode )
-  				{
-  					if  ( eException == MB_EX_REINIT )
-  					{
-  						taskENTER_CRITICAL();
-  						eMBReInit();
-  						vMBStartUpMB();
-  						taskEXIT_CRITICAL();
-  					}
-  				}
-  				else
-  				{
-  					if ( ( eException != MB_EX_NONE ) && ( eException != MB_EX_REINIT ) )								/* An exception occured. Build an error frame. */
-  					{
-  						PDULength = 0U;
-  						PDULength++;
-  						ucMBFrame[PDULength] = ( UCHAR )( ucFunctionCode | MB_FUNC_ERROR );
-  						PDULength++;
-  						ucMBFrame[PDULength] = eException;
-  					}
-  					vMBRTUSend( &ucRcvAddress, ucMBFrame, &PDULength );
-  					if ( eException == MB_EX_REINIT )
-  					{
-  						taskENTER_CRITICAL();
-  						eMBReInit();
-  						vMBStartUpMB();
-  						taskEXIT_CRITICAL();
-  					}
-  				}
-  			}
-  		}
-  		else
-  		{
-  			xReceivedBytes = 1U;
-  		}
-  	}
+    vMBIncTaskTime();
+    if ( uMBcheckMessage() > 0U )
+    {
+      xReceivedBytes = vMBreceiveMessage( inputMessage, sizeof( inputMessage ) );
+      if ( xReceivedBytes > 0U )
+      {
+        if ( eMBRTUreceive( inputMessage, &mbFrame ) == VALID_FRAME )    /* Frame valid checking and copy frame to buffer */
+        {
+          /* Standard ModBus functions */
+          if ( mbFrame.pdu.func < MAX_FUN_NUM )                                                       /* Function number validation */
+          {
+            eException = eMBFuncHandlers[mbFrame.pdu.func].pxHandler( mbFrame.pdu.data, &mbFrame.length );        /* Run command */
+          }
+          /* Custom ModBus functions */
+          else if ( mbFrame.pdu.func >= CUSTOM_FUN_START )
+          {
+            switch ( mbFrame.pdu.func )
+            {
+              case MB_FUNC_SET_RS_PARAMETERS_CODE:
+                eException = eMBFuncHandlers[MB_FUNC_SET_RS_PARAMETERS_NUMBER].pxHandler( mbFrame.pdu.data, &mbFrame.length );
+                break;
+              default:
+                eException = MB_EX_ILLEGAL_FUNCTION;
+                break;
+            }
+          }
+          /* Invalid ModBus functions */
+          else
+          {
+            eException = MB_EX_ILLEGAL_FUNCTION;                                              /* Illegal function number */
+          }
+          if ( eException != MB_EX_NONE )                                                      /* Error */
+          {
+            vMBcounterErrorInc();                                                              /* Increment error counter  */
+          }
+          if ( ( mbFrame.adr == MB_ADDRESS_BROADCAST ) || mbState.ListenOnlyMode )
+          {
+            if  ( eException == MB_EX_REINIT )
+            {
+              taskENTER_CRITICAL();
+              eMBReInit();
+              vMBStartUpMB();
+              taskEXIT_CRITICAL();
+            }
+          }
+          else
+          {
+            if ( ( eException != MB_EX_NONE ) && ( eException != MB_EX_REINIT ) )                /* An exception occured. Build an error frame. */
+            {
+              mbFrame.length = 1U;
+              mbFrame.pdu.data[mbFrame.length] = ( uint8_t )( mbFrame.pdu.func | MB_FUNC_ERROR );
+              mbFrame.length++;
+              mbFrame.pdu.data[mbFrame.length] = eException;
+            }
+            vMBRTUsend( &mbFrame );
+            if ( eException == MB_EX_REINIT )
+            {
+              taskENTER_CRITICAL();
+              eMBReInit();
+              vMBStartUpMB();
+              taskEXIT_CRITICAL();
+            }
+          }
+        }
+      }
+      else
+      {
+        xReceivedBytes = 1U;
+      }
+    }
   }
 }
 /*---------------------------------------------------------------------------------------------------*/

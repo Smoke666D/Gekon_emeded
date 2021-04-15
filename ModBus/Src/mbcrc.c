@@ -7,7 +7,7 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "mbcrc.h"
 /*----------------------- Variables -----------------------------------------------------------------*/
-static UCHAR aucCRCHi[] = {
+static uint8_t aucCRCHi[CRC_SIZE] = {
     0x00U, 0xC1U, 0x81U, 0x40U, 0x01U, 0xC0U, 0x80U, 0x41U, 0x01U, 0xC0U, 0x80U, 0x41U,
     0x00U, 0xC1U, 0x81U, 0x40U, 0x01U, 0xC0U, 0x80U, 0x41U, 0x00U, 0xC1U, 0x81U, 0x40U,
     0x00U, 0xC1U, 0x81U, 0x40U, 0x01U, 0xC0U, 0x80U, 0x41U, 0x01U, 0xC0U, 0x80U, 0x41U,
@@ -31,7 +31,7 @@ static UCHAR aucCRCHi[] = {
     0x00U, 0xC1U, 0x81U, 0x40U, 0x01U, 0xC0U, 0x80U, 0x41U, 0x01U, 0xC0U, 0x80U, 0x41U,
     0x00U, 0xC1U, 0x81U, 0x40U
 };
-static UCHAR aucCRCLo[] = {
+static uint8_t aucCRCLo[CRC_SIZE] = {
     0x00U, 0xC0U, 0xC1U, 0x01U, 0xC3U, 0x03U, 0x02U, 0xC2U, 0xC6U, 0x06U, 0x07U, 0xC7U,
     0x05U, 0xC5U, 0xC4U, 0x04U, 0xCCU, 0x0CU, 0x0DU, 0xCDU, 0x0FU, 0xCFU, 0xCEU, 0x0EU,
     0x0AU, 0xCAU, 0xCBU, 0x0BU, 0xC9U, 0x09U, 0x08U, 0xC8U, 0xD8U, 0x18U, 0x19U, 0xD9U,
@@ -57,25 +57,25 @@ static UCHAR aucCRCLo[] = {
 };
 /*---------------------------------------------------------------------------------------------------*/
 /**
-* @brief 	Calculate check value by cyclic redundancy
-* 				check of frame data
-* @param 	pucFrame - pointer to frame data
-* 				usLen    - length of data
+* @brief   Calculate check value by cyclic redundancy
+*         check of frame data
+* @param   pucFrame - pointer to frame data
+*         usLen    - length of data
 * @retval check value of data
 */
-USHORT usMBCRC16( UCHAR * pucFrame, USHORT usLen )
+uint16_t usMBCRC16 ( volatile uint8_t * pucFrame, uint16_t usLen )
 {
-	UCHAR  ucCRCHi = 0xFF;
-	UCHAR  ucCRCLo = 0xFF;
-	ULONG  iIndex  = 0U;
-	USHORT count   = 0U;
+  uint8_t  ucCRCHi = 0xFFU;
+  uint8_t  ucCRCLo = 0xFFU;
+  uint32_t iIndex  = 0U;
+  uint16_t i       = 0U;
 
-	for( count=0U; count < usLen; count++ )
-	{
-		iIndex  = ucCRCLo ^ pucFrame[count];
-		ucCRCLo = ( UCHAR )( ucCRCHi ^ aucCRCHi[iIndex] );
-		ucCRCHi = aucCRCLo[iIndex];
-	}
-  return ( USHORT )( ( ( ( USHORT ) ucCRCHi ) << 8U ) | ucCRCLo );
+  for ( i=0U; i<usLen; i++ )
+  {
+    iIndex  = ucCRCLo ^ pucFrame[i];
+    ucCRCLo = ( uint8_t )( ucCRCHi ^ aucCRCHi[iIndex] );
+    ucCRCHi = aucCRCLo[iIndex];
+  }
+  return ( uint16_t )( ( ( ( uint16_t ) ucCRCHi ) << 8U ) | ucCRCLo );
 }
 /*---------------------------------------------------------------------------------------------------*/

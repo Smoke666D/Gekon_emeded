@@ -11,7 +11,22 @@
 #include "mbport.h"
 #include "FreeRTOS.h"
 #include "event_groups.h"
-/*----------------------- Structures ----------------------------------------------------------------*/
+/*----------------------- Enums ---------------------------------------------------------------------*/
+typedef enum
+{
+  MB_DATA_DISCRETE_INPUT,   /* 1 bit,  read only      */
+  MB_DATA_COIL,             /* 1 bit,  read and write */
+  MB_DATA_INPUT_REGISTER,   /* 16 bit, read only      */
+  MB_DATA_HOLDING_REGISTER, /* 16 bit, read and write */
+} MB_DATA_TYPE;
+
+typedef enum
+{
+  MB_DATA_STATUS_OK,
+  MB_DATA_STATUS_ACCESS_DENIED,
+  MB_DATA_STATUS_ADDRESS_ERROR,
+} MB_DATA_STATUS;
+
 typedef enum
 {
   ROM_OK,
@@ -32,7 +47,7 @@ typedef enum
 /*----------------------- MEMORY MAP ----------------------------------------------------------------*/
 #define HR_REGISTER_ADR_START           0U
 #define HR_RAM_COUNT                    ( HOLDING_REGISTER_RAM_COUNT )
-#define HR_ROM_COUNT                    HOLDING_REGISTER_ROM_COUNT
+#define HR_ROM_COUNT                    ( HOLDING_REGISTER_ROM_COUNT )
 #define HR_REGISTER_COUNT               ( HR_RAM_COUNT + HR_ROM_COUNT )
 #define HR_ROM_OFF                      ( HR_RAM_COUNT )
 #define DI_REGISTER_ADR_START           ( HR_REGISTER_ADR_START + HR_REGISTER_COUNT )
@@ -67,37 +82,34 @@ typedef enum
 #define CR_REGISTER_OFF                 ( IR_REGISTER_OFF + CR_RAM_COUNT + CR_ROM_COUNT )
 #define USER_REGISTER_OFF               ( CR_REGISTER_OFF + USER_RAM_COUNT + USER_ROM_COUNT+DI_REGISTER_COUNT )
 #define REGISTER_COUNT                  ( USER_REGISTER_COUNT + CR_REGISTER_COUNT + IR_REGISTER_COUNT + HR_REGISTER_COUNT + DI_REGISTER_COUNT )
-#define ROM_REGISTER_COUNT              ( HR_ROM_COUNT + CR_ROM_COUNT + USER_ROM_COUNT )																													/* The number of register to be stored in ROM */
+#define ROM_REGISTER_COUNT              ( HR_ROM_COUNT + CR_ROM_COUNT + USER_ROM_COUNT )                                                          /* The number of register to be stored in ROM */
 /*-----------------------INTERNAL DRIVER VARIABLES --------------------------------------------------*/
-#define  ROM_REGISTER_COUNT_ADR         1U              /* The virtual address of two bytes determining the number of virtual ROM registers */
-#define  ROM_REGISTER_CRC_ADR           0U
-#define  ROM_REGISTER_DATA_OFS          1U
+#define ROM_REGISTER_COUNT_ADR         1U              /* The virtual address of two bytes determining the number of virtual ROM registers */
+#define ROM_REGISTER_CRC_ADR           0U
+#define ROM_REGISTER_DATA_OFS          1U
 /*----------------------- Functions -----------------------------------------------------------------*/
-eMBROMInitType	vMBRegisterInit( void );
-void 						vMBWriteROMRegister( void );
+eMBROMInitType eMBregisterInit ( void );
+void           vMBwriteROMRegister ( void );
+
+MB_DATA_STATUS eMBreadData ( uint16_t adr, uint16_t* data, uint16_t length );
+MB_DATA_STATUS eMBwriteData ( uint16_t adr, const uint16_t* data, uint16_t length );
 /*-------------- OS ---------------*/
-eMBInitState 		eMBEventGroupInit( void );
-EventBits_t			eMBEventSet( UCHAR adr);
-EventBits_t 		eMBEventReset( UCHAR adr);
-void 						vMBEventFullReset( void );
-void 						vMBEventGet( EventBits_t* uxBits );
-/*------------ Holding ------------*/
-void 						vMBWriteHolding( USHORT adr, UCHAR *data, USHORT count );
-void 						vMBWriteShortToHolding( USHORT adr, USHORT data );
-USHORT 					usMBReadHolding( USHORT adr );
-/*------------ Input --------------*/
-USHORT 					usMBReadInput( USHORT adr );
+eMBInitState   eMBeventGroupInit ( void );
+EventBits_t    eMBeventSet ( uint8_t adr);
+EventBits_t    eMBeventReset ( uint8_t adr);
+void           vMBeventFullReset ( void );
+void           vMBeventGet ( EventBits_t* uxBits );
 /*------------ Coils --------------*/
-void 						vMBWriteCoils( USHORT adr, UCHAR *data, USHORT count );
-void 						vMBWriteCoil( USHORT adr, USHORT OutputValue );
+void           vMBwriteCoils ( uint16_t adr, uint8_t *data, uint16_t count );
+void           vMBwriteCoil ( uint16_t adr, uint16_t OutputValue );
 /*------------ User ---------------*/
-USHORT 					usMBReadUserRegister( USHORT adr );
-void 						vMBWriteUserRegister( USHORT adr, UCHAR *data, USHORT count );
-void 						vMBWriteShortToUserRegister( USHORT adr, USHORT data, eMBRAMwrType wr );
+uint16_t       uMBreadUserRegister ( uint16_t adr );
+void           vMBwriteUserRegister ( uint16_t adr, uint8_t *data, uint16_t count );
+void           vMBwriteShortToUserRegister ( uint16_t adr, uint16_t data, eMBRAMwrType wr );
 /*------------ Bit ----------------*/
-void 						vMBReadBitData( USHORT adr, UCHAR *data, USHORT count, BIT_DATA_TYPE dataType );
+void           vMBreadBitData ( uint16_t adr, uint8_t *data, uint16_t count, BIT_DATA_TYPE dataType );
 /*------------ Modified flag ------*/
-void 						vMBResetHoldingModifyFlag( void );
-USHORT					usMBGetHoldingModifyFlag( void );
+void           vMBResetHoldingModifyFlag ( void );
+uint16_t       uMBGetHoldingModifyFlag ( void );
 /*---------------------------------------------------------------------------------------------------*/
 #endif /* INC_MBREGISTER_H_ */

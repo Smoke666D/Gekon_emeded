@@ -20,6 +20,7 @@
 #define  SENSOR_CUTOUT_LEVEL            1U //( MAX_RESISTANCE )
 #define  CHARGER_IMPULSE_DURATION       5U /* sec */
 #define  CHARGER_ATTEMPTS_NUMBER        5U
+#define  FUEL_RATE_TIMEOUT              5U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -127,19 +128,25 @@ typedef struct __packed
 
 typedef struct __packed
 {
-
-
-} FUEL_TANK_TYPE;
+  fix16_t      momental;
+  fix16_t      average;
+  fix16_t      power;
+  fix16_t      fuel;
+  fix16_t      cutout;
+  SYSTEM_TIMER timer;
+} FUEL_RATE_TYPE;
 
 typedef struct __packed
 {
   SENSOR             level;
-  fix16_t            tank;
+  fix16_t            tankSize;
+  FUEL_RATE_TYPE     rate;
   ALARM_TYPE         lowAlarm;
   ALARM_TYPE         lowPreAlarm;
   ALARM_TYPE         hightAlarm;
   ALARM_TYPE         hightPreAlarm;
   ALARM_TYPE         leakAlarm;
+  ERROR_TYPE         stopLeakError;
   RELAY_AUTO_DEVICE  booster;
   RELAY_DEVICE       pump;
 } FUEL_TYPE;

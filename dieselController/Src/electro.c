@@ -333,7 +333,7 @@ float outLevel = 0;
  * Input:  None
  * Output: Maximum of voltage
  */
-fix16_t fGENERATORprocess ( void )
+void fGENERATORprocess ( void )
 {
   fix16_t voltage[MAINS_LINE_NUMBER] = { 0U };
   fix16_t freq                       = 0U;
@@ -374,7 +374,9 @@ fix16_t fGENERATORprocess ( void )
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );
   vELECTROpowerUsageProcessing();
   /*-------------------------------------------------------------------*/
-  return fELECTROgetMax( voltage, MAINS_LINE_NUMBER );
+  generator.output.voltage = fELECTROgetMax( voltage, MAINS_LINE_NUMBER );
+  generator.output.power   = power;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROdataInit ( void )
@@ -786,7 +788,12 @@ void vELECTROsendCmd ( ELECTRO_COMMAND cmd )
 /*---------------------------------------------------------------------------------------------------*/
 fix16_t fELECTROgetMaxGenVoltage ( void )
 {
-  return maxGeneratorVolage;
+  return generator.output.voltage;
+}
+/*---------------------------------------------------------------------------------------------------*/
+fix16_t fELECTROgetPower ( void )
+{
+  return generator.output.power;
 }
 /*---------------------------------------------------------------------------------------------------*/
 TRIGGER_STATE eELECTROgetMainsErrorFlag ( void )
@@ -811,7 +818,7 @@ void vELECTROtask ( void* argument )
       xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT );
     }
     /*---------------------- Data input processing ---------------------*/
-    maxGeneratorVolage = fGENERATORprocess();
+    fGENERATORprocess();
     vMAINSprocess();
     /*-------------------- Input commands processing -------------------*/
     if ( electro.state == ELECTRO_PROC_STATUS_IDLE )

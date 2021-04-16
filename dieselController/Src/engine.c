@@ -46,6 +46,7 @@ static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION ); /
 static const fix16_t oilTrashhold           = F16( 0.015 );                    /* Bar */
 static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );      /* Ohm */
 static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /* sec */
+static const fix16_t fuelRateTimeout        = F16( FUEL_RATE_TIMEOUT );        /* sec */
 #if ( DEBUG_SERIAL_STATUS > 0U )
   static const char* cSensorTypes[5U] =
   {
@@ -296,17 +297,48 @@ fix16_t fCOOLANTprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
+void fFUELrateProcess ( fix16_t value )
+{
+  fix16_t delta = 0U;
+  if ( uLOGICisTimer( &fuel.rate.timer ) > 0U )
+  {
+    delta = fix16_sub( value, fuel.rate.fuel );
+
+    if ( delta > fuel.rate.cutout )
+    {
+      if ( fuel.rate.power == 0U )
+      {
+        vERRORcheck( &fuel.stopLeakError, 1U );
+      }
+      else
+      {
+        fuel.rate.momental = fix16_div( delta, fuel.rate.power );
+        vALARMcheck( &fuel.leakAlarm, fuel.rate.momental );
+      }
+    }
+    fuel.rate.power = 0U;
+    fuel.rate.fuel  = value;
+    vLOGICstartTimer( &fuel.rate.timer, "Fuel rate timer     " );
+  }
+  else
+  {
+    fuel.rate.power = fix16_add( fELECTROgetPower(), fuel.rate.power );
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  if ( uSENSORisAnalog( fuel.level ) > 0U)
+  fFUELrateProcess( value );
+  if ( uSENSORisAnalog( fuel.level ) > 0U )
   {
-    vALARMcheck( &fuel.lowAlarm, value );
-    vALARMcheck( &fuel.lowPreAlarm, value );
-    vALARMcheck( &fuel.hightAlarm, value );
+    vALARMcheck( &fuel.lowAlarm,      value );
+    vALARMcheck( &fuel.lowPreAlarm,   value );
+    vALARMcheck( &fuel.hightAlarm,    value );
     vALARMcheck( &fuel.hightPreAlarm, value );
-    vRELAYautoProces( &fuel.booster, value );
+    vRELAYautoProces( &fuel.booster,  value );
   }
   else if ( uSENSORisDiscret( fuel.level ) > 0U )
   {
@@ -915,6 +947,8 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
+    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   else if ( uSENSORisAnalog( fuel.level ) > 0U )
@@ -924,6 +958,8 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR      );
     fuel.hightPreAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_PRE_ALARM_ENB_ADR    );
     fuel.hightAlarm.error.enb    = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_ALARM_ENB_ADR        );
+    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
+    fuel.stopLeakError.enb       = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
     fuel.booster.relay.enb       = getBitMap( &fuelLevelSetup, FUEL_PUMP_ENB_ADR                     );
   }
   else
@@ -933,8 +969,31 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
+    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
+  fuel.tankSize                         = getValue( &fuelTankLevel );
+  fuel.rate.momental                    = 0U;
+  fuel.rate.average                     = 0U;
+  fuel.rate.cutout                      = fix16_mul( fix16_div( getValue( &hysteresisLevel ), fix100U ), yAxisAtribs[FUEL_CHART_ADR]->max );
+  fuel.rate.timer.delay                 = fuelRateTimeout;
+  fuel.rate.timer.id                    = LOGIC_DEFAULT_TIMER_ID;;
+  fuel.leakAlarm.error.active           = PERMISSION_ENABLE;
+  fuel.leakAlarm.type                   = ALARM_LEVEL_HIGHT;
+  fuel.leakAlarm.level                  = getValue( &fuelRateLevel );
+  fuel.leakAlarm.timer.delay            = 0U;
+  fuel.leakAlarm.timer.id               = LOGIC_DEFAULT_TIMER_ID;
+  fuel.leakAlarm.error.event.type       = EVENT_FUEL_LEAK;
+  fuel.leakAlarm.error.event.action     = ACTION_WARNING;
+  fuel.leakAlarm.error.ack              = PERMISSION_DISABLE;
+  fuel.leakAlarm.error.trig             = TRIGGER_IDLE;
+  fuel.leakAlarm.error.status           = ALARM_STATUS_IDLE;
+  fuel.stopLeakError.event.type         = EVENT_FUEL_LEAK;
+  fuel.stopLeakError.event.action       = ACTION_WARNING;
+  fuel.stopLeakError.ack                = PERMISSION_DISABLE;
+  fuel.stopLeakError.trig               = TRIGGER_IDLE;
+  fuel.stopLeakError.status             = ALARM_STATUS_IDLE;
   fuel.lowAlarm.error.active            = PERMISSION_ENABLE;
   fuel.lowAlarm.type                    = ALARM_LEVEL_LOW;
   fuel.lowAlarm.level                   = getValue( &fuelLevelLowAlarmLevel );
@@ -1247,15 +1306,19 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
+    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   if ( uSENSORisAnalog( fuel.level ) > 0U )
   {
-    fuel.lowAlarm.error.enb      = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_ALARM_ENB_ADR );
-    fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR );
+    fuel.lowAlarm.error.enb      = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_ALARM_ENB_ADR       );
+    fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR   );
     fuel.hightPreAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_PRE_ALARM_ENB_ADR );
-    fuel.hightAlarm.error.enb    = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_ALARM_ENB_ADR );
-    fuel.booster.relay.enb       = getBitMap( &fuelLevelSetup, FUEL_PUMP_ENB_ADR );
+    fuel.hightAlarm.error.enb    = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_ALARM_ENB_ADR     );
+    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
+    fuel.stopLeakError.enb       = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
+    fuel.booster.relay.enb       = getBitMap( &fuelLevelSetup, FUEL_PUMP_ENB_ADR                  );
   }
   else
   {
@@ -1263,9 +1326,12 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
+    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
-
+  fuel.tankSize                  = getValue( &fuelTankLevel );
+  fuel.leakAlarm.level           = getValue( &fuelRateLevel );
   fuel.lowAlarm.level            = getValue( &fuelLevelLowAlarmLevel );
   fuel.lowAlarm.timer.delay      = getValue( &fuelLevelLowAlarmDelay );
   fuel.lowPreAlarm.level         = getValue( &fuelLevelLowPreAlarmLevel );
@@ -1365,6 +1431,8 @@ void vENGINEresetAlarms ( void )
   vALARMreset( &fuel.hightPreAlarm       );
   vALARMreset( &fuel.lowAlarm            );
   vALARMreset( &fuel.lowPreAlarm         );
+  vALARMreset( &fuel.leakAlarm           );
+  vERRORreset( &fuel.stopLeakError       );
   vALARMreset( &coolant.alarm            );
   vALARMreset( &coolant.electroAlarm     );
   vALARMreset( &coolant.preAlarm         );

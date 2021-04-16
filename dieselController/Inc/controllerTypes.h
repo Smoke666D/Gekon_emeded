@@ -169,6 +169,7 @@ typedef enum
   EVENT_USER_FUNCTION_D,            /* 42 */
   EVENT_MAINS_PHASE_SEQUENCE,       /* 43 SHUTDOWN */
   EVENT_GENERATOR_PHASE_SEQUENCE,   /* 44 SHUTDOWN */
+  EVENT_FUEL_LEAK,                  /* 45 WARNING */
 } SYSTEM_EVENT_TYPE;
 
 typedef enum

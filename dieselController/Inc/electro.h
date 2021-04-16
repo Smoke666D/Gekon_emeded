@@ -125,6 +125,13 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  fix16_t voltage;
+  fix16_t power;
+} GENERATOR_OUTPUT_TYPE;
+
+
+typedef struct __packed
+{
   PERMISSION         enb    : 1U;
   ELECTRO_STATUS     state  : 1U;
   SYSTEM_TIMER       timer;
@@ -149,9 +156,10 @@ typedef struct __packed
   CURRENT_ALARM_TYPE currentAlarm;
   ERROR_TYPE         phaseSequenceError;
   /*---------- OUTPUT ----------*/
-  RELAY_DEVICE       relay;
-  RELAY_DELAY_DEVICE relayOn;
-  RELAY_DELAY_DEVICE relayOff;
+  RELAY_DEVICE          relay;
+  RELAY_DELAY_DEVICE    relayOn;
+  RELAY_DELAY_DEVICE    relayOff;
+  GENERATOR_OUTPUT_TYPE output;
 } GENERATOR_TYPE;
 
 typedef struct __packed
@@ -187,6 +195,7 @@ ELECTRO_ALARM_STATUS   eELECTROgetAlarmStatus ( void );
 QueueHandle_t          pELECTROgetCommandQueue ( void );
 void                   vELECTROsendCmd ( ELECTRO_COMMAND cmd );
 fix16_t                fELECTROgetMaxGenVoltage ( void );
+fix16_t                fELECTROgetPower ( void );
 TRIGGER_STATE          eELECTROgetMainsErrorFlag ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

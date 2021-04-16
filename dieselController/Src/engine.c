@@ -1700,6 +1700,7 @@ void vENGINEtask ( void* argument )
                 starterFinish     = TRIGGER_SET;
                 starter.status    = STARTER_STATUS_CONTROL_BLOCK;
                 commonTimer.delay = starter.blockDelay;
+                charger.start     = PERMISSION_ENABLE;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vSTATUSsetup( DEVICE_STATUS_CONTROL_BLOCK, commonTimer.id );
               }
@@ -1721,6 +1722,7 @@ void vENGINEtask ( void* argument )
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;
                 starter.status = STARTER_STATUS_CONTROL_BLOCK;
+                charger.start  = PERMISSION_ENABLE;
                 vLCD_BrigthOn();
                 vDATAAPIsendEventAll( DATA_API_REDRAW_DISPLAY );
                 vLOGICresetTimer( &commonTimer );
@@ -1769,7 +1771,6 @@ void vENGINEtask ( void* argument )
                 oil.preAlarm.error.active          = PERMISSION_ENABLE;
                 battery.hightAlarm.error.active    = PERMISSION_ENABLE;
                 battery.lowAlarm.error.active      = PERMISSION_ENABLE;
-                charger.start                      = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS );
                 vLOGICprintStarterStatus( starter.status );
                 vSTATUSsetup( DEVICE_STATUS_IDLE_WORK, commonTimer.id );

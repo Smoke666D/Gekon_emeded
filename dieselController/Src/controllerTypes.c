@@ -171,7 +171,7 @@ PERMISSION eSTATUSisTimer ( DEVICE_STATUS status )
   if ( ( status == DEVICE_STATUS_IDLE           ) ||
        ( status == DEVICE_STATUS_READY_TO_START ) ||
        ( status == DEVICE_STATUS_WORKING        ) ||
-       ( status == DEVICE_STATUS_ERROR ) ||
+       ( status == DEVICE_STATUS_ERROR          ) ||
        ( status == DEVICE_STATUS_BAN_START      ) )
   {
     res = PERMISSION_DISABLE;

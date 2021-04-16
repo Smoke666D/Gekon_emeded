@@ -38,87 +38,16 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  JOURNAL_MEASUR_TIME,              /*  0 */
-  JOURNAL_MEASUR_OIL,               /*  2 */
-  JOURNAL_MEASUR_COOLANT,           /*  3 */
-  JOURNAL_MEASUR_FUEL,              /*  4 */
-  JOURNAL_MEASUR_SPEED,             /*  5 */
-  JOURNAL_MEASUR_DIN,               /*  6 */
-  JOURNAL_MEASUR_GENERATOR_VOLTAGE, /*  7 */
-  JOURNAL_MEASUR_GENERATOR_FREQ,    /*  8 */
-  JOURNAL_MEASUR_GENERATOR_CURRENT, /*  9 */
-  JOURNAL_MEASUR_GENERATOR_POWER,   /* 10 */
-  JOURNAL_MEASUR_MAINS_VOLTAGE,     /* 11 */
-  JOURNAL_MEASUR_MAINS_FREQ,        /* 12 */
-  JOURNAL_MEASUR_BATTERY,           /* 13 */
-} JOURNAL_MEASUR_ENB;
-
-/*
-typedef enum
-{
-  JOURNAL_MEASUR_DIN_A = 0x01U,
-  JOURNAL_MEASUR_DIN_B = 0x02U,
-  JOURNAL_MEASUR_DIN_C = 0x04U,
-  JOURNAL_MEASUR_DIN_D = 0x08U,
-} JOURNAL_MEASUR_DIN;
-*/
-typedef enum
-{
   JOURNAL_MEASUR_STATUS_IDLE,
   JOURNAL_MEASUR_STATUS_
 } JOURNAL_MEASUR_STATUS;
 /*------------------------- Typesc--------------------------------------*/
 typedef uint16_t length_t;
 /*----------------------- Structures -----------------------------------*/
-typedef struct __packed
-{
-  PERMISSION time    : 1U; /* 4 */
-  PERMISSION oil     : 1U; /* 2 */
-  PERMISSION coolant : 1U; /* 2 */
-  PERMISSION fuel    : 1U; /* 2 */
-  PERMISSION speed   : 1U; /* 2 */
-  PERMISSION din     : 1U; /* 1 */
-  PERMISSION genV    : 1U; /* 2 */
-  PERMISSION genF    : 1U; /* 2 */
-  PERMISSION genC    : 1U; /* 2 */
-  PERMISSION genP    : 1U; /* 2 */
-  PERMISSION mainsV  : 1U; /* 2 */
-  PERMISSION mainsF  : 1U; /* 2 */
-  PERMISSION battery : 1U; /* 2 */
-} JOURNAL_MEASURMENT_ENB;
-
-typedef struct __packed
-{
-  length_t length;
-  length_t counter;
-  uint8_t  blob[JOURNAL_BLOB_MAX_SIZE];
-  /*
-  uint32_t time;
-  uint16_t oil;
-  uint16_t coolant;
-  uint16_t fuel;
-  uint16_t speed;
-  uint8_t  din;
-  uint16_t genV;
-  uint16_t genF;
-  uint16_t genC;
-  uint16_t mainsV;
-  uint16_t mainsF;
-  uint16_t battery;
-  */
-} JOURNAL_MEASURMENT_DATA;
-
-typedef struct __packed
-{
-  PERMISSION              enb    : 1U;
-  JOURNAL_MEASURMENT_ENB  option;
-  JOURNAL_MEASURMENT_DATA data;
-  SYSTEM_TIMER            timer;
-  uint32_t                size;
-} JOURNAL_MEASURMENT;
 /*---------------------- Functions -------------------------------------*/
 LOG_STATUS vLOGinit ( void );
 LOG_STATUS vLOGclear ( void );
+uint32_t   uLOGgetTime ( void );
 LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
 LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record );
 /*----------------------------------------------------------------------*/

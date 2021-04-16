@@ -82,8 +82,9 @@ static const char* cFPInames[FPI_NUMBER] =
   "D"
 };
 /*-------------------------------- Variables ---------------------------------*/
-static uint8_t eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
-static FPI     fpis[FPI_NUMBER]                         = { 0U };
+static uint8_t  eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
+static FPI      fpis[FPI_NUMBER]                         = { 0U };
+static uint16_t fpiDataReg                               = 0U;
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -173,6 +174,7 @@ void vFPIprintSetup ( void )
   vSYSSerial( "\n\r" );
   return;
 }
+/*----------------------------------------------------------------------------*/
 void vFPIdataInit ( void )
 {
   uint8_t    i     = 0U;
@@ -274,6 +276,11 @@ void vFPIinit ( const FPI_INIT* init )
   fpiHandle = osThreadNew( vFPITask, NULL, &fpiTask_attributes );
   vFPIprintSetup();
   return;
+}
+/*----------------------------------------------------------------------------*/
+uint16_t uFPIgetData ( void )
+{
+  return fpiDataReg;
 }
 /*----------------------------------------------------------------------------*/
 QueueHandle_t pFPIgetQueue ( void )
@@ -399,6 +406,7 @@ void vFPITask ( void* argument )
                   fpis[i].state = FPI_TRIGGERED;
                   if ( fpis[i].level == FPI_LEVEL_LOW )
                   {
+                    fpiDataReg     &= ~( uint8_t )( 1U << i );
                     fpis[i].trigger = TRIGGER_IDLE;
                   }
                   else
@@ -409,7 +417,8 @@ void vFPITask ( void* argument )
               }
               else
               {
-                fpis[i].trigger = TRIGGER_IDLE;
+                fpiDataReg      &= ~( uint8_t )( 1U << i );
+                fpis[i].trigger  = TRIGGER_IDLE;
               }
               break;
             case FPI_TRIGGERED:
@@ -420,7 +429,8 @@ void vFPITask ( void* argument )
                 event.number   = i;
                 if ( fpis[i].level == FPI_LEVEL_HIGH )
                 {
-                  fpis[i].trigger = TRIGGER_SET;
+                  fpiDataReg      |= ( uint8_t )( 1U << i );
+                  fpis[i].trigger  = TRIGGER_SET;
                 }
                 fpis[i].state  = FPI_IDLE;
                 xQueueSend( pFPIQueue, &event, portMAX_DELAY );

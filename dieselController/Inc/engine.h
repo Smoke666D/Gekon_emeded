@@ -127,11 +127,19 @@ typedef struct __packed
 
 typedef struct __packed
 {
+
+
+} FUEL_TANK_TYPE;
+
+typedef struct __packed
+{
   SENSOR             level;
+  fix16_t            tank;
   ALARM_TYPE         lowAlarm;
   ALARM_TYPE         lowPreAlarm;
   ALARM_TYPE         hightAlarm;
   ALARM_TYPE         hightPreAlarm;
+  ALARM_TYPE         leakAlarm;
   RELAY_AUTO_DEVICE  booster;
   RELAY_DEVICE       pump;
 } FUEL_TYPE;
@@ -252,6 +260,10 @@ STOP_STATUS      eENGINEgetPlanStopStatus ( void );
 TRIGGER_STATE    eENGINEgetOilSensorState ( void );
 TRIGGER_STATE    eENGINEgetCoolantSensorState ( void );
 TRIGGER_STATE    eENGINEgetFuelSensorState ( void );
-fix16_t          fENGINEspeedGet ( void );
+fix16_t          fENGINEgetSpeed ( void );
+fix16_t          fENGINEgetOilPressure ( void );
+fix16_t          fENGINEgetCoolantTemp ( void );
+fix16_t          fENGINEgeyFuelLevel ( void );
+RELAY_STATUS     eENGINEgetChargerState ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

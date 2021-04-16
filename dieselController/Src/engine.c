@@ -116,6 +116,9 @@ static ENGINE_COMMAND engineCommandBuffer[ENGINE_COMMAND_QUEUE_LENGTH] = { 0U };
 static TRIGGER_STATE  starterFinish                                    = TRIGGER_IDLE;
 static TRIGGER_STATE  blockTimerFinish                                 = TRIGGER_IDLE;
 static fix16_t        currentSpeed                                     = 0U;
+static fix16_t        oilVal                                           = 0U;
+static fix16_t        coolantVal                                       = 0U;
+static fix16_t        fuelVal                                          = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -356,7 +359,7 @@ fix16_t fCHARGERprocess ( void )
         case CHARGER_STATUS_IDLE:
           if ( charger.get() < charger.alarm.level )
           {
-            charger.relay.set( RELAY_ON );
+            vRELAYset( &charger.relay, RELAY_ON );
             vLOGICstartTimer( &charger.timer, "Charger timer       " );
             charger.status = CHARGER_STATUS_DELAY;
           }
@@ -368,7 +371,7 @@ fix16_t fCHARGERprocess ( void )
         case CHARGER_STATUS_DELAY:
           if ( uLOGICisTimer( &charger.timer ) > 0U )
           {
-            charger.relay.set( RELAY_OFF );
+            vRELAYset( &charger.relay, RELAY_OFF );
             charger.status = CHARGER_STATUS_MEASURING;
           }
           break;
@@ -377,7 +380,7 @@ fix16_t fCHARGERprocess ( void )
           vALARMcheck( &charger.alarm, value );
           break;
         default:
-          charger.relay.set( RELAY_OFF );
+          vRELAYset( &charger.relay, RELAY_OFF );
           charger.status = CHARGER_STATUS_IDLE;
           break;
       }
@@ -386,7 +389,7 @@ fix16_t fCHARGERprocess ( void )
     {
       if ( charger.status != CHARGER_STATUS_IDLE )
       {
-        charger.relay.set( RELAY_OFF );
+        vRELAYset( &charger.relay, RELAY_OFF );
         vERRORrelax( &charger.alarm.error );
         charger.status = CHARGER_STATUS_IDLE;
       }
@@ -1458,17 +1461,35 @@ TRIGGER_STATE eENGINEgetFuelSensorState ( void )
   return fuel.level.trig;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fENGINEspeedGet ( void )
+fix16_t fENGINEgetSpeed ( void )
 {
   return currentSpeed;
+}
+/*----------------------------------------------------------------------------*/
+RELAY_STATUS eENGINEgetChargerState ( void )
+{
+  return charger.relay.status;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fENGINEgetOilPressure ( void )
+{
+  return oilVal;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fENGINEgetCoolantTemp ( void )
+{
+  return coolantVal;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fENGINEgeyFuelLevel ( void )
+{
+  return fuelVal;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
 {
-  fix16_t         oilVal      = 0U;
-  fix16_t         coolantVal  = 0U;
   fix16_t         chargerVal  = 0U;
   fix16_t         genFreqVal  = 0U;
   SYSTEM_TIMER    commonTimer = { 0U };
@@ -1562,7 +1583,7 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     oilVal       = fOILprocess();
     coolantVal   = fCOOLANTprocess();
-    fFUELprocess();
+    fuelVal      = fFUELprocess();
     chargerVal   = fCHARGERprocess();
     fBATTERYprocess();
     genFreqVal   = xADCGetGENLFreq();
@@ -1679,6 +1700,7 @@ void vENGINEtask ( void* argument )
                 starterFinish     = TRIGGER_SET;
                 starter.status    = STARTER_STATUS_CONTROL_BLOCK;
                 commonTimer.delay = starter.blockDelay;
+                charger.start     = PERMISSION_ENABLE;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vSTATUSsetup( DEVICE_STATUS_CONTROL_BLOCK, commonTimer.id );
               }
@@ -1700,6 +1722,7 @@ void vENGINEtask ( void* argument )
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;
                 starter.status = STARTER_STATUS_CONTROL_BLOCK;
+                charger.start  = PERMISSION_ENABLE;
                 vLCD_BrigthOn();
                 vDATAAPIsendEventAll( DATA_API_REDRAW_DISPLAY );
                 vLOGICresetTimer( &commonTimer );
@@ -1748,7 +1771,6 @@ void vENGINEtask ( void* argument )
                 oil.preAlarm.error.active          = PERMISSION_ENABLE;
                 battery.hightAlarm.error.active    = PERMISSION_ENABLE;
                 battery.lowAlarm.error.active      = PERMISSION_ENABLE;
-                charger.start                      = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS );
                 vLOGICprintStarterStatus( starter.status );
                 vSTATUSsetup( DEVICE_STATUS_IDLE_WORK, commonTimer.id );

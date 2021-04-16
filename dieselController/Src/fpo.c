@@ -95,6 +95,8 @@ static FPO* pumpFPO         = NULL;  /* 17 */
 static FPO* starterFPO      = NULL;  /* 18 */
 static FPO* preheaterFPO    = NULL;  /* 19 */
 static FPO* idleFPO         = NULL;  /* 20 */
+
+static uint16_t fpoDataReg      = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun );
 void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat );
@@ -128,12 +130,14 @@ void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat )
     if ( ( ( stat == RELAY_ON  ) && ( fpo->polarity == FPO_POL_NORMAL_OPEN  ) ) ||
          ( ( stat == RELAY_OFF ) && ( fpo->polarity == FPO_POL_NORMAL_CLOSE ) ) )
     {
-      cmd        = GPIO_PIN_SET;
-      fpo->state = TRIGGER_SET;
+      fpoDataReg |= fpo->mask;
+      cmd         = GPIO_PIN_SET;
+      fpo->state  = TRIGGER_SET;
     }
     else
     {
-      fpo->state = TRIGGER_IDLE;
+      fpoDataReg &= ~fpo->mask;
+      fpo->state  = TRIGGER_IDLE;
     }
     HAL_GPIO_WritePin( fpo->port, fpo->pin, cmd );
   }
@@ -199,6 +203,11 @@ void vFPOsetupStartup ( void )
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+uint16_t uFPOgetData ( void )
+{
+  return fpoDataReg;
+}
+/*----------------------------------------------------------------------------*/
 TRIGGER_STATE eFPOgetState ( uint8_t n )
 {
   TRIGGER_STATE res = TRIGGER_IDLE;
@@ -230,10 +239,20 @@ void vFPOsetDpsReady ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetDpsReady ( void )
+{
+  return dpsReadyFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetReadyToStart ( RELAY_STATUS stat )
 {
   vFPOsetRelay( readyToStartFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetReadyToStart ( void )
+{
+  return readyToStartFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetGenReady ( RELAY_STATUS stat )
@@ -242,10 +261,20 @@ void vFPOsetGenReady ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetGenReady ( void )
+{
+  return genReadyFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetAlarm ( RELAY_STATUS stat )
 {
   vFPOsetRelay( alarmFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetAlarm ( void )
+{
+  return alarmFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetMainsFail ( RELAY_STATUS stat )
@@ -254,10 +283,20 @@ void vFPOsetMainsFail ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetMainsFail ( void )
+{
+  return mainsFailFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetWarning ( RELAY_STATUS stat )
 {
   vFPOsetRelay( warningFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetWarning ( void )
+{
+  return warningFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetStarter ( RELAY_STATUS stat )
@@ -266,10 +305,20 @@ void vFPOsetStarter ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetStarter ( void )
+{
+  return starterFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetHeater ( RELAY_STATUS stat )
 {
   vFPOsetRelay( heaterFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetHeater ( void )
+{
+  return heaterFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetCooler ( RELAY_STATUS stat )
@@ -278,10 +327,20 @@ void vFPOsetCooler ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetCooler ( void )
+{
+  return coolerFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetPreheater ( RELAY_STATUS stat )
 {
   vFPOsetRelay( preheaterFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetPreheater ( void )
+{
+  return preheaterFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetBooster ( RELAY_STATUS stat )
@@ -290,10 +349,20 @@ void vFPOsetBooster ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetBooster ( void )
+{
+  return boosterFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetPump ( RELAY_STATUS stat )
 {
   vFPOsetRelay( pumpFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetPump ( void )
+{
+  return pumpFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetStopSolenoid ( RELAY_STATUS stat )
@@ -302,10 +371,20 @@ void vFPOsetStopSolenoid ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgeyStopSolenoid ( void )
+{
+  return stopSolenoidFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetIdle ( RELAY_STATUS stat )
 {
   vFPOsetRelay( idleFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgeyIdle ( void )
+{
+  return idleFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetGenSw ( RELAY_STATUS stat )
@@ -314,10 +393,20 @@ void vFPOsetGenSw ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetGenSw ( void )
+{
+  return genSwFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetGenOnImp ( RELAY_STATUS stat )
 {
   vFPOsetRelay( genImpOnFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetGenOnImp ( void )
+{
+  return genImpOnFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetGenOffImp ( RELAY_STATUS stat )
@@ -326,10 +415,20 @@ void vFPOsetGenOffImp ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetGenOffImp ( void )
+{
+  return genImpOffFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetMainsSw ( RELAY_STATUS stat )
 {
   vFPOsetRelay( mainsSwFPO, stat );
   return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetMainsSw ( void )
+{
+  return mainsSwFPO->state;
 }
 /*----------------------------------------------------------------------------*/
 void vFPOsetMainsOnImp ( RELAY_STATUS stat )
@@ -338,14 +437,25 @@ void vFPOsetMainsOnImp ( RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetMainsOnImp ( void )
+{
+  return mainsImpOnFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOsetMainsOffImp ( RELAY_STATUS stat )
 {
   vFPOsetRelay( mainsImpOffFPO, stat );
   return;
 }
 /*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetMainsOffImp ( void )
+{
+  return mainsImpOffFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOdataInit ( void )
 {
+  uint8_t i = 0U;
   /* Read parameters form memory */
   fpos[FPO_A].polarity = getBitMap( &doSetup,  DOA_N_O_C_ADR );
   fpos[FPO_B].polarity = getBitMap( &doSetup,  DOB_N_O_C_ADR );
@@ -359,6 +469,11 @@ void vFPOdataInit ( void )
   fpos[FPO_D].function = getBitMap( &docdType, DOD_TYPE_ADR );
   fpos[FPO_E].function = getBitMap( &doefType, DOE_TYPE_ADR );
   fpos[FPO_F].function = getBitMap( &doefType, DOF_TYPE_ADR );
+  /* Setup masks */
+  for ( i=0U; i<FPO_NUMBER; i++ )
+  {
+    fpos[i].mask = ( uint8_t )( 1U << i );
+  }
   /* GPIO start conditions */
   vFPOdisSetup();
   vFPOsetupStartup();

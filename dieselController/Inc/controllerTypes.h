@@ -32,6 +32,8 @@
 #define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
 #define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
 #define  SEMAPHORE_AEL_TAKE_DELAY   10U
+#define  ERROR_NUMBER               27U
+#define  WARNING_NUMBER             16U
 /*------------------------ Tasks ---------------------------------------*/
 #define  FPI_TASK_PRIORITY           osPriorityLow
 #define  ENGINE_TASK_PRIORITY        osPriorityLow     /* Engine and Electro priority need to be equal */
@@ -136,7 +138,7 @@ typedef enum
   EVENT_SPEED_HIGHT,                /* 11 EMERGENCY_STOP */
   EVENT_SPEED_LOW,                  /* 12 EMERGENCY_STOP */
   EVENT_SPEED_SENSOR_ERROR,         /* 13 EMERGENCY_STOP */
-  EVENT_CHARGER_FAIL,               /* 14 WARNING & EMERGENCY_STOP */
+  EVENT_CHARGER_FAIL,               /* 14 WARNING */
   EVENT_BATTERY_LOW,                /* 15 WARNING */
   EVENT_BATTERY_HIGHT,              /* 16 WARNING */
   EVENT_GENERATOR_LOW_VOLTAGE,      /* 17 WARNING & EMERGENCY_STOP */
@@ -270,6 +272,7 @@ typedef enum
 typedef uint16_t ( *getDataCallBack )( void );           /* Callback to get 2 byte data */
 typedef fix16_t  ( *getValueCallBack )( void );          /* Callback to get sensor value */
 typedef void     ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */
+typedef void     ( *commandCallBack )( void );           /* Callback to get 2 byte data */
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {

@@ -77,6 +77,8 @@ typedef enum
   USB_REPORT_CMD_GET_MEASUREMENT        = 0x16U,
   USB_REPORT_CMD_ERASE_MEASUREMENT      = 0x17U,
   USB_REPORT_CMD_GET_MEASUREMENT_LENGTH = 0x18U,
+  USB_REPORT_CMD_GET_OUTPUT             = 0x19U,
+  USB_REPORT_CMD_PUT_OUTPUT             = 0x1AU,
 } USB_REPORT_CMD;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       65U

@@ -87,7 +87,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "SPEED_HIGHT",                /* EMERGENCY_STOP */
     "SPEED_LOW",                  /* EMERGENCY_STOP */
     "SPEED_SENSOR_ERROR",         /* EMERGENCY_STOP */
-    "CHARGER_FAIL",               /* WARNING & EMERGENCY_STOP */
+    "CHARGER_FAIL",               /* WARNING */
     "BATTERY_LOW",                /* WARNING */
     "BATTERY_HIGHT",              /* WARNING */
     "GENERATOR_LOW_VOLTAGE",      /* WARNING & EMERGENCY_STOP */
@@ -171,7 +171,7 @@ PERMISSION eSTATUSisTimer ( DEVICE_STATUS status )
   if ( ( status == DEVICE_STATUS_IDLE           ) ||
        ( status == DEVICE_STATUS_READY_TO_START ) ||
        ( status == DEVICE_STATUS_WORKING        ) ||
-       ( status == DEVICE_STATUS_ERROR ) ||
+       ( status == DEVICE_STATUS_ERROR          ) ||
        ( status == DEVICE_STATUS_BAN_START      ) )
   {
     res = PERMISSION_DISABLE;

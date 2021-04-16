@@ -1442,7 +1442,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            }
            break;
       case ENGINE_SPEED:
-           fix16_to_str( fENGINEspeedGet(), Data, 0U );
+           fix16_to_str( fENGINEgetSpeed(), Data, 0U );
            vStrAdd( Data, " об/м" );
            break;
       case ENGINE_SCOUNT:

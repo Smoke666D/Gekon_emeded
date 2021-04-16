@@ -406,6 +406,7 @@ void vFPITask ( void* argument )
                   fpis[i].state = FPI_TRIGGERED;
                   if ( fpis[i].level == FPI_LEVEL_LOW )
                   {
+                    fpiDataReg     &= ~( uint8_t )( 1U << i );
                     fpis[i].trigger = TRIGGER_IDLE;
                   }
                   else

@@ -297,18 +297,36 @@ fix16_t fCOOLANTprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
+void vFUELsetLeakState ( FUEL_LEAK_STATE state )
+{
+  switch ( state )
+  {
+    case FUEL_LEAK_STATE_STOP:
+      fuel.stopLeakError.active       = PERMISSION_ENABLE;
+      fuel.idleLeakAlarm.error.active = PERMISSION_DISABLE;
+      break;
+    case FUEL_LEAK_STATE_WORK:
+      fuel.stopLeakError.active       = PERMISSION_DISABLE;
+      fuel.idleLeakAlarm.error.active = PERMISSION_ENABLE;
+      break;
+    default:
+      break;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 void fFUELrateProcess ( fix16_t value )
 {
   fix16_t delta = 0U;
   if ( uLOGICisTimer( &fuel.rate.timer ) > 0U )
   {
     delta = fix16_sub( value, fuel.rate.fuel );
-
     if ( delta > fuel.rate.cutout )
     {
       if ( fuel.rate.power == 0U )
       {
         vERRORcheck( &fuel.stopLeakError, 1U );
+        vALARMcheck( &fuel.idleLeakAlarm, delta );
       }
       else
       {
@@ -947,8 +965,9 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.stopLeakError.enb       = PERMISSION_DISABLE;
+    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   else if ( uSENSORisAnalog( fuel.level ) > 0U )
@@ -958,8 +977,9 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR      );
     fuel.hightPreAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_PRE_ALARM_ENB_ADR    );
     fuel.hightAlarm.error.enb    = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_ALARM_ENB_ADR        );
-    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
     fuel.stopLeakError.enb       = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
+    fuel.idleLeakAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
+    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
     fuel.booster.relay.enb       = getBitMap( &fuelLevelSetup, FUEL_PUMP_ENB_ADR                     );
   }
   else
@@ -969,8 +989,9 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.stopLeakError.enb       = PERMISSION_DISABLE;
+    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   fuel.tankSize                         = getValue( &fuelTankLevel );
@@ -979,6 +1000,22 @@ void vENGINEdataInit ( void )
   fuel.rate.cutout                      = fix16_mul( fix16_div( getValue( &hysteresisLevel ), fix100U ), yAxisAtribs[FUEL_CHART_ADR]->max );
   fuel.rate.timer.delay                 = fuelRateTimeout;
   fuel.rate.timer.id                    = LOGIC_DEFAULT_TIMER_ID;;
+  fuel.stopLeakError.active             = PERMISSION_ENABLE;
+  fuel.stopLeakError.event.type         = EVENT_FUEL_LEAK;
+  fuel.stopLeakError.event.action       = ACTION_WARNING;
+  fuel.stopLeakError.ack                = PERMISSION_DISABLE;
+  fuel.stopLeakError.trig               = TRIGGER_IDLE;
+  fuel.stopLeakError.status             = ALARM_STATUS_IDLE;
+  fuel.idleLeakAlarm.error.active       = PERMISSION_DISABLE;
+  fuel.idleLeakAlarm.type               = ALARM_LEVEL_HIGHT;
+  fuel.idleLeakAlarm.level              = getValue( &fuelRateIdleLevel );
+  fuel.idleLeakAlarm.timer.delay        = 0U;
+  fuel.idleLeakAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
+  fuel.idleLeakAlarm.error.event.type   = EVENT_FUEL_LEAK;
+  fuel.idleLeakAlarm.error.event.action = ACTION_WARNING;
+  fuel.idleLeakAlarm.error.ack          = PERMISSION_DISABLE;
+  fuel.idleLeakAlarm.error.trig         = TRIGGER_IDLE;
+  fuel.idleLeakAlarm.error.status       = ALARM_STATUS_IDLE;
   fuel.leakAlarm.error.active           = PERMISSION_ENABLE;
   fuel.leakAlarm.type                   = ALARM_LEVEL_HIGHT;
   fuel.leakAlarm.level                  = getValue( &fuelRateLevel );
@@ -989,11 +1026,6 @@ void vENGINEdataInit ( void )
   fuel.leakAlarm.error.ack              = PERMISSION_DISABLE;
   fuel.leakAlarm.error.trig             = TRIGGER_IDLE;
   fuel.leakAlarm.error.status           = ALARM_STATUS_IDLE;
-  fuel.stopLeakError.event.type         = EVENT_FUEL_LEAK;
-  fuel.stopLeakError.event.action       = ACTION_WARNING;
-  fuel.stopLeakError.ack                = PERMISSION_DISABLE;
-  fuel.stopLeakError.trig               = TRIGGER_IDLE;
-  fuel.stopLeakError.status             = ALARM_STATUS_IDLE;
   fuel.lowAlarm.error.active            = PERMISSION_ENABLE;
   fuel.lowAlarm.type                    = ALARM_LEVEL_LOW;
   fuel.lowAlarm.level                   = getValue( &fuelLevelLowAlarmLevel );
@@ -1306,8 +1338,9 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.stopLeakError.enb       = PERMISSION_DISABLE;
+    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   if ( uSENSORisAnalog( fuel.level ) > 0U )
@@ -1316,8 +1349,9 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR   );
     fuel.hightPreAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_PRE_ALARM_ENB_ADR );
     fuel.hightAlarm.error.enb    = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_ALARM_ENB_ADR     );
-    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
     fuel.stopLeakError.enb       = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
+    fuel.idleLeakAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
+    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
     fuel.booster.relay.enb       = getBitMap( &fuelLevelSetup, FUEL_PUMP_ENB_ADR                  );
   }
   else
@@ -1326,11 +1360,13 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.stopLeakError.enb       = PERMISSION_DISABLE;
+    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
+    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   fuel.tankSize                  = getValue( &fuelTankLevel );
+  fuel.idleLeakAlarm.level       = getValue( &fuelRateIdleLevel );
   fuel.leakAlarm.level           = getValue( &fuelRateLevel );
   fuel.lowAlarm.level            = getValue( &fuelLevelLowAlarmLevel );
   fuel.lowAlarm.timer.delay      = getValue( &fuelLevelLowAlarmDelay );
@@ -1431,8 +1467,9 @@ void vENGINEresetAlarms ( void )
   vALARMreset( &fuel.hightPreAlarm       );
   vALARMreset( &fuel.lowAlarm            );
   vALARMreset( &fuel.lowPreAlarm         );
-  vALARMreset( &fuel.leakAlarm           );
   vERRORreset( &fuel.stopLeakError       );
+  vALARMreset( &fuel.idleLeakAlarm       );
+  vALARMreset( &fuel.leakAlarm           );
   vALARMreset( &coolant.alarm            );
   vALARMreset( &coolant.electroAlarm     );
   vALARMreset( &coolant.preAlarm         );
@@ -1708,6 +1745,7 @@ void vENGINEtask ( void* argument )
           {
             case STARTER_STATUS_IDLE:
               vFPOsetReadyToStart( RELAY_OFF );
+              vFUELsetLeakState( FUEL_LEAK_STATE_WORK );
               engine.stopError.active            = PERMISSION_DISABLE;
               speed.lowAlarm.error.active        = PERMISSION_DISABLE;
               speed.hightAlarm.error.active      = PERMISSION_DISABLE;
@@ -1884,6 +1922,7 @@ void vENGINEtask ( void* argument )
               starter.iteration        = 0U;
               blockTimerFinish         = TRIGGER_IDLE;
               starterFinish            = TRIGGER_IDLE;
+              vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_STATUS_OK:
@@ -1978,11 +2017,13 @@ void vENGINEtask ( void* argument )
                 planStop.status = STOP_STATUS_FAIL;
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
+                vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
                 engine.stopError.active = PERMISSION_ENABLE;
               }
               if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) > 0U )
               {
                 vLOGICresetTimer( &commonTimer );
+                vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
                 planStop.status = STOP_STATUS_OK;
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
@@ -2092,6 +2133,7 @@ void vENGINEtask ( void* argument )
             vRELAYdelayTrig( &stopSolenoid );
             vFPOsetGenReady( RELAY_OFF );
             vFPOsetReadyToStart( RELAY_OFF );
+            vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
             engine.status             = ENGINE_STATUS_ERROR;
             planStop.status           = STOP_STATUS_IDLE;
             engine.startError.active  = PERMISSION_DISABLE;

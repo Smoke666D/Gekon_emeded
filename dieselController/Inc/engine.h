@@ -94,6 +94,12 @@ typedef enum
   CHARGER_STATUS_DELAY,               /* 01 Charger controller excites the charger                    */
   CHARGER_STATUS_MEASURING,           /* 02 Charger controller measuring charger voltage              */
 } CHARGER_STATUS;
+
+typedef enum
+{
+  FUEL_LEAK_STATE_STOP,
+  FUEL_LEAK_STATE_WORK,
+} FUEL_LEAK_STATE;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
@@ -145,8 +151,9 @@ typedef struct __packed
   ALARM_TYPE         lowPreAlarm;
   ALARM_TYPE         hightAlarm;
   ALARM_TYPE         hightPreAlarm;
-  ALARM_TYPE         leakAlarm;
   ERROR_TYPE         stopLeakError;
+  ALARM_TYPE         idleLeakAlarm;
+  ALARM_TYPE         leakAlarm;
   RELAY_AUTO_DEVICE  booster;
   RELAY_DEVICE       pump;
 } FUEL_TYPE;

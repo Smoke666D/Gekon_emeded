@@ -8,13 +8,13 @@
 #include "stm32f2xx_hal.h"
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
-#define   MAX_UNITS_LENGTH             4U
+#define   MAX_UNITS_LENGTH             5U
 #define   MAX_BIT_MAP_LENGTH           10U
 #define   SETTING_REGISTER_NUMBER      126U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             16U
-#define   CONFIG_MAX_SIZE              71U     // bytes
+#define   CONFIG_MAX_SIZE              73U     // bytes
 #define   CONFIG_TOTAL_SIZE            508U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )

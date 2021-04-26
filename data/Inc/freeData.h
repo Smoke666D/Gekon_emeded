@@ -10,7 +10,7 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
-#define  FREE_DATA_SIZE  9U
+#define  FREE_DATA_SIZE  12U
 #define  PASSWORD_LEN    4U  /* digits */
 #define  PASSWORD_SIZE   3U  /* bytes */
 /*------------------------------ Enum ----------------------------------------*/
@@ -24,7 +24,10 @@ typedef enum
   MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR = 0x05U,
   POWER_REACTIVE_USAGE_ADR             = 0x06U,
   POWER_ACTIVE_USAGE_ADR               = 0x07U,
-  POWER_FULL_USAGE_ADR                 = 0x08U
+  POWER_FULL_USAGE_ADR                 = 0x08U,
+  FUEL_USAGE_ADR                       = 0x09U,
+  FUEL_RATE_ADR                        = 0x0AU,
+  FUEL_AVERAGE_SIZE_ADR                = 0x0BU,
 } FREE_DATA_ADR;
 
 typedef enum

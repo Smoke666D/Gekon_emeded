@@ -20,7 +20,6 @@
 #define  SENSOR_CUTOUT_LEVEL            1U //( MAX_RESISTANCE )
 #define  CHARGER_IMPULSE_DURATION       5U /* sec */
 #define  CHARGER_ATTEMPTS_NUMBER        5U
-#define  FUEL_RATE_TIMEOUT              5U
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -83,23 +82,10 @@ typedef enum
 
 typedef enum
 {
-  MAINTENANCE_STATUS_STOP,            /* 00 Maintenance checker process inactive                      */
-  MAINTENANCE_STATUS_RUN,             /* 01 Maintenance checker waiting time delay                    */
-  MAINTENANCE_STATUS_CHECK,           /* 02 Maintenance checker check current state                   */
-} MAINTENANCE_STATUS;
-
-typedef enum
-{
   CHARGER_STATUS_IDLE,                /* 00 Charger controller analysis charger voltage               */
   CHARGER_STATUS_DELAY,               /* 01 Charger controller excites the charger                    */
   CHARGER_STATUS_MEASURING,           /* 02 Charger controller measuring charger voltage              */
 } CHARGER_STATUS;
-
-typedef enum
-{
-  FUEL_LEAK_STATE_STOP,
-  FUEL_LEAK_STATE_WORK,
-} FUEL_LEAK_STATE;
 /*----------------------- Callbacks ------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
@@ -134,26 +120,11 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  fix16_t      momental;
-  fix16_t      average;
-  fix16_t      power;
-  fix16_t      fuel;
-  fix16_t      cutout;
-  SYSTEM_TIMER timer;
-} FUEL_RATE_TYPE;
-
-typedef struct __packed
-{
   SENSOR             level;
-  fix16_t            tankSize;
-  FUEL_RATE_TYPE     rate;
   ALARM_TYPE         lowAlarm;
   ALARM_TYPE         lowPreAlarm;
   ALARM_TYPE         hightAlarm;
   ALARM_TYPE         hightPreAlarm;
-  ERROR_TYPE         stopLeakError;
-  ALARM_TYPE         idleLeakAlarm;
-  ALARM_TYPE         leakAlarm;
   RELAY_AUTO_DEVICE  booster;
   RELAY_DEVICE       pump;
 } FUEL_TYPE;
@@ -204,21 +175,6 @@ typedef struct __packed
   fix16_t     critChargeLevel;
   fix16_t     critSpeedLevel;
 } START_CRITERIONS_TYPE;
-
-typedef struct __packed
-{
-  ALARM_TYPE alarm;
-  uint16_t   data;
-} MAINTENCE_VALUE;
-
-typedef struct __packed
-{
-  MAINTENANCE_STATUS status;
-  SYSTEM_TIMER     timer;
-  MAINTENCE_VALUE  oil;
-  MAINTENCE_VALUE  air;
-  MAINTENCE_VALUE  fuel;
-} MAINTENCE_TYPE;
 
 typedef struct __packed
 {
@@ -277,7 +233,7 @@ TRIGGER_STATE    eENGINEgetFuelSensorState ( void );
 fix16_t          fENGINEgetSpeed ( void );
 fix16_t          fENGINEgetOilPressure ( void );
 fix16_t          fENGINEgetCoolantTemp ( void );
-fix16_t          fENGINEgeyFuelLevel ( void );
+fix16_t          fENGINEgetFuelLevel ( void );
 RELAY_STATUS     eENGINEgetChargerState ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

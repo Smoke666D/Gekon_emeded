@@ -30,6 +30,7 @@
 #include "journal.h"
 #include "alarm.h"
 #include "dataAPI.h"
+#include "statistics.h"
 /*-------------------------------- Structures --------------------------------*/
 static CONTROLLER_INIT   controllerGPIO      = { 0U };
 static CONTROLLER_TYPE   controller          = { 0U };
@@ -566,6 +567,7 @@ void vCONTROLLERresetAlarm ( void )
     controller.state = CONTROLLER_STATUS_IDLE;
     vLOGICresetTimer( &controller.timer );
     vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+    vSTATISTICSreset();
     /* Command to devices */
     vENGINEsendCmd( ENGINE_CMD_RESET_TO_IDLE );
     vELECTROsendCmd( ELECTRO_CMD_RESET_TO_IDLE );
@@ -967,6 +969,10 @@ void vCONTROLLERtask ( void* argument )
           break;
       }
     }
+    /*------------------------------------------------------------------*/
+    /*--------------------- Statistic calculation ----------------------*/
+    /*------------------------------------------------------------------*/
+
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- CONTROLLER PROCESSING -----------------------------------*/
     /*--------------------------------------------------------------------------------------------*/

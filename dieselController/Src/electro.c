@@ -32,7 +32,7 @@ static const fix16_t powerUsageCalcTimeout       = F16( POWER_USAGE_CALC_TIMEOUT
 static const fix16_t powerWsTokWs                = F16( 3600000U );
 /*-------------------------------- Variables ---------------------------------*/
 static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U };
-static fix16_t         maxGeneratorVolage                                 = 0U;
+//static fix16_t         maxGeneratorVolage                                 = 0U;
 static fix16_t         shortCircuitDividend                               = 0U;
 static fix16_t         minTempCurrentRatio                                = 0U;
 /*-------------------------------- External ----------------------------------*/
@@ -124,55 +124,6 @@ void vELECTROalarmCheck ( ALARM_TYPE* alarm, fix16_t* value, uint8_t length )
 fix16_t fELECTROpowerToKWH ( fix16_t power, fix16_t time )
 {
   return fix16_div( fix16_mul( power, time ), powerWsTokWs );
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vELECTROpowerUsageProcessing ( void )
-{
-  uint16_t   reactive = 0U;  /* kWh */
-  uint16_t   active   = 0U;  /* kWh */
-  uint16_t   full     = 0U;  /* kWh */
-  uint16_t   add      = 0U;  /* kWh */
-  uint8_t    saveFl   = 0U;
-  if ( generator.state == ELECTRO_STATUS_LOAD )
-  {
-    if ( uLOGICisTimer( &generator.timer ) > 0U )
-    {
-      vLOGICstartTimer( &generator.timer, "Generator timer     " );
-      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
-      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
-      eDATAAPIfreeData( DATA_API_CMD_READ, POWER_FULL_USAGE_ADR,     &full     );
-      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENReactivePower(), powerUsageCalcTimeout ) );
-      if ( add > 0U )
-      {
-        reactive += add;
-        saveFl    = 1U;
-        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_REACTIVE_USAGE_ADR, &reactive );
-      }
-      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENActivePower(), powerUsageCalcTimeout ) );
-      if ( add > 0U )
-      {
-        active += add;
-        saveFl  = 1U;
-        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_ACTIVE_USAGE_ADR, &active );
-      }
-      add = fix16_from_int( fELECTROpowerToKWH( xADCGetGENRealPower(), powerUsageCalcTimeout ) );
-      if ( add > 0U )
-      {
-        full  += add;
-        saveFl = 1U;
-        eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR, &full );
-      }
-      if ( saveFl > 0U )
-      {
-        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-      }
-    }
-  }
-  else
-  {
-    vLOGICresetTimer( &generator.timer );
-  }
-  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uSecToTic ( fix16_t input )
@@ -372,7 +323,6 @@ void fGENERATORprocess ( void )
     vALARMcheck( &generator.phaseImbalanceAlarm, fELECTROcalcPhaseImbalance( current ) );
   }
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );
-  vELECTROpowerUsageProcessing();
   /*-------------------------------------------------------------------*/
   generator.output.voltage = fELECTROgetMax( voltage, MAINS_LINE_NUMBER );
   generator.output.power   = power;

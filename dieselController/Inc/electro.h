@@ -16,7 +16,7 @@
 #define  GENERATOR_LINE_NUMBER             3U
 #define  MAINS_LINE_NUMBER                 3U
 #define  ELECTRO_COMMAND_QUEUE_LENGTH      10U
-#define  POWER_USAGE_CALC_TIMEOUT          5U     /* sec */
+#define  POWER_USAGE_CALC_TIMEOUT          5U    /* sec */
 #define  CURRENT_TIMER_STEP                100U  /* ms */
 
 #define  TEMP_PROTECTION_TRIPPING_CURVE    36U
@@ -188,6 +188,7 @@ extern osThreadId_t electroHandle;
 /*----------------------- Functions ------------------------------------*/
 void                   vELECTROtimCallback ( void );
 void                   vELECTROinit ( TIM_HandleTypeDef* tim );
+fix16_t                fELECTROpowerToKWH ( fix16_t power, fix16_t time );
 ELECTRO_STATUS         eELECTROgetGeneratorStatus ( void );
 ELECTRO_STATUS         eELECTROgetMainsStatus ( void );
 ELECTRO_PROCESS_STATUS eELECTROgetStatus( void );

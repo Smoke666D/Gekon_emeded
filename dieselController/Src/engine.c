@@ -33,7 +33,6 @@ static BATTERY_TYPE       battery             = { 0U };
 static CHARGER_TYPE       charger             = { 0U };
 static STARTER_TYPE       starter             = { 0U };
 static PLAN_STOP_TYPE     planStop            = { 0U };
-static MAINTENCE_TYPE     maintence           = { 0U };
 static RELAY_DELAY_DEVICE stopSolenoid        = { 0U };
 static RELAY_DEVICE       idleRelay           = { 0U };
 static PREHEATER_TYPE     preHeater           = { 0U };
@@ -46,7 +45,6 @@ static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION ); /
 static const fix16_t oilTrashhold           = F16( 0.015 );                    /* Bar */
 static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );      /* Ohm */
 static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /* sec */
-static const fix16_t fuelRateTimeout        = F16( FUEL_RATE_TIMEOUT );        /* sec */
 #if ( DEBUG_SERIAL_STATUS > 0U )
   static const char* cSensorTypes[5U] =
   {
@@ -297,59 +295,10 @@ fix16_t fCOOLANTprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
-void vFUELsetLeakState ( FUEL_LEAK_STATE state )
-{
-  switch ( state )
-  {
-    case FUEL_LEAK_STATE_STOP:
-      fuel.stopLeakError.active       = PERMISSION_ENABLE;
-      fuel.idleLeakAlarm.error.active = PERMISSION_DISABLE;
-      break;
-    case FUEL_LEAK_STATE_WORK:
-      fuel.stopLeakError.active       = PERMISSION_DISABLE;
-      fuel.idleLeakAlarm.error.active = PERMISSION_ENABLE;
-      break;
-    default:
-      break;
-  }
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void fFUELrateProcess ( fix16_t value )
-{
-  fix16_t delta = 0U;
-  if ( uLOGICisTimer( &fuel.rate.timer ) > 0U )
-  {
-    delta = fix16_sub( value, fuel.rate.fuel );
-    if ( delta > fuel.rate.cutout )
-    {
-      if ( fuel.rate.power == 0U )
-      {
-        vERRORcheck( &fuel.stopLeakError, 1U );
-        vALARMcheck( &fuel.idleLeakAlarm, delta );
-      }
-      else
-      {
-        fuel.rate.momental = fix16_div( delta, fuel.rate.power );
-        vALARMcheck( &fuel.leakAlarm, fuel.rate.momental );
-      }
-    }
-    fuel.rate.power = 0U;
-    fuel.rate.fuel  = value;
-    vLOGICstartTimer( &fuel.rate.timer, "Fuel rate timer     " );
-  }
-  else
-  {
-    fuel.rate.power = fix16_add( fELECTROgetPower(), fuel.rate.power );
-  }
-  return;
-}
-/*----------------------------------------------------------------------------*/
 fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  fFUELrateProcess( value );
   if ( uSENSORisAnalog( fuel.level ) > 0U )
   {
     vALARMcheck( &fuel.lowAlarm,      value );
@@ -451,90 +400,7 @@ fix16_t fCHARGERprocess ( void )
   }
   return value;
 }
-/*----------------------------------------------------------------------------*/
-void vENGINEmileageProcess ( void )
-{
-  uint16_t data     = 0U;
-  uint8_t  changeFl = 0U;
 
-  vALARMcheck( &maintence.oil.alarm,  fix16_from_int( maintence.oil.data  ) );
-  vALARMcheck( &maintence.air.alarm,  fix16_from_int( maintence.air.data  ) );
-  vALARMcheck( &maintence.fuel.alarm, fix16_from_int( maintence.fuel.data ) );
-  if ( engine.status == ENGINE_STATUS_WORK )
-  {
-    switch ( maintence.status )
-    {
-      case MAINTENANCE_STATUS_STOP:
-        vLOGICstartTimer( &maintence.timer, "Maintence timer     " );
-        maintence.status = MAINTENANCE_STATUS_RUN;
-        break;
-      case MAINTENANCE_STATUS_RUN:
-        if ( uLOGICisTimer( &maintence.timer ) > 0U )
-        {
-          eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_WORK_MINUTES_ADR, &data );
-          if ( data >= 60U )
-          {
-            eDATAAPIfreeData( DATA_API_CMD_ERASE, ENGINE_WORK_MINUTES_ADR, NULL );
-            eDATAAPIfreeData( DATA_API_CMD_INC,   ENGINE_WORK_TIME_ADR,    &data );
-            maintence.status = MAINTENANCE_STATUS_CHECK;
-          }
-          else
-          {
-            vLOGICstartTimer( &maintence.timer, "Maintence timer     " );
-          }
-          eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-        }
-        break;
-      case MAINTENANCE_STATUS_CHECK:
-        changeFl = 0U;
-        if ( ( maintence.oil.alarm.error.enb    == PERMISSION_ENABLE ) &&
-             ( maintence.oil.alarm.error.active == PERMISSION_ENABLE ) &&
-             ( maintence.oil.alarm.error.status == ALARM_STATUS_IDLE ) )
-        {
-          eDATAAPIfreeData( DATA_API_CMD_INC, MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR, &data );
-          maintence.oil.data++;
-          changeFl = 1U;
-        }
-        if ( ( maintence.air.alarm.error.enb    == PERMISSION_ENABLE ) &&
-             ( maintence.air.alarm.error.active == PERMISSION_ENABLE ) &&
-             ( maintence.air.alarm.error.status == ALARM_STATUS_IDLE ) )
-        {
-          eDATAAPIfreeData( DATA_API_CMD_INC, MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR, &data );
-          maintence.air.data++;
-          changeFl = 1U;
-        }
-        if ( ( maintence.fuel.alarm.error.enb    == PERMISSION_ENABLE ) &&
-             ( maintence.fuel.alarm.error.active == PERMISSION_ENABLE ) &&
-             ( maintence.fuel.alarm.error.status == ALARM_STATUS_IDLE ) )
-        {
-          eDATAAPIfreeData( DATA_API_CMD_INC, MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR, &data );
-          maintence.fuel.data++;
-          changeFl = 1U;
-        }
-        if ( changeFl > 0U )
-        {
-          eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-        }
-        vLOGICstartTimer( &maintence.timer, "Maintence timer     " );
-        maintence.status = MAINTENANCE_STATUS_RUN;
-        break;
-      default:
-        maintence.status = MAINTENANCE_STATUS_STOP;
-        vLOGICresetTimer( &maintence.timer );
-        break;
-    }
-  }
-  else if ( maintence.status != MAINTENANCE_STATUS_STOP )
-  {
-    maintence.status = MAINTENANCE_STATUS_STOP;
-    vLOGICresetTimer( &maintence.timer );
-  }
-  else
-  {
-
-  }
-  return;
-}
 /*----------------------------------------------------------------------------*/
 uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t speed )
 {
@@ -965,9 +831,6 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
-    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   else if ( uSENSORisAnalog( fuel.level ) > 0U )
@@ -977,9 +840,6 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR      );
     fuel.hightPreAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_PRE_ALARM_ENB_ADR    );
     fuel.hightAlarm.error.enb    = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_ALARM_ENB_ADR        );
-    fuel.stopLeakError.enb       = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
-    fuel.idleLeakAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
-    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR               );
     fuel.booster.relay.enb       = getBitMap( &fuelLevelSetup, FUEL_PUMP_ENB_ADR                     );
   }
   else
@@ -989,43 +849,8 @@ void vENGINEdataInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
-    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
-  fuel.tankSize                         = getValue( &fuelTankLevel );
-  fuel.rate.momental                    = 0U;
-  fuel.rate.average                     = 0U;
-  fuel.rate.cutout                      = fix16_mul( fix16_div( getValue( &hysteresisLevel ), fix100U ), yAxisAtribs[FUEL_CHART_ADR]->max );
-  fuel.rate.timer.delay                 = fuelRateTimeout;
-  fuel.rate.timer.id                    = LOGIC_DEFAULT_TIMER_ID;;
-  fuel.stopLeakError.active             = PERMISSION_ENABLE;
-  fuel.stopLeakError.event.type         = EVENT_FUEL_LEAK;
-  fuel.stopLeakError.event.action       = ACTION_WARNING;
-  fuel.stopLeakError.ack                = PERMISSION_DISABLE;
-  fuel.stopLeakError.trig               = TRIGGER_IDLE;
-  fuel.stopLeakError.status             = ALARM_STATUS_IDLE;
-  fuel.idleLeakAlarm.error.active       = PERMISSION_DISABLE;
-  fuel.idleLeakAlarm.type               = ALARM_LEVEL_HIGHT;
-  fuel.idleLeakAlarm.level              = getValue( &fuelRateIdleLevel );
-  fuel.idleLeakAlarm.timer.delay        = 0U;
-  fuel.idleLeakAlarm.timer.id           = LOGIC_DEFAULT_TIMER_ID;
-  fuel.idleLeakAlarm.error.event.type   = EVENT_FUEL_LEAK;
-  fuel.idleLeakAlarm.error.event.action = ACTION_WARNING;
-  fuel.idleLeakAlarm.error.ack          = PERMISSION_DISABLE;
-  fuel.idleLeakAlarm.error.trig         = TRIGGER_IDLE;
-  fuel.idleLeakAlarm.error.status       = ALARM_STATUS_IDLE;
-  fuel.leakAlarm.error.active           = PERMISSION_ENABLE;
-  fuel.leakAlarm.type                   = ALARM_LEVEL_HIGHT;
-  fuel.leakAlarm.level                  = getValue( &fuelRateLevel );
-  fuel.leakAlarm.timer.delay            = 0U;
-  fuel.leakAlarm.timer.id               = LOGIC_DEFAULT_TIMER_ID;
-  fuel.leakAlarm.error.event.type       = EVENT_FUEL_LEAK;
-  fuel.leakAlarm.error.event.action     = ACTION_WARNING;
-  fuel.leakAlarm.error.ack              = PERMISSION_DISABLE;
-  fuel.leakAlarm.error.trig             = TRIGGER_IDLE;
-  fuel.leakAlarm.error.status           = ALARM_STATUS_IDLE;
   fuel.lowAlarm.error.active            = PERMISSION_ENABLE;
   fuel.lowAlarm.type                    = ALARM_LEVEL_LOW;
   fuel.lowAlarm.level                   = getValue( &fuelLevelLowAlarmLevel );
@@ -1206,66 +1031,6 @@ void vENGINEdataInit ( void )
   idleRelay.enb    = uFPOisEnable( FPO_FUN_IDLING );
   idleRelay.set    = vFPOsetIdle;
   idleRelay.status = RELAY_OFF;
-  /*--------------------------------------------------------------*/
-  maintence.timer.delay                = fix60;
-  maintence.timer.id                   = LOGIC_DEFAULT_TIMER_ID;
-  maintence.oil.data                   = *freeDataArray[MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR];
-  maintence.oil.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
-  maintence.oil.alarm.error.active     = PERMISSION_ENABLE;
-  maintence.oil.alarm.type             = ALARM_LEVEL_HIGHT;
-  maintence.oil.alarm.level            = getValue( &maintenanceAlarmOilTime );
-  maintence.oil.alarm.timer.delay      = 0U;
-  maintence.oil.alarm.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.oil.alarm.error.event.type = EVENT_MAINTENANCE_OIL;
-  if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ACTION_ADR ) == 0U )
-  {
-    maintence.oil.alarm.error.event.action = ACTION_BAN_START;
-  }
-  else
-  {
-    maintence.oil.alarm.error.event.action = ACTION_WARNING;
-  }
-  maintence.oil.alarm.error.ack        = PERMISSION_ENABLE;
-  maintence.oil.alarm.error.trig       = TRIGGER_IDLE;
-  maintence.oil.alarm.error.status     = ALARM_STATUS_IDLE;
-  maintence.air.data                   = *freeDataArray[MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR];
-  maintence.air.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ENB_ADR );
-  maintence.air.alarm.error.active     = PERMISSION_ENABLE;
-  maintence.air.alarm.type             = ALARM_LEVEL_HIGHT;
-  maintence.air.alarm.level            = getValue( &maintenanceAlarmAirTime );
-  maintence.air.alarm.timer.delay      = 0U;
-  maintence.air.alarm.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.air.alarm.error.event.type = EVENT_MAINTENANCE_AIR;
-  if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ACTION_ADR ) == 0U )
-  {
-    maintence.air.alarm.error.event.action = ACTION_BAN_START;
-  }
-  else
-  {
-    maintence.air.alarm.error.event.action = ACTION_WARNING;
-  }
-  maintence.air.alarm.error.ack         = PERMISSION_ENABLE;
-  maintence.air.alarm.error.trig        = TRIGGER_IDLE;
-  maintence.air.alarm.error.status      = ALARM_STATUS_IDLE;
-  maintence.fuel.data                   = *freeDataArray[MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR];
-  maintence.fuel.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ENB_ADR );
-  maintence.fuel.alarm.error.active     = PERMISSION_ENABLE;
-  maintence.fuel.alarm.type             = ALARM_LEVEL_HIGHT;
-  maintence.fuel.alarm.level            = getValue( &maintenanceAlarmFuelTime );
-  maintence.fuel.alarm.timer.delay      = 0U;
-  maintence.fuel.alarm.timer.id         = LOGIC_DEFAULT_TIMER_ID;
-  maintence.fuel.alarm.error.event.type = EVENT_MAINTENANCE_FUEL;
-  if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ACTION_ADR ) == 0U )
-  {
-    maintence.fuel.alarm.error.event.action = ACTION_BAN_START;
-  }
-  else
-  {
-    maintence.fuel.alarm.error.event.action = ACTION_WARNING;
-  }
-  maintence.fuel.alarm.error.ack    = PERMISSION_ENABLE;
-  maintence.fuel.alarm.error.trig   = TRIGGER_IDLE;
-  maintence.fuel.alarm.error.status = ALARM_STATUS_IDLE;
   return;
 }
 
@@ -1338,9 +1103,6 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
-    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
   if ( uSENSORisAnalog( fuel.level ) > 0U )
@@ -1349,9 +1111,6 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = getBitMap( &fuelLevelSetup, FUEL_LEVEL_LOW_PRE_ALARM_ENB_ADR   );
     fuel.hightPreAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_PRE_ALARM_ENB_ADR );
     fuel.hightAlarm.error.enb    = getBitMap( &fuelLevelSetup, FUEL_LEVEL_HIGHT_ALARM_ENB_ADR     );
-    fuel.stopLeakError.enb       = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
-    fuel.idleLeakAlarm.error.enb = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
-    fuel.leakAlarm.error.enb     = getBitMap( &fuelLevelSetup, FUEL_LEAK_ALARM_ENB_ADR            );
     fuel.booster.relay.enb       = getBitMap( &fuelLevelSetup, FUEL_PUMP_ENB_ADR                  );
   }
   else
@@ -1360,14 +1119,8 @@ void vENGINEdataReInit ( void )
     fuel.lowPreAlarm.error.enb   = PERMISSION_DISABLE;
     fuel.hightPreAlarm.error.enb = PERMISSION_DISABLE;
     fuel.hightAlarm.error.enb    = PERMISSION_DISABLE;
-    fuel.stopLeakError.enb       = PERMISSION_DISABLE;
-    fuel.idleLeakAlarm.error.enb = PERMISSION_DISABLE;
-    fuel.leakAlarm.error.enb     = PERMISSION_DISABLE;
     fuel.booster.relay.enb       = PERMISSION_DISABLE;
   }
-  fuel.tankSize                  = getValue( &fuelTankLevel );
-  fuel.idleLeakAlarm.level       = getValue( &fuelRateIdleLevel );
-  fuel.leakAlarm.level           = getValue( &fuelRateLevel );
   fuel.lowAlarm.level            = getValue( &fuelLevelLowAlarmLevel );
   fuel.lowAlarm.timer.delay      = getValue( &fuelLevelLowAlarmDelay );
   fuel.lowPreAlarm.level         = getValue( &fuelLevelLowPreAlarmLevel );
@@ -1419,40 +1172,6 @@ void vENGINEdataReInit ( void )
   stopSolenoid.timer.delay = getValue( configReg[TIMER_SOLENOID_HOLD_ADR] );
   /*--------------------------------------------------------------*/
   idleRelay.enb = uFPOisEnable( FPO_FUN_IDLING );
-  /*--------------------------------------------------------------*/
-  maintence.oil.data            = *freeDataArray[MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR];
-  maintence.oil.alarm.error.enb = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ENB_ADR );
-  maintence.oil.alarm.level     = getValue( &maintenanceAlarmOilTime );
-  if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_OIL_ACTION_ADR ) == 0U )
-  {
-    maintence.oil.alarm.error.event.action = ACTION_BAN_START;
-  }
-  else
-  {
-    maintence.oil.alarm.error.event.action = ACTION_WARNING;
-  }
-  maintence.air.data            = *freeDataArray[MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR];
-  maintence.air.alarm.error.enb = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ENB_ADR );
-  maintence.air.alarm.level     = getValue( &maintenanceAlarmAirTime );
-  if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_AIR_ACTION_ADR ) == 0U )
-  {
-    maintence.air.alarm.error.event.action = ACTION_BAN_START;
-  }
-  else
-  {
-    maintence.air.alarm.error.event.action = ACTION_WARNING;
-  }
-  maintence.fuel.data                   = *freeDataArray[MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR];
-  maintence.fuel.alarm.error.enb        = getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ENB_ADR );
-  maintence.fuel.alarm.level            = getValue( &maintenanceAlarmFuelTime );
-  if ( getBitMap( &maintenanceAlarms, MAINTENANCE_ALARM_FUEL_ACTION_ADR ) == 0U )
-  {
-    maintence.fuel.alarm.error.event.action = ACTION_BAN_START;
-  }
-  else
-  {
-    maintence.fuel.alarm.error.event.action = ACTION_WARNING;
-  }
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -1467,9 +1186,6 @@ void vENGINEresetAlarms ( void )
   vALARMreset( &fuel.hightPreAlarm       );
   vALARMreset( &fuel.lowAlarm            );
   vALARMreset( &fuel.lowPreAlarm         );
-  vERRORreset( &fuel.stopLeakError       );
-  vALARMreset( &fuel.idleLeakAlarm       );
-  vALARMreset( &fuel.leakAlarm           );
   vALARMreset( &coolant.alarm            );
   vALARMreset( &coolant.electroAlarm     );
   vALARMreset( &coolant.preAlarm         );
@@ -1586,7 +1302,7 @@ fix16_t fENGINEgetCoolantTemp ( void )
   return coolantVal;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fENGINEgeyFuelLevel ( void )
+fix16_t fENGINEgetFuelLevel ( void )
 {
   return fuelVal;
 }
@@ -1709,10 +1425,6 @@ void vENGINEtask ( void* argument )
     vERRORcheck( &engine.stopError, !( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) ) );
     vERRORcheck( &engine.startError, 1U );
     /*------------------------------------------------------------------*/
-    /*--------------------- Statistic calculation ----------------------*/
-    /*------------------------------------------------------------------*/
-    vENGINEmileageProcess();
-    /*------------------------------------------------------------------*/
     /*-------------------- Engine ban start check ----------------------*/
     /*------------------------------------------------------------------*/
     if ( engine.banStart == PERMISSION_ENABLE )
@@ -1745,7 +1457,6 @@ void vENGINEtask ( void* argument )
           {
             case STARTER_STATUS_IDLE:
               vFPOsetReadyToStart( RELAY_OFF );
-              vFUELsetLeakState( FUEL_LEAK_STATE_WORK );
               engine.stopError.active            = PERMISSION_DISABLE;
               speed.lowAlarm.error.active        = PERMISSION_DISABLE;
               speed.hightAlarm.error.active      = PERMISSION_DISABLE;
@@ -1922,7 +1633,6 @@ void vENGINEtask ( void* argument )
               starter.iteration        = 0U;
               blockTimerFinish         = TRIGGER_IDLE;
               starterFinish            = TRIGGER_IDLE;
-              vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
               vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_STATUS_OK:
@@ -2017,13 +1727,11 @@ void vENGINEtask ( void* argument )
                 planStop.status = STOP_STATUS_FAIL;
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
-                vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
                 engine.stopError.active = PERMISSION_ENABLE;
               }
               if ( uENGINEisStop( fELECTROgetMaxGenVoltage(), genFreqVal, oilVal, oil.pressure.trig, currentSpeed ) > 0U )
               {
                 vLOGICresetTimer( &commonTimer );
-                vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
                 planStop.status = STOP_STATUS_OK;
                 vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
@@ -2133,7 +1841,6 @@ void vENGINEtask ( void* argument )
             vRELAYdelayTrig( &stopSolenoid );
             vFPOsetGenReady( RELAY_OFF );
             vFPOsetReadyToStart( RELAY_OFF );
-            vFUELsetLeakState( FUEL_LEAK_STATE_STOP );
             engine.status             = ENGINE_STATUS_ERROR;
             planStop.status           = STOP_STATUS_IDLE;
             engine.startError.active  = PERMISSION_DISABLE;
@@ -2186,7 +1893,6 @@ void vENGINEtask ( void* argument )
         vFPOsetReadyToStart( RELAY_ON );
         vFPOsetGenReady( RELAY_OFF );
         vLOGICresetTimer( &commonTimer        );
-        vLOGICresetTimer( &maintence.timer    );
         vLOGICresetTimer( &charger.timer      );
         vLOGICresetTimer( &stopSolenoid.timer );
         engine.cmd               = ENGINE_CMD_NONE;

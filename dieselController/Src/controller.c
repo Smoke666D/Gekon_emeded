@@ -620,6 +620,7 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERsetLED( HMI_CMD_LOAD,   0U );
   vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
   vCONTROLLERdataInit();
+  vSTATISTICSinit();
   const osThreadAttr_t controllerTask_attributes = {
     .name       = "fpiTask",
     .priority   = ( osPriority_t ) CONTROLLER_TASK_PRIORITY,
@@ -699,6 +700,7 @@ void vCONTROLLERtask ( void* argument )
     if ( ( systemEvent & DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT ) > 0U )
     {
       vCONTROLLERdataInit();
+      vSTATISTICSinit();
       vFPOdataInit();
       vALARMreInit();
       vCONTROLLERresetAlarm();
@@ -969,10 +971,10 @@ void vCONTROLLERtask ( void* argument )
           break;
       }
     }
-    /*------------------------------------------------------------------*/
-    /*--------------------- Statistic calculation ----------------------*/
-    /*------------------------------------------------------------------*/
-
+    /*--------------------------------------------------------------------------------------------*/
+    /*---------------------------------- Statistic calculation -----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    vSTATISTICSprocessing();
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- CONTROLLER PROCESSING -----------------------------------*/
     /*--------------------------------------------------------------------------------------------*/

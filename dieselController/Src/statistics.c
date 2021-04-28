@@ -85,7 +85,7 @@ void vFUELinc ( void )
 /*----------------------------------------------------------------------------*/
 void fArithmeticMean ( fix16_t* acc, fix16_t data, uint16_t* size )
 {
-  acc = fix16_add( fix16_mul( fix16_div( *acc, fix16_from_int( *size + 1U ) ), *size ), fix16_div( data, fix16_from_int( *size + 1U ) ) );
+  *acc = fix16_add( fix16_mul( fix16_div( *acc, fix16_from_int( *size + 1U ) ), *size ), fix16_div( data, fix16_from_int( *size + 1U ) ) );
   *size += 1U;
   return;
 }

@@ -971,6 +971,7 @@ void vENGINEdataInit ( void )
   engine.startCheckOil                  = getBitMap( &starterStopSetup, STARTER_OIL_PRESSURE_CHECK_ON_START_ENB_ADR );
   engine.status                         = ENGINE_STATUS_IDLE;
   engine.banStart                       = PERMISSION_DISABLE;
+  engine.firstTurnout                   = TRIGGER_IDLE;
   engine.stopError.enb                  = PERMISSION_ENABLE;
   engine.stopError.active               = PERMISSION_ENABLE;
   engine.stopError.ack                  = PERMISSION_DISABLE;
@@ -1305,6 +1306,11 @@ fix16_t fENGINEgetCoolantTemp ( void )
 fix16_t fENGINEgetFuelLevel ( void )
 {
   return fuelVal;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eENGINEgetTurnout ( void )
+{
+  return engine.firstTurnout;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------- TASK -----------------------------------*/
@@ -1917,6 +1923,10 @@ void vENGINEtask ( void* argument )
     }
     /* Process outputs */
     vRELAYdelayProcess( &stopSolenoid );
+    if ( engine.firstTurnout == TRIGGER_IDLE )
+    {
+      engine.firstTurnout = TRIGGER_SET;
+    }
     /*------------------------------------------------------------------------------------------*/
   }
   return;

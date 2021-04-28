@@ -210,6 +210,7 @@ typedef struct __packed
   ENGINE_STATUS   status            : 4U;
   PERMISSION      startCheckOil     : 1U;
   PERMISSION      banStart          : 1U;
+  TRIGGER_STATE   firstTurnout      : 1U;
   ERROR_TYPE      sensorCommonError;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
@@ -235,5 +236,6 @@ fix16_t          fENGINEgetOilPressure ( void );
 fix16_t          fENGINEgetCoolantTemp ( void );
 fix16_t          fENGINEgetFuelLevel ( void );
 RELAY_STATUS     eENGINEgetChargerState ( void );
+TRIGGER_STATE    eENGINEgetTurnout ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

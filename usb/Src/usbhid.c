@@ -379,14 +379,25 @@ USB_STATUS eUSBreportToFreeData ( const USB_REPORT* report )
       }
       if ( status == DATA_API_STAT_OK )
       {
-        status = DATA_API_STAT_BUSY;
-        while ( status == DATA_API_STAT_BUSY )
+        if ( report->adr == FUEL_RATE_ADR )
         {
-          status = eDATAAPIfreeData( DATA_API_CMD_SAVE, report->adr, NULL );
+          status = DATA_API_STAT_BUSY;
+          while ( status == DATA_API_STAT_BUSY )
+          {
+            status = eDATAAPIfreeData( DATA_API_CMD_ERASE, FUEL_AVERAGE_SIZE_ADR, NULL );
+          }
         }
-        if ( status != DATA_API_STAT_OK )
+        if ( status == DATA_API_STAT_OK )
         {
-          res = USB_STATUS_STORAGE_ERROR;
+          status = DATA_API_STAT_BUSY;
+          while ( status == DATA_API_STAT_BUSY )
+          {
+            status = eDATAAPIfreeData( DATA_API_CMD_SAVE, report->adr, NULL );
+          }
+          if ( status != DATA_API_STAT_OK )
+          {
+            res = USB_STATUS_STORAGE_ERROR;
+          }
         }
       }
       else

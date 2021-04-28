@@ -19,14 +19,14 @@ static FUEL_STATISTIC_TYPE fuel       = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t fix60 = F16( 60U ); /* --- */
+static const fix16_t fix60  = F16( 5U );  /* --- */
+static const fix16_t fix100 = F16( 100U );
 /*-------------------------------- Variables ---------------------------------*/
+static uint8_t minCounter = 0U;
+static uint8_t startFl    = 0U;
 /*-------------------------------- External ----------------------------------*/
 /*-------------------------------- Functions ---------------------------------*/
-void vMAINTENCEinc ( MAINTENCE_VALUE* value, uint8_t adr );
-void vSTATISTICSelectroCalc ( fix16_t timeout );
-void vFUELinc ( void );
-void vFUELrateCalc ( void );
+
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -41,8 +41,9 @@ void vMAINTENCEinc ( MAINTENCE_VALUE* value, uint8_t adr )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vSTATISTICSelectroCalc ( fix16_t timeout )
+uint8_t uSTATISTICSelectroCalc ( fix16_t timeout )
 {
+  uint8_t  res      = 0U;
   uint16_t reactive = 0U;  /* kWh */
   uint16_t active   = 0U;  /* kWh */
   uint16_t full     = 0U;  /* kWh */
@@ -70,8 +71,9 @@ void vSTATISTICSelectroCalc ( fix16_t timeout )
       full  += add;
       eDATAAPIfreeData( DATA_API_CMD_WRITE, POWER_FULL_USAGE_ADR, &full );
     }
+    res = 1U;
   }
-  return;
+  return res;
 }
 /*----------------------------------------------------------------------------*/
 void vFUELinc ( void )
@@ -85,20 +87,45 @@ void vFUELinc ( void )
 /*----------------------------------------------------------------------------*/
 void fArithmeticMean ( fix16_t* acc, fix16_t data, uint16_t* size )
 {
-  *acc = fix16_add( fix16_mul( fix16_div( *acc, fix16_from_int( *size + 1U ) ), *size ), fix16_div( data, fix16_from_int( *size + 1U ) ) );
-  *size += 1U;
+  if ( *size == 0U )
+  {
+    *acc = data;
+  }
+  else if ( *size == 1U )
+  {
+    *acc = fix16_div( fix16_add( *acc, data ), fix16_from_int( 2U ) );
+  }
+  else
+  {
+    *acc = fix16_add( fix16_mul( fix16_div( *acc, fix16_from_int( *size + 1U ) ), *size ), fix16_div( data, fix16_from_int( *size + 1U ) ) );
+  }
+  if ( *size >= 0xFFFEU )
+  {
+    *size = 1U;
+  }
+  else
+  {
+    *size += 1U;
+  }
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFUELrateCalc ( void )
+uint8_t uFUELrateCalc ( void )
 {
+  float temp = 0;
+  uint8_t  res   = 0U;
   fix16_t  data  = fENGINEgetFuelLevel();
-  fix16_t  delta = fix16_sub( data, fuel.rate.fuel );
+  fix16_t  delta = fix16_sub( fuel.rate.fuel, data );
   uint16_t usage = 0U;
   if ( delta > fuel.rate.cutout )
   {
+    res        = 1U;
+    temp = fix16_to_float( delta );
+    delta      = fix16_mul( fix16_div( delta, fix100 ), fuel.tankSize );
+    temp = fix16_to_float( delta );
     fuel.usage = fix16_add( fuel.usage, delta );
-    usage      = fix16_from_int( fuel.usage );
+    usage      = ( uint16_t )( fix16_to_int( fuel.usage ) );
+    temp = fix16_to_float( fuel.usage );
     eDATAAPIfreeData( DATA_API_CMD_WRITE,  FUEL_USAGE_ADR, &usage );
     if ( fuel.rate.power == 0U )
     {
@@ -114,7 +141,7 @@ void vFUELrateCalc ( void )
   }
   fuel.rate.power = 0U;
   fuel.rate.fuel  = data;
-  return;
+  return res;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------- PUBLIC ---------------------------------------------*/
@@ -246,73 +273,102 @@ void vSTATISTICSreset ( void )
 /*----------------------------------------------------------------------------*/
 void vSTATISTICSprocessing ( void )
 {
-  uint16_t data = 0U;
+  uint16_t      data   = 0U;
+  ENGINE_STATUS status = eENGINEgetEngineStatus();
+  uint8_t       update = 0U;
 
   vALARMcheck( &maintence.oil.alarm,  fix16_from_int( maintence.oil.data  ) );
   vALARMcheck( &maintence.air.alarm,  fix16_from_int( maintence.air.data  ) );
   vALARMcheck( &maintence.fuel.alarm, fix16_from_int( maintence.fuel.data ) );
 
-  if ( eENGINEgetEngineStatus() == ENGINE_STATUS_WORK )
+  if ( ( status == ENGINE_STATUS_WORK ) && ( startFl == 0U ) )
   {
-    switch ( statistics.status )
-    {
-      case STATISTICS_STATUS_STOP:
-        fuel.stopLeakError.active       = PERMISSION_ENABLE;
-        fuel.idleLeakAlarm.error.active = PERMISSION_DISABLE;
-        vLOGICstartTimer( &statistics.timer, STATISTICS_TIMER_STR );
-        statistics.status = STATISTICS_STATUS_RUN;
-        break;
-      case STATISTICS_STATUS_RUN:
-        if ( uLOGICisTimer( &statistics.timer ) > 0U )
-        {
-          eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_WORK_MINUTES_ADR, &data );
-          if ( data >= 60U )
-          {
-            eDATAAPIfreeData( DATA_API_CMD_ERASE, ENGINE_WORK_MINUTES_ADR, NULL );
-            eDATAAPIfreeData( DATA_API_CMD_INC,   ENGINE_WORK_TIME_ADR,    &data );
-            statistics.status = STATISTICS_STATUS_HOUR_CHECK;
-          }
-          else
-          {
-            statistics.status = STATISTICS_STATUS_MINUTES_CHECK;
-          }
-        }
-        else
-        {
-          vFUELinc();
-        }
-        break;
-      case STATISTICS_STATUS_MINUTES_CHECK:
-        vSTATISTICSelectroCalc( statistics.timer.delay );
-        vFUELrateCalc();
-        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-        vLOGICstartTimer( &statistics.timer, STATISTICS_TIMER_STR );
-        statistics.status = STATISTICS_STATUS_RUN;
-        break;
-      case STATISTICS_STATUS_HOUR_CHECK:
-        vMAINTENCEinc( &maintence.oil,  MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR );
-        vMAINTENCEinc( &maintence.air,  MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR );
-        vMAINTENCEinc( &maintence.fuel, MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR );
-        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-        vLOGICstartTimer( &statistics.timer, STATISTICS_TIMER_STR );
-        statistics.status = STATISTICS_STATUS_RUN;
-        break;
-      default:
-        statistics.status = STATISTICS_STATUS_STOP;
-        vLOGICresetTimer( &statistics.timer );
-        return;
-    }
+    fuel.stopLeakError.active       = PERMISSION_ENABLE;
+    fuel.idleLeakAlarm.error.active = PERMISSION_DISABLE;
+    eDATAAPIfreeData( DATA_API_CMD_READ,  ENGINE_WORK_MINUTES_ADR, &data );
+    minCounter = ( uint8_t )data;
+    startFl    = 1U;
   }
-  else if ( statistics.status != STATISTICS_STATUS_STOP )
+  else if ( startFl > 0U )
   {
     fuel.stopLeakError.active       = PERMISSION_DISABLE;
     fuel.idleLeakAlarm.error.active = PERMISSION_ENABLE;
-    statistics.status = STATISTICS_STATUS_STOP;
-    vLOGICresetTimer( &statistics.timer );
+    startFl = 0U;
   }
   else
   {
 
+  }
+
+  switch ( statistics.status )
+  {
+    case STATISTICS_STATUS_STOP:
+      if ( eENGINEgetTurnout() == TRIGGER_SET )
+      {
+        fuel.rate.power = 0U;
+        fuel.rate.fuel  = fENGINEgetFuelLevel();
+        vLOGICstartTimer( &statistics.timer, STATISTICS_TIMER_STR );
+        statistics.status = STATISTICS_STATUS_RUN;
+      }
+      break;
+    case STATISTICS_STATUS_RUN:
+      if ( uLOGICisTimer( &statistics.timer ) > 0U )
+      {
+        minCounter++;
+        if ( minCounter >= 60U )
+        {
+          minCounter = 0U;
+          statistics.status = STATISTICS_STATUS_HOUR_CHECK;
+        }
+        else
+        {
+          statistics.status = STATISTICS_STATUS_MINUTES_CHECK;
+        }
+      }
+      else
+      {
+        vFUELinc();
+      }
+      break;
+    case STATISTICS_STATUS_MINUTES_CHECK:
+      update = 0U;
+      if ( status == ENGINE_STATUS_WORK )
+      {
+        update++;
+        eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_WORK_MINUTES_ADR, &data );
+        update += uSTATISTICSelectroCalc( statistics.timer.delay );
+      }
+      update += uFUELrateCalc();
+      if ( update > 0U )
+      {
+        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+      }
+      vLOGICstartTimer( &statistics.timer, STATISTICS_TIMER_STR );
+      statistics.status = STATISTICS_STATUS_RUN;
+      break;
+    case STATISTICS_STATUS_HOUR_CHECK:
+      update = 0U;
+      if ( status == ENGINE_STATUS_WORK )
+      {
+        update++;
+        eDATAAPIfreeData( DATA_API_CMD_ERASE, ENGINE_WORK_MINUTES_ADR, NULL );
+        eDATAAPIfreeData( DATA_API_CMD_INC,   ENGINE_WORK_TIME_ADR,    &data );
+        vMAINTENCEinc( &maintence.oil,  MAINTENANCE_ALARM_OIL_TIME_LEFT_ADR );
+        vMAINTENCEinc( &maintence.air,  MAINTENANCE_ALARM_AIR_TIME_LEFT_ADR );
+        vMAINTENCEinc( &maintence.fuel, MAINTENANCE_ALARM_FUEL_TIME_LEFT_ADR );
+      }
+      update += uFUELrateCalc();
+      if ( update > 0U )
+      {
+        eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+      }
+      vLOGICstartTimer( &statistics.timer, STATISTICS_TIMER_STR );
+      statistics.status = STATISTICS_STATUS_RUN;
+      break;
+    default:
+      statistics.status = STATISTICS_STATUS_STOP;
+      vLOGICresetTimer( &statistics.timer );
+      return;
   }
   return;
 }

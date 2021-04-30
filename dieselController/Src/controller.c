@@ -37,6 +37,12 @@ static CONTROLLER_TYPE   controller          = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 
 /*--------------------------------- Constant ---------------------------------*/
+static const uint32_t allReinitFlags = DATA_API_FLAG_LCD_TASK_CONFIG_REINIT        |
+                                       DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT     |
+                                       DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT |
+                                       DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT    |
+                                       DATA_API_FLAG_FPI_TASK_CONFIG_REINIT        |
+                                       DATA_API_FLAG_ADC_TASK_CONFIG_REINIT;
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
 static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
@@ -498,6 +504,8 @@ void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS genera
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERdataInit ( void )
 {
+  controller.timer.delay        = 0U;
+  controller.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   controller.stopDelay          = getValue( &timerReturnDelay );
   controller.startDelay         = getValue( &timerStartDelay  );
   controller.logWarning         = getBitMap( &logSetup,   LOG_SAVE_WARNING_EVENTS_ENB_ADR );
@@ -974,7 +982,10 @@ void vCONTROLLERtask ( void* argument )
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- Statistic calculation -----------------------------------*/
     /*--------------------------------------------------------------------------------------------*/
-    vSTATISTICSprocessing();
+    if ( ( systemEvent & allReinitFlags ) == 0U )
+    {
+      vSTATISTICSprocessing();
+    }
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- CONTROLLER PROCESSING -----------------------------------*/
     /*--------------------------------------------------------------------------------------------*/

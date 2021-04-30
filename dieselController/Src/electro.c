@@ -348,7 +348,7 @@ void vELECTROdataInit ( void )
   electro.scheme      = getBitMap( &genSetup, GEN_AC_SYS_ADR );
   electro.state       = ELECTRO_PROC_STATUS_IDLE;
   electro.cmd         = ELECTRO_CMD_NONE;
-  electro.timer.id    = 0U;
+  electro.timer.id    = LOGIC_DEFAULT_TIMER_ID;
   electro.timer.delay = getValue( &timerTransferDelay );
   /*----------------------------------------------------------------------------*/
   generator.timer.delay = powerUsageCalcTimeout;

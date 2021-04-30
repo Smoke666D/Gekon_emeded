@@ -358,7 +358,7 @@ TIMER_ERROR vLOGICstartTimer ( SYSTEM_TIMER* timer, char* name )
 TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER* timer ) /* Проверить стоит ли сделать указатель */
 {
   TIMER_ERROR stat = TIMER_OK;
-  if ( timer->id <= LOGIC_COUNTERS_SIZE )
+  if ( uLOGICisTimerActive( *timer ) > 0U )
   {
     if ( xSemaphoreTake( xSYSTIMERsemaphore, SYS_TIMER_SEMAPHORE_DELAY ) == pdTRUE )
     {

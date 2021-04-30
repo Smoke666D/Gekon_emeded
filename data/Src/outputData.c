@@ -9,7 +9,7 @@ const eConfigAttributes oilPressureAtrib =
    .scale      = -2,
    .min        = 0U,
    .max        = 1000U,
-   .units      = { 0xd091U, 0xd0b0U, 0xd180U, 0x0020U },
+   .units      = { 0xd091U, 0xd0b0U, 0xd180U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -28,7 +28,7 @@ const eConfigAttributes coolantTempAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 300U,
-   .units      = { 0xd0a1U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd0a1U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -47,7 +47,7 @@ const eConfigAttributes fuelLevelAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 100U,
-   .units      = { 0x0025U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0025U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -66,7 +66,7 @@ const eConfigAttributes speedLevelAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 6000U,
-   .units      = { 0x0052U, 0x0050U, 0x004dU, 0x0020U },
+   .units      = { 0x0052U, 0x0050U, 0x004dU, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -85,7 +85,7 @@ const eConfigAttributes mainsPhaseVoltageL1Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -104,7 +104,7 @@ const eConfigAttributes mainsPhaseVoltageL2Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -123,7 +123,7 @@ const eConfigAttributes mainsPhaseVoltageL3Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -142,7 +142,7 @@ const eConfigAttributes mainsLineVoltageL1Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -161,7 +161,7 @@ const eConfigAttributes mainsLineVoltageL2Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -180,7 +180,7 @@ const eConfigAttributes mainsLineVoltageL3Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -199,7 +199,7 @@ const eConfigAttributes mainsFreqAtrib =
    .scale      = -1,
    .min        = 0U,
    .max        = 750U,
-   .units      = { 0xd093U, 0xd186U, 0x0020U, 0x0020U },
+   .units      = { 0xd093U, 0xd186U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -218,7 +218,7 @@ const eConfigAttributes generatorPhaseVoltageL1Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -237,7 +237,7 @@ const eConfigAttributes generatorPhaseVoltageL2Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -256,7 +256,7 @@ const eConfigAttributes generatorPhaseVoltageL3Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -275,7 +275,7 @@ const eConfigAttributes generatorLineVoltageL1Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -294,7 +294,7 @@ const eConfigAttributes generatorLineVoltageL2Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -313,7 +313,7 @@ const eConfigAttributes generatorLineVoltageL3Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 800U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -332,7 +332,7 @@ const eConfigAttributes generatorCurrentL1Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 1500U,
-   .units      = { 0xd090U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd090U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -351,7 +351,7 @@ const eConfigAttributes generatorCurrentL2Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 1500U,
-   .units      = { 0xd090U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd090U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -370,7 +370,7 @@ const eConfigAttributes generatorCurrentL3Atrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 1500U,
-   .units      = { 0xd090U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd090U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -389,7 +389,7 @@ const eConfigAttributes generatorFreqAtrib =
    .scale      = -1,
    .min        = 0U,
    .max        = 750U,
-   .units      = { 0xd093U, 0xd186U, 0x0020U, 0x0020U },
+   .units      = { 0xd093U, 0xd186U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -408,7 +408,7 @@ const eConfigAttributes generatorCosFiAtrib =
    .scale      = -2,
    .min        = 0U,
    .max        = 100U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -427,7 +427,7 @@ const eConfigAttributes generatorPowerActiveAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 1000U,
-   .units      = { 0xd0baU, 0xd092U, 0xd182U, 0x0020U },
+   .units      = { 0xd0baU, 0xd092U, 0xd182U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -446,7 +446,7 @@ const eConfigAttributes generatorPowerReactiveAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 1000U,
-   .units      = { 0xd0baU, 0xd092U, 0xd090U, 0xd0a0U },
+   .units      = { 0xd0baU, 0xd092U, 0xd090U, 0xd0a0U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -465,7 +465,7 @@ const eConfigAttributes generatorPowerFullAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 1000U,
-   .units      = { 0xd0baU, 0xd092U, 0xd090U, 0x0020U },
+   .units      = { 0xd0baU, 0xd092U, 0xd090U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -484,7 +484,7 @@ const eConfigAttributes batteryVoltageAtrib =
    .scale      = -1,
    .min        = 0U,
    .max        = 400U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -503,7 +503,7 @@ const eConfigAttributes chargerVoltageAtrib =
    .scale      = -1,
    .min        = 0U,
    .max        = 400U,
-   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0xd092U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -530,7 +530,7 @@ const eConfigAttributes externalDevicesAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 5U,
@@ -540,6 +540,177 @@ eConfigReg externalDevices =
 {
    .atrib = &externalDevicesAtrib,
    .value = externalDevicesValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t engineWorkTimeOutValue[1U] = { 0U };
+const eConfigAttributes engineWorkTimeOutAtrib =
+{
+   .adr        = 28U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd187U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg engineWorkTimeOut =
+{
+   .atrib = &engineWorkTimeOutAtrib,
+   .value = engineWorkTimeOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t engineWorkMinOutValue[1U] = { 0U };
+const eConfigAttributes engineWorkMinOutAtrib =
+{
+   .adr        = 29U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd187U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg engineWorkMinOut =
+{
+   .atrib = &engineWorkMinOutAtrib,
+   .value = engineWorkMinOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t engineStartsNumberOutValue[1U] = { 0U };
+const eConfigAttributes engineStartsNumberOutAtrib =
+{
+   .adr        = 30U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg engineStartsNumberOut =
+{
+   .atrib = &engineStartsNumberOutAtrib,
+   .value = engineStartsNumberOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t powerReactiveUsageOutValue[1U] = { 0U };
+const eConfigAttributes powerReactiveUsageOutAtrib =
+{
+   .adr        = 31U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd0baU, 0xd092U, 0xd090U, 0xd0a0U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg powerReactiveUsageOut =
+{
+   .atrib = &powerReactiveUsageOutAtrib,
+   .value = powerReactiveUsageOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t powerActiveUsageOutValue[1U] = { 0U };
+const eConfigAttributes powerActiveUsageOutAtrib =
+{
+   .adr        = 32U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd0baU, 0xd092U, 0xd182U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg powerActiveUsageOut =
+{
+   .atrib = &powerActiveUsageOutAtrib,
+   .value = powerActiveUsageOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t powerFullUsageOutValue[1U] = { 0U };
+const eConfigAttributes powerFullUsageOutAtrib =
+{
+   .adr        = 33U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd0baU, 0xd092U, 0xd090U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg powerFullUsageOut =
+{
+   .atrib = &powerFullUsageOutAtrib,
+   .value = powerFullUsageOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t fuelUsageOutValue[1U] = { 0U };
+const eConfigAttributes fuelUsageOutAtrib =
+{
+   .adr        = 34U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd0bbU, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg fuelUsageOut =
+{
+   .atrib = &fuelUsageOutAtrib,
+   .value = fuelUsageOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t fuelMomentalRateOutValue[1U] = { 0U };
+const eConfigAttributes fuelMomentalRateOutAtrib =
+{
+   .adr        = 35U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd0bbU, 0x002fU, 0xd0baU, 0xd092U, 0xd182U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg fuelMomentalRateOut =
+{
+   .atrib = &fuelMomentalRateOutAtrib,
+   .value = fuelMomentalRateOutValue,
+};
+/*----------------------------------------------------------------*/
+uint16_t fuelAverageRateOutValue[1U] = { 0U };
+const eConfigAttributes fuelAverageRateOutAtrib =
+{
+   .adr        = 36U,
+   .scale      = 0U,
+   .min        = 0U,
+   .max        = 0U,
+   .units      = { 0xd0bbU, 0x002fU, 0xd0baU, 0xd092U, 0xd182U },
+   .type       = CONFIG_TYPE_UNSIGNED,
+   .len        = 1U,
+   .bitMapSize = 0U,
+   .bitMap     = NULL,
+};
+eConfigReg fuelAverageRateOut =
+{
+   .atrib = &fuelAverageRateOutAtrib,
+   .value = fuelAverageRateOutValue,
 };
 /*----------------------------------------------------------------*/
 const eConfigBitMap digitalOutputBitMap[12U] = 
@@ -560,11 +731,11 @@ const eConfigBitMap digitalOutputBitMap[12U] =
 uint16_t digitalOutputValue[1U] = { 0U };
 const eConfigAttributes digitalOutputAtrib =
 {
-   .adr        = 28U,
+   .adr        = 37U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 12U,
@@ -594,11 +765,11 @@ const eConfigBitMap digitalInputBitMap[12U] =
 uint16_t digitalInputValue[1U] = { 0U };
 const eConfigAttributes digitalInputAtrib =
 {
-   .adr        = 29U,
+   .adr        = 38U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 12U,
@@ -613,11 +784,11 @@ eConfigReg digitalInput =
 uint16_t deviceStatusValue[1U] = { 0U };
 const eConfigAttributes deviceStatusAtrib =
 {
-   .adr        = 30U,
+   .adr        = 39U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -641,11 +812,11 @@ const eConfigBitMap statusBitMap[6U] =
 uint16_t statusValue[1U] = { 0U };
 const eConfigAttributes statusAtrib =
 {
-   .adr        = 31U,
+   .adr        = 40U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 6U,
@@ -660,11 +831,11 @@ eConfigReg status =
 uint16_t logLenValue[1U] = { 0U };
 const eConfigAttributes logLenAtrib =
 {
-   .adr        = 32U,
+   .adr        = 41U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -679,11 +850,11 @@ eConfigReg logLen =
 uint16_t logAdrValue[1U] = { 0U };
 const eConfigAttributes logAdrAtrib =
 {
-   .adr        = 33U,
+   .adr        = 42U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -698,11 +869,11 @@ eConfigReg logAdr =
 uint16_t logRecordData0Value[1U] = { 0U };
 const eConfigAttributes logRecordData0Atrib =
 {
-   .adr        = 34U,
+   .adr        = 43U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -717,11 +888,11 @@ eConfigReg logRecordData0 =
 uint16_t logRecordData1Value[1U] = { 0U };
 const eConfigAttributes logRecordData1Atrib =
 {
-   .adr        = 35U,
+   .adr        = 44U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -736,11 +907,11 @@ eConfigReg logRecordData1 =
 uint16_t logRecordEventValue[1U] = { 0U };
 const eConfigAttributes logRecordEventAtrib =
 {
-   .adr        = 36U,
+   .adr        = 45U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -774,11 +945,11 @@ const eConfigBitMap error0BitMap[16U] =
 uint16_t error0Value[1U] = { 0U };
 const eConfigAttributes error0Atrib =
 {
-   .adr        = 37U,
+   .adr        = 46U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 16U,
@@ -812,11 +983,11 @@ const eConfigBitMap error1BitMap[16U] =
 uint16_t error1Value[1U] = { 0U };
 const eConfigAttributes error1Atrib =
 {
-   .adr        = 38U,
+   .adr        = 47U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 16U,
@@ -835,11 +1006,11 @@ const eConfigBitMap error2BitMap[1U] =
 uint16_t error2Value[1U] = { 0U };
 const eConfigAttributes error2Atrib =
 {
-   .adr        = 39U,
+   .adr        = 48U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 1U,
@@ -873,11 +1044,11 @@ const eConfigBitMap warning0BitMap[16U] =
 uint16_t warning0Value[1U] = { 0U };
 const eConfigAttributes warning0Atrib =
 {
-   .adr        = 40U,
+   .adr        = 49U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 16U,
@@ -898,11 +1069,11 @@ const eConfigBitMap warning1BitMap[3U] =
 uint16_t warning1Value[1U] = { 0U };
 const eConfigAttributes warning1Atrib =
 {
-   .adr        = 41U,
+   .adr        = 50U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 3U,
@@ -925,11 +1096,11 @@ const eConfigBitMap controllBitMap[5U] =
 uint16_t controllValue[1U] = { 0U };
 const eConfigAttributes controllAtrib =
 {
-   .adr        = 42U,
+   .adr        = 51U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U },
+   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
    .bitMapSize = 5U,
@@ -942,5 +1113,5 @@ eConfigReg controll =
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &chargerVoltage, &externalDevices, &digitalOutput, &digitalInput, &deviceStatus, &status, &logLen, &logAdr, &logRecordData0, &logRecordData1, &logRecordEvent, &error0, &error1, &error2, &warning0, &warning1, &controll};
-const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Напряжение зарядного генератора", "Внешние устройства", "Цифровые выходы", "Цифровые входы", "Статус", "Регистр статуса", "Кол-во записей в журнале", "Адрес записи в журнале", "Дата записи журнала 0", "Дата записи журнала 1", "Событие записи журнала", "-", "-", "-", "-", "-", "Регистр управления"};
+eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &chargerVoltage, &externalDevices, &engineWorkTimeOut, &engineWorkMinOut, &engineStartsNumberOut, &powerReactiveUsageOut, &powerActiveUsageOut, &powerFullUsageOut, &fuelUsageOut, &fuelMomentalRateOut, &fuelAverageRateOut, &digitalOutput, &digitalInput, &deviceStatus, &status, &logLen, &logAdr, &logRecordData0, &logRecordData1, &logRecordEvent, &error0, &error1, &error2, &warning0, &warning1, &controll};
+const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Напряжение зарядного генератора", "Внешние устройства", "Моточасы", "Мотоминуты", "Количество пусков", "Реактивна выробатанная мощность", "Активная выробатанная мощность", "Полная выробатанная мощность", "Расход топлива", "Текущий расход топлива", "Средний расход топлива", "Цифровые выходы", "Цифровые входы", "Статус", "Регистр статуса", "Кол-во записей в журнале", "Адрес записи в журнале", "Дата записи журнала 0", "Дата записи журнала 1", "Событие записи журнала", "-", "-", "-", "-", "-", "Регистр управления"};

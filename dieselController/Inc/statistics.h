@@ -64,8 +64,9 @@ typedef struct __packed
 
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void vSTATISTICSinit ( void );
-void vSTATISTICSreset ( void );
-void vSTATISTICSprocessing ( void );
+void     vSTATISTICSinit ( void );
+void     vSTATISTICSreset ( void );
+uint16_t uSTATISTICSgetFuelMomentalRate ( void );
+void     vSTATISTICSprocessing ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_STATISTICS_H_ */

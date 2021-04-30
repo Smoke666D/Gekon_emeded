@@ -19,8 +19,9 @@ static FUEL_STATISTIC_TYPE fuel       = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t fix60  = F16( 5U );  /* --- */
-static const fix16_t fix100 = F16( 100U );
+static const fix16_t fix60   = F16( 5U );  /* --- */
+static const fix16_t fix100  = F16( 100U );
+static const fix16_t fix1000 = F16( 1000U );
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t minCounter = 0U;
 static uint8_t startFl    = 0U;
@@ -48,7 +49,7 @@ uint8_t uSTATISTICSelectroCalc ( fix16_t timeout )
   uint16_t active   = 0U;  /* kWh */
   uint16_t full     = 0U;  /* kWh */
   uint16_t add      = 0U;  /* kWh */
-  if ( eELECTROgetGeneratorStatus() == ELECTRO_STATUS_LOAD )
+  if ( eENGINEgetEngineStatus() == ENGINE_STATUS_WORK )
   {
     eDATAAPIfreeData( DATA_API_CMD_READ, POWER_REACTIVE_USAGE_ADR, &reactive );
     eDATAAPIfreeData( DATA_API_CMD_READ, POWER_ACTIVE_USAGE_ADR,   &active   );
@@ -78,8 +79,9 @@ uint8_t uSTATISTICSelectroCalc ( fix16_t timeout )
 /*----------------------------------------------------------------------------*/
 void vFUELinc ( void )
 {
-  if ( eELECTROgetGeneratorStatus() == ELECTRO_STATUS_LOAD )
+  if ( eENGINEgetEngineStatus() == ENGINE_STATUS_WORK )
   {
+    fix16_t pow = fix16_from_int( 1U );
     fuel.rate.power = fix16_add( fELECTROgetPower(), fuel.rate.power );
   }
   return;
@@ -97,7 +99,7 @@ void fArithmeticMean ( fix16_t* acc, fix16_t data, uint16_t* size )
   }
   else
   {
-    *acc = fix16_add( fix16_mul( fix16_div( *acc, fix16_from_int( *size + 1U ) ), *size ), fix16_div( data, fix16_from_int( *size + 1U ) ) );
+    *acc = fix16_add( fix16_mul( fix16_div( *acc, fix16_from_int( *size + 1U ) ), fix16_from_int( *size ) ), fix16_div( data, fix16_from_int( *size + 1U ) ) );
   }
   if ( *size >= 0xFFFEU )
   {
@@ -112,7 +114,6 @@ void fArithmeticMean ( fix16_t* acc, fix16_t data, uint16_t* size )
 /*----------------------------------------------------------------------------*/
 uint8_t uFUELrateCalc ( void )
 {
-  float temp = 0;
   uint8_t  res   = 0U;
   fix16_t  data  = fENGINEgetFuelLevel();
   fix16_t  delta = fix16_sub( fuel.rate.fuel, data );
@@ -120,24 +121,29 @@ uint8_t uFUELrateCalc ( void )
   if ( delta > fuel.rate.cutout )
   {
     res        = 1U;
-    temp = fix16_to_float( delta );
     delta      = fix16_mul( fix16_div( delta, fix100 ), fuel.tankSize );
-    temp = fix16_to_float( delta );
     fuel.usage = fix16_add( fuel.usage, delta );
     usage      = ( uint16_t )( fix16_to_int( fuel.usage ) );
-    temp = fix16_to_float( fuel.usage );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE,  FUEL_USAGE_ADR, &usage );
+    eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_USAGE_ADR, &usage );
     if ( fuel.rate.power == 0U )
     {
       vERRORcheck( &fuel.stopLeakError, 1U );
       vALARMcheck( &fuel.idleLeakAlarm, delta );
+      fuel.rate.momental = 0;
     }
     else
     {
-      fuel.rate.momental = fix16_div( delta, fuel.rate.power );
+      fuel.rate.momental = fix16_mul( fix16_div( delta, fuel.rate.power ), fix1000 );
       vALARMcheck( &fuel.leakAlarm, fuel.rate.momental );
       fArithmeticMean( &fuel.rate.average, fuel.rate.momental, &fuel.rate.size );
+      usage = fix16_to_int ( fuel.rate.average );
+      eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_RATE_ADR,         &usage          );
+      eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_AVERAGE_SIZE_ADR, &fuel.rate.size );
     }
+  }
+  else
+  {
+    fuel.rate.momental = 0;
   }
   fuel.rate.power = 0U;
   fuel.rate.fuel  = data;
@@ -265,10 +271,14 @@ void vSTATISTICSreset ( void )
   vALARMreset( &maintence.air.alarm  );
   vALARMreset( &maintence.fuel.alarm );
   statistics.status               = STATISTICS_STATUS_STOP;
-  fuel.stopLeakError.active       = PERMISSION_ENABLE;
-  fuel.idleLeakAlarm.error.active = PERMISSION_DISABLE;
+  startFl                         = 0U;
   vLOGICresetTimer( &statistics.timer );
   return;
+}
+/*----------------------------------------------------------------------------*/
+uint16_t uSTATISTICSgetFuelMomentalRate ( void )
+{
+  return ( uint16_t )fix16_to_int( fuel.rate.momental );
 }
 /*----------------------------------------------------------------------------*/
 void vSTATISTICSprocessing ( void )
@@ -289,7 +299,7 @@ void vSTATISTICSprocessing ( void )
     minCounter = ( uint8_t )data;
     startFl    = 1U;
   }
-  else if ( startFl > 0U )
+  else if ( ( status != ENGINE_STATUS_WORK ) && ( startFl > 0U ) )
   {
     fuel.stopLeakError.active       = PERMISSION_DISABLE;
     fuel.idleLeakAlarm.error.active = PERMISSION_ENABLE;

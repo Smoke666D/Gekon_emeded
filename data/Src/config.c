@@ -440,7 +440,7 @@ const eConfigAttributes fuelRateIdleLevelAtrib =
    .scale      = 0U,
    .min        = 0U,
    .max        = 30U,
-   .units      = { 0xd0bbU, 0x002fU, 0xd181U, 0x0020U, 0x0020U },
+   .units      = { 0xd0b3U, 0x002fU, 0xd181U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,
@@ -452,14 +452,14 @@ eConfigReg fuelRateIdleLevel =
    .value = fuelRateIdleLevelValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t fuelRateLevelValue[1U] = { 2U };
+uint16_t fuelRateLevelValue[1U] = { 300U };
 const eConfigAttributes fuelRateLevelAtrib =
 {
    .adr        = 22U,
    .scale      = 0U,
-   .min        = 0U,
-   .max        = 30U,
-   .units      = { 0xd0bbU, 0x002fU, 0xd0baU, 0xd092U, 0xd182U },
+   .min        = 150U,
+   .max        = 350U,
+   .units      = { 0xd0b3U, 0x002fU, 0xd0baU, 0xd092U, 0xd182U },
    .type       = CONFIG_TYPE_UNSIGNED,
    .len        = 1U,
    .bitMapSize = 0U,

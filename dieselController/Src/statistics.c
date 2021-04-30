@@ -19,9 +19,9 @@ static FUEL_STATISTIC_TYPE fuel       = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t fix60   = F16( 5U );  /* --- */
-static const fix16_t fix100  = F16( 100U );
-static const fix16_t fix1000 = F16( 1000U );
+static const fix16_t fix60       = F16( 60U );   /* --- */
+static const fix16_t fix100      = F16( 100U );  /* --- */
+static const fix16_t fuelDensity = F16( 850U );  /* gram/liter */
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t minCounter = 0U;
 static uint8_t startFl    = 0U;
@@ -81,7 +81,6 @@ void vFUELinc ( void )
 {
   if ( eENGINEgetEngineStatus() == ENGINE_STATUS_WORK )
   {
-    fix16_t pow = fix16_from_int( 1U );
     fuel.rate.power = fix16_add( fELECTROgetPower(), fuel.rate.power );
   }
   return;
@@ -121,10 +120,10 @@ uint8_t uFUELrateCalc ( void )
   if ( delta > fuel.rate.cutout )
   {
     res        = 1U;
-    delta      = fix16_mul( fix16_div( delta, fix100 ), fuel.tankSize );
-    fuel.usage = fix16_add( fuel.usage, delta );
-    usage      = ( uint16_t )( fix16_to_int( fuel.usage ) );
-    eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_USAGE_ADR, &usage );
+    delta      = fix16_mul( fix16_div( delta, fix100 ), fuel.tankSize ); /* Percent to liters   */
+    fuel.usage = fix16_add( fuel.usage, delta );                         /* Integral fuel usage */
+    usage      = ( uint16_t )( fix16_to_int( fuel.usage ) );             /* Switch to integer   */
+    eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_USAGE_ADR, &usage );      /* Save fuel usage     */
     if ( fuel.rate.power == 0U )
     {
       vERRORcheck( &fuel.stopLeakError, 1U );
@@ -133,12 +132,13 @@ uint8_t uFUELrateCalc ( void )
     }
     else
     {
-      fuel.rate.momental = fix16_mul( fix16_div( delta, fuel.rate.power ), fix1000 );
-      vALARMcheck( &fuel.leakAlarm, fuel.rate.momental );
-      fArithmeticMean( &fuel.rate.average, fuel.rate.momental, &fuel.rate.size );
-      usage = fix16_to_int ( fuel.rate.average );
-      eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_RATE_ADR,         &usage          );
-      eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_AVERAGE_SIZE_ADR, &fuel.rate.size );
+      delta = fix16_mul( delta, fuelDensity );                                        /* Fo from liters to grams */
+      fuel.rate.momental = fix16_div( delta, fuel.rate.power );                       /* Rate in gram per kWat   */
+      vALARMcheck( &fuel.leakAlarm, fuel.rate.momental );                             /* Check alarm with rate   */
+      fArithmeticMean( &fuel.rate.average, fuel.rate.momental, &fuel.rate.size );     /* Calculate average rate  */
+      usage = fix16_to_int ( fuel.rate.average );                                     /* Switch fix16 to integer */
+      eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_RATE_ADR,         &usage          ); /* Save average rate       */
+      eDATAAPIfreeData( DATA_API_CMD_WRITE, FUEL_AVERAGE_SIZE_ADR, &fuel.rate.size ); /* Save average number     */
     }
   }
   else

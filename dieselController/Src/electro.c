@@ -29,7 +29,7 @@ static const fix16_t shortCircuitTrippingCurve   = F16( CUTOUT_PROTECTION_TRIPPI
 static const fix16_t shortCircuitConstant        = F16( SHORT_CIRCUIT_CONSTANT );          /* Short circuit protection constant */
 static const fix16_t shortCircuitCutoutPower     = F16( CUTOUT_POWER );
 static const fix16_t powerUsageCalcTimeout       = F16( POWER_USAGE_CALC_TIMEOUT );
-static const fix16_t powerWsTokWs                = F16( 3600000U );
+static const fix16_t powerWsTokWs                = F16( 3600U );
 /*-------------------------------- Variables ---------------------------------*/
 static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U };
 //static fix16_t         maxGeneratorVolage                                 = 0U;
@@ -117,7 +117,7 @@ void vELECTROalarmCheck ( ALARM_TYPE* alarm, fix16_t* value, uint8_t length )
 }
 /*---------------------------------------------------------------------------------------------------*/
 /* Power calculation
- * input:  power in W
+ * input:  power in kW
  *         time  in sec
  * output: usage in kWh
  */

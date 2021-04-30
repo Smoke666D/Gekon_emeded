@@ -335,6 +335,11 @@ void vALARMsetWarning ( SYSTEM_EVENT_TYPE event, ERROR_LIST_CMD cmd )
   return;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fALARMcalcHysteresis ( fix16_t input )
+{
+  return fix16_mul( input, fix16_add( F16( 1U ), hysteresis ) );
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vALARMinit ( void )
@@ -342,6 +347,11 @@ void vALARMinit ( void )
   hysteresis    = fix16_div( getValue( &hysteresisLevel ), fix100U );
   xAELsemaphore = xSemaphoreCreateMutex();
   return;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fALARMgetHysteresis ( void )
+{
+  return hysteresis;
 }
 /*----------------------------------------------------------------------------*/
 void vALARMreInit ( void )
@@ -631,8 +641,6 @@ TRIGGER_STATE eERRORisActive ( ERROR_TYPE* error )
 /*-----------------------------------------------------------------------------------------*/
 void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
 {
-  fix16_t levelOff = 0U;
-
   if ( ( alarm->error.enb == PERMISSION_ENABLE ) && ( alarm->error.active == PERMISSION_ENABLE ) )
   {
     switch ( alarm->error.status )
@@ -714,17 +722,14 @@ void vALARMcheck ( ALARM_TYPE* alarm, fix16_t val )
       case ALARM_STATUS_RELAX:
         if ( alarm->type == ALARM_LEVEL_LOW )
         {
-          levelOff = fix16_mul( alarm->level, fix16_add( F16( 1U ), hysteresis ) );
-
-          if ( val > levelOff )
+          if ( val > fALARMcalcHysteresis( alarm->level ) )
           {
             vERRORrelax( &alarm->error );
           }
         }
         else
         {
-          levelOff = fix16_mul( alarm->level, fix16_sub( F16( 1U ), hysteresis ) );
-          if ( val < levelOff )
+          if ( val < fALARMcalcHysteresis( alarm->level ) )
           {
             vERRORrelax( &alarm->error );
           }

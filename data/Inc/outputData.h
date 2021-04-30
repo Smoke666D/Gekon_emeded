@@ -8,13 +8,13 @@
 #include "config.h"
 #include "fix16.h"
 /*------------------------ Define --------------------------------------*/
-#define   MAX_UNITS_OUTPUT_LENGTH             4U
+#define   MAX_UNITS_OUTPUT_LENGTH             5U
 #define   MAX_BIT_MAP_OUTPUT_LENGTH           16U
-#define   OUTPUT_DATA_REGISTER_NUMBER         43U
+#define   OUTPUT_DATA_REGISTER_NUMBER         52U
 #define   FILDS_TO_WRITE_OUTPUT_NUMBER        3U
 #define   MAX_VALUE_OUTPUT_LENGTH             1U
-#define   OUTPUT_DATA_MAX_SIZE                59U     // bytes
-#define   OUTPUT_DATA_TOTAL_SIZE              129U   // bytes
+#define   OUTPUT_DATA_MAX_SIZE                61U     // bytes
+#define   OUTPUT_DATA_TOTAL_SIZE              156U   // bytes
 #define   MIN_OUTPUT_DATA_SCALE               ( -2 )
 #define   MAX_OUTPUT_DATA_SCALE               ( 0 )
 #define   OUTPUT_DATA_SCALE_NUM               ( 3 )
@@ -49,21 +49,30 @@
 #define   BATTERY_VOLTAGE_ADR                                    25U
 #define   CHARGER_VOLTAGE_ADR                                    26U
 #define   EXTERNAL_DEVICES_ADR                                   27U
-#define   DIGITAL_OUTPUT_ADR                                     28U
-#define   DIGITAL_INPUT_ADR                                      29U
-#define   DEVICE_STATUS_ADR                                      30U
-#define   STATUS_ADR                                             31U
-#define   LOG_LEN_ADR                                            32U
-#define   LOG_ADR_ADR                                            33U
-#define   LOG_RECORD_DATA0_ADR                                   34U
-#define   LOG_RECORD_DATA1_ADR                                   35U
-#define   LOG_RECORD_EVENT_ADR                                   36U
-#define   ERROR0_ADR                                             37U
-#define   ERROR1_ADR                                             38U
-#define   ERROR2_ADR                                             39U
-#define   WARNING0_ADR                                           40U
-#define   WARNING1_ADR                                           41U
-#define   CONTROLL_ADR                                           42U
+#define   ENGINE_WORK_TIME_OUT_ADR                               28U
+#define   ENGINE_WORK_MIN_OUT_ADR                                29U
+#define   ENGINE_STARTS_NUMBER_OUT_ADR                           30U
+#define   POWER_REACTIVE_USAGE_OUT_ADR                           31U
+#define   POWER_ACTIVE_USAGE_OUT_ADR                             32U
+#define   POWER_FULL_USAGE_OUT_ADR                               33U
+#define   FUEL_USAGE_OUT_ADR                                     34U
+#define   FUEL_MOMENTAL_RATE_OUT_ADR                             35U
+#define   FUEL_AVERAGE_RATE_OUT_ADR                              36U
+#define   DIGITAL_OUTPUT_ADR                                     37U
+#define   DIGITAL_INPUT_ADR                                      38U
+#define   DEVICE_STATUS_ADR                                      39U
+#define   STATUS_ADR                                             40U
+#define   LOG_LEN_ADR                                            41U
+#define   LOG_ADR_ADR                                            42U
+#define   LOG_RECORD_DATA0_ADR                                   43U
+#define   LOG_RECORD_DATA1_ADR                                   44U
+#define   LOG_RECORD_EVENT_ADR                                   45U
+#define   ERROR0_ADR                                             46U
+#define   ERROR1_ADR                                             47U
+#define   ERROR2_ADR                                             48U
+#define   WARNING0_ADR                                           49U
+#define   WARNING1_ADR                                           50U
+#define   CONTROLL_ADR                                           51U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   EXTERNAL_CHARGER_ADR                         0U
 #define   EXTERNAL_COOLANT_HEATER_ADR                  1U
@@ -186,6 +195,15 @@ extern eConfigReg generatorPowerFull;
 extern eConfigReg batteryVoltage;
 extern eConfigReg chargerVoltage;
 extern eConfigReg externalDevices;
+extern eConfigReg engineWorkTimeOut;
+extern eConfigReg engineWorkMinOut;
+extern eConfigReg engineStartsNumberOut;
+extern eConfigReg powerReactiveUsageOut;
+extern eConfigReg powerActiveUsageOut;
+extern eConfigReg powerFullUsageOut;
+extern eConfigReg fuelUsageOut;
+extern eConfigReg fuelMomentalRateOut;
+extern eConfigReg fuelAverageRateOut;
 extern eConfigReg digitalOutput;
 extern eConfigReg digitalInput;
 extern eConfigReg deviceStatus;

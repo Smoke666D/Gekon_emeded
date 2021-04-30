@@ -15,6 +15,7 @@
 #include "fpo.h"
 #include "fpi.h"
 #include "controller.h"
+#include "statistics.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t xWriteOutputSemaphore = NULL;
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -22,7 +23,7 @@ static const getValueCallBack measurementCallbacks[MEASUREMENT_CHANNEL_NUMBER] =
 {
   fENGINEgetOilPressure,    /*  0 Oil pressure               */
   fENGINEgetCoolantTemp,    /*  1 Coolant temperature        */
-  fENGINEgeyFuelLevel,      /*  2 Fuel level                 */
+  fENGINEgetFuelLevel,      /*  2 Fuel level                 */
   fENGINEgetSpeed,          /*  3 Speed                      */
   xADCGetNETL1,             /*  4 Mains phase voltage L1     */
   xADCGetNETL2,             /*  5 Mains phase voltage L2     */
@@ -251,6 +252,33 @@ void vOUTPUTupdate ( uint8_t chanel )
   {
     switch ( chanel )
     {
+      case ENGINE_WORK_TIME_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[ENGINE_WORK_TIME_ADR];
+        break;
+      case ENGINE_WORK_MIN_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[ENGINE_WORK_MINUTES_ADR];
+        break;
+      case ENGINE_STARTS_NUMBER_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[ENGINE_STARTS_NUMBER_ADR];
+        break;
+      case POWER_REACTIVE_USAGE_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[POWER_REACTIVE_USAGE_ADR];
+        break;
+      case POWER_ACTIVE_USAGE_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[POWER_ACTIVE_USAGE_ADR];
+        break;
+      case POWER_FULL_USAGE_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[POWER_FULL_USAGE_ADR];
+        break;
+      case FUEL_USAGE_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[FUEL_USAGE_ADR];
+        break;
+      case FUEL_MOMENTAL_RATE_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = uSTATISTICSgetFuelMomentalRate();
+        break;
+      case FUEL_AVERAGE_RATE_OUT_ADR:
+        outputDataReg[chanel]->value[0U] = *freeDataArray[FUEL_RATE_ADR];
+        break;
       case EXTERNAL_DEVICES_ADR:
         vOUTPUTupdateExternDevice();
         break;

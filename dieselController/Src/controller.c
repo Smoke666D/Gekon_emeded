@@ -30,12 +30,19 @@
 #include "journal.h"
 #include "alarm.h"
 #include "dataAPI.h"
+#include "statistics.h"
 /*-------------------------------- Structures --------------------------------*/
 static CONTROLLER_INIT   controllerGPIO      = { 0U };
 static CONTROLLER_TYPE   controller          = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 
 /*--------------------------------- Constant ---------------------------------*/
+static const uint32_t allReinitFlags = DATA_API_FLAG_LCD_TASK_CONFIG_REINIT        |
+                                       DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT     |
+                                       DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT |
+                                       DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT    |
+                                       DATA_API_FLAG_FPI_TASK_CONFIG_REINIT        |
+                                       DATA_API_FLAG_ADC_TASK_CONFIG_REINIT;
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
 static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;
@@ -497,6 +504,8 @@ void vCONTROLLERmanualProcess ( ENGINE_STATUS engineState, ELECTRO_STATUS genera
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERdataInit ( void )
 {
+  controller.timer.delay        = 0U;
+  controller.timer.id           = LOGIC_DEFAULT_TIMER_ID;
   controller.stopDelay          = getValue( &timerReturnDelay );
   controller.startDelay         = getValue( &timerStartDelay  );
   controller.logWarning         = getBitMap( &logSetup,   LOG_SAVE_WARNING_EVENTS_ENB_ADR );
@@ -566,6 +575,7 @@ void vCONTROLLERresetAlarm ( void )
     controller.state = CONTROLLER_STATUS_IDLE;
     vLOGICresetTimer( &controller.timer );
     vCONTROLLERsetMode( CONTROLLER_MODE_MANUAL );
+    vSTATISTICSreset();
     /* Command to devices */
     vENGINEsendCmd( ENGINE_CMD_RESET_TO_IDLE );
     vELECTROsendCmd( ELECTRO_CMD_RESET_TO_IDLE );
@@ -618,6 +628,7 @@ void vCONTROLLERinit ( const CONTROLLER_INIT* init )
   vCONTROLLERsetLED( HMI_CMD_LOAD,   0U );
   vCONTROLLERsetLED( HMI_CMD_MANUAL, 1U );
   vCONTROLLERdataInit();
+  vSTATISTICSinit();
   const osThreadAttr_t controllerTask_attributes = {
     .name       = "fpiTask",
     .priority   = ( osPriority_t ) CONTROLLER_TASK_PRIORITY,
@@ -697,6 +708,7 @@ void vCONTROLLERtask ( void* argument )
     if ( ( systemEvent & DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT ) > 0U )
     {
       vCONTROLLERdataInit();
+      vSTATISTICSinit();
       vFPOdataInit();
       vALARMreInit();
       vCONTROLLERresetAlarm();
@@ -966,6 +978,13 @@ void vCONTROLLERtask ( void* argument )
         default:
           break;
       }
+    }
+    /*--------------------------------------------------------------------------------------------*/
+    /*---------------------------------- Statistic calculation -----------------------------------*/
+    /*--------------------------------------------------------------------------------------------*/
+    if ( ( systemEvent & allReinitFlags ) == 0U )
+    {
+      vSTATISTICSprocessing();
     }
     /*--------------------------------------------------------------------------------------------*/
     /*---------------------------------- CONTROLLER PROCESSING -----------------------------------*/

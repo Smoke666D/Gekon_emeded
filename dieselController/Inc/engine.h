@@ -82,13 +82,6 @@ typedef enum
 
 typedef enum
 {
-  MAINTENANCE_STATUS_STOP,            /* 00 Maintenance checker process inactive                      */
-  MAINTENANCE_STATUS_RUN,             /* 01 Maintenance checker waiting time delay                    */
-  MAINTENANCE_STATUS_CHECK,           /* 02 Maintenance checker check current state                   */
-} MAINTENANCE_STATUS;
-
-typedef enum
-{
   CHARGER_STATUS_IDLE,                /* 00 Charger controller analysis charger voltage               */
   CHARGER_STATUS_DELAY,               /* 01 Charger controller excites the charger                    */
   CHARGER_STATUS_MEASURING,           /* 02 Charger controller measuring charger voltage              */
@@ -127,19 +120,11 @@ typedef struct __packed
 
 typedef struct __packed
 {
-
-
-} FUEL_TANK_TYPE;
-
-typedef struct __packed
-{
   SENSOR             level;
-  fix16_t            tank;
   ALARM_TYPE         lowAlarm;
   ALARM_TYPE         lowPreAlarm;
   ALARM_TYPE         hightAlarm;
   ALARM_TYPE         hightPreAlarm;
-  ALARM_TYPE         leakAlarm;
   RELAY_AUTO_DEVICE  booster;
   RELAY_DEVICE       pump;
 } FUEL_TYPE;
@@ -193,21 +178,6 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  ALARM_TYPE alarm;
-  uint16_t   data;
-} MAINTENCE_VALUE;
-
-typedef struct __packed
-{
-  MAINTENANCE_STATUS status;
-  SYSTEM_TIMER     timer;
-  MAINTENCE_VALUE  oil;
-  MAINTENCE_VALUE  air;
-  MAINTENCE_VALUE  fuel;
-} MAINTENCE_TYPE;
-
-typedef struct __packed
-{
   /* Callback */
   setRelayCallBack       set;
   /* Delays */
@@ -240,6 +210,7 @@ typedef struct __packed
   ENGINE_STATUS   status            : 4U;
   PERMISSION      startCheckOil     : 1U;
   PERMISSION      banStart          : 1U;
+  TRIGGER_STATE   firstTurnout      : 1U;
   ERROR_TYPE      sensorCommonError;
   ERROR_TYPE      stopError;
   ERROR_TYPE      startError;
@@ -263,7 +234,8 @@ TRIGGER_STATE    eENGINEgetFuelSensorState ( void );
 fix16_t          fENGINEgetSpeed ( void );
 fix16_t          fENGINEgetOilPressure ( void );
 fix16_t          fENGINEgetCoolantTemp ( void );
-fix16_t          fENGINEgeyFuelLevel ( void );
+fix16_t          fENGINEgetFuelLevel ( void );
 RELAY_STATUS     eENGINEgetChargerState ( void );
+TRIGGER_STATE    eENGINEgetTurnout ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OIL_H_ */

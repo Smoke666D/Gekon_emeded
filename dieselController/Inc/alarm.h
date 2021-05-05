@@ -34,6 +34,7 @@ typedef struct __packed
 /*----------------------- Functions ------------------------------------*/
 void              vALARMinit ( void );
 void              vALARMreInit ( void );
+void              vEVENTtriggering ( SYSTEM_EVENT event );
 void              vALARMcheck ( ALARM_TYPE* alarm, fix16_t val );
 void              vALARMreset ( ALARM_TYPE* alarm );
 void              vERRORreset ( ERROR_TYPE* error );

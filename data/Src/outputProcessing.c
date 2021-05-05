@@ -201,16 +201,17 @@ void vOUTPUTinit ( void )
 /*----------------------------------------------------------------------------*/
 OUTPUT_REGISTER_TYPE eOUTPUTgetType ( uint8_t chanel )
 {
-  OUTPUT_REGISTER_TYPE res = OUTPUT_REGISTER_TYPE_RESERVED;
+  OUTPUT_REGISTER_TYPE res = OUTPUT_REGISTER_TYPE_READ_WRITE;
   if ( chanel <  CONTROL_READ_ONLY_NUMBER )
   {
     res = OUTPUT_REGISTER_TYPE_READ_ONLY;
   }
-  else
-  {
-    res = OUTPUT_REGISTER_TYPE_READ_WRITE;
-  }
   return res;
+}
+/*----------------------------------------------------------------------------*/
+uint16_t uOUTPUTread ( uint8_t chanel )
+{
+  return outputDataReg[chanel]->value[0U];
 }
 /*----------------------------------------------------------------------------*/
 OUTPUT_STATUS vOUTPUTwrite ( uint8_t chanel, uint16_t data )

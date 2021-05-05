@@ -11,6 +11,7 @@
 #include "mbport.h"
 #include "FreeRTOS.h"
 #include "event_groups.h"
+#include "outputProcessing.h"
 /*----------------------- Enums ---------------------------------------------------------------------*/
 typedef enum
 {
@@ -88,28 +89,13 @@ typedef enum
 #define ROM_REGISTER_CRC_ADR           0U
 #define ROM_REGISTER_DATA_OFS          1U
 /*----------------------- Functions -----------------------------------------------------------------*/
-MB_ROM_INIT_STATE eMBregisterInit ( void );
-void           vMBwriteROMRegister ( void );
-
-MB_DATA_STATUS eMBreadData ( uint16_t adr, uint16_t* data, uint16_t length );
-MB_DATA_STATUS eMBwriteData ( uint16_t adr, const uint16_t* data, uint16_t length );
+MB_DATA_STATUS eMBreadData ( uint8_t adr, uint16_t* data, uint16_t length );
+MB_DATA_STATUS eMBwriteData ( uint8_t adr, const uint16_t* data, uint16_t length );
 /*-------------- OS ---------------*/
-MB_INIT_STATE   eMBeventGroupInit ( void );
+MB_INIT_STATE  eMBeventGroupInit ( void );
 EventBits_t    eMBeventSet ( uint8_t adr);
 EventBits_t    eMBeventReset ( uint8_t adr);
 void           vMBeventFullReset ( void );
 void           vMBeventGet ( EventBits_t* uxBits );
-/*------------ Coils --------------*/
-void           vMBwriteCoils ( uint16_t adr, uint8_t *data, uint16_t count );
-void           vMBwriteCoil ( uint16_t adr, uint16_t OutputValue );
-/*------------ User ---------------*/
-uint16_t       uMBreadUserRegister ( uint16_t adr );
-void           vMBwriteUserRegister ( uint16_t adr, uint8_t *data, uint16_t count );
-void           vMBwriteShortToUserRegister ( uint16_t adr, uint16_t data, eMBRAMwrType wr );
-/*------------ Bit ----------------*/
-void           vMBreadBitData ( uint16_t adr, uint8_t *data, uint16_t count, BIT_DATA_TYPE dataType );
-/*------------ Modified flag ------*/
-void           vMBResetHoldingModifyFlag ( void );
-uint16_t       uMBGetHoldingModifyFlag ( void );
 /*---------------------------------------------------------------------------------------------------*/
 #endif /* INC_MBREGISTER_H_ */

@@ -42,13 +42,13 @@ void vMBcounterErrorInc ( void )
 * @param   none
 * @retval none
 */
-eMBInitState eMBreceiveMessageInit ( void )
+MB_INIT_STATE eMBreceiveMessageInit ( void )
 {
-  eMBInitState res   = EBInit_ERROR;
+  MB_INIT_STATE res   = EB_INIT_ERROR;
   xMessageRecevFrame = xStreamBufferCreate( xMessageRecevFrameSizeBytes, xTriggerLevel );
   if ( xMessageRecevFrame != NULL )
   {
-    res = EBInit_OK;
+    res = EB_INIT_OK;
   }
   return res;
 }
@@ -77,7 +77,7 @@ uint8_t uMBcheckMessage ( void )
 * @param   none
 * @retval none
 */
-size_t vMBreceiveMessage ( uint8_t* input, uint32_t size )
+size_t uMBreceiveMessage ( uint8_t* input, uint32_t size )
 {
   return xStreamBufferReceive( xMessageRecevFrame, input, size, xBlockTime );
 }
@@ -103,7 +103,7 @@ uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
   {
     if ( frameLength > MB_SER_PDU_SIZE_MIN )
     {
-      uMBgetRxBuffer( pUARTBuffer );
+      vMBgetRxBuffer( pUARTBuffer );
       frameCRC    = ( ( ( ( uint16_t ) pUARTBuffer[frameLength - 1U] ) ) << 8U ) |
                           ( uint16_t ) pUARTBuffer[frameLength - 2U];     /* Get CRC from received frame*/
       calcCRC     = usMBCRC16( pUARTBuffer, ( frameLength - 2U ) );

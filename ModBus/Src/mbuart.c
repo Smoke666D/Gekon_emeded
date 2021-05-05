@@ -11,8 +11,10 @@
 #include "semphr.h"
 #include "FreeRTOS.h"
 #include "mbrtu.h"
-
-static const uint32_t BoundRateTable[] = { 1200U, 2400U, 4800U, 9600U, 14400U, 19200U, 38400U, 56000U, 57600U, 115200U, 128000U, 256000U };
+#include "config.h"
+#include "dataProces.h"
+/*----------------------- Constatnts ----------------------------------------------------------------*/
+static const uint32_t BoundRateTable[BOUDRATE_SIZE] = { 1200U, 2400U, 4800U, 9600U, 14400U, 19200U, 38400U, 56000U, 57600U, 115200U, 128000U, 256000U };
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 static          MB_UART_TYPE   mbUart  = { 0U };
@@ -20,59 +22,46 @@ static          MB_TIMER_TYPE  mbTimer = { 0U };
 static volatile MB_BUFFER_TYPE rx      = { 0U };
 static volatile MB_BUFFER_TYPE tx      = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
-eMBInitState eMBtimInit ( TIM_HandleTypeDef *tim, eMBUartBaudRate baudRate );
-eMBInitState eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity );
-void         vRS485setReadMode ( MB_DE_TYPE de );
-void         vRS485setWriteMode ( MB_DE_TYPE de );
-void         vMBcleanUartInput ( UART_HandleTypeDef *uart );
+MB_INIT_STATE eMBtimInit ( TIM_HandleTypeDef *tim, eMBUartBaudRate baudRate );
+MB_INIT_STATE eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity );
+void          vRS485setReadMode ( MB_DE_TYPE de );
+void          vRS485setWriteMode ( MB_DE_TYPE de );
+void          vMBcleanUartInput ( UART_HandleTypeDef *uart );
 /*---------------------------------------------------------------------------------------------------*/
 /**
   * @brief   ModBus Re Initialization Function
   * @param   none
   * @retval Status of result (EBInit_ERROR or EBInit_OK)
   */
-eMBInitState eMBReInit ( void )
+MB_INIT_STATE eMBreInit ( void )
 {
-  uint8_t      state = 0U;
-  eMBInitState res   = EBInit_ERROR;
-  __disable_irq ();
+  MB_INIT_STATE res = EB_INIT_ERROR;
   /*---------------------- Memory -----------------------*/
-    mbUart.settings.baudRate = uMBreadUserRegister( USER_REGISTER_BOUND_RATE_ADR );
-    mbUart.settings.parity   = uMBreadUserRegister( USER_REGISTER_PARITY_ADR );
-    mbUart.adr               = uMBreadUserRegister( USER_REGISTER_ADDRESS_ADR );
-    if ( !IS_MB_BAUD_RATE( mbUart.settings.baudRate ) )
+  mbUart.settings.baudRate = getBitMap( &modbusSetup, MODBUS_BAUDRATE_ADR );
+  mbUart.settings.parity   = DEFINE_PARITY;
+  mbUart.adr               = getBitMap( &modbusSetup, MODBUS_ADR_ADR );
+  if ( !IS_MB_BAUD_RATE( mbUart.settings.baudRate ) )
+  {
+    mbUart.settings.baudRate = DEFINE_BAUD_RATE;
+  }
+  if ( !IS_MB_PARITY( mbUart.settings.parity ) )
+  {
+    mbUart.settings.parity = DEFINE_PARITY;
+  }
+  if ( !IS_MB_ADDRESS( mbUart.adr ) )
+  {
+    mbUart.adr = DEFINE_ADDRESS;
+  }
+  /*---------------------- TIM -------------------------*/
+  if ( eMBtimInit( mbTimer.tim, mbUart.settings.baudRate ) == EB_INIT_OK )
+  {
+    /*---------------------- USART ------------------------*/
+    if ( eMbuartInit( mbUart.serial, mbUart.settings.baudRate, mbUart.settings.parity ) == EB_INIT_OK )
     {
-      mbUart.settings.baudRate = DEFINE_BAUD_RATE;
-      //vMBWriteShortToUserRegister( USER_REGISTER_BOUND_RATE_ADR, baudRate, RAM_NON_WR );
-      state = 1U;
+      vRS485setReadMode( mbUart.de );
+      res = EB_INIT_OK;
     }
-    if ( !IS_MB_PARITY( mbUart.settings.parity ) )
-    {
-      mbUart.settings.parity = DEFINE_PARITY;
-      //vMBWriteShortToUserRegister( USER_REGISTER_PARITY_ADR, parity, RAM_NON_WR );
-      state = 1U;
-    }
-    if ( !IS_MB_ADDRESS( mbUart.adr ) )
-    {
-      mbUart.adr = DEFINE_ADDRESS;
-      //vMBWriteShortToUserRegister( USER_REGISTER_ADDRESS_ADR, adrReg, RAM_NON_WR );
-      state = 1U;
-    }
-    if ( state > 0U )
-    {
-      //vMBWriteROMRegister();
-    }
-    /*---------------------- TIM -------------------------*/
-    if( eMBtimInit( mbTimer.tim, mbUart.settings.baudRate ) == EBInit_OK )
-    {
-      /*---------------------- USART ------------------------*/
-      if( eMbuartInit( mbUart.serial, mbUart.settings.baudRate, mbUart.settings.parity ) == EBInit_OK )
-      {
-        vRS485setReadMode( mbUart.de );
-        __enable_irq ();
-        res = EBInit_OK;
-      }
-    }
+  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -81,7 +70,7 @@ eMBInitState eMBReInit ( void )
   * @param   ModBus structure
   * @retval Status of result (EBInit_ERROR or EBInit_OK)
   */
-eMBInitState eMBInit ( MB_INIT_TYPE init )
+MB_INIT_STATE eMBhardwareInit ( MB_INIT_TYPE init )
 {
   mbUart.state.send    = STATE_TX_IDLE;
   mbUart.state.receive = STATE_RX_INIT;
@@ -89,7 +78,7 @@ eMBInitState eMBInit ( MB_INIT_TYPE init )
   mbUart.de.pin        = init.pin;
   mbUart.de.port       = init.port;
   mbTimer.tim          = init.tim;
-  return eMBReInit();    /* Devices initialization  */
+  return eMBreInit();    /* Devices initialization  */
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
@@ -155,10 +144,10 @@ void vRS485setReadMode ( MB_DE_TYPE de )
   * @param UART stucture
   * @retval Status of result (EBInit_ERROR or EBInit_OK)
   */
-eMBInitState eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity )
+MB_INIT_STATE eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity )
 {
-  uint16_t     i   = 0U;
-  eMBInitState res = EBInit_ERROR;
+  uint16_t      i   = 0U;
+  MB_INIT_STATE res = EB_INIT_ERROR;
   __HAL_UART_DISABLE( uart );
   if ( HAL_UART_DeInit( uart ) == HAL_OK )
   {
@@ -208,7 +197,7 @@ eMBInitState eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, e
       __HAL_UART_DISABLE_IT( uart, UART_IT_TC );      /* Transmission Complete Interrupt Disable  */
       __HAL_UART_ENABLE_IT( uart, UART_IT_RXNE );     /* UART Data Register not empty Interrupt Enable */
       //__HAL_UART_ENABLE( uart );
-      res = EBInit_OK;
+      res = EB_INIT_OK;
     }
   }
   return res;
@@ -231,8 +220,7 @@ uint8_t uMBreadUartInput ( UART_HandleTypeDef *uart )
   */
 void vMBcleanUartInput ( UART_HandleTypeDef *uart )
 {
-  uint16_t buf = 0U;
-  buf = __HAL_UART_FLUSH_DRREGISTER( uart ) & 0xFFU;
+  uint16_t buf = __HAL_UART_FLUSH_DRREGISTER( uart ) & 0xFFU;
   buf++;
   return;
 }
@@ -253,7 +241,7 @@ uint16_t uMBgetByteCounter ( void )
   * @param   none
   * @retval uint8_t
   */
-void uMBgetRxBuffer ( volatile uint8_t* output )
+void vMBgetRxBuffer ( volatile uint8_t* output )
 {
   output = &rx.buffer[0U];
   return;
@@ -356,24 +344,16 @@ void vMBputStrPakMaster ( uint8_t* data, uint16_t count )
   * @param TIM structure
   * @retval Status of result (EBInit_ERROR or EBInit_OK)
   */
-eMBInitState eMBtimInit ( TIM_HandleTypeDef* tim, eMBUartBaudRate baudRate )
+MB_INIT_STATE eMBtimInit ( TIM_HandleTypeDef* tim, eMBUartBaudRate baudRate )
 {
-  /*--------------- Define --------------------------------------------*/
-
-  /*--------------- Structure -----------------------------------------*/
   TIM_ClockConfigTypeDef  sClockSourceConfig = { 0U };
   TIM_MasterConfigTypeDef sMasterConfig      = { 0U };
-  eMBInitState            res                = EBInit_ERROR;
-  /*--------------- Var -----------------------------------------------*/
-  float halfCharInterval = 0U;
+  MB_INIT_STATE           res                = EB_INIT_ERROR;
+  float                   halfCharInterval   = MB_TIMER_TARGET_INTERVAL;
   /* ------------------------------------------------------------------*/
   __HAL_TIM_DISABLE( tim );
   __HAL_TIM_DISABLE_IT( tim, TIM_IT_UPDATE );
-  if( baudRate > UART_14400 )
-  {
-    halfCharInterval = 0.00025f;
-  }
-  else
+  if ( baudRate <= UART_14400 )
   {
     halfCharInterval = ( 5U / ( float )BoundRateTable[baudRate] );
   }
@@ -395,7 +375,7 @@ eMBInitState eMBtimInit ( TIM_HandleTypeDef* tim, eMBUartBaudRate baudRate )
         if( HAL_TIMEx_MasterConfigSynchronization( tim, &sMasterConfig ) == HAL_OK )
         {
           __HAL_TIM_ENABLE_IT( tim, TIM_IT_UPDATE );
-          res = EBInit_OK;
+          res = EB_INIT_OK;
         }
       }
     }
@@ -463,7 +443,7 @@ void vMBtimHandler( void )
     __HAL_TIM_SET_COUNTER( mbTimer.tim, 0U );    /* Reset timer counter */
     mbTimer.counter.nok = 0U;                      /* Reset NOK counter */
   }
-  if( mbTimer.counter.half == 3U )
+  if ( mbTimer.counter.half == 3U )
   {
     mbTimer.counter.nok++;
   }

@@ -11,6 +11,7 @@
 #include "mbport.h"
 /*----------------------- Define --------------------------------------------------------------------*/
 #define BUFFER_SIZE              260U
+#define BOUDRATE_SIZE            12U
 #define DEFINE_BAUD_RATE         UART_115200
 #define DEFINE_PARITY            PARITY_EVEN
 #define DEFINE_ADDRESS           MB_ADDRESS_MIN
@@ -146,26 +147,24 @@ typedef struct __packed
                                           ( ( INSTANCE ) == UART_115200 ) || \
                                           ( ( INSTANCE ) == UART_128000 ) || \
                                           ( ( INSTANCE ) == UART_256000 ) )
-
 #define IS_MB_PARITY( INSTANCE )         ( ( ( INSTANCE ) == STOP_BIT_2 )  || \
-                                          ( ( INSTANCE ) == PARITY_EVEN ) || \
-                                          ( ( INSTANCE ) == PARITY_ODD ) )
-
-#define  IS_MB_ADDRESS( INSTANCE )        ( ( ( INSTANCE ) <= MB_ADDRESS_MAX ) && ( ( INSTANCE ) != MB_ADDRESS_BROADCAST ) )
+                                           ( ( INSTANCE ) == PARITY_EVEN ) || \
+                                           ( ( INSTANCE ) == PARITY_ODD ) )
+#define IS_MB_ADDRESS( INSTANCE )        ( ( ( INSTANCE ) <= MB_ADDRESS_MAX ) && ( ( INSTANCE ) != MB_ADDRESS_BROADCAST ) )
 /*----------------------- Functions -----------------------------------------------------------------*/
-eMBInitState   eMBInit ( MB_INIT_TYPE init );
-eMBInitState   eMBReInit ( void );
-void           vMBSetAdrReg ( uint8_t val );
-uint8_t        uMBGetCurSlaveAdr ( void );
-eMBROMInitType eMBGetROMInitResult ( void );
-eMBSndState    eMBGetSendState ( void );
-eMBRcvState    eMBGetRcvState ( void );
-void           vMBstartHalfCharTimer ( void );
-void           uMBgetRxBuffer ( volatile uint8_t* output );
-void           vMBputStrPak ( uint8_t *data, uint16_t count );  /* Send data via UART */
-void           vMBputStrPakMaster ( uint8_t *s, uint16_t c );
-uint16_t       uMBGetATUByteCounter ( void );
-void           vMBtimHandler ( void );
-void           vMBuartHandler ( void );
+MB_INIT_STATE     eMBhardwareInit ( MB_INIT_TYPE init );
+MB_INIT_STATE     eMBreInit ( void );
+void              vMBSetAdrReg ( uint8_t val );
+uint8_t           uMBGetCurSlaveAdr ( void );
+MB_ROM_INIT_STATE eMBGetROMInitResult ( void );
+eMBSndState       eMBGetSendState ( void );
+eMBRcvState       eMBGetRcvState ( void );
+void              vMBstartHalfCharTimer ( void );
+void              vMBgetRxBuffer ( volatile uint8_t* output );
+void              vMBputStrPak ( uint8_t *data, uint16_t count );  /* Send data via UART */
+void              vMBputStrPakMaster ( uint8_t *s, uint16_t c );
+uint16_t          uMBGetATUByteCounter ( void );
+void              vMBtimHandler ( void );
+void              vMBuartHandler ( void );
 /*---------------------------------------------------------------------------------------------------*/
 #endif /* INC_MBUART_H_ */

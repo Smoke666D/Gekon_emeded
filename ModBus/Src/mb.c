@@ -21,155 +21,154 @@
 #include "string.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static osThreadId_t   MBpollTaskHandle = NULL;             /* eMBPoll task */
-static eMBException   eException       = MB_EX_NONE;      /* ModBus states */
+static MB_EXCEPTION   eException       = MB_EX_NONE;      /* ModBus states */
 static MB_FRAME_TYPE  mbFrame          = { 0U };
 static MB_STATES_TYPE mbState          = { 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
 static uint8_t  inputMessage[OS_MB_MESSAGE_SIZE] = { 0U }; /* Input frame buffer */
 static size_t   xReceivedBytes                   = 0U;     /* Number of received bytes from stream buffer */
-static uint32_t taskTime                         = 0U;     /* System variable for processor loading calculation */
 /*----------------------- Functions -----------------------------------------------------------------*/
-void eMBPoll ( void *argument );
+void eMBpoll ( void *argument );
 /*----------------------- Structures ----------------------------------------------------------------*/
-static MBFunctionHandlerTable eMBFuncHandlers[] =
+static const MBFunctionHandlerTable eMBFuncHandlers[MAX_FUN_NUM + 1U] =
 {
   /*------------------- 00 -------------------*/
-  eMBNoFunction,
+  { eMBNoFunction },
   /*------------------- 01 -------------------*/
   #if ( MB_FUNC_READ_COILS_ENABLED )
-    eMBFuncReadCoils,
+    { eMBFuncReadCoils },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 02 -------------------*/
   #if ( MB_FUNC_READ_DISCRETE_INPUTS_ENABLED )
-    eMBFuncReadDiscreteInputs,
+    { eMBFuncReadDiscreteInputs },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 03 -------------------*/
   #if ( MB_FUNC_READ_HOLDING_ENABLED )
-    eMBFuncReadHoldingRegister,
+    { eMBFuncReadHoldingRegister },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 04 -------------------*/
   #if ( MB_FUNC_READ_INPUT_ENABLED )
-    eMBFuncReadInputRegister,
+    { eMBFuncReadInputRegister },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 05 -------------------*/
   #if ( MB_FUNC_WRITE_COIL_ENABLED )
-    eMBFuncWriteCoil,
+    { eMBFuncWriteCoil },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 06 -------------------*/
   #if ( MB_FUNC_WRITE_HOLDING_ENABLED )
-    eMBFuncWriteHoldingRegister,
+    { eMBFuncWriteHoldingRegister },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 07 -------------------*/
-  eMBNoFunction,        // Read Exception Status
+  { eMBNoFunction },        // Read Exception Status
   /*------------------- 08 -------------------*/
   #if ( MB_FUNC_DIAGNOSTICS_ENEBLED )
-    eMBNoFunction,        // Read Diagnostic
+    { eMBNoFunction },        // Read Diagnostic
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 09 -------------------*/
-  eMBNoFunction,        // 09
+  { eMBNoFunction },
   /*------------------- 10 -------------------*/
-  eMBNoFunction,        // 10
+  { eMBNoFunction },
   /*------------------- 11 -------------------*/
-  eMBNoFunction,        // Get CommEvernCounter
+  { eMBNoFunction },        // Get CommEvernCounter
   /*------------------- 12 -------------------*/
-  eMBNoFunction,        // Get CommEvernLog
+  { eMBNoFunction },        // Get CommEvernLog
   /*------------------- 13 -------------------*/
-  eMBNoFunction,        // 13
+  { eMBNoFunction },
   /*------------------- 14 -------------------*/
-  eMBNoFunction,        // 14
+  { eMBNoFunction },
   /*------------------- 15 -------------------*/
   #if ( MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED )
-    eMBFuncWriteMultipleCoils,
+    { eMBFuncWriteMultipleCoils },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 16 -------------------*/
   #if ( MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED )
-    eMBFuncWriteMultipleHoldingRegister,
+    { eMBFuncWriteMultipleHoldingRegister },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 17 -------------------*/
-  eMBNoFunction, // 17
+  { eMBNoFunction },
   /*------------------- 18 -------------------*/
-  eMBNoFunction, // 18
+  { eMBNoFunction },
   /*------------------- 19 -------------------*/
-  eMBNoFunction, // 19
+  { eMBNoFunction },
   /*------------------- 20 -------------------*/
-  eMBNoFunction, // 20
+  { eMBNoFunction },
   /*------------------- 21 -------------------*/
-  eMBNoFunction, // 21
+  { eMBNoFunction },
   /*------------------- 22 -------------------*/
   #if ( MB_FUNC_MASK_WRITE_REGISTER_ENABLED )
-    eMBFuncMaskWriteRegister,
+    { eMBFuncMaskWriteRegister },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 23 -------------------*/
   #if ( MB_FUNC_READWRITE_HOLDING_ENABLED )
-    eMBFuncReadWriteMultipleHoldingRegister,
+    { eMBFuncReadWriteMultipleHoldingRegister },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
   /*------------------- 24 -------------------*/
-  eMBNoFunction, //24
+  { eMBNoFunction },
   /*------------------- 25 -------------------*/
-  eMBNoFunction, //25
+  { eMBNoFunction },
   /*------------------- 26 -------------------*/
-  eMBNoFunction, //26
+  { eMBNoFunction },
   /*------------------- 27 -------------------*/
-  eMBNoFunction, //27
+  { eMBNoFunction },
   /*------------------- 28 -------------------*/
-  eMBNoFunction, //28
+  { eMBNoFunction },
   /*------------------- 29 -------------------*/
-  eMBNoFunction, //29
+  { eMBNoFunction },
   /*------------------- 30 -------------------*/
-  eMBNoFunction, //30
+  { eMBNoFunction },
   /*------------------- 31 -------------------*/
-  eMBNoFunction, //31
+  { eMBNoFunction },
   /*------------------- 32 -------------------*/
-  eMBNoFunction, //32
+  { eMBNoFunction },
   /*------------------- 33 -------------------*/
-  eMBNoFunction, //33
+  { eMBNoFunction },
   /*------------------- 34 -------------------*/
-  eMBNoFunction, //34
+  { eMBNoFunction },
   /*------------------- 35 -------------------*/
-  eMBNoFunction, //35
+  { eMBNoFunction },
   /*------------------- 36 -------------------*/
-  eMBNoFunction, //36
+  { eMBNoFunction },
   /*------------------- 37 -------------------*/
-  eMBNoFunction, //37
+  { eMBNoFunction },
   /*------------------- 38 -------------------*/
-  eMBNoFunction, //38
+  { eMBNoFunction },
   /*------------------- 39 -------------------*/
-  eMBNoFunction, //39
+  { eMBNoFunction },
   /*------------------- 40 -------------------*/
-  eMBNoFunction, //40
+  { eMBNoFunction },
   /*------------------- 41 -------------------*/
-  eMBNoFunction, //41
+  { eMBNoFunction },
   /*------------------- 42 -------------------*/
-  eMBNoFunction, //42
+  { eMBNoFunction },
   /*------------------- 43 -------------------*/
-  eMBNoFunction, // Read device Identification
+  { eMBNoFunction }, // Read device Identification
   /*------------------- 44 -------------------*/
   #if ( MB_FUNC_SET_RS_PARAMETERS_ENEBLED )
-    eMBFuncSetRSParameters,
+    { eMBFuncSetRSParameters },
   #else
-    eMBNoFunction,
+    { eMBNoFunction },
   #endif
 };
 /*---------------------------------------------------------------------------------------------------*/
@@ -178,7 +177,7 @@ static MBFunctionHandlerTable eMBFuncHandlers[] =
 * @param   none
 * @retval none
 */
-void vMBListenOnlyModeEnablae( void )
+void vMBlistenOnlyModeEnablae( void )
 {
   mbState.ListenOnlyMode = 1U;
   return;
@@ -200,7 +199,7 @@ void vMBListenOnlyModeDisable( void )
 * @param   none
 * @retval none
 */
-void vMBStartUpMB( void )
+void vMBstartUpMB( void )
 {
   mbState.ListenOnlyMode = 0U;
   vMBstartHalfCharTimer();
@@ -212,7 +211,7 @@ void vMBStartUpMB( void )
 * @param   none
 * @retval none
 */
-void vMBSetMasterMode( void )
+void vMBsetMasterMode( void )
 {
   mbState.MasterMode = 1U;
   return;
@@ -223,7 +222,7 @@ void vMBSetMasterMode( void )
 * @param   none
 * @retval state of ModBus
 */
-uint8_t ucMBIfMasterMode ( void )
+uint8_t uMBifMasterMode ( void )
 {
   return mbState.MasterMode;
 }
@@ -234,7 +233,7 @@ uint8_t ucMBIfMasterMode ( void )
 *         usLen    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBNoFunction ( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBNoFunction ( uint8_t* pucFrame, uint8_t* len )
 {
   return MB_EX_ILLEGAL_FUNCTION;
 }
@@ -245,7 +244,7 @@ eMBException eMBNoFunction ( uint8_t* pucFrame, uint8_t* len )
 * @param   none
 * @retval frame address
 */
-uint8_t uMBGetRequestAdress ( void )
+uint8_t uMBgetRequestAdress ( void )
 {
   return mbFrame.adr;
 }
@@ -255,12 +254,12 @@ uint8_t uMBGetRequestAdress ( void )
 * @param   none
 * @retval none
 */
-eMBInitState eMBQueueInit ( void )
+MB_INIT_STATE eMBQueueInit ( void )
 {
-  eMBInitState res = EBInit_OK;
+  MB_INIT_STATE res = EB_INIT_OK;
 
   res = eMBreceiveMessageInit();
-  if ( res == EBInit_OK )
+  if ( res == EB_INIT_OK )
   {
     res = eMBeventGroupInit();
   }
@@ -280,41 +279,20 @@ void vMBTaskInit ( void )
     .priority   = OS_MB_TASK_PRIORITY,
     .stack_size = OS_MB_TASK_STACK_SIZE
   };
-  MBpollTaskHandle = osThreadNew( eMBPoll, NULL, &MBpollTask_attributes );
-  vMBStartUpMB();
-  return;
-}
-
-/*---------------------------------------------------------------------------------------------------*/
-/**
-* @brief   Get system task time counter
-* @param   none
-* @retval task counter
-*/
-uint32_t uMBGetTaskTime ( void )
-{
-  return taskTime;
-}
-/*---------------------------------------------------------------------------------------------------*/
-/**
-* @brief   Increment system task counter
-* @param   none
-* @retval none
-*/
-void vMBIncTaskTime ( void )
-{
-  taskTime++;
+  MBpollTaskHandle = osThreadNew( eMBpoll, NULL, &MBpollTask_attributes );
+  vMBstartUpMB();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-/**
-* @brief   Reset system task counter
-* @param   none
-* @retval none
-*/
-void vMBResetTaskTime ( void )
+void vMBinit ( MB_INIT_TYPE init )
 {
-  taskTime = 0U;
+  if ( eMBhardwareInit( init ) == EB_INIT_OK )
+  {
+    if ( eMBQueueInit() == EB_INIT_OK )
+    {
+      vMBTaskInit();
+    }
+  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -323,14 +301,13 @@ void vMBResetTaskTime ( void )
 * @param   none
 * @retval none
 */
-void eMBPoll ( void *argument )
+void eMBpoll ( void *argument )
 {
   for(;;)
   {
-    vMBIncTaskTime();
     if ( uMBcheckMessage() > 0U )
     {
-      xReceivedBytes = vMBreceiveMessage( inputMessage, sizeof( inputMessage ) );
+      xReceivedBytes = uMBreceiveMessage( inputMessage, sizeof( inputMessage ) );
       if ( xReceivedBytes > 0U )
       {
         if ( eMBRTUreceive( inputMessage, &mbFrame ) == VALID_FRAME )    /* Frame valid checking and copy frame to buffer */
@@ -367,8 +344,8 @@ void eMBPoll ( void *argument )
             if  ( eException == MB_EX_REINIT )
             {
               taskENTER_CRITICAL();
-              eMBReInit();
-              vMBStartUpMB();
+              eMBreInit();
+              vMBstartUpMB();
               taskEXIT_CRITICAL();
             }
           }
@@ -385,8 +362,8 @@ void eMBPoll ( void *argument )
             if ( eException == MB_EX_REINIT )
             {
               taskENTER_CRITICAL();
-              eMBReInit();
-              vMBStartUpMB();
+              eMBreInit();
+              vMBstartUpMB();
               taskEXIT_CRITICAL();
             }
           }

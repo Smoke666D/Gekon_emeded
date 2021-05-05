@@ -45,13 +45,13 @@
 *         len      - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncMaskWriteRegister ( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncMaskWriteRegister ( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress = 0U;
   uint16_t     usData     = 0U;
   uint16_t     andMask    = 0U;
   uint16_t     orMask     = 0U;
-  eMBException status     = MB_EX_NONE;
+  MB_EXCEPTION status     = MB_EX_NONE;
   /* Address validation */
   regAddress = ( uint16_t )( pucFrame[STARTING_ADDRESS_HI] << 8U ) | ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
   if ( regAddress < HR_REGISTER_COUNT )
@@ -87,12 +87,11 @@ eMBException eMBFuncMaskWriteRegister ( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncWriteHoldingRegister ( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncWriteHoldingRegister ( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress = 0U;
-  eMBException status     = MB_EX_NONE;
-
-  if( *len == MB_PDU_FUNC_WRITE_SIZE )
+  MB_EXCEPTION status     = MB_EX_NONE;
+  if ( *len == MB_PDU_FUNC_WRITE_SIZE )
   {
     regAddress = ( uint16_t )( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) | ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
     if ( regAddress < HR_REGISTER_COUNT )
@@ -119,28 +118,28 @@ eMBException eMBFuncWriteHoldingRegister ( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncWriteMultipleHoldingRegister( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncWriteMultipleHoldingRegister( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress   = 0U;
   uint16_t     regCount     = 0U;
   uint8_t      regByteCount = 0U;
-  eMBException status       = MB_EX_NONE;
+  MB_EXCEPTION status       = MB_EX_NONE;
 
   if ( *len >= ( MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + MB_PDU_SIZE_MIN ) )
   {
     /* Address validation */
     regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) |
                      ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
-    regCount   = ( ( ( uint16_t )pucFrame[3U] ) << 8U ) |
-                     ( uint16_t )pucFrame[4U];
+    regCount   = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI] ) << 8U ) |
+                     ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_LO];
     if ( ( regCount + regAddress) <= HR_REGISTER_COUNT )
     {
-      regByteCount = pucFrame[5U];
+      regByteCount = pucFrame[BYTE_COUNT];
       if( ( regCount     >= 1U                               ) &&
           ( regCount     <= MB_PDU_FUNC_WRITE_MUL_REGCNT_MAX ) &&
           ( regByteCount == ( uint8_t ) ( 2U * regCount )    ) )
       {
-        eMBwriteData( regAddress, ( uint16_t* )( &pucFrame[6U] ), ( regByteCount / 2U ) );
+        eMBwriteData( regAddress, ( uint16_t* )( &pucFrame[MB_MULTI_DATA_START] ), ( regByteCount / 2U ) );
         *len = MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF;
       }
       else
@@ -159,7 +158,6 @@ eMBException eMBFuncWriteMultipleHoldingRegister( uint8_t* pucFrame, uint8_t* le
   }
   return status;
 }
-
 #endif
 /*---------------------------------------------------------------------------------------------------*/
 #if ( MB_FUNC_READ_HOLDING_ENABLED )
@@ -169,32 +167,35 @@ eMBException eMBFuncWriteMultipleHoldingRegister( uint8_t* pucFrame, uint8_t* le
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncReadHoldingRegister( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncReadHoldingRegister( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress   = 0U;          /* The Data Address of the first register requested */
   uint16_t     regCount     = 0U;          /* The total number of registers requested */
   uint16_t     buffer       = 0U;
   uint8_t*     pucFrameCur  = NULL;        /* Response frame */
   uint8_t      i            = 0U;
-  eMBException status       = MB_EX_NONE;
+  MB_EXCEPTION status       = MB_EX_NONE;
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
   {
-    regAddress = ( ( ( uint16_t )pucFrame[1U] ) << 8U ) | ( uint16_t )pucFrame[2U];
-    regCount   = ( ( ( uint16_t )pucFrame[3U] ) << 8U ) | ( uint16_t )pucFrame[4U];
+    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U )    | ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
+    regCount   = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI] ) << 8U ) | ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_LO];
     if ( ( regCount + regAddress ) <= HR_REGISTER_COUNT )                        /* Register address validation */
     {
       if ( ( regCount >= 1U ) && ( regCount <= MB_PDU_FUNC_READ_REGCNT_MAX ) )
       {
-        pucFrameCur     = &pucFrame[MB_PDU_FUNC_OFF];                                /* Set the current PDU data pointer to the beginning. */
-        pucFrameCur[0U] = MB_FUNC_READ_HOLDING_REGISTER;                             /* First byte contains the function code. */
-        pucFrameCur[1U] = ( uint8_t )( regCount*2U );                                /* Second byte in the response contain the number of bytes. */
+        pucFrameCur     = &pucFrame[MB_PDU_FUNC_OFF];    /* Set the current PDU data pointer to the beginning. */
+        pucFrameCur[0U] = MB_FUNC_READ_HOLDING_REGISTER; /* First byte contains the function code. */
+        pucFrameCur[1U] = ( uint8_t )( regCount * 2U );  /* Second byte in the response contain the number of bytes. */
+        eMBreadData( regAddress, ( uint16_t* )( pucFrameCur[2U] ), regCount );
+        /*
         for ( i=0; i < regCount; i++ )
         {
-          eMBwriteData( ( i + regAddress ), &buffer, 1U );
+          eMBreadData( ( i + regAddress ), &buffer, 1U );
           pucFrameCur[2U + ( 2U * i )] = ( uint8_t )( buffer >> 8U );
           pucFrameCur[3U + ( 2U * i )] = ( uint8_t )( buffer & 0x00FFU );
         }
+        */
         *len = 2U + ( regCount * 2U );
       }
       else
@@ -222,13 +223,13 @@ eMBException eMBFuncReadHoldingRegister( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncReadInputRegister ( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncReadInputRegister ( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress   = 0U;
   uint16_t     regCount     = 0U;
   uint16_t     data         = 0U;
   uint8_t      i            = 0U;
-  eMBException status       = MB_EX_NONE;
+  MB_EXCEPTION status       = MB_EX_NONE;
   uint8_t      *pucFrameCur = NULL;
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
@@ -278,12 +279,12 @@ eMBException eMBFuncReadInputRegister ( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncReadDiscreteInputs( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncReadDiscreteInputs( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress   = 0U;
   uint16_t     regCount     = 0U;
   uint8_t      *pucFrameCur = NULL;
-  eMBException status       = MB_EX_NONE;
+  MB_EXCEPTION status       = MB_EX_NONE;
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
   {
@@ -335,12 +336,12 @@ eMBException eMBFuncReadDiscreteInputs( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncReadCoils( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncReadCoils( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress  = 0U;
   uint16_t     regCount    = 0U;
   uint8_t*     pucFrameCur = NULL;
-  eMBException status      = MB_EX_NONE;
+  MB_EXCEPTION status      = MB_EX_NONE;
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
   {
@@ -392,11 +393,11 @@ eMBException eMBFuncReadCoils( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncWriteCoil( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncWriteCoil( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress = 0U;
   uint16_t     output     = 0U;
-  eMBException status     = MB_EX_NONE;
+  MB_EXCEPTION status     = MB_EX_NONE;
 
   output = ( uint16_t )( pucFrame[OUTPUT_VALUE_HI] << 8U ) | ( uint16_t )( pucFrame[OUTPUT_VALUE_LO] );                          // Проверка валидности выходных данных
   if ( ( *len == MB_PDU_FUNC_WRITE_SIZE ) &&
@@ -430,12 +431,12 @@ eMBException eMBFuncWriteCoil( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncWriteMultipleCoils( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncWriteMultipleCoils( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress     = 0U;
   uint16_t     regCount       = 0U;
   uint16_t     ucRegByteCount = 0U;
-  eMBException status         = MB_EX_NONE;
+  MB_EXCEPTION status         = MB_EX_NONE;
 
   regCount = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI]) << 8U ) | ( uint16_t )( pucFrame[QUANTITY_OF_OUTPUTS_LO] );
   /* Address validation */
@@ -478,10 +479,10 @@ eMBException eMBFuncWriteMultipleCoils( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncDiagnostics( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncDiagnostics( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t        SubFunctionCode = 0U;
-  eMBException  status         = MB_EX_NONE;
+  MB_EXCEPTION  status         = MB_EX_NONE;
 
   SubFunctionCode = ( uint16_t )( pucFrame[SUB_FUNCTION_HI] << 8U ) | ( uint16_t )( pucFrame[SUB_FUNCTION_LO] );
   switch ( SubFunctionCode )
@@ -504,6 +505,7 @@ eMBException eMBFuncDiagnostics( uint8_t* pucFrame, uint8_t* len )
 }
 #endif
 /*---------------------------------------------------------------------------------------------------*/
+#if ( MB_FUNC_SET_RS_PARAMETERS_ENEBLED )
 /**
 * @brief   Change UART parameters function
 *
@@ -511,9 +513,9 @@ eMBException eMBFuncDiagnostics( uint8_t* pucFrame, uint8_t* len )
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
-eMBException eMBFuncSetRSParameters( uint8_t* pucFrame, uint8_t* len )
+MB_EXCEPTION eMBFuncSetRSParameters( uint8_t* pucFrame, uint8_t* len )
 {
-  eMBException status          = MB_EX_REINIT;
+  MB_EXCEPTION status          = MB_EX_REINIT;
   uint16_t     subFunctionCode = 0U;
   uint8_t      data            = 0U;
 
@@ -562,3 +564,4 @@ eMBException eMBFuncSetRSParameters( uint8_t* pucFrame, uint8_t* len )
   }
   return status;
 }
+#endif

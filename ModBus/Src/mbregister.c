@@ -26,25 +26,23 @@ static uint16_t   REGISTER [REGISTER_COUNT + 2U];
   const uint16_t USERRegisterDefault[USER_REGISTER_COUNT] = { DEFINE_BAUD_RATE, DEFINE_PARITY, DEFINE_ADDRESS };
 #endif
 /*----------------------- Functions -----------------------------------------------------------------*/
-uint16_t          uMBreadROMShort ( uint16_t addr );
-CHECK_ROM_ERROR   eMBcheckROM ( void );
 /*---------------------------------------------------------------------------------------------------*/
 /**
 * @brief   Initialization of event group array
 * @param   none
 * @retval status of initialization
 */
-eMBInitState eMBeventGroupInit ( void )
+MB_INIT_STATE eMBeventGroupInit ( void )
 {
   uint32_t       i   = 0U;
-  eMBInitState   res = EBInit_OK;
+  MB_INIT_STATE   res = EB_INIT_OK;
 
   for( i=0; i<OS_MB_EVENT_ARRAY_SIZE; i++)
   {
     xEventGroups[i] = xEventGroupCreate();
     if ( xEventGroups[i] == NULL )
     {
-      res = EBInit_ERROR;
+      res = EB_INIT_ERROR;
     }
   }
   return res;
@@ -173,10 +171,10 @@ void vMBwriteROMRegister ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-eMBROMInitType eMBregisterCheck ( eMBUartBaudRate *baudRate, eMBUartConfig *parity, uint8_t *adr )
+MB_ROM_INIT_STATE eMBregisterCheck ( eMBUartBaudRate *baudRate, eMBUartConfig *parity, uint8_t *adr )
 {
   uint16_t         rAdr = USER_REGISTER_ADR_START + USER_RAM_COUNT - USER_ROM_OFF + 2U;
-  eMBROMInitType   res  = ROM_INIT_FAIL;
+  MB_ROM_INIT_STATE   res  = MB_ROM_INIT_FAIL;
   #if ( USER_REGISTER_COUNT  > 0U )
     *baudRate = uMBreadROMShort( rAdr + USER_REGISTER_BOUND_RATE_ADR );
     *parity   = uMBreadROMShort( rAdr + USER_REGISTER_PARITY_ADR );
@@ -184,11 +182,11 @@ eMBROMInitType eMBregisterCheck ( eMBUartBaudRate *baudRate, eMBUartConfig *pari
   #endif
   if ( !IS_MB_BAUD_RATE( *baudRate ) || !IS_MB_PARITY( *parity ) || !IS_MB_ADDRESS( *adr ) )
   {
-    res = ROM_INIT_FAIL;
+    res = MB_ROM_INIT_FAIL;
   }
   else
   {
-    res = ROM_INIT_OK;
+    res = MB_ROM_INIT_OK;
   }
   return res;
 }
@@ -207,14 +205,14 @@ eMBROMInitType eMBregisterCheck ( eMBUartBaudRate *baudRate, eMBUartConfig *pari
 * @param   none
 * @retval 0 - ROM invalid, set define; 1 - read data from ROM
 */
-eMBROMInitType eMBregisterInit ( void )
+MB_ROM_INIT_STATE eMBregisterInit ( void )
 {
   uint32_t  i   = 0U;
   uint16_t  res = 0U;
   vMBeventFullReset();
   if ( eMBcheckROM() != ROM_OK )   /* If ROM is invalid -> set it as define */
   {
-    res = ROM_INIT_FAIL;
+    res = MB_ROM_INIT_FAIL;
     for ( i=0U; i<REGISTER_COUNT; i++)
     {
       #if ( HR_REGISTER_COUNT  > 0U )
@@ -240,7 +238,7 @@ eMBROMInitType eMBregisterInit ( void )
   }
   else
   {
-    res = ROM_INIT_OK;
+    res = MB_ROM_INIT_OK;
   }
   for (i=0U; i<REGISTER_COUNT; i++)
   {

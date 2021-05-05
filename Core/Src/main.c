@@ -52,6 +52,7 @@
 #include "alarm.h"
 #include "measurement.h"
 #include "charger.h"
+#include "mb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,22 +74,23 @@ DMA_HandleTypeDef hdma_adc1;
 DMA_HandleTypeDef hdma_adc2;
 DMA_HandleTypeDef hdma_adc3;
 
-I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c1;        /* APB1 RTC */
 
-SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi3;
+SPI_HandleTypeDef hspi1;        /* APB2 EEPROM */
+SPI_HandleTypeDef hspi3;        /* APB1 LCD */
 DMA_HandleTypeDef hdma_spi3_tx;
 
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim5;
-TIM_HandleTypeDef htim6;
-TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim8;
-TIM_HandleTypeDef htim12;
+TIM_HandleTypeDef htim2;  /* APB1 ADC */
+TIM_HandleTypeDef htim3;  /* APB1 ADC */
+TIM_HandleTypeDef htim5;  /* APB1 Controller clock */
+TIM_HandleTypeDef htim6;  /* APB1 Speed sensor */
+TIM_HandleTypeDef htim7;  /* APB1 LCD */
+TIM_HandleTypeDef htim8;  /* APB2 ADC */
+TIM_HandleTypeDef htim12; /* APB1 Current */
+TIM_HandleTypeDef htim13; /* APB1 ModBus */
 
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart2; /* APB1 ModBus */
+UART_HandleTypeDef huart3; /* APB1 Debug port */
 
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
@@ -189,7 +191,7 @@ TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
   ( TaskHandle_t* )&controllerHandle,
   ( TaskHandle_t* )&electroHandle,
 };
-const FPI_INIT fpiInitStruct = {
+static const FPI_INIT fpiInitStruct = {
   .pinA   = 0U,
   .pinB   = FPI_B_Pin,
   .pinC   = FPI_C_Pin,
@@ -201,7 +203,7 @@ const FPI_INIT fpiInitStruct = {
   .portD  = FPI_D_GPIO_Port,
   .portCS = DIN_OFFSET_GPIO_Port
 };
-const FPO_INIT fpoInitStruct = {
+static const FPO_INIT fpoInitStruct = {
   .outPinA   = POUT_A_Pin,
   .outPinB   = POUT_B_Pin,
   .outPinC   = POUT_C_Pin,
@@ -221,7 +223,7 @@ const FPO_INIT fpoInitStruct = {
   .disPortCD = POUT_CD_CS_GPIO_Port,
   .disPortEF = POUT_EF_CS_GPIO_Port,
 };
-const CONTROLLER_INIT controllerInitStruct = {
+static const CONTROLLER_INIT controllerInitStruct = {
   .autoPIN    = LED2_Pin,
   .autoGPIO   = LED2_GPIO_Port,
   .manualPIN  = 0U,
@@ -232,6 +234,12 @@ const CONTROLLER_INIT controllerInitStruct = {
   .loadGPIO   = NULL,
   .stopPIN    = LED1_Pin,
   .stopGPIO   = LED1_GPIO_Port,
+};
+static const MB_INIT_TYPE mbInit = {
+  .uart = &huart2,
+  .tim  = &htim13,
+  .port = RS485_DE_GPIO_Port,
+  .pin  = RS485_DE_Pin
 };
 /* USER CODE END 0 */
 
@@ -1301,6 +1309,7 @@ void StartDefaultTask(void *argument)
   vCHARTupdateAtrib();                        /* Update charts attributes */
   vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
+  vMBinit( mbInit );                          /* Start ModBus */
   while ( uADCGetValidDataFlag() == 0U )
   {
     osDelay( 10U );

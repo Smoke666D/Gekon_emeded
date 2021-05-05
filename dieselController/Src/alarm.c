@@ -549,16 +549,22 @@ void vERRORrelax ( ERROR_TYPE* error )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
+void vEVENTtriggering ( SYSTEM_EVENT event )
+{
+  LOG_RECORD_TYPE record = { 0U };
+  vSYSeventSend( event, &record );
+  if ( uALARMisForList( event ) > 0U )
+  {
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 void vERRORtriggering ( ERROR_TYPE* error )
 {
-  LOG_RECORD_TYPE record   = { 0U };
   if ( error->ignor == PERMISSION_DISABLE )
   {
-    vSYSeventSend( error->event, &record );
-    if ( uALARMisForList( &error->event ) > 0U )
-    {
-      eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
-    }
+    vEVENTtriggering( error->event );
   }
   error->trig = TRIGGER_SET;
   return;

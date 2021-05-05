@@ -805,7 +805,7 @@ void vCONTROLLERtask ( void* argument )
                 case CONTROLLER_STATUS_START:
                   interiorEvent.type   = EVENT_INTERRUPTED_START;
                   interiorEvent.action = ACTION_EMERGENCY_STOP;
-                  vSYSeventSend( interiorEvent, NULL );
+                  vEVENTtriggering( interiorEvent );
                   controller.state = CONTROLLER_STATUS_ERROR;
                   stopState        = CONTROLLER_TURNING_IDLE;
                   break;
@@ -813,7 +813,7 @@ void vCONTROLLERtask ( void* argument )
                   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
                   interiorEvent.type   = EVENT_INTERRUPTED_STOP;
                   interiorEvent.action = ACTION_EMERGENCY_STOP;
-                  vSYSeventSend( interiorEvent, NULL );
+                  vEVENTtriggering( interiorEvent );
                   controller.state = CONTROLLER_STATUS_ERROR;
                   stopState        = CONTROLLER_TURNING_IDLE;
                   break;
@@ -821,7 +821,7 @@ void vCONTROLLERtask ( void* argument )
                   vCONTROLLERsetLED( HMI_CMD_STOP, RELAY_ON );
                   interiorEvent.type   = EVENT_INTERRUPTED_STOP;
                   interiorEvent.action = ACTION_EMERGENCY_STOP;
-                  vSYSeventSend( interiorEvent, NULL );
+                  vEVENTtriggering( interiorEvent );
                   controller.state = CONTROLLER_STATUS_ERROR;
                   stopState        = CONTROLLER_TURNING_IDLE;
                   break;
@@ -941,7 +941,7 @@ void vCONTROLLERtask ( void* argument )
           {
             interiorEvent.type   = EVENT_ENGINE_HIGHT_TEMP;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            vSYSeventSend( interiorEvent, NULL );
+            vEVENTtriggering( interiorEvent );
           }
           break;
         /*----------------------- Сигнал низкого уровня топлива ----------------------*/
@@ -950,7 +950,7 @@ void vCONTROLLERtask ( void* argument )
           {
             interiorEvent.type   = EVENT_FUEL_LOW_LEVEL;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            vSYSeventSend( interiorEvent, NULL );
+            vEVENTtriggering( interiorEvent );
           }
           break;
         /*-------------------------- Датчик давления масла ---------------------------*/
@@ -959,7 +959,7 @@ void vCONTROLLERtask ( void* argument )
           {
             interiorEvent.type   = EVENT_OIL_LOW_PRESSURE;
             interiorEvent.action = ACTION_EMERGENCY_STOP;
-            vSYSeventSend( interiorEvent, NULL );
+            vEVENTtriggering( interiorEvent );
           }
           break;
         /*-------------------------- Работа на холостом ходу -------------------------*/

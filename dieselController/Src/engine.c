@@ -1651,7 +1651,7 @@ void vENGINEtask ( void* argument )
               vLOGICprintStarterStatus( starter.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_START;
-              vSYSeventSend( event, NULL );
+              vEVENTtriggering( event );
               vSTATUSsetup( DEVICE_STATUS_WORKING, LOGIC_DEFAULT_TIMER_ID );
               break;
             default:
@@ -1761,7 +1761,7 @@ void vENGINEtask ( void* argument )
               vLOGICprintPlanStopStatus( planStop.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_STOP;
-              vSYSeventSend( event, NULL );
+              vEVENTtriggering( event );
               break;
             default:
               vLOGICresetTimer( &commonTimer );

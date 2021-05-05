@@ -158,11 +158,10 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
         alarm->thermal.delay = uSecToTic( fIDMTcalcTemp( current, alarm->thermal.current ) );
         if ( alarm->thermal.counter >= alarm->thermal.delay )
         {
-          vSYSeventSend( alarm->thermal.event, &record );
-          eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+          vEVENTtriggering( alarm->thermal.event );
           alarm->thermal.active = PERMISSION_DISABLE;
           alarm->cutout.active  = PERMISSION_DISABLE;
-          alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
+          alarm->state          = ELECTRO_CURRENT_STATUS_ALARM;
         }
         if ( current >= alarm->cutout.current )
         {
@@ -170,11 +169,10 @@ void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
           alarm->cutout.delay  = uSecToTic( fIDMTcalcCutout( current, alarm->cutout.current ) );
           if ( alarm->cutout.counter >= alarm->cutout.delay )
           {
-            vSYSeventSend( alarm->cutout.event, &record );
-            eLOGICERactiveErrorList( ERROR_LIST_CMD_ADD, &record, NULL );
+            vEVENTtriggering( alarm->cutout.event );
             alarm->thermal.active = PERMISSION_DISABLE;
             alarm->cutout.active  = PERMISSION_DISABLE;
-            alarm->state = ELECTRO_CURRENT_STATUS_ALARM;
+            alarm->state          = ELECTRO_CURRENT_STATUS_ALARM;
           }
         }
         else

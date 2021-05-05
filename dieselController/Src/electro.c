@@ -554,24 +554,6 @@ void vELECTROdataInit ( void )
   /*----------------------------------------------------------------------------*/
   mains.enb = getBitMap( &mainsSetup, MAINS_CONTROL_ENB_ADR );
   /*----------------------------------------------------------------------------*/
-  mains.autoStart.ack          = PERMISSION_ENABLE;
-  mains.autoStart.active       = PERMISSION_ENABLE;
-  mains.autoStart.enb          = PERMISSION_ENABLE;
-  mains.autoStart.event.action = ACTION_AUTO_START;
-  mains.autoStart.event.type   = EVENT_MAINS_FAIL;
-  mains.autoStart.ignor        = PERMISSION_DISABLE;
-  mains.autoStart.status       = ALARM_STATUS_IDLE;
-  mains.autoStart.trig         = TRIGGER_IDLE;
-  /*----------------------------------------------------------------------------*/
-  mains.autoStop.ack           = PERMISSION_ENABLE;
-  mains.autoStop.active        = PERMISSION_ENABLE;
-  mains.autoStop.enb           = PERMISSION_ENABLE;
-  mains.autoStop.event.action  = ACTION_AUTO_STOP;
-  mains.autoStop.event.type    = EVENT_MAINS_OK;
-  mains.autoStop.ignor         = PERMISSION_DISABLE;
-  mains.autoStop.status        = ALARM_STATUS_IDLE;
-  mains.autoStop.trig          = TRIGGER_IDLE;
-  /*----------------------------------------------------------------------------*/
   if ( mains.enb == PERMISSION_ENABLE )
   {
     mains.lowVoltageAlarm.error.enb   = getBitMap( &mainsAlarms, MAINS_UNDER_VOLTAGE_ALARM_ENB_ADR   );
@@ -579,6 +561,8 @@ void vELECTROdataInit ( void )
     mains.lowFreqAlarm.error.enb      = getBitMap( &mainsAlarms, MAINS_UNDER_FREQUENCY_ALARM_ENB_ADR );
     mains.hightFreqAlarm.error.enb    = getBitMap( &mainsAlarms, MAINS_OVER_FREQUENCY_ALARM_ENB_ADR  );
     mains.phaseSequenceError.enb      = getBitMap( &genSetup,    GEN_PHASE_SEQUENCE_CONTROL_ENB_ADR  );
+    mains.autoStart.enb               = PERMISSION_ENABLE;
+    mains.autoStop.enb                = PERMISSION_ENABLE;
   }
   else
   {
@@ -587,7 +571,26 @@ void vELECTROdataInit ( void )
     mains.lowFreqAlarm.error.enb      = PERMISSION_DISABLE;
     mains.hightFreqAlarm.error.enb    = PERMISSION_DISABLE;
     mains.phaseSequenceError.enb      = PERMISSION_DISABLE;
+    mains.autoStart.enb               = PERMISSION_DISABLE;
+    mains.autoStop.enb                = PERMISSION_DISABLE;
   }
+  /*----------------------------------------------------------------------------*/
+  mains.autoStart.active       = PERMISSION_ENABLE;
+  mains.autoStart.event.type   = EVENT_MAINS_FAIL;
+  mains.autoStart.event.action = ACTION_AUTO_START;
+  mains.autoStart.ack          = PERMISSION_ENABLE;
+  mains.autoStart.ignor        = PERMISSION_DISABLE;
+  mains.autoStart.trig         = TRIGGER_IDLE;
+  mains.autoStart.status       = ALARM_STATUS_IDLE;
+  /*----------------------------------------------------------------------------*/
+  mains.autoStop.active        = PERMISSION_ENABLE;
+  mains.autoStop.event.type    = EVENT_MAINS_OK;
+  mains.autoStop.event.action  = ACTION_AUTO_STOP;
+  mains.autoStop.ack           = PERMISSION_ENABLE;
+  mains.autoStop.ignor         = PERMISSION_DISABLE;
+  mains.autoStop.trig          = TRIGGER_IDLE;
+  mains.autoStop.status        = ALARM_STATUS_IDLE;
+  /*----------------------------------------------------------------------------*/
   mains.lowVoltageAlarm.error.active         = PERMISSION_ENABLE;
   mains.lowVoltageAlarm.type                 = ALARM_LEVEL_LOW;
   mains.lowVoltageAlarm.level                = getValue( &mainsUnderVoltageAlarmLevel );

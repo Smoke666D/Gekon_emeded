@@ -133,7 +133,6 @@ uint32_t uSecToTic ( fix16_t input )
 /*---------------------------------------------------------------------------------------------------*/
 void vELECTROcurrentAlarmProcess ( fix16_t current, CURRENT_ALARM_TYPE* alarm )
 {
-  LOG_RECORD_TYPE record = { 0U };
   switch ( alarm->state )
   {
     case ELECTRO_CURRENT_STATUS_IDLE:

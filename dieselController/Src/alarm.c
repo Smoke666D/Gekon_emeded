@@ -514,13 +514,13 @@ void vCONTROLLERprintActiveErrorList ( void )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
-uint8_t uALARMisForList ( SYSTEM_EVENT* event )
+uint8_t uALARMisForList ( SYSTEM_EVENT event )
 {
   uint8_t res = 0U;
-  if ( ( event->action == ACTION_BAN_START      ) ||
-       ( event->action == ACTION_WARNING        ) ||
-       ( event->action == ACTION_SHUTDOWN       ) ||
-       ( event->action == ACTION_EMERGENCY_STOP ) )
+  if ( ( event.action == ACTION_BAN_START      ) ||
+       ( event.action == ACTION_WARNING        ) ||
+       ( event.action == ACTION_SHUTDOWN       ) ||
+       ( event.action == ACTION_EMERGENCY_STOP ) )
   {
     res = 1U;
   }
@@ -540,7 +540,7 @@ void vERRORrelax ( ERROR_TYPE* error )
   if ( error->trig != TRIGGER_IDLE )
   {
     rec.event = error->event;
-    if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( &error->event ) > 0U ) )
+    if ( ( error->ack == PERMISSION_ENABLE ) && ( uALARMisForList( error->event ) > 0U ) )
     {
       eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, &rec, NULL );
     }

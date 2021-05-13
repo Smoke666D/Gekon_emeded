@@ -98,7 +98,7 @@ uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
   uint8_t      res         = 0U;
   volatile uint8_t* pUARTBuffer = NULL;
 
-  frameLength = uMBGetATUByteCounter();
+  frameLength = uMBgetByteCounter();
   if ( !NOK_counter )
   {
     if ( frameLength > MB_SER_PDU_SIZE_MIN )

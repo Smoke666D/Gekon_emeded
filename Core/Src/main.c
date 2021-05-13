@@ -153,6 +153,7 @@ const osThreadAttr_t defaultTask_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
+static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_ADC1_Init(void);
@@ -160,7 +161,6 @@ static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI3_Init(void);
-static void MX_USART2_UART_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
@@ -168,6 +168,7 @@ static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_TIM12_Init ( void );
+static void MX_TIM13_Init ( void );
 
 
 
@@ -274,15 +275,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
+  huart2.Instance          = USART2;
+  //MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_LWIP_Init();
   MX_SPI1_Init();
+  MX_SPI3_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_I2C1_Init();
-  MX_SPI3_Init();
-  MX_USART2_UART_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM5_Init();
@@ -290,6 +292,7 @@ int main(void)
   MX_TIM7_Init();
   MX_TIM8_Init();
   MX_TIM12_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
@@ -1022,10 +1025,8 @@ static void MX_TIM8_Init(void)
 
 static void MX_TIM12_Init ( void )
 {
-
   TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig      = {0};
-
   htim12.Instance               = TIM12;
   htim12.Init.Prescaler         = 30001U;
   htim12.Init.CounterMode       = TIM_COUNTERMODE_UP;
@@ -1050,37 +1051,35 @@ static void MX_TIM12_Init ( void )
   return;
 }
 
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
+static void MX_TIM13_Init ( void )
 {
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
+  htim13.Instance               = TIM13;
+  htim13.Init.Prescaler         = 0U;
+  htim13.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim13.Init.Period            = 65535U;
+  htim13.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if ( HAL_TIM_Base_Init( &htim13 ) != HAL_OK )
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
+  return;
+}
+static void MX_USART2_UART_Init ( void )
+{
+  huart2.Instance          = USART2;
+  huart2.Init.BaudRate     = 115200U;
+  huart2.Init.WordLength   = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits     = UART_STOPBITS_1;
+  huart2.Init.Parity       = UART_PARITY_NONE;
+  huart2.Init.Mode         = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if ( HAL_UART_Init( &huart2 ) != HAL_OK )
+  {
+    Error_Handler();
+  }
+  return;
 }
 
 /**

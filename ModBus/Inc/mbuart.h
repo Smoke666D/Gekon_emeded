@@ -163,7 +163,7 @@ void              vMBstartHalfCharTimer ( void );
 void              vMBgetRxBuffer ( volatile uint8_t* output );
 void              vMBputStrPak ( uint8_t *data, uint16_t count );  /* Send data via UART */
 void              vMBputStrPakMaster ( uint8_t *s, uint16_t c );
-uint16_t          uMBGetATUByteCounter ( void );
+uint16_t          uMBgetByteCounter ( void );
 void              vMBtimHandler ( void );
 void              vMBuartHandler ( void );
 /*---------------------------------------------------------------------------------------------------*/

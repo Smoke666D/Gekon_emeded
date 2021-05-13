@@ -23,7 +23,7 @@ static volatile MB_BUFFER_TYPE rx      = { 0U };
 static volatile MB_BUFFER_TYPE tx      = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
 MB_INIT_STATE eMBtimInit ( TIM_HandleTypeDef *tim, eMBUartBaudRate baudRate );
-MB_INIT_STATE eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity );
+MB_INIT_STATE eMBuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity );
 void          vRS485setReadMode ( MB_DE_TYPE de );
 void          vRS485setWriteMode ( MB_DE_TYPE de );
 void          vMBcleanUartInput ( UART_HandleTypeDef *uart );
@@ -56,7 +56,7 @@ MB_INIT_STATE eMBreInit ( void )
   if ( eMBtimInit( mbTimer.tim, mbUart.settings.baudRate ) == EB_INIT_OK )
   {
     /*---------------------- USART ------------------------*/
-    if ( eMbuartInit( mbUart.serial, mbUart.settings.baudRate, mbUart.settings.parity ) == EB_INIT_OK )
+    if ( eMBuartInit( mbUart.serial, mbUart.settings.baudRate, mbUart.settings.parity ) == EB_INIT_OK )
     {
       vRS485setReadMode( mbUart.de );
       res = EB_INIT_OK;
@@ -144,7 +144,7 @@ void vRS485setReadMode ( MB_DE_TYPE de )
   * @param UART stucture
   * @retval Status of result (EBInit_ERROR or EBInit_OK)
   */
-MB_INIT_STATE eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity )
+MB_INIT_STATE eMBuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, eMBUartConfig parity )
 {
   uint16_t      i   = 0U;
   MB_INIT_STATE res = EB_INIT_ERROR;
@@ -163,9 +163,9 @@ MB_INIT_STATE eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, 
         uart->Init.Parity     = UART_PARITY_NONE;
         break;
       case PARITY_EVEN:
-        uart->Init.WordLength = UART_WORDLENGTH_9B;
+        uart->Init.WordLength = UART_WORDLENGTH_8B;
         uart->Init.StopBits   = UART_STOPBITS_1;
-        uart->Init.Parity     = UART_PARITY_EVEN;
+        uart->Init.Parity     = UART_PARITY_NONE;
         break;
       case PARITY_ODD:
         uart->Init.WordLength = UART_WORDLENGTH_9B;
@@ -210,7 +210,7 @@ MB_INIT_STATE eMbuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, 
   */
 uint8_t uMBreadUartInput ( UART_HandleTypeDef *uart )
 {
-  return ( uint8_t )( __HAL_UART_FLUSH_DRREGISTER( uart ) & 0xFFU );
+  return ( uint8_t )( __HAL_UART_FLUSH_DRREGISTER( uart ) & 0x00FFU );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
@@ -222,6 +222,14 @@ void vMBcleanUartInput ( UART_HandleTypeDef *uart )
 {
   uint16_t buf = __HAL_UART_FLUSH_DRREGISTER( uart ) & 0xFFU;
   buf++;
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vMDcleanUartError ( UART_HandleTypeDef *uart )
+{
+  uint16_t data = 0U;
+  data = uart->Instance->DR;
+  data = uart->Instance->SR;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -458,52 +466,71 @@ void vMBtimHandler( void )
   */
 void vMBuartHandler ( void )
 {
-  uint8_t data = 0U;
-  if ( __HAL_UART_GET_FLAG( mbUart.serial, UART_FLAG_RXNE ) > 0U ) /* Receive data register not empty flag */
-  {
-    data = uMBreadUartInput( mbUart.serial );
-    __HAL_UART_CLEAR_FLAG( mbUart.serial, UART_FLAG_RXNE );
-    if ( __HAL_UART_GET_FLAG( mbUart.serial, ( UART_FLAG_PE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_ORE ) ) == 0 )
+  uint8_t  data       = 0U;
+  uint32_t isrflags   = READ_REG( mbUart.serial->Instance->SR  );
+  uint32_t cr1its     = READ_REG( mbUart.serial->Instance->CR1 );
+  uint32_t cr3its     = READ_REG( mbUart.serial->Instance->CR3 );
+  uint32_t errorflags = ( isrflags & ( uint32_t )( USART_SR_PE | USART_SR_FE | USART_SR_ORE | USART_SR_NE ) );
+
+  uint8_t srPE  = isrflags & ( uint32_t )( USART_SR_PE );
+  uint8_t srFE  = isrflags & ( uint32_t )( USART_SR_FE  );
+  uint8_t srORE = isrflags & ( uint32_t )( USART_SR_ORE  );
+  uint8_t srNE  = isrflags & ( uint32_t )( USART_SR_NE  );
+  data          = ( uint8_t )( mbUart.serial->Instance->DR );
+
+  vMDcleanUartError( mbUart.serial );
+  uint32_t tmp = isrflags & USART_SR_RXNE;
+  tmp = cr1its   & USART_CR1_RXNEIE;
+
+    if ( ( ( isrflags & USART_SR_RXNE    ) != RESET ) &&
+         ( ( cr1its   & USART_CR1_RXNEIE ) != RESET ) )
     {
-      switch ( mbUart.state.receive )
+      data = uMBreadUartInput( mbUart.serial );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, UART_FLAG_RXNE );
+      if ( __HAL_UART_GET_FLAG( mbUart.serial, ( UART_FLAG_PE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_ORE ) ) == 0 )
       {
-        case STATE_RX_INIT:                /* Receiver is in initial state. */
-          vMBstartHalfCharTimer();        /* */
-          break;
-        case STATE_RX_IDLE:                /* Receiver is in idle state. */
-          mbUart.state.receive = STATE_RX_RCV;    /* Move to receive mode */
-          mbUart.counter.byte  = 1U;              /* Reset byte counter */
-          rx.counter           = 1U;              /* Reset buffer counter */
-          rx.buffer[0U]        = data;
-          vMBstartHalfCharTimer();
-          break;
-        case STATE_RX_RCV:                /* Frame is beeing received. */
-          mbUart.counter.byte++;
-          rx.buffer[rx.counter] = data;
-          rx.counter++;
-          vMBstartHalfCharTimer();
-          break;
-        case STATE_RX_ERROR:              /* If the frame is invalid. */
-          mbUart.counter.errRead++;
-          break;
-        case STATE_M_RX_INIT:              /* Receiver is in initial state. */
-          mbUart.state.send = STATE_TX_IDLE;
-          break;
-        case STATE_M_RX_IDLE:              /* Receiver is in idle state. */
-          break;
-        case STATE_M_RX_RCV:              /* Frame is beeing received. */
-          break;
-        case STATE_M_RX_ERROR:            /* If the frame is invalid. */
-          break;
-        default:
-          break;
+        switch ( mbUart.state.receive )
+        {
+          case STATE_RX_INIT:                /* Receiver is in initial state. */
+            vMBstartHalfCharTimer();        /* */
+            break;
+          case STATE_RX_IDLE:                /* Receiver is in idle state. */
+            mbUart.state.receive = STATE_RX_RCV;    /* Move to receive mode */
+            mbUart.counter.byte  = 1U;              /* Reset byte counter */
+            rx.counter           = 1U;              /* Reset buffer counter */
+            rx.buffer[0U]        = data;
+            vMBstartHalfCharTimer();
+            break;
+          case STATE_RX_RCV:                /* Frame is beeing received. */
+            mbUart.counter.byte++;
+            rx.buffer[rx.counter] = data;
+            rx.counter++;
+            vMBstartHalfCharTimer();
+            break;
+          case STATE_RX_ERROR:              /* If the frame is invalid. */
+            mbUart.counter.errRead++;
+            break;
+          case STATE_M_RX_INIT:              /* Receiver is in initial state. */
+            mbUart.state.send = STATE_TX_IDLE;
+            break;
+          case STATE_M_RX_IDLE:              /* Receiver is in idle state. */
+            break;
+          case STATE_M_RX_RCV:              /* Frame is beeing received. */
+            break;
+          case STATE_M_RX_ERROR:            /* If the frame is invalid. */
+            break;
+          default:
+            break;
+        }
+      }
+      else
+      {
+        vMBcleanUartInput( mbUart.serial );
       }
     }
-    else
-    {
-      vMBcleanUartInput( mbUart.serial );
-    }
-  }
+
+
+
   if ( __HAL_UART_GET_FLAG( mbUart.serial, UART_FLAG_TC ) > 0U )        /* Transmission Complete flag */
   {
     __HAL_UART_CLEAR_FLAG( mbUart.serial, UART_FLAG_TC );
@@ -540,6 +567,7 @@ void vMBuartHandler ( void )
         break;
     }
   }
+
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

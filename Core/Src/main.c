@@ -240,7 +240,7 @@ static const MB_INIT_TYPE mbInit = {
   .uart = &huart2,
   .tim  = &htim13,
   .port = RS485_DE_GPIO_Port,
-  .pin  = RS485_DE_Pin
+  .pin  = RS485_DE_Pin,
 };
 /* USER CODE END 0 */
 
@@ -1233,8 +1233,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin RS485_DE_Pin */
-  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|RS485_DE_Pin;
+  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin */
+  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
@@ -1244,6 +1244,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin   = RS485_DE_Pin;
+  GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull  = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init( RS485_DE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LED1_Pin LED3_Pin */
   GPIO_InitStruct.Pin = LED1_Pin|LED3_Pin;

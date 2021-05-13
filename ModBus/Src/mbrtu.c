@@ -96,6 +96,9 @@ uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
   uint16_t     calcCRC     = 0U;
   uint32_t     i           = 0U;
   uint8_t      res         = 0U;
+
+  uint16_t buf = 0U;
+
   volatile uint8_t* pUARTBuffer = NULL;
 
   frameLength = uMBgetByteCounter();
@@ -103,7 +106,9 @@ uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
   {
     if ( frameLength > MB_SER_PDU_SIZE_MIN )
     {
-      vMBgetRxBuffer( pUARTBuffer );
+      pUARTBuffer = vMBgetRxBuffer();
+      buf = pUARTBuffer[frameLength - 1U];
+      buf = pUARTBuffer[frameLength - 2U];
       frameCRC    = ( ( ( ( uint16_t ) pUARTBuffer[frameLength - 1U] ) ) << 8U ) |
                           ( uint16_t ) pUARTBuffer[frameLength - 2U];     /* Get CRC from received frame*/
       calcCRC     = usMBCRC16( pUARTBuffer, ( frameLength - 2U ) );

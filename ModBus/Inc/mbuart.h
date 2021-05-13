@@ -160,7 +160,7 @@ MB_ROM_INIT_STATE eMBGetROMInitResult ( void );
 eMBSndState       eMBGetSendState ( void );
 eMBRcvState       eMBGetRcvState ( void );
 void              vMBstartHalfCharTimer ( void );
-void              vMBgetRxBuffer ( volatile uint8_t* output );
+volatile uint8_t* vMBgetRxBuffer ( void );
 void              vMBputStrPak ( uint8_t *data, uint16_t count );  /* Send data via UART */
 void              vMBputStrPakMaster ( uint8_t *s, uint16_t c );
 uint16_t          uMBgetByteCounter ( void );

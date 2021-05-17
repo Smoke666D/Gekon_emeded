@@ -60,6 +60,7 @@
 #define MB_FUNC_DIAGNOSTICS_ENEBLED             0U
 #define MB_FUNC_SET_RS_PARAMETERS_ENEBLED       0U        /* Custom function to change RS parameters, as baud rate  */
 /*----------------------- Custom function code & number ---------------------------------------------*/
+#define CUSTOM_FUN_START                        66U
 #define MB_FUNC_SET_RS_PARAMETERS               0U
 #define MB_FUNC_SET_RS_PARAMETERS_CODE          ( CUSTOM_FUN_START + MB_FUNC_SET_RS_PARAMETERS )
 #define MB_FUNC_SET_RS_PARAMETERS_NUMBER        ( MAX_FUN_NUM + MB_FUNC_SET_RS_PARAMETERS )
@@ -127,7 +128,8 @@ typedef struct
 #define MB_PDU_SIZE_MAX         253U         /* Maximum size of a PDU. */
 #define MB_PDU_SIZE_MIN         1U           /* Function Code */
 #define MB_PDU_FUNC_OFF         0U           /* Offset of function code in PDU. */
-#define MB_PDU_DATA_OFF         1U           /* Offset for response data in PDU. */
+#define MB_PDU_LENGTH_OFF       1U
+#define MB_PDU_DATA_OFF         2U           /* Offset for response data in PDU. */
 #define MB_SER_PDU_SIZE_MIN     4U           /* Minimum size of a Modbus RTU frame. */
 #define MB_SER_PDU_SIZE_MAX     256U         /* Maximum size of a Modbus RTU frame. */
 //#define MB_SER_PDU_SIZE_CRC     2U           /* Size of CRC field in PDU. */

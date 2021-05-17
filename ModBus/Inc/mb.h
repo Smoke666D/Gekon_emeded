@@ -12,7 +12,6 @@
 #include "mbport.h"
 /*----------------------- Define --------------------------------------------------------------------*/
 #define MAX_FUN_NUM             44U
-#define CUSTOM_FUN_START        66U
 #define STARTING_ADDRESS_HI     1U
 #define STARTING_ADDRESS_LO     2U
 #define QUANTITY_OF_OUTPUTS_HI  3U

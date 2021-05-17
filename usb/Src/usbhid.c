@@ -137,8 +137,8 @@ void vUSBtimeToReport ( USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBfreeDataToReport ( USB_REPORT* report )
 {
-  report->stat     = USB_REPORT_STATE_OK;
-  report->length   = 2U;
+  report->stat   = USB_REPORT_STATE_OK;
+  report->length = 2U;
   vUint16ToBytes( *freeDataArray[report->adr], report->data );
   return;
 }

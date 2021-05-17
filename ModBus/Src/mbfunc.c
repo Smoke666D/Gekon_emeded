@@ -93,7 +93,8 @@ MB_EXCEPTION eMBFuncWriteHoldingRegister ( uint8_t* pucFrame, uint8_t* len )
   MB_EXCEPTION   status     = MB_EX_NONE;
   if ( *len == MB_PDU_FUNC_WRITE_SIZE )
   {
-    regAddress = ( uint16_t )( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) | ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
+    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) |
+                     ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
     if ( eMBwriteData( ( uint8_t )regAddress, ( uint16_t* )( &pucFrame[3U] ), 1U ) != MB_DATA_STATUS_OK )
     {
       status = MB_EX_ILLEGAL_DATA_ADDRESS;
@@ -173,22 +174,22 @@ MB_EXCEPTION eMBFuncReadHoldingRegister( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t     regAddress   = 0U;          /* The Data Address of the first register requested */
   uint16_t     regCount     = 0U;          /* The total number of registers requested */
-  uint8_t*     pucFrameCur  = NULL;        /* Response frame */
   MB_EXCEPTION status       = MB_EX_NONE;
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
   {
-    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U )    | ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
-    regCount   = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI] ) << 8U ) | ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_LO];
+    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] )    << 8U ) |
+                     ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
+    regCount   = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI] ) << 8U ) |
+                     ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_LO];
     if ( ( regCount + regAddress ) <= HR_REGISTER_COUNT )                        /* Register address validation */
     {
       if ( ( regCount >= 1U ) && ( regCount <= MB_PDU_FUNC_READ_REGCNT_MAX ) )
       {
-        if ( eMBreadData( ( uint8_t )regAddress, ( uint16_t* )( &pucFrameCur[2U] ), regCount ) == MB_DATA_STATUS_OK )
+        if ( eMBreadData( ( uint8_t )regAddress, ( uint16_t* )( &pucFrame[MB_PDU_DATA_OFF] ), regCount ) == MB_DATA_STATUS_OK )
         {
-          pucFrameCur     = &pucFrame[MB_PDU_FUNC_OFF];    /* Set the current PDU data pointer to the beginning. */
-          pucFrameCur[0U] = MB_FUNC_READ_HOLDING_REGISTER; /* First byte contains the function code. */
-          pucFrameCur[1U] = ( uint8_t )( regCount * 2U );  /* Second byte in the response contain the number of bytes. */
+          pucFrame[MB_PDU_FUNC_OFF]   = MB_FUNC_READ_HOLDING_REGISTER; /* First byte contains the function code. */
+          pucFrame[MB_PDU_LENGTH_OFF] = ( uint8_t )( regCount * 2U );  /* Second byte in the response contain the number of bytes. */
           *len = 2U + ( regCount * 2U );
         }
         else

@@ -89,16 +89,13 @@ size_t uMBreceiveMessage ( uint8_t* input, uint32_t size )
 */
 uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
 {
-  BaseType_t   priority    = 0U;
-  size_t       xBytesSent  = 0U;
-  uint16_t     frameLength = 0U;
-  uint16_t     frameCRC    = 0U;
-  uint16_t     calcCRC     = 0U;
-  uint32_t     i           = 0U;
-  uint8_t      res         = 0U;
-
-  uint16_t buf = 0U;
-
+  BaseType_t        priority    = 0U;
+  size_t            xBytesSent  = 0U;
+  uint16_t          frameLength = 0U;
+  uint16_t          frameCRC    = 0U;
+  uint16_t          calcCRC     = 0U;
+  uint32_t          i           = 0U;
+  uint8_t           res         = 0U;
   volatile uint8_t* pUARTBuffer = NULL;
 
   frameLength = uMBgetByteCounter();
@@ -107,10 +104,8 @@ uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
     if ( frameLength > MB_SER_PDU_SIZE_MIN )
     {
       pUARTBuffer = vMBgetRxBuffer();
-      buf = pUARTBuffer[frameLength - 1U];
-      buf = pUARTBuffer[frameLength - 2U];
       frameCRC    = ( ( ( ( uint16_t ) pUARTBuffer[frameLength - 1U] ) ) << 8U ) |
-                          ( uint16_t ) pUARTBuffer[frameLength - 2U];     /* Get CRC from received frame*/
+                        ( ( uint16_t ) pUARTBuffer[frameLength - 2U] );     /* Get CRC from received frame*/
       calcCRC     = usMBCRC16( pUARTBuffer, ( frameLength - 2U ) );
       if ( calcCRC == frameCRC )                                                /* Compare calculation CRC and received CRC */
       {

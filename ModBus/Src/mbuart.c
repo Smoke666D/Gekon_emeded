@@ -230,6 +230,7 @@ void vMDcleanUartError ( UART_HandleTypeDef *uart )
   uint16_t data = 0U;
   data = uart->Instance->DR;
   data = uart->Instance->SR;
+  data++;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -468,8 +469,8 @@ void vMBuartHandler ( void )
   uint8_t  data       = 0U;
   uint32_t isrflags   = READ_REG( mbUart.serial->Instance->SR  );
   uint32_t cr1its     = READ_REG( mbUart.serial->Instance->CR1 );
-  uint32_t cr3its     = READ_REG( mbUart.serial->Instance->CR3 );
-  uint32_t errorflags = ( isrflags & ( uint32_t )( USART_SR_PE | USART_SR_FE | USART_SR_ORE | USART_SR_NE ) );
+  //uint32_t cr3its     = READ_REG( mbUart.serial->Instance->CR3 );
+  //uint32_t errorflags = ( isrflags & ( uint32_t )( USART_SR_PE | USART_SR_FE | USART_SR_ORE | USART_SR_NE ) );
 /*
   uint8_t srPE  = isrflags & ( uint32_t )( USART_SR_PE );
   uint8_t srFE  = isrflags & ( uint32_t )( USART_SR_FE  );
@@ -477,7 +478,7 @@ void vMBuartHandler ( void )
   uint8_t srNE  = isrflags & ( uint32_t )( USART_SR_NE  );
   data          = ( uint8_t )( mbUart.serial->Instance->DR );
 */
-  vMDcleanUartError( mbUart.serial );
+  //vMDcleanUartError( mbUart.serial );
   if ( ( ( isrflags & USART_SR_RXNE    ) != RESET ) &&
        ( ( cr1its   & USART_CR1_RXNEIE ) != RESET ) )
   {

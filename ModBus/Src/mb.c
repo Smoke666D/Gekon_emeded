@@ -83,9 +83,9 @@ static const MBFunctionHandlerTable eMBFuncHandlers[MAX_FUN_NUM + 1U] =
   /*------------------- 10 -------------------*/
   { eMBNoFunction },
   /*------------------- 11 -------------------*/
-  { eMBNoFunction },        // Get CommEvernCounter
+  { eMBNoFunction },        // Get ComEvernCounter
   /*------------------- 12 -------------------*/
-  { eMBNoFunction },        // Get CommEvernLog
+  { eMBNoFunction },        // Get ComEventLog
   /*------------------- 13 -------------------*/
   { eMBNoFunction },
   /*------------------- 14 -------------------*/

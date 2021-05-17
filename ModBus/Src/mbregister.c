@@ -110,7 +110,7 @@ MB_DATA_STATUS eMBreadData ( uint8_t adr, uint16_t* data, uint16_t length )
   {
     for ( i=0U; i<length; i++ )
     {
-      vOUTPUTupdate( adr );
+      vOUTPUTupdate( adr + i );
       data[i] = uOUTPUTread( adr + i );
     }
   }

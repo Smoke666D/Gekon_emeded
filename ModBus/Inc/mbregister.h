@@ -49,7 +49,7 @@ typedef enum
 #define HR_REGISTER_ADR_START           0U
 #define HR_RAM_COUNT                    ( HOLDING_REGISTER_RAM_COUNT )
 #define HR_ROM_COUNT                    ( HOLDING_REGISTER_ROM_COUNT )
-#define HR_REGISTER_COUNT               ( HR_RAM_COUNT + HR_ROM_COUNT )
+#define HR_REGISTER_COUNT               ( OUTPUT_DATA_REGISTER_NUMBER )
 #define HR_ROM_OFF                      ( HR_RAM_COUNT )
 #define DI_REGISTER_ADR_START           ( HR_REGISTER_ADR_START + HR_REGISTER_COUNT )
 #define DI_RAM_INPUT_COUNT              48U

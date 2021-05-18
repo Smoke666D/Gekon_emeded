@@ -90,12 +90,15 @@ MB_EXCEPTION eMBFuncMaskWriteRegister ( uint8_t* pucFrame, uint8_t* len )
 MB_EXCEPTION eMBFuncWriteHoldingRegister ( uint8_t* pucFrame, uint8_t* len )
 {
   uint16_t       regAddress = 0U;
+  uint16_t       data       = 0U;
   MB_EXCEPTION   status     = MB_EX_NONE;
   if ( *len == MB_PDU_FUNC_WRITE_SIZE )
   {
     regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) |
                      ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
-    if ( eMBwriteData( ( uint8_t )regAddress, ( uint16_t* )( &pucFrame[3U] ), 1U ) != MB_DATA_STATUS_OK )
+    data       = ( ( ( uint16_t )pucFrame[OUTPUT_VALUE_HI] ) << 8U ) |
+                     ( uint16_t )pucFrame[OUTPUT_VALUE_LO];
+    if ( eMBwriteData( ( uint8_t )regAddress, &data, 1U ) != MB_DATA_STATUS_OK )
     {
       status = MB_EX_ILLEGAL_DATA_ADDRESS;
     }

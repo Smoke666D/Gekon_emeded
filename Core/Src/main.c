@@ -53,6 +53,7 @@
 #include "measurement.h"
 #include "charger.h"
 #include "mb.h"
+#include "outputData.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1330,6 +1331,7 @@ void StartDefaultTask(void *argument)
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
   vMEASUREMENTinit();                         /**/
+  vOUTPUTinit();
   /* Infinite loop */
   for(;;)
   {

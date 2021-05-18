@@ -16,8 +16,8 @@
 #define STARTING_ADDRESS_LO     2U
 #define QUANTITY_OF_OUTPUTS_HI  3U
 #define QUANTITY_OF_OUTPUTS_LO  4U
-//#define OUTPUT_VALUE_HI         3U
-//#define OUTPUT_VALUE_LO         4U
+#define OUTPUT_VALUE_HI         3U
+#define OUTPUT_VALUE_LO         4U
 #define BYTE_COUNT              5U
 #define MB_MULTI_DATA_START     6U
 //#define AND_MASK_HI             3U

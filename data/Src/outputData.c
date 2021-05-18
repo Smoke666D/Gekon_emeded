@@ -828,101 +828,6 @@ eConfigReg status =
    .value = statusValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t logLenValue[1U] = { 0U };
-const eConfigAttributes logLenAtrib =
-{
-   .adr        = 41U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg logLen =
-{
-   .atrib = &logLenAtrib,
-   .value = logLenValue,
-};
-/*----------------------------------------------------------------*/
-uint16_t logAdrValue[1U] = { 0U };
-const eConfigAttributes logAdrAtrib =
-{
-   .adr        = 42U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg logAdr =
-{
-   .atrib = &logAdrAtrib,
-   .value = logAdrValue,
-};
-/*----------------------------------------------------------------*/
-uint16_t logRecordData0Value[1U] = { 0U };
-const eConfigAttributes logRecordData0Atrib =
-{
-   .adr        = 43U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg logRecordData0 =
-{
-   .atrib = &logRecordData0Atrib,
-   .value = logRecordData0Value,
-};
-/*----------------------------------------------------------------*/
-uint16_t logRecordData1Value[1U] = { 0U };
-const eConfigAttributes logRecordData1Atrib =
-{
-   .adr        = 44U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg logRecordData1 =
-{
-   .atrib = &logRecordData1Atrib,
-   .value = logRecordData1Value,
-};
-/*----------------------------------------------------------------*/
-uint16_t logRecordEventValue[1U] = { 0U };
-const eConfigAttributes logRecordEventAtrib =
-{
-   .adr        = 45U,
-   .scale      = 0U,
-   .min        = 0U,
-   .max        = 0U,
-   .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
-   .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
-   .bitMapSize = 0U,
-   .bitMap     = NULL,
-};
-eConfigReg logRecordEvent =
-{
-   .atrib = &logRecordEventAtrib,
-   .value = logRecordEventValue,
-};
-/*----------------------------------------------------------------*/
 const eConfigBitMap error0BitMap[16U] = 
 {
    { 1U, 0U },     // errorExternEmegencyStop
@@ -945,7 +850,7 @@ const eConfigBitMap error0BitMap[16U] =
 uint16_t error0Value[1U] = { 0U };
 const eConfigAttributes error0Atrib =
 {
-   .adr        = 46U,
+   .adr        = 41U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -983,7 +888,7 @@ const eConfigBitMap error1BitMap[16U] =
 uint16_t error1Value[1U] = { 0U };
 const eConfigAttributes error1Atrib =
 {
-   .adr        = 47U,
+   .adr        = 42U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -1006,7 +911,7 @@ const eConfigBitMap error2BitMap[1U] =
 uint16_t error2Value[1U] = { 0U };
 const eConfigAttributes error2Atrib =
 {
-   .adr        = 48U,
+   .adr        = 43U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -1044,7 +949,7 @@ const eConfigBitMap warning0BitMap[16U] =
 uint16_t warning0Value[1U] = { 0U };
 const eConfigAttributes warning0Atrib =
 {
-   .adr        = 49U,
+   .adr        = 44U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -1069,7 +974,7 @@ const eConfigBitMap warning1BitMap[3U] =
 uint16_t warning1Value[1U] = { 0U };
 const eConfigAttributes warning1Atrib =
 {
-   .adr        = 50U,
+   .adr        = 45U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -1096,7 +1001,7 @@ const eConfigBitMap controllBitMap[5U] =
 uint16_t controllValue[1U] = { 0U };
 const eConfigAttributes controllAtrib =
 {
-   .adr        = 51U,
+   .adr        = 46U,
    .scale      = 0U,
    .min        = 0U,
    .max        = 0U,
@@ -1113,5 +1018,5 @@ eConfigReg controll =
 };
 /*----------------------------------------------------------------*/
 
-eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &chargerVoltage, &externalDevices, &engineWorkTimeOut, &engineWorkMinOut, &engineStartsNumberOut, &powerReactiveUsageOut, &powerActiveUsageOut, &powerFullUsageOut, &fuelUsageOut, &fuelMomentalRateOut, &fuelAverageRateOut, &digitalOutput, &digitalInput, &deviceStatus, &status, &logLen, &logAdr, &logRecordData0, &logRecordData1, &logRecordEvent, &error0, &error1, &error2, &warning0, &warning1, &controll};
-const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Напряжение зарядного генератора", "Внешние устройства", "Моточасы", "Мотоминуты", "Количество пусков", "Реактивна выробатанная мощность", "Активная выробатанная мощность", "Полная выробатанная мощность", "Расход топлива", "Текущий расход топлива", "Средний расход топлива", "Цифровые выходы", "Цифровые входы", "Статус", "Регистр статуса", "Кол-во записей в журнале", "Адрес записи в журнале", "Дата записи журнала 0", "Дата записи журнала 1", "Событие записи журнала", "-", "-", "-", "-", "-", "Регистр управления"};
+eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER]  = { &oilPressure, &coolantTemp, &fuelLevel, &speedLevel, &mainsPhaseVoltageL1, &mainsPhaseVoltageL2, &mainsPhaseVoltageL3, &mainsLineVoltageL1, &mainsLineVoltageL2, &mainsLineVoltageL3, &mainsFreq, &generatorPhaseVoltageL1, &generatorPhaseVoltageL2, &generatorPhaseVoltageL3, &generatorLineVoltageL1, &generatorLineVoltageL2, &generatorLineVoltageL3, &generatorCurrentL1, &generatorCurrentL2, &generatorCurrentL3, &generatorFreq, &generatorCosFi, &generatorPowerActive, &generatorPowerReactive, &generatorPowerFull, &batteryVoltage, &chargerVoltage, &externalDevices, &engineWorkTimeOut, &engineWorkMinOut, &engineStartsNumberOut, &powerReactiveUsageOut, &powerActiveUsageOut, &powerFullUsageOut, &fuelUsageOut, &fuelMomentalRateOut, &fuelAverageRateOut, &digitalOutput, &digitalInput, &deviceStatus, &status, &error0, &error1, &error2, &warning0, &warning1, &controll};
+const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER] = { "Давление масла", "Температура ОЖ", "Уровень топлива", "Скорость двигателя", "Фазное напряжение сети L1", "Фазное напряжение сети L2", "Фазное напряжение сети L3", "Линейное напряжение сети L1", "Линейное напряжение сети L2", "Линейное напряжение сети L3", "Частота сети", "Фазное напряжение генератора L1", "Фазное напряжение генератора L2", "Фазное напряжение генератора L3", "Линейное напряжение генератора L1", "Линейное напряжение генератора L2", "Линейное напряжение генератора L3", "Ток генератора L1", "Ток генератора L2", "Ток генератора L3", "Частота генератора", "Cos F генератора", "Активная мощность генератора", "Реактивная мощность генератора", "Полная мощность генератора", "Напряжение АКБ", "Напряжение зарядного генератора", "Внешние устройства", "Моточасы", "Мотоминуты", "Количество пусков", "Реактивна выробатанная мощность", "Активная выробатанная мощность", "Полная выробатанная мощность", "Расход топлива", "Текущий расход топлива", "Средний расход топлива", "Цифровые выходы", "Цифровые входы", "Статус", "Регистр статуса", "-", "-", "-", "-", "-", "Регистр управления"};

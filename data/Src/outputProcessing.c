@@ -153,39 +153,6 @@ void vOUTPUTupdateDeviceStatus ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vOUTPUTupdateLogLength ( void )
-{
-  uint16_t length = 0U;
-  if ( eDATAAPIlogPointer( DATA_API_CMD_READ_CASH, &length ) == DATA_API_STAT_OK )
-  {
-    outputDataReg[LOG_LEN_ADR]->value[0U] = length;
-  }
-  else
-  {
-    outputDataReg[LOG_LEN_ADR]->value[0U] = 0U;
-  }
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vOUTPUTupdateLogRecord ( void )
-{
-  LOG_RECORD_TYPE record = { 0U };
-  if ( eDATAAPIlog( DATA_API_CMD_READ,  outputDataReg[LOG_ADR_ADR]->value, &record ) == DATA_API_STAT_OK )
-  {
-    outputDataReg[LOG_RECORD_DATA0_ADR]->value[0U] = ( uint16_t )( record.time );
-    outputDataReg[LOG_RECORD_DATA1_ADR]->value[0U] = ( uint16_t )( record.time >> 16U );
-    outputDataReg[LOG_RECORD_EVENT_ADR]->value[0U] = uOUTPUTcodeEvent( record.event );
-  }
-  else
-  {
-    outputDataReg[LOG_RECORD_DATA0_ADR]->value[0U] = 0U;
-    outputDataReg[LOG_RECORD_DATA1_ADR]->value[0U] = 0U;
-    outputDataReg[LOG_RECORD_EVENT_ADR]->value[0U] = 0U;
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void vOUTPUTinit ( void )
@@ -201,16 +168,17 @@ void vOUTPUTinit ( void )
 /*----------------------------------------------------------------------------*/
 OUTPUT_REGISTER_TYPE eOUTPUTgetType ( uint8_t chanel )
 {
-  OUTPUT_REGISTER_TYPE res = OUTPUT_REGISTER_TYPE_RESERVED;
-  if ( chanel <  CONTROL_READ_ONLY_NUMBER )
-  {
-    res = OUTPUT_REGISTER_TYPE_READ_ONLY;
-  }
-  else
+  OUTPUT_REGISTER_TYPE res = OUTPUT_REGISTER_TYPE_READ_ONLY;
+  if ( chanel == CONTROLL_ADR )
   {
     res = OUTPUT_REGISTER_TYPE_READ_WRITE;
   }
   return res;
+}
+/*----------------------------------------------------------------------------*/
+uint16_t uOUTPUTread ( uint8_t chanel )
+{
+  return outputDataReg[chanel]->value[0U];
 }
 /*----------------------------------------------------------------------------*/
 OUTPUT_STATUS vOUTPUTwrite ( uint8_t chanel, uint16_t data )
@@ -293,12 +261,6 @@ void vOUTPUTupdate ( uint8_t chanel )
         break;
       case STATUS_ADR:
         vOUTPUTupdateStatus();
-        break;
-      case LOG_LEN_ADR:
-        vOUTPUTupdateLogLength();
-        break;
-      case LOG_ADR_ADR:
-        vOUTPUTupdateLogRecord();
         break;
       case ERROR0_ADR:
         /* no need to update */

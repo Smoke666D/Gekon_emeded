@@ -52,6 +52,8 @@
 #include "alarm.h"
 #include "measurement.h"
 #include "charger.h"
+#include "mb.h"
+#include "outputData.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,22 +75,23 @@ DMA_HandleTypeDef hdma_adc1;
 DMA_HandleTypeDef hdma_adc2;
 DMA_HandleTypeDef hdma_adc3;
 
-I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c1;        /* APB1 RTC */
 
-SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi3;
+SPI_HandleTypeDef hspi1;        /* APB2 EEPROM */
+SPI_HandleTypeDef hspi3;        /* APB1 LCD */
 DMA_HandleTypeDef hdma_spi3_tx;
 
-TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim5;
-TIM_HandleTypeDef htim6;
-TIM_HandleTypeDef htim7;
-TIM_HandleTypeDef htim8;
-TIM_HandleTypeDef htim12;
+TIM_HandleTypeDef htim2;  /* APB1 ADC */
+TIM_HandleTypeDef htim3;  /* APB1 ADC */
+TIM_HandleTypeDef htim5;  /* APB1 Controller clock */
+TIM_HandleTypeDef htim6;  /* APB1 Speed sensor */
+TIM_HandleTypeDef htim7;  /* APB1 LCD */
+TIM_HandleTypeDef htim8;  /* APB2 ADC */
+TIM_HandleTypeDef htim12; /* APB1 Current */
+TIM_HandleTypeDef htim13; /* APB1 ModBus */
 
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart2; /* APB1 ModBus */
+UART_HandleTypeDef huart3; /* APB1 Debug port */
 
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
@@ -151,6 +154,7 @@ const osThreadAttr_t defaultTask_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
+static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_ADC1_Init(void);
@@ -158,7 +162,6 @@ static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI3_Init(void);
-static void MX_USART2_UART_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
@@ -166,6 +169,7 @@ static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_TIM12_Init ( void );
+static void MX_TIM13_Init ( void );
 
 
 
@@ -189,7 +193,7 @@ TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
   ( TaskHandle_t* )&controllerHandle,
   ( TaskHandle_t* )&electroHandle,
 };
-const FPI_INIT fpiInitStruct = {
+static const FPI_INIT fpiInitStruct = {
   .pinA   = 0U,
   .pinB   = FPI_B_Pin,
   .pinC   = FPI_C_Pin,
@@ -201,7 +205,7 @@ const FPI_INIT fpiInitStruct = {
   .portD  = FPI_D_GPIO_Port,
   .portCS = DIN_OFFSET_GPIO_Port
 };
-const FPO_INIT fpoInitStruct = {
+static const FPO_INIT fpoInitStruct = {
   .outPinA   = POUT_A_Pin,
   .outPinB   = POUT_B_Pin,
   .outPinC   = POUT_C_Pin,
@@ -221,7 +225,7 @@ const FPO_INIT fpoInitStruct = {
   .disPortCD = POUT_CD_CS_GPIO_Port,
   .disPortEF = POUT_EF_CS_GPIO_Port,
 };
-const CONTROLLER_INIT controllerInitStruct = {
+static const CONTROLLER_INIT controllerInitStruct = {
   .autoPIN    = LED2_Pin,
   .autoGPIO   = LED2_GPIO_Port,
   .manualPIN  = 0U,
@@ -232,6 +236,12 @@ const CONTROLLER_INIT controllerInitStruct = {
   .loadGPIO   = NULL,
   .stopPIN    = LED1_Pin,
   .stopGPIO   = LED1_GPIO_Port,
+};
+static const MB_INIT_TYPE mbInit = {
+  .uart = &huart2,
+  .tim  = &htim13,
+  .port = RS485_DE_GPIO_Port,
+  .pin  = RS485_DE_Pin,
 };
 /* USER CODE END 0 */
 
@@ -266,15 +276,16 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
+  huart2.Instance          = USART2;
+  //MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_LWIP_Init();
   MX_SPI1_Init();
+  MX_SPI3_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_I2C1_Init();
-  MX_SPI3_Init();
-  MX_USART2_UART_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM5_Init();
@@ -282,6 +293,7 @@ int main(void)
   MX_TIM7_Init();
   MX_TIM8_Init();
   MX_TIM12_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
@@ -1014,10 +1026,8 @@ static void MX_TIM8_Init(void)
 
 static void MX_TIM12_Init ( void )
 {
-
   TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig      = {0};
-
   htim12.Instance               = TIM12;
   htim12.Init.Prescaler         = 30001U;
   htim12.Init.CounterMode       = TIM_COUNTERMODE_UP;
@@ -1042,37 +1052,35 @@ static void MX_TIM12_Init ( void )
   return;
 }
 
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
+static void MX_TIM13_Init ( void )
 {
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
+  htim13.Instance               = TIM13;
+  htim13.Init.Prescaler         = 0U;
+  htim13.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  htim13.Init.Period            = 65535U;
+  htim13.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if ( HAL_TIM_Base_Init( &htim13 ) != HAL_OK )
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
+  return;
+}
+static void MX_USART2_UART_Init ( void )
+{
+  huart2.Instance          = USART2;
+  huart2.Init.BaudRate     = 115200U;
+  huart2.Init.WordLength   = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits     = UART_STOPBITS_1;
+  huart2.Init.Parity       = UART_PARITY_NONE;
+  huart2.Init.Mode         = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if ( HAL_UART_Init( &huart2 ) != HAL_OK )
+  {
+    Error_Handler();
+  }
+  return;
 }
 
 /**
@@ -1226,8 +1234,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin RS485_DE_Pin */
-  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|RS485_DE_Pin;
+  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin */
+  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
@@ -1237,6 +1245,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin   = RS485_DE_Pin;
+  GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull  = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init( RS485_DE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LED1_Pin LED3_Pin */
   GPIO_InitStruct.Pin = LED1_Pin|LED3_Pin;
@@ -1301,6 +1315,7 @@ void StartDefaultTask(void *argument)
   vCHARTupdateAtrib();                        /* Update charts attributes */
   vDATAprintSerialNumber();                   /* Print device serial number to serial port */
   vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
+  vMBinit( mbInit );                          /* Start ModBus */
   while ( uADCGetValidDataFlag() == 0U )
   {
     osDelay( 10U );
@@ -1316,6 +1331,7 @@ void StartDefaultTask(void *argument)
   vLOGICinit( &htim5 );                       /**/
   vCONTROLLERinit( &controllerInitStruct );   /**/
   vMEASUREMENTinit();                         /**/
+  vOUTPUTinit();
   /* Infinite loop */
   for(;;)
   {

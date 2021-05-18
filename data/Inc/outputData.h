@@ -10,11 +10,11 @@
 /*------------------------ Define --------------------------------------*/
 #define   MAX_UNITS_OUTPUT_LENGTH             5U
 #define   MAX_BIT_MAP_OUTPUT_LENGTH           16U
-#define   OUTPUT_DATA_REGISTER_NUMBER         52U
+#define   OUTPUT_DATA_REGISTER_NUMBER         47U
 #define   FILDS_TO_WRITE_OUTPUT_NUMBER        3U
 #define   MAX_VALUE_OUTPUT_LENGTH             1U
 #define   OUTPUT_DATA_MAX_SIZE                61U     // bytes
-#define   OUTPUT_DATA_TOTAL_SIZE              156U   // bytes
+#define   OUTPUT_DATA_TOTAL_SIZE              141U   // bytes
 #define   MIN_OUTPUT_DATA_SCALE               ( -2 )
 #define   MAX_OUTPUT_DATA_SCALE               ( 0 )
 #define   OUTPUT_DATA_SCALE_NUM               ( 3 )
@@ -62,17 +62,12 @@
 #define   DIGITAL_INPUT_ADR                                      38U
 #define   DEVICE_STATUS_ADR                                      39U
 #define   STATUS_ADR                                             40U
-#define   LOG_LEN_ADR                                            41U
-#define   LOG_ADR_ADR                                            42U
-#define   LOG_RECORD_DATA0_ADR                                   43U
-#define   LOG_RECORD_DATA1_ADR                                   44U
-#define   LOG_RECORD_EVENT_ADR                                   45U
-#define   ERROR0_ADR                                             46U
-#define   ERROR1_ADR                                             47U
-#define   ERROR2_ADR                                             48U
-#define   WARNING0_ADR                                           49U
-#define   WARNING1_ADR                                           50U
-#define   CONTROLL_ADR                                           51U
+#define   ERROR0_ADR                                             41U
+#define   ERROR1_ADR                                             42U
+#define   ERROR2_ADR                                             43U
+#define   WARNING0_ADR                                           44U
+#define   WARNING1_ADR                                           45U
+#define   CONTROLL_ADR                                           46U
 /*---------------------- Bitmap addresses ------------------------------*/
 #define   EXTERNAL_CHARGER_ADR                         0U
 #define   EXTERNAL_COOLANT_HEATER_ADR                  1U
@@ -208,11 +203,6 @@ extern eConfigReg digitalOutput;
 extern eConfigReg digitalInput;
 extern eConfigReg deviceStatus;
 extern eConfigReg status;
-extern eConfigReg logLen;
-extern eConfigReg logAdr;
-extern eConfigReg logRecordData0;
-extern eConfigReg logRecordData1;
-extern eConfigReg logRecordEvent;
 extern eConfigReg error0;
 extern eConfigReg error1;
 extern eConfigReg error2;

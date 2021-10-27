@@ -78,6 +78,8 @@ DMA_HandleTypeDef hdma_adc3;
 
 I2C_HandleTypeDef hi2c1;
 
+IWDG_HandleTypeDef hiwdg;
+
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi2_tx;
@@ -167,6 +169,7 @@ static void MX_TIM13_Init(void);
 static void MX_ADC2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM8_Init(void);
+static void MX_IWDG_Init(void);
 void StartDefaultTask(void *argument);
 extern void vStartNetTask(void *argument);
 void StartLcdTask(void *argument);
@@ -304,6 +307,7 @@ int main(void)
   MX_ADC2_Init();
   MX_ADC1_Init();
   MX_TIM8_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
@@ -395,8 +399,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
@@ -712,6 +717,36 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+  #ifdef DEBUG
+    __HAL_DBGMCU_FREEZE_IWDG();
+  #endif
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
+  hiwdg.Init.Reload = 999;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+
+  /* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -1389,7 +1424,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void vDelayWithDog ( void )
+{
+  osDelay( 10U );
+  HAL_IWDG_Refresh( &hiwdg );
+  return;
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1408,6 +1448,7 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   EEPROM_STATUS res    = EEPROM_OK;
   uint8_t       period = 100U;
+  uint8_t       i      = 0U;
   vSYSserial( ">>Start Default Task!\n\r" );
   res = eDATAAPIdataInit();                       /* Data from EEPROM initialization           */
   if ( res == EEPROM_OK )
@@ -1421,9 +1462,12 @@ void StartDefaultTask(void *argument)
       vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
       while ( uADCGetValidDataFlag() == 0U )
       {
-        osDelay( 10U );
+	vDelayWithDog();
       }
-      osDelay( 1100U );
+      for ( i=0U; i<110U; i++ )
+      {
+	vDelayWithDog();
+      }
       vVRinit( &htim6 );                          /* Speed sensor initialization        */
       vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization  */
       vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
@@ -1450,6 +1494,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+    HAL_IWDG_Refresh( &hiwdg );
     HAL_GPIO_TogglePin( LED_SYS_GPIO_Port, LED_SYS_Pin );
     osDelay( period );
   }

@@ -3,18 +3,24 @@ Debug/
 
 .settings/language.settings.xml
 
-
 # Compiled Binaries
 *.bin
 *.elf
 *.hex
 *.map
 
-
+# CUBA makeing file
+*.tmp
+*.ftl
+*.scratch
+*.c_save
+*.h_save
+*.tmp_save
+*.ftl_save
+tmp/
 
 # Build
 *.d
 *.o
 *.su
-
 *.dump

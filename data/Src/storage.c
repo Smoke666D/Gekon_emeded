@@ -10,6 +10,7 @@
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
+uint8_t configBuffer[CONFIG_MAX_SIZE + 1U] = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
 uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob );
 uint8_t uBlobToConfig ( eConfigReg* reg, const uint8_t* blob );
@@ -185,16 +186,16 @@ EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output )
 uint8_t uSTORAGEcheckMap ( const uint32_t* map )
 {
   uint8_t res = 0U;
-  if ( ( map[0U] == ( uint32_t )STORAGE_WEB_SIZE            ) &&
-       ( map[1U] == ( uint32_t )STORAGE_RESERVE_SIZE        ) &&
-       ( map[2U] == ( uint32_t )STORAGE_CONFIG_SIZE         ) &&
-       ( map[3U] == ( uint32_t )STORAGE_CHART_SIZE          ) &&
-       ( map[4U] == ( uint32_t )STORAGE_FREE_DATA_SIZE      ) &&
-       ( map[5U] == ( uint32_t )STORAGE_PASSWORD_SIZE       ) &&
-       ( map[6U] == ( uint32_t )STORAGE_LOG_POINTER_SIZE    ) &&
-       ( map[7U] == ( uint32_t )STORAGE_LOG_SIZE            ) &&
-       ( map[8U] == ( uint32_t )STORAGE_JOURNAL_SIZE        ) &&
-       ( map[9U] == ( uint32_t )STORAGE_MEASUREMENT_SR_SIZE ) )
+  if ( ( map[0U] == ( uint32_t )( STORAGE_WEB_SIZE            ) ) &&
+       ( map[1U] == ( uint32_t )( STORAGE_RESERVE_SIZE        ) ) &&
+       ( map[2U] == ( uint32_t )( STORAGE_CONFIG_SIZE         ) ) &&
+       ( map[3U] == ( uint32_t )( STORAGE_CHART_SIZE          ) ) &&
+       ( map[4U] == ( uint32_t )( STORAGE_FREE_DATA_SIZE      ) ) &&
+       ( map[5U] == ( uint32_t )( STORAGE_PASSWORD_SIZE       ) ) &&
+       ( map[6U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE    ) ) &&
+       ( map[7U] == ( uint32_t )( STORAGE_LOG_SIZE            ) ) &&
+       ( map[8U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) &&
+       ( map[9U] == ( uint32_t )( STORAGE_MEASUREMENT_SR_SIZE ) ) )
   {
     res = 1U;
   }
@@ -267,23 +268,23 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
     {
       for ( j=0U; j<charts[i]->size; j++ )
       {
-	      res  = eEEPROMreadMemory( adr, buffer, 4U );
-	      len  = uBlobToFix16( &charts[i]->dots[j].x, buffer );
-	      adr += len;
-	      if ( res == EEPROM_OK )
-	      {
-	        res  = eEEPROMreadMemory( adr, buffer, 4U );
-	        len  = uBlobToFix16( &charts[i]->dots[j].y, buffer );
-	        adr += len;
-	        if ( res != EEPROM_OK )
-	        {
-	          break;
-	        }
-	      }
-	      else
-	      {
-	        break;
-	      }
+        res  = eEEPROMreadMemory( adr, buffer, 4U );
+	len  = uBlobToFix16( &charts[i]->dots[j].x, buffer );
+	adr += len;
+	if ( res == EEPROM_OK )
+	{
+	  res  = eEEPROMreadMemory( adr, buffer, 4U );
+	  len  = uBlobToFix16( &charts[i]->dots[j].y, buffer );
+	  adr += len;
+	  if ( res != EEPROM_OK )
+	  {
+	    break;
+	  }
+	}
+	else
+	{
+	  break;
+	}
       }
     }
     else
@@ -300,18 +301,17 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   uint8_t       i                            = 0U;
   uint32_t      adr                          = STORAGE_CONFIG_ADR;
   uint8_t       size                         = 0U;
-  uint8_t       buffer[CONFIG_MAX_SIZE + 1U] = { 0U };
   for( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
-    size = uConfigToBlob( configReg[i], &buffer[1U] );
+    size = uConfigToBlob( configReg[i], &configBuffer[1U] );
     if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )
     {
       res = EEPROM_ADR_ERROR;
       break;
     }
-    buffer[0U] = size;
-    res        = eEEPROMwriteMemory( adr, buffer, ( size + 1U ) );
-    adr       += size + 1U;
+    configBuffer[0U] = size;
+    res  = eEEPROMwriteMemory( adr, configBuffer, ( size + 1U ) );
+    adr += size + 1U;
     if ( res != EEPROM_OK )
     {
       break;
@@ -345,18 +345,17 @@ EEPROM_STATUS eSTORAGEreadConfigs ( void )
   uint8_t       size                    = 0U;
   uint8_t       calc                    = 0U;
   uint32_t      adr                     = STORAGE_CONFIG_ADR;
-  uint8_t       buffer[CONFIG_MAX_SIZE] = { 0U };
   for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
     res = eEEPROMreadMemory( adr, &size, 1U );
     if ( ( res == EEPROM_OK ) && ( size > 0U ) && ( size < CONFIG_MAX_SIZE ) )
     {
       adr++;
-      res = eEEPROMreadMemory( adr, buffer, size );
+      res = eEEPROMreadMemory( adr, configBuffer, size );
       if ( res == EEPROM_OK )
       {
         adr += size;
-        calc = uBlobToConfig( configReg[i], buffer );
+        calc = uBlobToConfig( configReg[i], configBuffer );
         if ( calc != size )
         {
           res = EEPROM_SIZE_ERROR;

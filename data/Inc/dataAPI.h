@@ -61,9 +61,9 @@ typedef struct __packed
   LOG_RECORD_TYPE record;
 } LOG_CASH_TYPE;
 /*------------------------ Functions -----------------------------------*/
-void               vDATAAPIdataInit ( void );
+EEPROM_STATUS      eDATAAPIdataInit ( void );
 void               vDATAAPIinit ( void );
-void               vDATAAPIlogInit ( void );
+EEPROM_STATUS      eDATAAPIlogInit ( void );
 DATA_API_STATUS    eDATAAPIisInit ( void );
 DATA_API_STATUS    eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
 DATA_API_STATUS    eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib );

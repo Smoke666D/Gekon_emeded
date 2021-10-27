@@ -35,20 +35,22 @@
 #define  STORAGE_START_ADR          0x0000U
 #define  STORAGE_SR_ADR             ( STORAGE_START_ADR )
 #define  STORAGE_MAP_ADR            ( STORAGE_SR_ADR             + STORAGE_SR_SIZE             )
-#define  STORAGE_EWA_ADR            ( STORAGE_MAP_ADR            + STORAGE_MAP_SIZE            )
-#define  STORAGE_EWA_DATA_ADR       ( STORAGE_EWA_ADR            + EEPROM_LENGTH_SIZE          )
-#define  STORAGE_RESERVE_ADR        ( STORAGE_EWA_ADR            + STORAGE_WEB_SIZE            )
-#define  STORAGE_CONFIG_ADR         ( STORAGE_RESERVE_ADR        + STORAGE_RESERVE_SIZE        )
+#define  STORAGE_CONFIG_ADR         ( STORAGE_RESERVE_ADR        + STORAGE_MAP_SIZE            )
 #define  STORAGE_CHART_ADR          ( STORAGE_CONFIG_ADR         + CONFIG_TOTAL_SIZE           )
 #define  STORAGE_FREE_DATA_ADR      ( STORAGE_CHART_ADR          + STORAGE_CHART_SIZE          )
 #define  STORAGE_PASSWORD_ADR       ( STORAGE_FREE_DATA_ADR      + STORAGE_FREE_DATA_SIZE      )
 #define  STORAGE_LOG_POINTER_ADR    ( STORAGE_PASSWORD_ADR       + STORAGE_PASSWORD_SIZE       )
 #define  STORAGE_LOG_ADR            ( STORAGE_LOG_POINTER_ADR    + STORAGE_LOG_POINTER_SIZE    )
 #define  STORAGE_JOURNAL_ADR        ( STORAGE_LOG_ADR            + STORAGE_LOG_SIZE            )
-#define  STORAGE_MEASUREMENT_SR_ADR ( STORAGE_JOURNAL_ADR        + STORAGE_JOURNAL_SIZE        )
+
+#define  STORAGE_EWA_ADR            ( STORAGE_MAP_ADR            + STORAGE_JOURNAL_SIZE        )
+#define  STORAGE_EWA_DATA_ADR       ( STORAGE_EWA_ADR            + EEPROM_LENGTH_SIZE          )
+#define  STORAGE_RESERVE_ADR        ( STORAGE_EWA_ADR            + STORAGE_WEB_SIZE            )
+#define  STORAGE_MEASUREMENT_SR_ADR ( STORAGE_JOURNAL_ADR        + STORAGE_RESERVE_SIZE        )
 #define  STORAGE_MEASUREMENT_ADR    ( STORAGE_MEASUREMENT_SR_ADR + STORAGE_MEASUREMENT_SR_SIZE )
 
-#define  STORAGE_SR_EMPTY        0xFFU  /* The register as default is 0xFF */
+
+#define  STORAGE_SR_EMPTY           0xFFU  /* The register as default is 0xFF */
 /*------------------------- Macros -------------------------------------*/
 
 /*-------------------------- ENUM --------------------------------------*/

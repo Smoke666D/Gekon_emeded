@@ -362,22 +362,22 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
       count += subLen;
       if ( res == EEPROM_OK )
       {
-	      subLen = EEPROM_PAGE_SIZE;
-	      for ( i=0U; i<size; i++ )
-	      {
-	        res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
-	        shift += subLen;
-	        count += EEPROM_PAGE_SIZE;
-	        if ( res != EEPROM_OK )
-	        {
-	          break;
-	        }
-	      }
-	      if ( ( count < ( adr + len ) ) && ( res == EEPROM_OK ) )
-	      {
-	        subLen = ( uint16_t )( adr + len - count );
-	        res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
-	      }
+        subLen = EEPROM_PAGE_SIZE;
+        for ( i=0U; i<size; i++ )
+        {
+          res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
+          shift += subLen;
+          count += EEPROM_PAGE_SIZE;
+          if ( res != EEPROM_OK )
+          {
+            break;
+          }
+        }
+        if ( ( count < ( adr + len ) ) && ( res == EEPROM_OK ) )
+        {
+          subLen = ( uint16_t )( adr + len - count );
+          res    = eEEPROMread( EEPROM_READ, &count, &data[shift], subLen );
+        }
       }
     }
     else

@@ -186,7 +186,6 @@ typedef struct __packed
 void       vRTCinit ( I2C_HandleTypeDef* hi2c );             /* Ok */
 void       vRTCgetCashTime ( RTC_TIME* time );
 void       vRTCcleanTime ( RTC_TIME* time );
-
 RTC_STATUS eRTCgetTime ( RTC_TIME* time );                   /* Ok */
 RTC_STATUS eRTCsetTime ( RTC_TIME* time );                   /* Ok */
 RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq ); /**/

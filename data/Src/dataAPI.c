@@ -74,7 +74,6 @@ DATA_API_STATUS eDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
   }
   return res;
 }
-
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -91,18 +90,22 @@ EventGroupHandle_t xDATAAPIgetEventGroup ( void )
 {
   return xDataApiEvents;
 }
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * All data initialization
  * input:  none
  * output: none
  */
-void vDATAAPIdataInit ( void )
+EEPROM_STATUS eDATAAPIdataInit ( void )
 {
-  EEPROM_STATUS res                                   = EEPROM_OK;
-  uint8_t       sr                                    = 0xFFU;
-  uint16_t      i                                     = 0U;
-  uint16_t      serialBuffer[serialNumber.atrib->len];
-  uint32_t      map[STORAGE_MAP_SIZE / 4U]            = { 0U };
+  EEPROM_STATUS   res                        = EEPROM_OK;
+  uint8_t         sr                         = 0xFFU;     /* System register          */
+  uint8_t         valid                      = 0U;        /* Result of map validation */
+  uint16_t        i                          = 0U;
+  uint32_t        map[STORAGE_MAP_SIZE / 4U] = { 0U };
+  SYSTEM_EVENT    eraseEv                    = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
+  LOG_RECORD_TYPE eraseRec                   = { .time = 0U, .event = eraseEv };
+  uint16_t        serialBuffer[6U]           = { 0U };
 
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
@@ -110,18 +113,26 @@ void vDATAAPIdataInit ( void )
     if ( res == EEPROM_OK )
     {
       res = eEEPROMreadMemory( STORAGE_SR_ADR, &sr, 1U );
-      if ( ( sr == STORAGE_SR_EMPTY        ) ||
-           ( REWRITE_ALL_EEPROM > 0U       ) ||
-           ( uSTORAGEcheckMap( map ) == 0U ) )
+      valid = uSTORAGEcheckMap( map );
+      if ( ( sr                 == STORAGE_SR_EMPTY ) ||
+           ( REWRITE_ALL_EEPROM != 0U               ) ||
+           ( valid              == 0U               ) )
       {
-        vSYSSerial( ">>EEPROM empty. All data is default.\n\r" );
-        vSYSgetUniqueID16( serialBuffer );                                                   /* Get serial number */
-        for ( i=0U; i<serialNumber.atrib->len; i++ )
-        {
-          serialNumber.value[i] = serialBuffer[i];
-        }
-        versionController.value[0U] = HARDWARE_VERSION;
-        versionFirmware.value[0U]   = SOFTWARE_VERSION;
+	if ( sr == STORAGE_SR_EMPTY )
+	{
+	  vSYSserial( ">>EEPROM empty. It's first power up.\n\r" );
+	}
+	if ( REWRITE_ALL_EEPROM > 0 )
+	{
+	  vSYSserial( ">>There is software flag to erase EEPROM.\n\r" );
+	}
+	if ( valid == 0 )
+	{
+	  vSYSserial( ">>The memory map is wrong. Maybe there is the new software with new changed map\n\r" );
+	}
+	vSYSserial( ">>All data in EEPROM is default.\n\r" );
+	vFREEDATAerase();
+
         res = eSTORAGEwriteConfigs();
         if ( res == EEPROM_OK )
         {
@@ -141,6 +152,21 @@ void vDATAAPIdataInit ( void )
               res = eSTORAGEsavePassword();
               if ( res == EEPROM_OK )
               {
+        	res = eSTORAGEwriteLogPointer( 0U );
+        	if ( res == EEPROM_OK )
+        	{
+        	  for ( i=0U; i<LOG_SIZE; i++ )
+        	  {
+        	    if ( eSTORAGEwriteLogRecord( i, &eraseRec ) != EEPROM_OK )
+        	    {
+        	      res = DATA_API_STAT_EEPROM_ERROR;
+        	      break;
+        	    }
+        	  }
+        	}
+              }
+              if ( res == EEPROM_OK )
+              {
                 sr  = 0x00U;
                 res = eEEPROMwriteMemory( STORAGE_SR_ADR, &sr, 1U );
                 if ( res == EEPROM_OK )
@@ -148,7 +174,7 @@ void vDATAAPIdataInit ( void )
                   res = eSTORAGEwriteMap();
                   if ( res == EEPROM_OK )
                   {
-                    vSYSSerial( ">>EEPROM data initialization: done!\n\r" );
+                    vSYSserial( ">>EEPROM data initialization: done!\n\r" );
                     initDone = 1U;
                   }
                 }
@@ -158,26 +184,37 @@ void vDATAAPIdataInit ( void )
         }
         if ( initDone == 0U )
         {
-          vSYSSerial( ">>EEPROM data initialization: fail!\n\r" );
+          vSYSserial( ">>EEPROM data initialization: fail!\n\r" );
         }
       }
       else
       {
         if ( eSTORAGEreadConfigs() == EEPROM_OK )
         {
-          vSYSSerial( ">>EEPROM configurations read: done!\n\r" );
+          vSYSgetUniqueID16( serialBuffer );
+          serialNumber0.value[0U]     = serialBuffer[0U];
+          serialNumber0.value[1U]     = serialBuffer[1U];
+          serialNumber0.value[2U]     = serialBuffer[2U];
+          serialNumber1.value[0U]     = serialBuffer[3U];
+          serialNumber1.value[1U]     = serialBuffer[4U];
+          serialNumber1.value[2U]     = serialBuffer[5U];
+          versionController.value[0U] = HARDWARE_VERSION;
+          versionFirmware.value[0U]   = SOFTWARE_VERSION;
+          versionBootloader.value[0U] = 1U;
+          deviceID.value[0U]          = DEVICE_ID;
+          vSYSserial( ">>EEPROM configurations read: done!\n\r" );
         }
         else
         {
-          vSYSSerial( ">>EEPROM configurations read: fail!\n\r" );
+          vSYSserial( ">>EEPROM configurations read: fail!\n\r" );
         }
         if ( eSTORAGEreadCharts() == EEPROM_OK )
         {
-          vSYSSerial( ">>EEPROM charts read: done!\n\r" );
+          vSYSserial( ">>EEPROM charts read: done!\n\r" );
         }
         else
         {
-          vSYSSerial( ">>EEPROM charts read: fail!\n\r" );
+          vSYSserial( ">>EEPROM charts read: fail!\n\r" );
         }
         for ( i=0U; i<FREE_DATA_SIZE; i++ )
         {
@@ -189,27 +226,27 @@ void vDATAAPIdataInit ( void )
         }
         if ( res == EEPROM_OK )
         {
-          vSYSSerial( ">>EEPROM free data read: done!\n\r" );
+          vSYSserial( ">>EEPROM free data read: done!\n\r" );
         }
         else
         {
-          vSYSSerial( ">>EEPROM free data read: fail!\n\r" );
+          vSYSserial( ">>EEPROM free data read: fail!\n\r" );
         }
         res = eSTORAGEloadPassword();
         if ( res == EEPROM_OK )
         {
-          vSYSSerial( ">>EEPROM password read: done!\n\r" );
+          vSYSserial( ">>EEPROM password read: done!\n\r" );
         }
         else
         {
-          vSYSSerial( ">>EEPROM password read: fail!\n\r" );
+          vSYSserial( ">>EEPROM password read: fail!\n\r" );
         }
         initDone = 1U;
       }
       xSemaphoreGive( xSemaphore );
     }
   }
-  return;
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vDATAprintSerialNumber ( void )
@@ -218,98 +255,103 @@ void vDATAprintSerialNumber ( void )
   uint8_t   i        = 0U;
   uint8_t   j        = 0U;
   uint8_t   temp     = 0U;
-  vSYSSerial( ">>Serial number: " );
-  for ( i=0U; i<6U; i++ )
+  vSYSserial( ">>Serial number: " );
+  for ( i=0U; i<3U; i++ )
   {
     for ( j=0U; j<2U; j++ )
     {
-      temp = ( uint8_t )( serialNumber.value[i] << ( j * 8U ) );
+      temp = ( uint8_t )( serialNumber0.value[i] << ( j * 8U ) );
       sprintf( &buf[6U * i + 3U * j], "%02X:", temp );
+    }
+    for ( j=0U; j<2U; j++ )
+    {
+      temp = ( uint8_t )( serialNumber1.value[i] << ( j * 8U ) );
+      sprintf( &buf[6U * i + 3U * j + 3U], "%02X:", temp );
     }
   }
   buf[35U] = 0U;
-  vSYSSerial( buf );
-  vSYSSerial( "\n\r" );
+  vSYSserial( buf );
+  vSYSserial( "\n\r" );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vDATAAPIprintMemoryMap ( void )
 {
   char buf[36U] = { 0U };
-  vSYSSerial( "\n\r" );
-  vSYSSerial("------------- EEPROM map: -------------\n\r");
-  vSYSSerial("System register: ");
+  vSYSserial( "\n\r" );
+  vSYSserial("------------- EEPROM map: -------------\n\r");
+  vSYSserial("System register: ");
   sprintf( buf, "0x%06X", STORAGE_SR_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_SR_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("EWA            : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("EWA            : ");
   sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_WEB_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Reserve        : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Reserve        : ");
   sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Configurations : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Configurations : ");
   sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", CONFIG_TOTAL_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Charts         : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Charts         : ");
   sprintf( buf, "0x%06X", STORAGE_CHART_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_CHART_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Free data      : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Free data      : ");
   sprintf( buf, "0x%06X", STORAGE_FREE_DATA_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Password       : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Password       : ");
   sprintf( buf, "0x%06X", STORAGE_PASSWORD_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_PASSWORD_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Log pointer    : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Log pointer    : ");
   sprintf( buf, "0x%06X", STORAGE_LOG_POINTER_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_LOG_POINTER_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Log            : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Log            : ");
   sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
-  vSYSSerial( buf );
-  vSYSSerial( "( ");
+  vSYSserial( buf );
+  vSYSserial( "( ");
   sprintf( buf, "%d", STORAGE_LOG_SIZE );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes )\n\r" );
-  vSYSSerial("Free           : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes )\n\r" );
+  vSYSserial("Free           : ");
   sprintf( buf, "%d", ( ( EEPROM_SIZE * 1024U ) - STORAGE_REQUIRED_SIZE ) );
-  vSYSSerial( buf );
-  vSYSSerial( " bytes \n\r" );
-  vSYSSerial("End            : ");
+  vSYSserial( buf );
+  vSYSserial( " bytes \n\r" );
+  vSYSserial("End            : ");
   sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
-  vSYSSerial( buf );
-  vSYSSerial( "\n\r" );
-  vSYSSerial("---------------------------------------\n\r");
+  vSYSserial( buf );
+  vSYSserial( "\n\r" );
+  vSYSserial("---------------------------------------\n\r");
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -325,27 +367,37 @@ void vDATAAPIinit ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vDATAAPIlogInit ( void )
+EEPROM_STATUS eDATAAPIlogInit ( void )
 {
-  LOG_RECORD_TYPE record  = { 0U};
+  EEPROM_STATUS   res     = EEPROM_OK;
+  LOG_RECORD_TYPE record  = { 0U };
   uint16_t        pointer = 0U;
   logCash.adr    = 0xFFFFU;
-  if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
+  res = eSTORAGEreadLogPointer( &pointer );
+  if ( res == EEPROM_OK )
   {
-    if ( eSTORAGEreadLogRecord( pointer, &record ) == EEPROM_OK )
+    if ( pointer == 0xFFFF )
     {
-      logCash.pointer = pointer;
-      if ( record.time == 0U )
+      logCash.size = 0U;
+    }
+    else
+    {
+      res = eSTORAGEreadLogRecord( pointer, &record );
+      if ( res == EEPROM_OK )
       {
-        logCash.size = pointer;
-      }
-      else
-      {
-        logCash.size = LOG_SIZE;
+        logCash.pointer = pointer;
+        if ( record.time == 0U )
+        {
+          logCash.size = pointer;
+        }
+        else
+        {
+          logCash.size = LOG_SIZE;
+        }
       }
     }
   }
-  return;
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -738,6 +790,10 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
         case DATA_API_CMD_WRITE:
           if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
+            if ( adr == ENGINE_WORK_TIME_ADR )
+            {
+              *freeDataArray[ENGINE_WORK_MINUTES_ADR] = 0U;
+            }
             flTakeSource = 10U;
             *freeDataArray[adr] = *data;
             xSemaphoreGive( xSemaphore );

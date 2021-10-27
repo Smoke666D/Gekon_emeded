@@ -13,7 +13,6 @@
 
 /*------------------------ Define --------------------------------------*/
 /*---------- Choose your chip ---------*/
-//#define  M95M01
 #define  M95M04
 /*---------- Software parameters ------*/
 #define  EEPROM_TIMEOUT           5U
@@ -23,6 +22,10 @@
 #ifdef M95M01
   #define  EEPROM_MAX_ADR         0x1FFFFU
   #define  EEPROM_SIZE            128U      /* Kb */
+#endif
+#ifdef M95M02
+  #define  EEPROM_MAX_ADR         0x3FFFFU
+  #define  EEPROM_SIZE            256U      /* Kb */
 #endif
 #ifdef M95M04
   #define  EEPROM_MAX_ADR         0x7FFFFU
@@ -55,7 +58,7 @@ typedef enum
   EEPROM_OK,            /* Command done and bus is free for new one */
   EEPROM_BUSY,          /* Some process in progress */
   EEPROM_WRITE_DISABLE, /* Write disable by W pin */
-  EEPROM_OVER_PAGE,	    /* Try to write over one page */
+  EEPROM_OVER_PAGE,	/* Try to write over one page */
   EEPROM_OVER_ROLL,     /* Try to read over end of memory */
   EEPROM_ADR_ERROR,     /* Try to get access over address */
   EEPROM_INIT_ERROR,    /* No SPI structure*/

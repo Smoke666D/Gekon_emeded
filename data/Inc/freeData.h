@@ -47,6 +47,8 @@ typedef struct __packed
   PASSWORD_STATUS status;
   uint16_t        data;
 } PASSWORD_TYPE;
+/*------------------------ Functions -----------------------------------*/
+void vFREEDATAerase ( void );
 /*------------------------ Extern --------------------------------------*/
 extern uint16_t* const freeDataArray[FREE_DATA_SIZE];
 extern PASSWORD_TYPE   systemPassword;

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
@@ -27,20 +26,19 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "task.h"
+#include "EEPROM.h"
+#include "RTC.h"
 #include "common.h"
+#include "chart.h"
+#include "dataAPI.h"
+#include "lcd.h"
+#include "keyboard.h"
 #include "menu.h"
 #include "server.h"
-#include "http.h"
-#include "rtc.h"
-#include "lcd.h"
 #include "config.h"
 #include "version.h"
-#include "keyboard.h"
 #include "usbhid.h"
-#include "EEPROM.h"
 #include "storage.h"
-#include "RTC.h"
-#include "dataAPI.h"
 #include "freeData.h"
 #include "adc.h"
 #include "fpi.h"
@@ -63,8 +61,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -75,117 +76,106 @@ DMA_HandleTypeDef hdma_adc1;
 DMA_HandleTypeDef hdma_adc2;
 DMA_HandleTypeDef hdma_adc3;
 
-I2C_HandleTypeDef hi2c1;        /* APB1 RTC */
+I2C_HandleTypeDef hi2c1;
 
-SPI_HandleTypeDef hspi1;        /* APB2 EEPROM */
-SPI_HandleTypeDef hspi3;        /* APB1 LCD */
-DMA_HandleTypeDef hdma_spi3_tx;
+SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi2_tx;
 
-TIM_HandleTypeDef htim2;  /* APB1 ADC */
-TIM_HandleTypeDef htim3;  /* APB1 ADC */
-TIM_HandleTypeDef htim5;  /* APB1 Controller clock */
-TIM_HandleTypeDef htim6;  /* APB1 Speed sensor */
-TIM_HandleTypeDef htim7;  /* APB1 LCD */
-TIM_HandleTypeDef htim8;  /* APB2 ADC */
-TIM_HandleTypeDef htim12; /* APB1 Current */
-TIM_HandleTypeDef htim13; /* APB1 ModBus */
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim5;
+TIM_HandleTypeDef htim6;
+TIM_HandleTypeDef htim7;
+TIM_HandleTypeDef htim8;
+TIM_HandleTypeDef htim11;
+TIM_HandleTypeDef htim12;
+TIM_HandleTypeDef htim13;
 
-UART_HandleTypeDef huart2; /* APB1 ModBus */
-UART_HandleTypeDef huart3; /* APB1 Debug port */
+UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for netTask */
 osThreadId_t netTaskHandle;
 const osThreadAttr_t netTask_attributes = {
   .name = "netTask",
+  .stack_size = 448 * 4,
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 1792
 };
 /* Definitions for lcdTask */
 osThreadId_t lcdTaskHandle;
 const osThreadAttr_t lcdTask_attributes = {
   .name = "lcdTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for usbTask */
 osThreadId_t usbTaskHandle;
 const osThreadAttr_t usbTask_attributes = {
   .name = "usbTask",
+  .stack_size = 192 * 4,
   .priority = (osPriority_t) osPriorityLow,
-  .stack_size = 768
 };
-
+/* Definitions for adcTask */
+osThreadId_t adcTaskHandle;
+const osThreadAttr_t adcTask_attributes = {
+  .name = "adcTask",
+  .stack_size = 403 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for keyboardTask */
+osThreadId_t keyboardTaskHandle;
+const osThreadAttr_t keyboardTask_attributes = {
+  .name = "keyboardTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
 const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
   .name = "xLCDDelaySemph"
 };
 /* USER CODE BEGIN PV */
-osThreadId_t keyboardTaskHandle;
-const osThreadAttr_t keyboardTask_attributes = {
-  .name = "KeyboardTask",
-  .priority = (osPriority_t) osPriorityHigh,
-  .stack_size = 232
-};
 
-osThreadId_t ADCTaskHandle;
-const osThreadAttr_t ADCTask_attributes = {
-  .name = "ADCTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1612
-};
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 1024
-};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_USART3_UART_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_ADC1_Init(void);
-static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_SPI3_Init(void);
+static void MX_SPI1_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM5_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
+static void MX_TIM11_Init(void);
+static void MX_TIM12_Init(void);
+static void MX_TIM13_Init(void);
+static void MX_ADC2_Init(void);
+static void MX_ADC1_Init(void);
 static void MX_TIM8_Init(void);
-static void MX_TIM12_Init ( void );
-static void MX_TIM13_Init ( void );
-
-
-
-
 void StartDefaultTask(void *argument);
-/* USER CODE BEGIN PFP */
-void StartLcdTask(void *argument);
-extern void StartADCTask(void *argument);
-extern void vKeyboardTask(void * argument);
 extern void vStartNetTask(void *argument);
+void StartLcdTask(void *argument);
 extern void vStartUsbTask(void *argument);
-/* USER CODE END PFP */
+extern void StartADCTask(void *argument);
+extern void vKeyboardTask(void *argument);
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
+/* USER CODE BEGIN PFP */
+static const TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
 {
   ( TaskHandle_t* )&lcdTaskHandle,
   ( TaskHandle_t* )&engineHandle,
@@ -194,12 +184,12 @@ TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
   ( TaskHandle_t* )&electroHandle,
 };
 static const FPI_INIT fpiInitStruct = {
-  .pinA   = 0U,
+  .pinA   = FPI_A_Pin,
   .pinB   = FPI_B_Pin,
   .pinC   = FPI_C_Pin,
   .pinD   = FPI_D_Pin,
   .pinCS  = DIN_OFFSET_Pin,
-  .portA  = NULL,
+  .portA  = FPI_A_GPIO_Port,
   .portB  = FPI_B_GPIO_Port,
   .portC  = FPI_C_GPIO_Port,
   .portD  = FPI_D_GPIO_Port,
@@ -212,18 +202,32 @@ static const FPO_INIT fpoInitStruct = {
   .outPinD   = POUT_D_Pin,
   .outPinE   = POUT_E_Pin,
   .outPinF   = POUT_F_Pin,
+  .outPinG   = POUT_G_Pin,
+  .outPinH   = POUT_H_Pin,
+  .outPinI   = POUT_I_Pin,
+  .outPinJ   = POUT_J_Pin,
+
   .outPortA  = POUT_A_GPIO_Port,
   .outPortB  = POUT_B_GPIO_Port,
   .outPortC  = POUT_C_GPIO_Port,
   .outPortD  = POUT_D_GPIO_Port,
   .outPortE  = POUT_E_GPIO_Port,
   .outPortF  = POUT_F_GPIO_Port,
+  .outPortG  = POUT_G_GPIO_Port,
+  .outPortH  = POUT_H_GPIO_Port,
+  .outPortI  = POUT_I_GPIO_Port,
+  .outPortJ  = POUT_J_GPIO_Port,
+
   .disPinAB  = POUT_AB_CS_Pin,
   .disPinCD  = POUT_CD_CS_Pin,
   .disPinEF  = POUT_EF_CS_Pin,
+  .disPinGH  = POUT_GH_CS_Pin,
+  .disPinIJ  = POUT_IJ_CS_Pin,
   .disPortAB = POUT_AB_CS_GPIO_Port,
   .disPortCD = POUT_CD_CS_GPIO_Port,
   .disPortEF = POUT_EF_CS_GPIO_Port,
+  .disPortGH = POUT_GH_CS_GPIO_Port,
+  .disPortIJ = POUT_IJ_CS_GPIO_Port,
 };
 static const CONTROLLER_INIT controllerInitStruct = {
   .autoPIN    = LED2_Pin,
@@ -243,6 +247,15 @@ static const MB_INIT_TYPE mbInit = {
   .port = RS485_DE_GPIO_Port,
   .pin  = RS485_DE_Pin,
 };
+static const GPIO_TYPE chargGPIO = {
+  .pin = CHARG_ON_Pin,
+  .port = CHARG_ON_GPIO_Port,
+};
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
 /* USER CODE END 0 */
 
 /**
@@ -257,9 +270,7 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick.
-   *
-   */
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -276,39 +287,35 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  huart2.Instance          = USART2;
-  //MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
-  MX_LWIP_Init();
-  MX_SPI1_Init();
-  MX_SPI3_Init();
-  MX_ADC1_Init();
-  MX_ADC2_Init();
   MX_ADC3_Init();
   MX_I2C1_Init();
+  MX_SPI1_Init();
+  MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
+  MX_SPI2_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM5_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
-  MX_TIM8_Init();
+  MX_TIM11_Init();
   MX_TIM12_Init();
   MX_TIM13_Init();
+  MX_ADC2_Init();
+  MX_ADC1_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
-  vCHARTinitCharts();                                           /* Charts data initialization */
   eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
-  vRTCinit( &hi2c1 );                                           /* RTC initialization */
-  vDATAAPIinit();                                               /* Data API initialization */
   /*--------------------------------------------------------------------------*/
-  vSYSSerial( "\n\r***********************\n\r" );
+  vSYSserial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */
+
   /* Init scheduler */
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* Create the semaphores(s) */
@@ -316,7 +323,7 @@ int main(void)
   xLCDDelaySemphHandle = osSemaphoreNew(1, 1, &xLCDDelaySemph_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
+  xLCDDelaySemphHandle = osSemaphoreNew(1, 1, &xLCDDelaySemph_attributes);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -329,24 +336,42 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew( StartDefaultTask, NULL, &defaultTask_attributes);
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of netTask */
+  netTaskHandle = osThreadNew(vStartNetTask, NULL, &netTask_attributes);
+
+  /* creation of lcdTask */
+  lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
+
+  /* creation of usbTask */
+  usbTaskHandle = osThreadNew(vStartUsbTask, NULL, &usbTask_attributes);
+
+  /* creation of adcTask */
+  adcTaskHandle = osThreadNew(StartADCTask, NULL, &adcTask_attributes);
+
+  /* creation of keyboardTask */
+  keyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
-  netTaskHandle      = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
-  lcdTaskHandle      = osThreadNew( StartLcdTask,  NULL, &lcdTask_attributes );
-  usbTaskHandle      = osThreadNew( vStartUsbTask, NULL, &usbTask_attributes );
-  ADCTaskHandle      = osThreadNew( StartADCTask,  NULL, &ADCTask_attributes );
-  keyboardTaskHandle = osThreadNew( vKeyboardTask, NULL, &keyboardTask_attributes );
-  vSetupKeyboard();
-  vMenuMessageInit( ADCTaskHandle);
-  vLCDInit( xLCDDelaySemphHandle );
-  vUSBinit( usbTaskHandle );
+  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  vSetupKeyboard();
+  vMenuMessageInit( adcTaskHandle );
+  HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
+  vLCDInit( xLCDDelaySemphHandle, &htim7, &hspi2 );
+  vCHARTinitCharts();                               /* Charts data initialization */
+  vRTCinit( &hi2c1 );                               /* RTC initialization         */
+  vDATAAPIinit();                                   /* Data API initialization    */
+  vUSBinit( usbTaskHandle );
+  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -367,22 +392,22 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 13;
-  RCC_OscInitStruct.PLL.PLLN = 195;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 240;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 5;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks
+  /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -457,15 +482,13 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-
+  /* USER CODE BEGIN ADC1_Init 2 */
   sConfig.Channel = ADC_CHANNEL_16;
   sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN ADC1_Init 2 */
-
   /* USER CODE END ADC1_Init 2 */
 
 }
@@ -657,6 +680,7 @@ static void MX_ADC3_Init(void)
   /* USER CODE END ADC3_Init 2 */
 
 }
+
 /**
   * @brief I2C1 Initialization Function
   * @param None
@@ -730,40 +754,40 @@ static void MX_SPI1_Init(void)
 }
 
 /**
-  * @brief SPI3 Initialization Function
+  * @brief SPI2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI3_Init(void)
+static void MX_SPI2_Init(void)
 {
 
-  /* USER CODE BEGIN SPI3_Init 0 */
+  /* USER CODE BEGIN SPI2_Init 0 */
 
-  /* USER CODE END SPI3_Init 0 */
+  /* USER CODE END SPI2_Init 0 */
 
-  /* USER CODE BEGIN SPI3_Init 1 */
+  /* USER CODE BEGIN SPI2_Init 1 */
 
-  /* USER CODE END SPI3_Init 1 */
-  /* SPI3 parameter configuration*/
-  hspi3.Instance = SPI3;
-  hspi3.Init.Mode = SPI_MODE_MASTER;
-  hspi3.Init.Direction = SPI_DIRECTION_1LINE;
-  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi3.Init.CLKPolarity = SPI_POLARITY_HIGH;
-  hspi3.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
-  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi3.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi3) != HAL_OK)
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI3_Init 2 */
+  /* USER CODE BEGIN SPI2_Init 2 */
 
-  /* USER CODE END SPI3_Init 2 */
+  /* USER CODE END SPI2_Init 2 */
 
 }
 
@@ -858,44 +882,6 @@ static void MX_TIM3_Init(void)
 }
 
 /**
-  * @brief TIM7 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM7_Init(void)
-{
-
-  /* USER CODE BEGIN TIM7_Init 0 */
-
-  /* USER CODE END TIM7_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM7_Init 1 */
-
-  /* USER CODE END TIM7_Init 1 */
-  htim7.Instance = TIM7;
-  htim7.Init.Prescaler = 60;
-  htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = 20;
-  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM7_Init 2 */
-
-  /* USER CODE END TIM7_Init 2 */
-
-}
-
-/**
   * @brief TIM5 Initialization Function
   * @param None
   * @retval None
@@ -979,6 +965,44 @@ static void MX_TIM6_Init(void)
 }
 
 /**
+  * @brief TIM7 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM7_Init(void)
+{
+
+  /* USER CODE BEGIN TIM7_Init 0 */
+
+  /* USER CODE END TIM7_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM7_Init 1 */
+
+  /* USER CODE END TIM7_Init 1 */
+  htim7.Instance = TIM7;
+  htim7.Init.Prescaler = 60;
+  htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim7.Init.Period = 72;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim7, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM7_Init 2 */
+
+  /* USER CODE END TIM7_Init 2 */
+
+}
+
+/**
   * @brief TIM8 Initialization Function
   * @param None
   * @retval None
@@ -1024,15 +1048,59 @@ static void MX_TIM8_Init(void)
 
 }
 
-static void MX_TIM12_Init ( void )
+/**
+  * @brief TIM11 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM11_Init(void)
 {
-  TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig      = {0};
-  htim12.Instance               = TIM12;
-  htim12.Init.Prescaler         = 30001U;
-  htim12.Init.CounterMode       = TIM_COUNTERMODE_UP;
-  htim12.Init.Period            = 201U;
-  htim12.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+
+  /* USER CODE BEGIN TIM11_Init 0 */
+
+  /* USER CODE END TIM11_Init 0 */
+
+  /* USER CODE BEGIN TIM11_Init 1 */
+
+  /* USER CODE END TIM11_Init 1 */
+  htim11.Instance = TIM11;
+  htim11.Init.Prescaler = 0;
+  htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim11.Init.Period = 65535;
+  htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM11_Init 2 */
+
+  /* USER CODE END TIM11_Init 2 */
+
+}
+
+/**
+  * @brief TIM12 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM12_Init(void)
+{
+
+  /* USER CODE BEGIN TIM12_Init 0 */
+
+  /* USER CODE END TIM12_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+
+  /* USER CODE BEGIN TIM12_Init 1 */
+
+  /* USER CODE END TIM12_Init 1 */
+  htim12.Instance = TIM12;
+  htim12.Init.Prescaler = 30001;
+  htim12.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim12.Init.Period = 201;
+  htim12.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
   {
@@ -1043,44 +1111,74 @@ static void MX_TIM12_Init ( void )
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim12, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  return;
+  /* USER CODE BEGIN TIM12_Init 2 */
+
+  /* USER CODE END TIM12_Init 2 */
+
 }
 
-static void MX_TIM13_Init ( void )
+/**
+  * @brief TIM13 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM13_Init(void)
 {
-  htim13.Instance               = TIM13;
-  htim13.Init.Prescaler         = 0U;
-  htim13.Init.CounterMode       = TIM_COUNTERMODE_UP;
-  htim13.Init.Period            = 65535U;
-  htim13.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+
+  /* USER CODE BEGIN TIM13_Init 0 */
+
+  /* USER CODE END TIM13_Init 0 */
+
+  /* USER CODE BEGIN TIM13_Init 1 */
+
+  /* USER CODE END TIM13_Init 1 */
+  htim13.Instance = TIM13;
+  htim13.Init.Prescaler = 0;
+  htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim13.Init.Period = 65535;
+  htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if ( HAL_TIM_Base_Init( &htim13 ) != HAL_OK )
+  if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
   {
     Error_Handler();
   }
-  return;
+  /* USER CODE BEGIN TIM13_Init 2 */
+
+  /* USER CODE END TIM13_Init 2 */
+
 }
-static void MX_USART2_UART_Init ( void )
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
 {
-  huart2.Instance          = USART2;
-  huart2.Init.BaudRate     = 115200U;
-  huart2.Init.WordLength   = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits     = UART_STOPBITS_1;
-  huart2.Init.Parity       = UART_PARITY_NONE;
-  huart2.Init.Mode         = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if ( HAL_UART_Init( &huart2 ) != HAL_OK )
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
-  return;
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
 }
 
 /**
@@ -1123,13 +1221,13 @@ static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
   __HAL_RCC_DMA2_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA1_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
@@ -1158,134 +1256,131 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, POUT_AB_CS_Pin|POUT_A_Pin|POUT_B_Pin|POUT_D_Pin
+                          |POUT_CD_CS_Pin|POUT_C_Pin|POUT_F_Pin|POUT_EF_CS_Pin
+                          |POUT_E_Pin|LCD_RST_Pin|RTC_INT_Pin|RTC_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CHARG_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
-                          |EEPROM_NSS_Pin|LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOF, ANALOG_SWITCH_Pin|DIN_OFFSET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
-                          |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, CHARG_ON_Pin|USB_ENB_Pin|POUT_GH_CS_Pin|POUT_G_Pin
+                          |POUT_H_Pin|POUT_J_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED3_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOB, LED2_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, LCD_LED_Pin|LCD_CS_Pin|POUT_IJ_CS_Pin|POUT_I_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, RTC_INT_Pin|RTC_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, LED1_Pin|LED2_Pin|LED3_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, LCD_RST_Pin|LCD_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : BOOT1_Pin */
-  GPIO_InitStruct.Pin = BOOT1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : FPI_B_Pin FPI_C_Pin FPI_D_Pin */
-  GPIO_InitStruct.Pin = FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
+  /*Configure GPIO pins : FPI_A_Pin FPI_B_Pin FPI_C_Pin FPI_D_Pin */
+  GPIO_InitStruct.Pin = FPI_A_Pin|FPI_B_Pin|FPI_C_Pin|FPI_D_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : USER_Btn_Pin */
-  GPIO_InitStruct.Pin = USER_Btn_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  /*Configure GPIO pins : POUT_AB_CS_Pin POUT_A_Pin POUT_B_Pin POUT_D_Pin
+                           POUT_CD_CS_Pin POUT_C_Pin POUT_F_Pin POUT_EF_CS_Pin
+                           POUT_E_Pin LCD_RST_Pin RTC_INT_Pin RTC_RST_Pin */
+  GPIO_InitStruct.Pin = POUT_AB_CS_Pin|POUT_A_Pin|POUT_B_Pin|POUT_D_Pin
+                          |POUT_CD_CS_Pin|POUT_C_Pin|POUT_F_Pin|POUT_EF_CS_Pin
+                          |POUT_E_Pin|LCD_RST_Pin|RTC_INT_Pin|RTC_RST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : USER_Btn_Pin */
-  GPIO_InitStruct.Pin = VR_COUNT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(VR_COUNT_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : BTN_Pin */
+  GPIO_InitStruct.Pin = BTN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(BTN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ON_INPOW_Pin ANALOG_SWITCH_Pin DIN_OFFSET_Pin */
-  GPIO_InitStruct.Pin = ON_INPOW_Pin|ANALOG_SWITCH_Pin|DIN_OFFSET_Pin;
+  /*Configure GPIO pins : ANALOG_SWITCH_Pin DIN_OFFSET_Pin */
+  GPIO_InitStruct.Pin = ANALOG_SWITCH_Pin|DIN_OFFSET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : CHARG_ALTER_ON_Pin POUT_A_Pin POUT_B_Pin LD3_Pin
-                           LED2_Pin EEPROM_NSS_Pin LD2_Pin */
-  GPIO_InitStruct.Pin = CHARG_ON_Pin|POUT_A_Pin|POUT_B_Pin|LD3_Pin
-                          |LED2_Pin|EEPROM_NSS_Pin|LD2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : POUT_E_Pin POUT_CD_CS_Pin POUT_C_Pin POUT_EF_CS_Pin
-                           POUT_D_Pin POUT_F_Pin POUT_AB_CS_Pin */
-  GPIO_InitStruct.Pin = POUT_E_Pin|POUT_CD_CS_Pin|POUT_C_Pin|POUT_EF_CS_Pin
-                          |POUT_D_Pin|POUT_F_Pin|POUT_AB_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin */
-  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : KL_START_Pin KL_AUTO_Pin KL_STOP_Pin */
-  GPIO_InitStruct.Pin = KL_START_Pin|KL_AUTO_Pin|KL_STOP_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin   = RS485_DE_Pin;
-  GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull  = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init( RS485_DE_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : LED1_Pin LED3_Pin */
-  GPIO_InitStruct.Pin = LED1_Pin|LED3_Pin;
+  /*Configure GPIO pins : CHARG_ON_Pin LED1_Pin LED2_Pin LED3_Pin
+                           USB_ENB_Pin POUT_GH_CS_Pin POUT_G_Pin POUT_H_Pin
+                           POUT_J_Pin */
+  GPIO_InitStruct.Pin = CHARG_ON_Pin|LED1_Pin|LED2_Pin|LED3_Pin
+                          |USB_ENB_Pin|POUT_GH_CS_Pin|POUT_G_Pin|POUT_H_Pin
+                          |POUT_J_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : RTC_INT_Pin RTC_RST_Pin */
-  GPIO_InitStruct.Pin = RTC_INT_Pin|RTC_RST_Pin;
+  /*Configure GPIO pins : LCD_LED_Pin LCD_CS_Pin POUT_IJ_CS_Pin POUT_I_Pin */
+  GPIO_InitStruct.Pin = LCD_LED_Pin|LCD_CS_Pin|POUT_IJ_CS_Pin|POUT_I_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_CS_Pin */
-  GPIO_InitStruct.Pin = LCD_CS_Pin;
+  /*Configure GPIO pins : KL_UP_Pin KL_DOWN_Pin KL_START_Pin KL_AUTO_Pin
+                           KL_STOP_Pin */
+  GPIO_InitStruct.Pin = KL_UP_Pin|KL_DOWN_Pin|KL_START_Pin|KL_AUTO_Pin
+                          |KL_STOP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : VR_COUNT_Pin */
+  GPIO_InitStruct.Pin = VR_COUNT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(VR_COUNT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : USB_DETECTED_Pin */
+  GPIO_InitStruct.Pin = USB_DETECTED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(USB_DETECTED_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SDIO_CD_Pin */
+  GPIO_InitStruct.Pin = SDIO_CD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SDIO_CD_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : EEPROM_NSS_Pin */
+  GPIO_InitStruct.Pin = EEPROM_NSS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_CS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(EEPROM_NSS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_RST_Pin */
-  GPIO_InitStruct.Pin = LCD_RST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  /*Configure GPIO pin : PD1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
-  HAL_GPIO_Init(LCD_RST_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF9_CAN1;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_LED_Pin */
-  GPIO_InitStruct.Pin = LCD_LED_Pin;
+  /*Configure GPIO pins : RS485_DE_Pin LED_SYS_Pin */
+  GPIO_InitStruct.Pin = RS485_DE_Pin|LED_SYS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
@@ -1294,69 +1389,92 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used 
+  * @param  argument: Not used
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
+  /* init code for LWIP */
+  //MX_LWIP_Init();
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  //uint32_t  waterMark = 0U;
-  vSYSSerial( ">>Start Default Task!\n\r" );
-  vDATAAPIdataInit();                         /* Data from EEPROM initialization */
-  vDATAAPIlogInit();                          /* Get log data from EEPROM */
-  vCHARTupdateAtrib();                        /* Update charts attributes */
-  vDATAprintSerialNumber();                   /* Print device serial number to serial port */
-  vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port*/
-  vMBinit( mbInit );                          /* Start ModBus */
-  while ( uADCGetValidDataFlag() == 0U )
+  EEPROM_STATUS res    = EEPROM_OK;
+  uint8_t       period = 100U;
+  vSYSserial( ">>Start Default Task!\n\r" );
+  res = eDATAAPIdataInit();                       /* Data from EEPROM initialization           */
+  if ( res == EEPROM_OK )
   {
-    osDelay( 10U );
+    res = eDATAAPIlogInit();                      /* Get log data from EEPROM                  */
+    if ( res == EEPROM_OK )
+    {
+      HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port, DIN_OFFSET_Pin, GPIO_PIN_SET );
+      vCHARTupdateAtrib();                        /* Update charts attributes                  */
+      vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+      vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
+      while ( uADCGetValidDataFlag() == 0U )
+      {
+        osDelay( 10U );
+      }
+      osDelay( 1100U );
+      vVRinit( &htim6 );                          /* Speed sensor initialization        */
+      vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization  */
+      vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
+      vCHARGERinit( &chargGPIO );                 /**/
+      vALARMinit();                               /* Activ error list initialization    */
+      vENGINEinit();                              /**/
+      vELECTROinit( &htim12 );                    /**/
+      vLOGICinit( &htim5 );                       /**/
+      vCONTROLLERinit( &controllerInitStruct );   /**/
+      vMEASUREMENTinit();                         /**/
+      vOUTPUTinit();
+      vMBinit( mbInit );                          /* Start ModBus                              */
+      HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
+    }
+    else
+    {
+      period = 200U;
+    }
   }
-  osDelay( 1100U );
-  vVRinit( &htim6 );                          /* Speed sensor initialization */
-  vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization */
-  vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
-  vCHARGERinit( CHARG_ON_GPIO_Port, CHARG_ON_Pin);
-  vALARMinit();                               /* Activ error list initialization */
-  vENGINEinit();                              /**/
-  vELECTROinit( &htim12 );                    /**/
-  vLOGICinit( &htim5 );                       /**/
-  vCONTROLLERinit( &controllerInitStruct );   /**/
-  vMEASUREMENTinit();                         /**/
-  vOUTPUTinit();
+  else
+  {
+    period = 200U;
+  }
   /* Infinite loop */
   for(;;)
   {
-    HAL_GPIO_TogglePin( GPIOB, LD2_Pin );
-    osDelay( 100U );
-/*
-    waterMark = uxTaskGetStackHighWaterMark( usbTaskHandle ) * 8U; //usbTaskHandle
-    sprintf( buf, "Free space = %lu / %lu\n\r", waterMark, usbTask_attributes.stack_size );
-    vSYSSerial( buf );
-*/
+    HAL_GPIO_TogglePin( LED_SYS_GPIO_Port, LED_SYS_Pin );
+    osDelay( period );
   }
   /* USER CODE END 5 */
 }
 
+/* USER CODE BEGIN Header_StartLcdTask */
+/**
+* @brief Function implementing the lcdTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartLcdTask */
 void StartLcdTask(void *argument)
 {
+  /* USER CODE BEGIN StartLcdTask */
   vLCD_Init();
   for(;;)
   {
     vMenuTask();
   }
+  /* USER CODE END StartLcdTask */
 }
 
-
-/**
+ /**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM4 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
@@ -1385,7 +1503,10 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -1401,7 +1522,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

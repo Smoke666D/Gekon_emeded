@@ -15,8 +15,8 @@
 #include "semphr.h"
 /*------------------------ Define --------------------------------------*/
 #define CHART_UNIT_LENGTH       3U
-#define CHART_DOTS_SIZE         128U
-#define CHART_CHART_SIZE        1027U  /* byte */
+#define CHART_DOTS_SIZE         32U
+#define CHART_CHART_SIZE        ( CHART_DOTS_SIZE * 8U + CHART_UNIT_LENGTH )  //1027U  /* byte */
 #define CHART_NUMBER            3U
 #define CHART_DATA_XMIN_STR     "xmin"
 #define CHART_DATA_XMAX_STR     "xmax"
@@ -24,6 +24,8 @@
 #define CHART_DATA_YMAX_STR     "ymax"
 #define CHART_DATA_XUNIT_STR    "xunit"
 #define CHART_DATA_YUNIT_STR    "yunit"
+#define CHART_X_TYPE_STR        "xType"
+#define CHART_Y_TYPE_STR        "yType"
 #define CHART_DATA_SIZE_STR     "size"
 #define CHART_DATA_DOTS_STR     "dots"
 #define CHART_DOT_X_STR         "x"

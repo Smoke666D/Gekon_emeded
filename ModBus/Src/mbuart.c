@@ -196,7 +196,13 @@ MB_INIT_STATE eMBuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, 
       vMBcleanUartInput( uart );
       __HAL_UART_DISABLE_IT( uart, UART_IT_TC );      /* Transmission Complete Interrupt Disable  */
       __HAL_UART_ENABLE_IT( uart, UART_IT_RXNE );     /* UART Data Register not empty Interrupt Enable */
-      //__HAL_UART_ENABLE( uart );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_PE );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_FE );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_NE );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_ORE );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_ORE );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_LBD );
+      __HAL_UART_ENABLE( uart );
       res = EB_INIT_OK;
     }
   }
@@ -208,29 +214,10 @@ MB_INIT_STATE eMBuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, 
   * @param   UART stucture
   * @retval current DR register value
   */
-uint8_t uMBreadUartInput ( UART_HandleTypeDef *uart )
-{
-  return ( uint8_t )( __HAL_UART_FLUSH_DRREGISTER( uart ) & 0x00FFU );
-}
-/*---------------------------------------------------------------------------------------------------*/
-/**
-  * @brief   ModBus UART DR cleaner
-  * @param   UART stucture
-  * @retval current DR register value
-  */
 void vMBcleanUartInput ( UART_HandleTypeDef *uart )
 {
   uint16_t buf = __HAL_UART_FLUSH_DRREGISTER( uart ) & 0xFFU;
   buf++;
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vMDcleanUartError ( UART_HandleTypeDef *uart )
-{
-  uint16_t data = 0U;
-  data = uart->Instance->DR;
-  data = uart->Instance->SR;
-  data++;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -417,7 +404,7 @@ void vMBstartHalfCharTimer ( void )
   * @param none
   * @retval none
   */
-void vMBtimHandler( void )
+void vMBtimHandler ( void )
 {
   mbTimer.counter.half++;
   if( mbTimer.counter.half >= 7U )
@@ -466,23 +453,14 @@ void vMBtimHandler( void )
   */
 void vMBuartHandler ( void )
 {
-  uint8_t  data       = 0U;
-  uint32_t isrflags   = READ_REG( mbUart.serial->Instance->SR  );
-  uint32_t cr1its     = READ_REG( mbUart.serial->Instance->CR1 );
+  uint32_t isrflags = READ_REG( mbUart.serial->Instance->SR  );
+  uint32_t cr1its   = READ_REG( mbUart.serial->Instance->CR1 );
+  uint8_t  data     = ( uint8_t )( __HAL_UART_FLUSH_DRREGISTER( mbUart.serial ) & 0x00FFU );
   //uint32_t cr3its     = READ_REG( mbUart.serial->Instance->CR3 );
   //uint32_t errorflags = ( isrflags & ( uint32_t )( USART_SR_PE | USART_SR_FE | USART_SR_ORE | USART_SR_NE ) );
-/*
-  uint8_t srPE  = isrflags & ( uint32_t )( USART_SR_PE );
-  uint8_t srFE  = isrflags & ( uint32_t )( USART_SR_FE  );
-  uint8_t srORE = isrflags & ( uint32_t )( USART_SR_ORE  );
-  uint8_t srNE  = isrflags & ( uint32_t )( USART_SR_NE  );
-  data          = ( uint8_t )( mbUart.serial->Instance->DR );
-*/
-  //vMDcleanUartError( mbUart.serial );
   if ( ( ( isrflags & USART_SR_RXNE    ) != RESET ) &&
        ( ( cr1its   & USART_CR1_RXNEIE ) != RESET ) )
   {
-    data = uMBreadUartInput( mbUart.serial );
     __HAL_UART_CLEAR_FLAG( mbUart.serial, UART_FLAG_RXNE );
     if ( __HAL_UART_GET_FLAG( mbUart.serial, ( UART_FLAG_PE | UART_FLAG_FE | UART_FLAG_NE | UART_FLAG_ORE ) ) == 0 )
     {

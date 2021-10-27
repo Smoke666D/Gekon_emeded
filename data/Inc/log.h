@@ -14,8 +14,8 @@
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-	RECORD_SOURCE_CORE,
-	RECORD_SOURCE_SERVER,
+  RECORD_SOURCE_CORE,
+  RECORD_SOURCE_SERVER,
 } RECORD_SOURCE;
 
 typedef enum
@@ -27,11 +27,11 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-	uint32_t					id;
-	RECORD_SOURCE			source   : 1U;
-	RECORD_PRIORITY		priority : 2U;
-	char							message[LOG_RCORD_MESSAGE_LENGTH];
-	uint32_t					value;
+  uint32_t        id;
+  RECORD_SOURCE	  source   : 1U;
+  RECORD_PRIORITY priority : 2U;
+  char            message[LOG_RCORD_MESSAGE_LENGTH];
+  uint32_t        value;
 } LOG_RECORD;
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOG_H_ */

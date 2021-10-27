@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
@@ -21,14 +21,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f2xx_it.h"
-#include "FreeRTOS.h"
-#include "task.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
 #include "vrSensor.h"
 #include "adc.h"
 #include "electro.h"
+#include "mbuart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,7 +37,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -62,22 +61,22 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern ETH_HandleTypeDef  heth;
-extern PCD_HandleTypeDef  hpcd_USB_OTG_FS;
-extern DMA_HandleTypeDef  hdma_adc1;
-extern DMA_HandleTypeDef  hdma_adc2;
-extern DMA_HandleTypeDef  hdma_adc3;
-extern DMA_HandleTypeDef  hdma_spi3_tx;
+extern ETH_HandleTypeDef heth;
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+extern DMA_HandleTypeDef hdma_adc1;
+extern DMA_HandleTypeDef hdma_adc2;
+extern DMA_HandleTypeDef hdma_adc3;
+extern DMA_HandleTypeDef hdma_spi2_tx;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim5;
+extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim8;
+extern TIM_HandleTypeDef htim12;
+extern TIM_HandleTypeDef htim13;
 extern UART_HandleTypeDef huart2;
-extern TIM_HandleTypeDef  htim2;
-extern TIM_HandleTypeDef  htim3;
-extern TIM_HandleTypeDef  htim4;
-extern TIM_HandleTypeDef  htim5;
-extern TIM_HandleTypeDef  htim6;
-extern TIM_HandleTypeDef  htim7;
-extern TIM_HandleTypeDef  htim8;
-extern TIM_HandleTypeDef  htim12;
-extern TIM_HandleTypeDef  htim13;
+extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN EV */
 
@@ -95,7 +94,9 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-
+  while (1)
+  {
+  }
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -178,103 +179,248 @@ void DebugMon_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f2xx.s).                    */
 /******************************************************************************/
-void DMA1_Stream5_IRQHandler ( void )
+
+/**
+  * @brief This function handles DMA1 stream4 global interrupt.
+  */
+void DMA1_Stream4_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler( &hdma_spi3_tx );
-  return;
+  /* USER CODE BEGIN DMA1_Stream4_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream4_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_spi2_tx);
+  /* USER CODE BEGIN DMA1_Stream4_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream4_IRQn 1 */
 }
-void EXTI9_5_IRQHandler ( void )
+
+/**
+  * @brief This function handles EXTI line[9:5] interrupts.
+  */
+void EXTI9_5_IRQHandler(void)
 {
-  HAL_GPIO_EXTI_IRQHandler( GPIO_PIN_6 );
+  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
+
+  /* USER CODE END EXTI9_5_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
   vVRextiCallback();
-  return;
+  /* USER CODE END EXTI9_5_IRQn 1 */
 }
-void TIM2_IRQHandler ( void )
+
+/**
+  * @brief This function handles TIM2 global interrupt.
+  */
+void TIM2_IRQHandler(void)
 {
+  /* USER CODE BEGIN TIM2_IRQn 0 */
   __HAL_TIM_CLEAR_IT( &htim2, TIM_IT_UPDATE );
-  return;
+  /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+
+  /* USER CODE END TIM2_IRQn 1 */
 }
-void TIM3_IRQHandler ( void )
+
+/**
+  * @brief This function handles TIM3 global interrupt.
+  */
+void TIM3_IRQHandler(void)
 {
+  /* USER CODE BEGIN TIM3_IRQn 0 */
   __HAL_TIM_CLEAR_IT( &htim3, TIM_IT_UPDATE );
-  return;
+  /* USER CODE END TIM3_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim3);
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+
+  /* USER CODE END TIM3_IRQn 1 */
 }
-void TIM4_IRQHandler ( void )
+
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
 {
+  /* USER CODE BEGIN TIM4_IRQn 0 */
+
+  /* USER CODE END TIM4_IRQn 0 */
   HAL_TIM_IRQHandler(&htim4);
-  return;
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+
+  /* USER CODE END TIM4_IRQn 1 */
 }
-void TIM5_IRQHandler ( void )
+
+/**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
 {
-  vLOGICtimerCallback();
-  HAL_TIM_IRQHandler( &htim5 );
-  return;
+  /* USER CODE BEGIN USART2_IRQn 0 */
+  vMBuartHandler();
+  /* USER CODE END USART2_IRQn 0 */
+  //HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
 }
-void TIM8_BRK_TIM12_IRQHandler ( void )
+
+/**
+  * @brief This function handles TIM8 break interrupt and TIM12 global interrupt.
+  */
+void TIM8_BRK_TIM12_IRQHandler(void)
 {
-  vELECTROtimCallback();
-  HAL_TIM_IRQHandler( &htim12 );
-  return;
-}
-void TIM6_DAC_IRQHandler ( void )
-{
-  vVRtimCallback();
-  HAL_TIM_IRQHandler( &htim6 );
-  return;
-}
-void TIM8_UP_TIM13_IRQHandler ( void )
-{
-  /*--------------------------------------------------------------------------------*/
-  __HAL_TIM_CLEAR_IT( &htim8, TIM_IT_UPDATE );
-  /*--------------------------------------------------------------------------------*/
-  if (__HAL_TIM_GET_FLAG( &htim13, TIM_FLAG_UPDATE ) != RESET)
+  /* USER CODE BEGIN TIM8_BRK_TIM12_IRQn 0 */
+  if ( __HAL_TIM_GET_FLAG( &htim12, TIM_FLAG_UPDATE ) != RESET )
   {
-    if (__HAL_TIM_GET_IT_SOURCE( &htim13, TIM_IT_UPDATE ) != RESET)
+    if ( __HAL_TIM_GET_IT_SOURCE( &htim12, TIM_IT_UPDATE ) != RESET)
+    {
+      __HAL_TIM_CLEAR_IT( &htim12, TIM_IT_UPDATE );
+      vELECTROtimCallback();
+    }
+  }
+  /* USER CODE END TIM8_BRK_TIM12_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim8);
+  HAL_TIM_IRQHandler(&htim12);
+  /* USER CODE BEGIN TIM8_BRK_TIM12_IRQn 1 */
+
+  /* USER CODE END TIM8_BRK_TIM12_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM8 update interrupt and TIM13 global interrupt.
+  */
+void TIM8_UP_TIM13_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM8_UP_TIM13_IRQn 0 */
+  if ( __HAL_TIM_GET_FLAG( &htim13, TIM_FLAG_UPDATE ) != RESET)
+  {
+    if ( __HAL_TIM_GET_IT_SOURCE( &htim13, TIM_IT_UPDATE ) != RESET)
     {
       __HAL_TIM_CLEAR_IT( &htim13, TIM_IT_UPDATE );
       vMBtimHandler();
     }
   }
-  /*--------------------------------------------------------------------------------*/
-  return;
+  /* USER CODE END TIM8_UP_TIM13_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim8);
+  HAL_TIM_IRQHandler(&htim13);
+  /* USER CODE BEGIN TIM8_UP_TIM13_IRQn 1 */
+
+  /* USER CODE END TIM8_UP_TIM13_IRQn 1 */
 }
-void TIM7_IRQHandler ( void )
+
+/**
+  * @brief This function handles TIM5 global interrupt.
+  */
+void TIM5_IRQHandler(void)
 {
-  __HAL_TIM_CLEAR_IT( &htim7, TIM_IT_UPDATE );
-  vLCDDelay();
-  return;
+  /* USER CODE BEGIN TIM5_IRQn 0 */
+  vLOGICtimerCallback();
+  /* USER CODE END TIM5_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim5);
+  /* USER CODE BEGIN TIM5_IRQn 1 */
+
+  /* USER CODE END TIM5_IRQn 1 */
 }
-void DMA2_Stream0_IRQHandler ( void )
+
+/**
+  * @brief This function handles TIM6 global interrupt, DAC1 and DAC2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
 {
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+  vVRtimCallback();
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM7 global interrupt.
+  */
+void TIM7_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_IRQn 0 */
+
+  /* USER CODE END TIM7_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_IRQn 1 */
+  vLCDdelay();
+  /* USER CODE END TIM7_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 Stream0 global interrupt.
+  */
+void DMA2_Stream0_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
   vADC_Ready( ADC1_READY );
-  HAL_DMA_IRQHandler( &hdma_adc1 );
-  return;
+  /* USER CODE END DMA2_Stream0_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_adc1);
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 1 */
 }
-void DMA2_Stream1_IRQHandler ( void )
+
+/**
+  * @brief This function handles DMA2 Stream1 global interrupt.
+  */
+void DMA2_Stream1_IRQHandler(void)
 {
+  /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
   vADC_Ready( ADC3_READY );
-  HAL_DMA_IRQHandler( &hdma_adc3 );
-  return;
+  /* USER CODE END DMA2_Stream1_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_adc3);
+  /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream1_IRQn 1 */
 }
-void DMA2_Stream2_IRQHandler ( void )
+
+/**
+  * @brief This function handles DMA2 Stream2 global interrupt.
+  */
+void DMA2_Stream2_IRQHandler(void)
 {
+  /* USER CODE BEGIN DMA2_Stream2_IRQn 0 */
   vADC_Ready( ADC2_READY);
-  HAL_DMA_IRQHandler( &hdma_adc2 );
-  return;
+  /* USER CODE END DMA2_Stream2_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_adc2);
+  /* USER CODE BEGIN DMA2_Stream2_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream2_IRQn 1 */
 }
-void ETH_IRQHandler ( void )
+
+/**
+  * @brief This function handles Ethernet global interrupt.
+  */
+void ETH_IRQHandler(void)
 {
-  HAL_ETH_IRQHandler( &heth );
-  return;
+  /* USER CODE BEGIN ETH_IRQn 0 */
+
+  /* USER CODE END ETH_IRQn 0 */
+  HAL_ETH_IRQHandler(&heth);
+  /* USER CODE BEGIN ETH_IRQn 1 */
+
+  /* USER CODE END ETH_IRQn 1 */
 }
-void OTG_FS_IRQHandler ( void )
+
+/**
+  * @brief This function handles USB On The Go FS global interrupt.
+  */
+void OTG_FS_IRQHandler(void)
 {
-  HAL_PCD_IRQHandler( &hpcd_USB_OTG_FS );
-  return;
+  /* USER CODE BEGIN OTG_FS_IRQn 0 */
+
+  /* USER CODE END OTG_FS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+  /* USER CODE BEGIN OTG_FS_IRQn 1 */
+
+  /* USER CODE END OTG_FS_IRQn 1 */
 }
-void USART2_IRQHandler ( void )
-{
-  vMBuartHandler();
-  //HAL_UART_IRQHandler( &huart2 );
-  return;
-}
+
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

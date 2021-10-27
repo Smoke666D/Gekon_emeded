@@ -31,13 +31,23 @@ uint16_t* const freeDataArray[FREE_DATA_SIZE] =
   &engineWorkTime,
   &engineWorkMinutes,
   &engineStartsNumber,
-	&maintenanceAlarmOilTimeLeft,
-	&maintenanceAlarmAirTimeLeft,
-	&maintenanceAlarmFuelTimeLeft,
-	&powerReactiveUsage,
-	&powerActiveUsage,
-	&powerFullUsage,
-	&fuelUsage,
-	&fuelRate,
-	&fuelAverageSize
+  &maintenanceAlarmOilTimeLeft,
+  &maintenanceAlarmAirTimeLeft,
+  &maintenanceAlarmFuelTimeLeft,
+  &powerReactiveUsage,
+  &powerActiveUsage,
+  &powerFullUsage,
+  &fuelUsage,
+  &fuelRate,
+  &fuelAverageSize
 };
+
+void vFREEDATAerase ( void )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<FREE_DATA_SIZE; i++ )
+  {
+    *freeDataArray[i] = 0U;
+  }
+  return;
+}

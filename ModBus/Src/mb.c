@@ -20,8 +20,8 @@
 #include "stream_buffer.h"
 #include "string.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static osThreadId_t   MBpollTaskHandle = NULL;             /* eMBPoll task */
-static MB_EXCEPTION   eException       = MB_EX_NONE;      /* ModBus states */
+static osThreadId_t   MBpollTaskHandle = NULL;       /* eMBPoll task */
+static MB_EXCEPTION   eException       = MB_EX_NONE; /* ModBus states */
 static MB_FRAME_TYPE  mbFrame          = { 0U };
 static MB_STATES_TYPE mbState          = { 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -30,7 +30,7 @@ static size_t   xReceivedBytes                   = 0U;     /* Number of received
 /*----------------------- Functions -----------------------------------------------------------------*/
 void eMBpoll ( void *argument );
 /*----------------------- Structures ----------------------------------------------------------------*/
-static const MBFunctionHandlerTable eMBFuncHandlers[MAX_FUN_NUM + 1U] =
+static const MBFunctionHandlerTable eMBFuncHandlers[MB_FUN_NUM] =
 {
   /*------------------- 00 -------------------*/
   { eMBNoFunction },
@@ -312,25 +312,10 @@ void eMBpoll ( void *argument )
       {
         if ( eMBRTUreceive( inputMessage, &mbFrame ) == VALID_FRAME )    /* Frame valid checking and copy frame to buffer */
         {
-          /* Standard ModBus functions */
-          if ( mbFrame.pdu.func < MAX_FUN_NUM )                                                       /* Function number validation */
+          if ( mbFrame.pdu.func < MB_FUN_NUM )                                                       /* Function number validation */
           {
             eException = eMBFuncHandlers[mbFrame.pdu.func].pxHandler( mbFrame.pdu.data, &mbFrame.length );        /* Run command */
           }
-          /* Custom ModBus functions */
-          else if ( mbFrame.pdu.func >= CUSTOM_FUN_START )
-          {
-            switch ( mbFrame.pdu.func )
-            {
-              case MB_FUNC_SET_RS_PARAMETERS_CODE:
-                eException = eMBFuncHandlers[MB_FUNC_SET_RS_PARAMETERS_NUMBER].pxHandler( mbFrame.pdu.data, &mbFrame.length );
-                break;
-              default:
-                eException = MB_EX_ILLEGAL_FUNCTION;
-                break;
-            }
-          }
-          /* Invalid ModBus functions */
           else
           {
             eException = MB_EX_ILLEGAL_FUNCTION;                                              /* Illegal function number */

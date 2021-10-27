@@ -9,61 +9,30 @@
 #define INC_MBPORT_H_
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "FreeRTOSConfig.h"
-/*----------------------- Define --------------------------------------------------------------------*/
-#define ARM_base
-#define IWDG_ON  0U
+
 /* ---------------------- Platform includes --------------------------------*/
-#define MB_ADDRESS_BROADCAST                    0U       /*! Modbus broadcast address. */
-#define MB_ADDRESS_MIN                          1U       /*! Smallest possible slave address. */
-#define MB_ADDRESS_MAX                          247U     /*! Biggest possible slave address. */
-#define MB_FUNC_NONE                            0U
-#define MB_FUNC_READ_COILS                      1U
-#define MB_FUNC_READ_DISCRETE_INPUTS            2U
-#define MB_FUNC_WRITE_SINGLE_COIL               5U
-#define MB_FUNC_WRITE_MULTIPLE_COILS            15U
-#define MB_FUNC_READ_HOLDING_REGISTER           3U      /* Read Holding Registers function */
-#define MB_FUNC_READ_INPUT_REGISTER             4U
-#define MB_FUNC_WRITE_REGISTER                  6U
-#define MB_FUNC_WRITE_MULTIPLE_REGISTERS        16U
-#define MB_FUNC_MASK_WRITE_REGISTER             22U
-#define MB_FUNC_READWRITE_MULTIPLE_REGISTERS    23U
-#define MB_FUNC_DIAG_READ_EXCEPTION             7U
-#define MB_FUNC_DIAGNOSTICS                     8U
-#define MB_FUNC_DIAG_GET_COM_EVENT_CNT          11U
-#define MB_FUNC_DIAG_GET_COM_EVENT_LOG          12U
-#define MB_FUNC_OTHER_REPORT_SLAVEID            17U
-#define MB_FUNC_SET_COMMUNICATION_PARAMETRS     25U
-#define MB_FUNC_ERROR                           128U
-#define MB_FUNC_SET_RS_PARAMETRS                66U
-//Codes SUB-FUNCTION
-#define RETURN_QUERY_DATA                       0U
-#define RESTART_COMUNICATION_OPTION             1U
-#define RETURN_DIAGNOSTIC_REGISTER              2U
-#define FORCE_LISTEN_ONLY_MODE                  4U
-#define SET_BOUNDRATE                           0U
-#define SET_PARITY                              1U
-#define SET_NET_ADR                             2U
-/* ---------------------- Type definitions ---------------------------------*/
+#define MB_ADDRESS_BROADCAST                    0U       /* Modbus broadcast address.        */
+#define MB_ADDRESS_MIN                          1U       /* Smallest possible slave address. */
+#define MB_ADDRESS_MAX                          247U     /* Biggest possible slave address.  */
 #define MB_FUNC_HANDLERS_MAX                    17U
 #define MB_FUNC_OTHER_REP_SLAVEID_BUF           32U
-#define MB_FUNC_OTHER_REP_SLAVEID_ENABLED       0U         /*! \brief If the <em>Report Slave ID</em> function should be enabled. */
-#define MB_FUNC_READ_INPUT_ENABLED              0U         /*! \brief If the <em>Read Input Registers</em> function should be enabled. */
-#define MB_FUNC_READ_HOLDING_ENABLED            1U         /*! \brief If the <em>Read Holding Registers</em> function should be enabled. */
-#define MB_FUNC_WRITE_HOLDING_ENABLED           1U         /*! \brief If the <em>Write Single Register</em> function should be enabled. */
-#define MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED  0U         /*! \brief If the <em>Write Multiple registers</em> function should be enabled. */
-#define MB_FUNC_READ_COILS_ENABLED              0U         /*! \brief If the <em>Read Coils</em> function should be enabled. */
-#define MB_FUNC_WRITE_COIL_ENABLED              0U         /*! \brief If the <em>Write Coils</em> function should be enabled. */
-#define MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED    0U         /*! \brief If the <em>Write Multiple Coils</em> function should be enabled. */
-#define MB_FUNC_READ_DISCRETE_INPUTS_ENABLED    0U         /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
-#define MB_FUNC_READWRITE_HOLDING_ENABLED       0U         /*! \brief If the <em>Read/Write Multiple Registers</em> function should be enabled. */
+#define MB_MAIN_FUNC_NUMBER                     44U
+#define MB_CUSTOM_FUNC_NUMBER                   1U
+#define MB_FUN_NUM                              ( MB_MAIN_FUNC_NUMBER + MB_CUSTOM_FUNC_NUMBER )
+/* ---------------------- Functions enable ---------------------------------*/
+#define MB_FUNC_OTHER_REP_SLAVEID_ENABLED       0U
+#define MB_FUNC_READ_INPUT_ENABLED              0U
+#define MB_FUNC_READ_HOLDING_ENABLED            1U
+#define MB_FUNC_WRITE_HOLDING_ENABLED           1U
+#define MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED  1U
+#define MB_FUNC_READ_COILS_ENABLED              0U
+#define MB_FUNC_WRITE_COIL_ENABLED              0U
+#define MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED    0U
+#define MB_FUNC_READ_DISCRETE_INPUTS_ENABLED    0U
+#define MB_FUNC_READWRITE_HOLDING_ENABLED       0U
 #define MB_FUNC_MASK_WRITE_REGISTER_ENABLED     0U
 #define MB_FUNC_DIAGNOSTICS_ENEBLED             0U
-#define MB_FUNC_SET_RS_PARAMETERS_ENEBLED       0U        /* Custom function to change RS parameters, as baud rate  */
-/*----------------------- Custom function code & number ---------------------------------------------*/
-#define CUSTOM_FUN_START                        66U
-#define MB_FUNC_SET_RS_PARAMETERS               0U
-#define MB_FUNC_SET_RS_PARAMETERS_CODE          ( CUSTOM_FUN_START + MB_FUNC_SET_RS_PARAMETERS )
-#define MB_FUNC_SET_RS_PARAMETERS_NUMBER        ( MAX_FUN_NUM + MB_FUNC_SET_RS_PARAMETERS )
+#define MB_FUNC_SET_RS_PARAMETERS_ENEBLED       0U
 /*----------------------- RTOS ---------------------------------------------*/
 #define OS_MB_RES_QUEUE_SIZE          3U
 #define OS_MB_TASK_PRIORITY           ( ( osPriority_t ) osPriorityNormal )
@@ -78,6 +47,40 @@
 #endif
 #define  OS_MB_EVENT_ARRAY_SIZE        ( ( uint8_t )( HR_REGISTER_COUNT / OS_MB_EVENT_GROUP_SIZE ) + 1U )
 /*----------------------- Structures ----------------------------------------------------------------*/
+typedef enum
+{
+  MB_FUNC_NONE                         = 0U,
+  MB_FUNC_READ_COILS                   = 1U,
+  MB_FUNC_READ_DISCRETE_INPUTS         = 2U,
+  MB_FUNC_READ_HOLDING_REGISTER        = 3U,
+  MB_FUNC_READ_INPUT_REGISTER          = 4U,
+  MB_FUNC_WRITE_SINGLE_COIL            = 5U,
+  MB_FUNC_WRITE_REGISTER               = 6U,
+  MB_FUNC_DIAG_READ_EXCEPTION          = 7U,
+  MB_FUNC_DIAGNOSTICS                  = 8U,
+  MB_FUNC_DIAG_GET_COM_EVENT_CNT       = 11U,
+  MB_FUNC_DIAG_GET_COM_EVENT_LOG       = 12U,
+  MB_FUNC_WRITE_MULTIPLE_COILS         = 15U,
+  MB_FUNC_WRITE_MULTIPLE_REGISTERS     = 16U,
+  MB_FUNC_OTHER_REPORT_SLAVEID         = 17U,
+  MB_FUNC_MASK_WRITE_REGISTER          = 22U,
+  MB_FUNC_READWRITE_MULTIPLE_REGISTERS = 23U,
+  MB_FUNC_SET_COMMUNICATION_PARAMETRS  = 25U,
+  MB_FUNC_SET_RS_PARAMETERS            = 66U,
+  MB_FUNC_ERROR                        = 128U,
+} MB_FUNC;
+
+typedef enum
+{
+  MB_SUB_FUNC_SET_BOUNDRATE,
+  MB_SUB_FUNC_SET_PARITY,
+  MB_SUB_FUNC_SET_NET_ADR,
+  MB_SUB_FUNC_RETURN_QUERY_DATA,
+  MB_SUB_FUNC_RESTART_COMUNICATION_OPTION,
+  MB_SUB_FUNC_RETURN_DIAGNOSTIC_REGISTER,
+  MB_SUB_FUNC_FORCE_LISTEN_ONLY_MODE,
+} MB_SUB_FUNC;
+
 typedef enum
 {
   MB_EX_NONE                 = 0x00U,

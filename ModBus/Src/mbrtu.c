@@ -44,7 +44,7 @@ void vMBcounterErrorInc ( void )
 */
 MB_INIT_STATE eMBreceiveMessageInit ( void )
 {
-  MB_INIT_STATE res   = EB_INIT_ERROR;
+  MB_INIT_STATE res = EB_INIT_ERROR;
   xMessageRecevFrame = xStreamBufferCreate( xMessageRecevFrameSizeBytes, xTriggerLevel );
   if ( xMessageRecevFrame != NULL )
   {
@@ -87,7 +87,7 @@ size_t uMBreceiveMessage ( uint8_t* input, uint32_t size )
 * @param   NOK_counter
 * @retval none
 */
-uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
+uint8_t uMBparseATURecieverFrameBuffer ( uint8_t nokCounter )
 {
   BaseType_t        priority    = 0U;
   size_t            xBytesSent  = 0U;
@@ -99,7 +99,7 @@ uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
   volatile uint8_t* pUARTBuffer = NULL;
 
   frameLength = uMBgetByteCounter();
-  if ( !NOK_counter )
+  if ( nokCounter == 0U )
   {
     if ( frameLength > MB_SER_PDU_SIZE_MIN )
     {
@@ -128,22 +128,25 @@ uint8_t uMBparseATURecieverFrameBuffer ( uint8_t NOK_counter )
       }
     }
   }
-  ModBusCounters.BusCommunicationErrorCount++;
+  else
+  {
+    ModBusCounters.BusCommunicationErrorCount++;
+  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /**
   * @brief  Check network address from ModBus frame and
   *         copy frame to buffer
-  * @param   pucRcvAddress - frame buffer address
+  * @param  pucRcvAddress - frame buffer address
   *         pucFrame      - frame buffer data
   *         pusLength     - frame buffer length
   * @retval MBErrorCode
   */
 MBErrorCode eMBRTUreceive ( uint8_t* blob, MB_FRAME_TYPE* frame )
 {
-  MBErrorCode  status = NO_VALID_FRAME;
-  uint32_t     i      = 0U;
+  MBErrorCode status = NO_VALID_FRAME;
+  uint32_t    i      = 0U;
   if ( ( blob[1U] == uMBGetCurSlaveAdr()  ) ||
        ( blob[1U] == MB_ADDRESS_BROADCAST ) )
   {
@@ -174,8 +177,8 @@ MBErrorCode eMBRTUreceive ( uint8_t* blob, MB_FRAME_TYPE* frame )
   */
 void vMBRTUsend ( MB_FRAME_TYPE* frame )
 {
-  uint16_t  usCRC16 = 0U;
-  uint8_t   i       = 0U;
+  uint16_t crc = 0U;
+  uint8_t  i   = 0U;
 
   /* Transmitted frame is make in buffer ATUSendFrameBuf */
   ATUSendFrameBuf[0U] = frame->adr;
@@ -185,10 +188,10 @@ void vMBRTUsend ( MB_FRAME_TYPE* frame )
     ATUSendFrameBuf[i] = frame->pdu.data[i - 1U];
   }
   /* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
-  usCRC16 = usMBCRC16( ATUSendFrameBuf, SndBufferCount );
-  ATUSendFrameBuf[SndBufferCount] = ( uint8_t )( usCRC16 & 0x00FFU );
+  crc = usMBCRC16( ATUSendFrameBuf, SndBufferCount );
+  ATUSendFrameBuf[SndBufferCount] = ( uint8_t )( crc & 0x00FFU );
   SndBufferCount++;
-  ATUSendFrameBuf[SndBufferCount] = ( uint8_t )( usCRC16 >> 8U );
+  ATUSendFrameBuf[SndBufferCount] = ( uint8_t )( crc >> 8U );
   SndBufferCount++;
   vMBputStrPak( ATUSendFrameBuf, SndBufferCount );
   return;
@@ -204,9 +207,9 @@ void vMBRTUsend ( MB_FRAME_TYPE* frame )
   */
 MBErrorCode eMBmasterRTUSend ( MB_FRAME_TYPE* frame )
 {
-  uint16_t     crc    = 0U;
-  uint8_t      i      = 0U;
-  MBErrorCode  status = MB_ENOERR;
+  uint16_t    crc    = 0U;
+  uint8_t     i      = 0U;
+  MBErrorCode status = MB_ENOERR;
 
   if ( ( eMBGetRcvState() == STATE_M_RX_IDLE ) && ( eMBGetSendState() == STATE_TX_IDLE ) )
   {

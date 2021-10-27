@@ -38,6 +38,19 @@
 #define MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF  ( MB_PDU_DATA_OFF + 9U )
 #define MB_PDU_FUNC_READWRITE_SIZE_MIN          9U
 /*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+uint16_t uMBgetFrameAdr ( uint8_t* frame )
+{
+  return ( ( ( uint16_t )frame[STARTING_ADDRESS_HI] ) << 8U ) | ( uint16_t )frame[STARTING_ADDRESS_LO];
+}
+uint16_t uMBgetFrameData ( uint8_t* frame )
+{
+  return ( ( ( uint16_t )frame[OUTPUT_VALUE_HI] ) << 8U ) | ( uint16_t )frame[OUTPUT_VALUE_LO];
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
 #if ( MB_FUNC_MASK_WRITE_REGISTER_ENABLED )
 /**
 * @brief  Masking function.
@@ -94,10 +107,8 @@ MB_EXCEPTION eMBFuncWriteHoldingRegister ( uint8_t* pucFrame, uint8_t* len )
   MB_EXCEPTION   status     = MB_EX_NONE;
   if ( *len == MB_PDU_FUNC_WRITE_SIZE )
   {
-    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) |
-                     ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
-    data       = ( ( ( uint16_t )pucFrame[OUTPUT_VALUE_HI] ) << 8U ) |
-                     ( uint16_t )pucFrame[OUTPUT_VALUE_LO];
+    regAddress = uMBgetFrameAdr( pucFrame );
+    data       = uMBgetFrameData( pucFrame );
     if ( eMBwriteData( ( uint8_t )regAddress, &data, 1U ) != MB_DATA_STATUS_OK )
     {
       status = MB_EX_ILLEGAL_DATA_ADDRESS;
@@ -128,16 +139,14 @@ MB_EXCEPTION eMBFuncWriteMultipleHoldingRegister( uint8_t* pucFrame, uint8_t* le
   if ( *len >= ( MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + MB_PDU_SIZE_MIN ) )
   {
     /* Address validation */
-    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) |
-                     ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
-    regCount   = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI] ) << 8U ) |
-                     ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_LO];
+    regAddress = uMBgetFrameAdr( pucFrame );
+    regCount   = uMBgetFrameData( pucFrame );
     if ( ( regCount + regAddress) <= OUTPUT_DATA_REGISTER_NUMBER )
     {
       regByteCount = pucFrame[BYTE_COUNT];
-      if( ( regCount     >= 1U                               ) &&
-          ( regCount     <= MB_PDU_FUNC_WRITE_MUL_REGCNT_MAX ) &&
-          ( regByteCount == ( uint8_t ) ( 2U * regCount )    ) )
+      if ( ( regCount     >= 1U                               ) &&
+           ( regCount     <= MB_PDU_FUNC_WRITE_MUL_REGCNT_MAX ) &&
+           ( regByteCount == ( uint8_t ) ( 2U * regCount )    ) )
       {
         if ( eMBwriteData( regAddress, ( uint16_t* )( &pucFrame[MB_MULTI_DATA_START] ), ( regByteCount / 2U ) ) == MB_DATA_STATUS_OK )
         {
@@ -175,16 +184,14 @@ MB_EXCEPTION eMBFuncWriteMultipleHoldingRegister( uint8_t* pucFrame, uint8_t* le
 */
 MB_EXCEPTION eMBFuncReadHoldingRegister( uint8_t* pucFrame, uint8_t* len )
 {
-  uint16_t     regAddress   = 0U;          /* The Data Address of the first register requested */
-  uint16_t     regCount     = 0U;          /* The total number of registers requested */
-  MB_EXCEPTION status       = MB_EX_NONE;
+  uint16_t     regAddress = 0U;          /* The Data Address of the first register requested */
+  uint16_t     regCount   = 0U;          /* The total number of registers requested */
+  MB_EXCEPTION status     = MB_EX_NONE;
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
   {
-    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] )    << 8U ) |
-                     ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
-    regCount   = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI] ) << 8U ) |
-                     ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_LO];
+    regAddress = uMBgetFrameAdr( pucFrame );
+    regCount   = uMBgetFrameData( pucFrame );
     if ( ( regCount + regAddress ) <= HR_REGISTER_COUNT )                        /* Register address validation */
     {
       if ( ( regCount >= 1U ) && ( regCount <= MB_PDU_FUNC_READ_REGCNT_MAX ) )
@@ -236,8 +243,8 @@ MB_EXCEPTION eMBFuncReadInputRegister ( uint8_t* pucFrame, uint8_t* len )
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
   {
-    regAddress = ( ( ( uint16_t )pucFrame[1U] ) << 8U ) | ( uint16_t )pucFrame[2U];
-    regCount   = ( ( ( uint16_t )pucFrame[3U] ) << 8U ) | ( uint16_t )pucFrame[4U];
+    regAddress = ( ( ( uint16_t )pucFrame[STARTING_ADDRESS_HI] ) << 8U ) | ( uint16_t )pucFrame[STARTING_ADDRESS_LO];
+    regCount   = ( ( ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_HI] ) << 8U ) | ( uint16_t )pucFrame[QUANTITY_OF_OUTPUTS_LO];
     /* Address validation */
     if ( ( regAddress >= MB_INPUT_REG_START ) &&
          ( regAddress < ( MB_INPUT_REG_START + IR_REGISTER_COUNT ) ) &&
@@ -246,8 +253,8 @@ MB_EXCEPTION eMBFuncReadInputRegister ( uint8_t* pucFrame, uint8_t* len )
       if ( ( regCount >= 1U )  && ( regCount <= MB_PDU_FUNC_READ_REGCNT_MAX ) )
       {
         pucFrameCur     = &pucFrame[MB_PDU_FUNC_OFF];      /* Set the current PDU data pointer to the beginning. */
-        pucFrameCur[0U] = MB_FUNC_READ_INPUT_REGISTER;     /* First byte contains the function code. */
-        pucFrameCur[1U] = ( uint8_t ) ( regCount * 2U );   /* Second byte in the response contain the number of bytes. */
+        pucFrameCur[FRAME_PLACE_FUNCTION] = MB_FUNC_READ_INPUT_REGISTER;     /* First byte contains the function code. */
+        pucFrameCur[FRAME_PLACE_BYTE_COUNTER] = ( uint8_t )( regCount * 2U );   /* Second byte in the response contain the number of bytes. */
         for ( i=0U; i < regCount; i++ )
         {
           eMBreadData( ( i + regAddress ), &data, 1U );
@@ -333,8 +340,8 @@ MB_EXCEPTION eMBFuncReadDiscreteInputs( uint8_t* pucFrame, uint8_t* len )
 /*---------------------------------------------------------------------------------------------------*/
 #if ( MB_FUNC_READ_COILS_ENABLED )
 /**
-* @brief   Read coil register function
-* @param   pucFrame - pointer to static frame buffer
+* @brief  Read coil register function
+* @param  pucFrame - pointer to static frame buffer
 *         len    - pointer to static frame length buffer
 * @retval function execution result
 */
@@ -347,7 +354,7 @@ MB_EXCEPTION eMBFuncReadCoils( uint8_t* pucFrame, uint8_t* len )
 
   if ( *len == MB_PDU_FUNC_READ_SIZE )
   {
-    regAddress = ( ( ( uint16_t )pucFrame[1U] ) << 8U ) | ( uint16_t )pucFrame[2U];
+    regAddress = pucFrame( pucFrame );
     regCount   = ( ( ( uint16_t )pucFrame[3U] ) << 8U ) | ( uint16_t )pucFrame[4U];
     /* Address validation */
     if ( ( regAddress >= MB_COILS_REG_START ) &&

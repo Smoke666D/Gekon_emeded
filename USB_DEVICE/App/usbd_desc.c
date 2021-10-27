@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -63,13 +63,13 @@
   * @{
   */
 
-#define USBD_VID     1155
+#define USBD_VID     5840
 #define USBD_LANGID_STRING     1033
 #define USBD_MANUFACTURER_STRING     "Energan"
-#define USBD_PID_FS     22352
-#define USBD_PRODUCT_STRING_FS     "Energan Diesel generator controller"
+#define USBD_PID_FS     4285
+#define USBD_PRODUCT_STRING_FS     "Enrgan Diesel Generator Controller "
 #define USBD_CONFIGURATION_STRING_FS     "Energan"
-#define USBD_INTERFACE_STRING_FS     "Energan IO data"
+#define USBD_INTERFACE_STRING_FS     "Energan IO Interface"
 
 /* USER CODE BEGIN PRIVATE_DEFINES */
 
@@ -287,7 +287,7 @@ uint8_t * USBD_FS_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
    * ID */
   Get_SerialNum();
   /* USER CODE BEGIN USBD_FS_SerialStrDescriptor */
-  
+
   /* USER CODE END USBD_FS_SerialStrDescriptor */
   return (uint8_t *) USBD_StringSerial;
 }

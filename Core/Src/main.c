@@ -139,6 +139,13 @@ const osThreadAttr_t keyboardTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
+/* Definitions for wdTask */
+osThreadId_t wdTaskHandle;
+const osThreadAttr_t wdTask_attributes = {
+  .name = "wdTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
 const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
@@ -176,6 +183,7 @@ void StartLcdTask(void *argument);
 extern void vStartUsbTask(void *argument);
 extern void StartADCTask(void *argument);
 extern void vKeyboardTask(void *argument);
+void vWDtask(void *argument);
 
 /* USER CODE BEGIN PFP */
 static const TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
@@ -356,6 +364,9 @@ int main(void)
 
   /* creation of keyboardTask */
   keyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
+
+  /* creation of wdTask */
+  wdTaskHandle = osThreadNew(vWDtask, NULL, &wdTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -738,8 +749,8 @@ static void MX_IWDG_Init(void)
 
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_4;
-  hiwdg.Init.Reload = 999;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_16;
+  hiwdg.Init.Reload = 3999;
   if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
   {
     Error_Handler();
@@ -1424,12 +1435,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void vDelayWithDog ( void )
-{
-  osDelay( 10U );
-  HAL_IWDG_Refresh( &hiwdg );
-  return;
-}
+
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1448,8 +1454,8 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   EEPROM_STATUS res    = EEPROM_OK;
   uint8_t       period = 100U;
-  uint8_t       i      = 0U;
   vSYSserial( ">>Start Default Task!\n\r" );
+  HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   res = eDATAAPIdataInit();                       /* Data from EEPROM initialization           */
   if ( res == EEPROM_OK )
   {
@@ -1462,12 +1468,9 @@ void StartDefaultTask(void *argument)
       vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
       while ( uADCGetValidDataFlag() == 0U )
       {
-	vDelayWithDog();
+	  osDelay( 10U );
       }
-      for ( i=0U; i<110U; i++ )
-      {
-	vDelayWithDog();
-      }
+      osDelay( 1100U );
       vVRinit( &htim6 );                          /* Speed sensor initialization        */
       vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization  */
       vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
@@ -1517,6 +1520,25 @@ void StartLcdTask(void *argument)
     vMenuTask();
   }
   /* USER CODE END StartLcdTask */
+}
+
+/* USER CODE BEGIN Header_vWDtask */
+/**
+* @brief Function implementing the wdTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vWDtask */
+void vWDtask(void *argument)
+{
+  /* USER CODE BEGIN vWDtask */
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_IWDG_Refresh( &hiwdg );
+    osDelay( 1500U );
+  }
+  /* USER CODE END vWDtask */
 }
 
  /**

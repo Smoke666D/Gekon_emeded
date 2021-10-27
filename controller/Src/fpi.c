@@ -9,7 +9,6 @@
 #include "common.h"
 #include "stm32f2xx_hal_gpio.h"
 #include "cmsis_os.h"
-#include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"

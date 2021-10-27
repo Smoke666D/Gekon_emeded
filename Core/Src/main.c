@@ -78,6 +78,8 @@ DMA_HandleTypeDef hdma_adc3;
 
 I2C_HandleTypeDef hi2c1;
 
+IWDG_HandleTypeDef hiwdg;
+
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi2_tx;
@@ -137,6 +139,13 @@ const osThreadAttr_t keyboardTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
+/* Definitions for wdTask */
+osThreadId_t wdTaskHandle;
+const osThreadAttr_t wdTask_attributes = {
+  .name = "wdTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
 /* Definitions for xLCDDelaySemph */
 osSemaphoreId_t xLCDDelaySemphHandle;
 const osSemaphoreAttr_t xLCDDelaySemph_attributes = {
@@ -167,12 +176,14 @@ static void MX_TIM13_Init(void);
 static void MX_ADC2_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM8_Init(void);
+static void MX_IWDG_Init(void);
 void StartDefaultTask(void *argument);
 extern void vStartNetTask(void *argument);
 void StartLcdTask(void *argument);
 extern void vStartUsbTask(void *argument);
 extern void StartADCTask(void *argument);
 extern void vKeyboardTask(void *argument);
+void vWDtask(void *argument);
 
 /* USER CODE BEGIN PFP */
 static const TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
@@ -304,6 +315,7 @@ int main(void)
   MX_ADC2_Init();
   MX_ADC1_Init();
   MX_TIM8_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
@@ -353,6 +365,9 @@ int main(void)
   /* creation of keyboardTask */
   keyboardTaskHandle = osThreadNew(vKeyboardTask, NULL, &keyboardTask_attributes);
 
+  /* creation of wdTask */
+  wdTaskHandle = osThreadNew(vWDtask, NULL, &wdTask_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -395,8 +410,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
@@ -712,6 +728,36 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief IWDG Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_IWDG_Init(void)
+{
+
+  /* USER CODE BEGIN IWDG_Init 0 */
+  #ifdef DEBUG
+    __HAL_DBGMCU_FREEZE_IWDG();
+  #endif
+  /* USER CODE END IWDG_Init 0 */
+
+  /* USER CODE BEGIN IWDG_Init 1 */
+
+  /* USER CODE END IWDG_Init 1 */
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_16;
+  hiwdg.Init.Reload = 3999;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN IWDG_Init 2 */
+
+  /* USER CODE END IWDG_Init 2 */
 
 }
 
@@ -1409,6 +1455,7 @@ void StartDefaultTask(void *argument)
   EEPROM_STATUS res    = EEPROM_OK;
   uint8_t       period = 100U;
   vSYSserial( ">>Start Default Task!\n\r" );
+  HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   res = eDATAAPIdataInit();                       /* Data from EEPROM initialization           */
   if ( res == EEPROM_OK )
   {
@@ -1421,7 +1468,7 @@ void StartDefaultTask(void *argument)
       vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
       while ( uADCGetValidDataFlag() == 0U )
       {
-        osDelay( 10U );
+	  osDelay( 10U );
       }
       osDelay( 1100U );
       vVRinit( &htim6 );                          /* Speed sensor initialization        */
@@ -1450,6 +1497,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+    HAL_IWDG_Refresh( &hiwdg );
     HAL_GPIO_TogglePin( LED_SYS_GPIO_Port, LED_SYS_Pin );
     osDelay( period );
   }
@@ -1472,6 +1520,25 @@ void StartLcdTask(void *argument)
     vMenuTask();
   }
   /* USER CODE END StartLcdTask */
+}
+
+/* USER CODE BEGIN Header_vWDtask */
+/**
+* @brief Function implementing the wdTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_vWDtask */
+void vWDtask(void *argument)
+{
+  /* USER CODE BEGIN vWDtask */
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_IWDG_Refresh( &hiwdg );
+    osDelay( 1500U );
+  }
+  /* USER CODE END vWDtask */
 }
 
  /**

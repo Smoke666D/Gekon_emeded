@@ -1308,7 +1308,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, POUT_AB_CS_Pin|POUT_A_Pin|POUT_B_Pin|POUT_D_Pin
                           |POUT_CD_CS_Pin|POUT_C_Pin|POUT_F_Pin|POUT_EF_CS_Pin
-                          |POUT_E_Pin|LCD_RST_Pin|RTC_INT_Pin|RTC_RST_Pin, GPIO_PIN_RESET);
+                          |POUT_E_Pin|RTC_INT_Pin|RTC_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOF, ANALOG_SWITCH_Pin|DIN_OFFSET_Pin, GPIO_PIN_RESET);
@@ -1316,6 +1316,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, CHARG_ON_Pin|USB_ENB_Pin|POUT_GH_CS_Pin|POUT_G_Pin
                           |POUT_H_Pin|POUT_J_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LCD_LED_Pin|LCD_CS_Pin|POUT_IJ_CS_Pin|POUT_I_Pin, GPIO_PIN_RESET);

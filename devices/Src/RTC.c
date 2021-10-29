@@ -26,11 +26,11 @@ uint8_t    decToBcd ( uint8_t num );
 RTC_STATUS uRTCpoolSRUntil ( uint8_t target );
 RTC_STATUS eVarifyTime ( RTC_TIME* time );
 RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm );
-void       vRTCTask ( void );
+void       vRTCTask ( void *argument );
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vRTCTask ( void )
+void vRTCTask ( void *argument )
 {
   for (;;)
   {

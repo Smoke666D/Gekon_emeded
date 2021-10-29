@@ -60,19 +60,19 @@ class HexFile:
             index   = buffer.find( ':' );
             endLine = buffer.find( '\n' );
             if ( ( index > -1 ) and ( endLine > -1 ) ):
-                line    = Line( buffer[ index : endLine ], adrShift );
+                line = Line( buffer[ index : endLine ], adrShift );
                 if ( line.valid > 0 ):
-                    buffer  = buffer[ ( endLine + 1): len( buffer ) ];
-                    if ( line.type == 0x04 ):
+                    buffer = buffer[ ( endLine + 1): len( buffer ) ];
+                    if ( line.type == 0x04 ):                                   # Extra address
                         adrShift = 0;
                         for i in range( 0, line.len ):
                             adrShift |= line.data[i] << ( 8 * ( line.len - i - 1 ) )
                         adrShift = adrShift << 16;
-                    if ( line.type == 0x01 ):
+                    if ( line.type == 0x01 ):                                   # End of the file
                         self.size  = len( self.data );
                         self.valid = 1;
                         index      = -1;
-                    if ( line.type == 0x00 ):
+                    if ( line.type == 0x00 ):                                   # Data Line
                         if ( firstData == 0 ):
                             firstData   = 1;
                             self.start  = line.adr;
@@ -88,7 +88,6 @@ class HexFile:
                                 self.data.append( line.data[i] );
                             prevAdr = line.adr;
                             prevLen = line.len;
-                    self.end = line.adr + line.len;
                 else:
                     console.log( line );
                     self.valid = 0;
@@ -116,7 +115,7 @@ class HexFile:
         return;
     def save( self ):
         out       = "";
-        sectors   = math.ceil( self.size / 0x10000 );
+        sectors   = math.ceil( self.size / 0x10000 ) + 1;
         shift     = self.start & 0x0000FFFF;
         dataCount = 0;
         for sector in range( 0, sectors ):
@@ -137,6 +136,8 @@ class HexFile:
                     crc   = ( ( ( ~crc ) & 0xFF ) + 0x01 ) & 0xFF;
                     line += format( crc, '02X' ) + "\n";
                     out  += line;
+        if ( dataCount != self.size ):
+            print( "Error on file saving! Difrent length")
         out += ":00000001FF\n";
         output = open( "firmware.hex", "w+" );
         output.write( out );
@@ -188,7 +189,6 @@ if __name__ == "__main__":
         hexFile.encrypt();
         print( "Save HEX file..." );
         hexFile.save();
-
         print( "DONE!" )
     else:
         print( "No file name. Print file name as parameter" );

@@ -8,6 +8,7 @@
 #include "vrSensor.h"
 #include "config.h"
 #include "common.h"
+#include "system.h"
 /*-------------------------------- Structures --------------------------------*/
 static TIM_HandleTypeDef* vrTIM = NULL;
 /*--------------------------------- Constant ---------------------------------*/

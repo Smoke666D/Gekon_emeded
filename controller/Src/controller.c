@@ -31,6 +31,7 @@
 #include "alarm.h"
 #include "dataAPI.h"
 #include "statistics.h"
+#include "system.h"
 /*-------------------------------- Structures --------------------------------*/
 static CONTROLLER_INIT   controllerGPIO      = { 0U };
 static CONTROLLER_TYPE   controller          = { 0U };

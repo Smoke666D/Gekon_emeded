@@ -14,6 +14,7 @@
 #include "fpo.h"
 #include "fpi.h"
 #include "journal.h"
+#include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static MEASUREMENT_TYPE measurement              = { 0U };
 static osThreadId_t     measurementHandle        = NULL;

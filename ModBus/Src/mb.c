@@ -19,6 +19,7 @@
 #include "semphr.h"
 #include "stream_buffer.h"
 #include "string.h"
+#include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static osThreadId_t   MBpollTaskHandle = NULL;       /* eMBPoll task */
 static MB_EXCEPTION   eException       = MB_EX_NONE; /* ModBus states */
@@ -276,8 +277,8 @@ void vMBTaskInit ( void )
   /* definition and creation of MBModBusTask */
   const osThreadAttr_t MBpollTask_attributes = {
     .name       = "MBpollTask",
-    .priority   = OS_MB_TASK_PRIORITY,
-    .stack_size = OS_MB_TASK_STACK_SIZE
+    .priority   = MB_TASK_PRIORITY,
+    .stack_size = MB_TASK_STACK_SIZE
   };
   MBpollTaskHandle = osThreadNew( eMBpoll, NULL, &MBpollTask_attributes );
   vMBstartUpMB();

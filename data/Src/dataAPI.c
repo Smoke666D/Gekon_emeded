@@ -12,6 +12,7 @@
 #include "common.h"
 #include "version.h"
 #include "stdio.h"
+#include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t  xSemaphore     = NULL;
 static EventGroupHandle_t xDataApiEvents = NULL;

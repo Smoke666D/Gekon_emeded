@@ -35,17 +35,6 @@
 #define  ERROR_NUMBER               27U
 #define  WARNING_NUMBER             16U
 /*------------------------ Tasks ---------------------------------------*/
-#define  FPI_TASK_PRIORITY           osPriorityLow
-#define  ENGINE_TASK_PRIORITY        osPriorityLow     /* Engine and Electro priority need to be equal */
-#define  ELECTRO_TASK_PRIORITY       osPriorityLow     /* Engine and Electro priority need to be equal */
-#define  CONTROLLER_TASK_PRIORITY    osPriorityNormal
-#define  MEASUREMENT_TASK_PRIORITY   osPriorityLow
-#define  FPI_TASK_STACK_SIZE         1024U
-#define  ENGINE_TASK_STACK_SIZE      1024U
-#define  ELECTRO_TASK_STACK_SIZE     1024U
-#define  CONTROLLER_TASK_STACK_SIZE  1024U
-#define  MEASUREMENT_TASK_STACK_SIZE 1024U
-
 #define  OIL_SENSOR_SOURCE          xADCGetSOP
 #define  FUEL_SENSOR_SOURCE         xADCGetSFL
 #define  COOLANT_SENSOR_SOURCE      xADCGetSCT

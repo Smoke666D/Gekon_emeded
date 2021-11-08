@@ -19,6 +19,7 @@
 #include "controllerTypes.h"
 #include "dataAPI.h"
 #include "alarm.h"
+#include "system.h"
 /*-------------------------------- Structures --------------------------------*/
 static QueueHandle_t     pFPIQueue     = NULL;
 static StaticQueue_t     xFPIQueue     = { 0U };
@@ -84,8 +85,9 @@ static const char* cFPInames[FPI_NUMBER] =
 static uint8_t  eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
 static FPI      fpis[FPI_NUMBER]                         = { 0U };
 static uint16_t fpiDataReg                               = 0U;
-
-static GPIO_PinState testFPI[FPI_NUMBER] = { GPIO_PIN_RESET };
+#ifdef DEBUG
+  static GPIO_PinState testFPI[FPI_NUMBER] = { GPIO_PIN_RESET };
+#endif
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -381,15 +383,16 @@ SYSTEM_EVENT_TYPE eFPIgetUserEventType ( uint8_t n )
 /*----------------------------------------------------------------------------*/
 void vFPITask ( void* argument )
 {
-  FPI_EVENT event = { 0U };
-  uint8_t   i     = 0U;
+  FPI_EVENT   event = { 0U };
+  uint8_t     i     = 0U;
   for (;;)
   {
-    for ( i=0U; i<FPI_NUMBER; i++ )
-    {
-      testFPI[i] = HAL_GPIO_ReadPin( fpis[i].port, fpis[i].pin );
-    }
-    osDelay(10);
+    #ifdef DEBUG
+      for ( i=0U; i<FPI_NUMBER; i++ )
+      {
+        testFPI[i] = HAL_GPIO_ReadPin( fpis[i].port, fpis[i].pin );
+      }
+    #endif
     /*-------------------- Read system notification --------------------*/
     if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_FPI_TASK_CONFIG_REINIT ) > 0U )
     {

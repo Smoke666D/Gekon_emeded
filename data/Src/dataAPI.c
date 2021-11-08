@@ -17,10 +17,10 @@ static SemaphoreHandle_t  xSemaphore     = NULL;
 static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static uint8_t       initDone              = 0U;
-static uint8_t       flTakeSource          = 0U;
-static LOG_CASH_TYPE logCash               = { 0U };
-static uint16_t      measurementNumberCash = 0U;
+volatile static uint8_t       initDone              = 0U;
+volatile static uint8_t       flTakeSource          = 0U;
+volatile static LOG_CASH_TYPE logCash               = { 0U };
+volatile static uint16_t      measurementNumberCash = 0U;
 /*------------------------ Define -------------------------------------------------------------------*/
 
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -28,6 +28,9 @@ static uint16_t      measurementNumberCash = 0U;
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vDATAAPIsendEventAll ( DATA_API_REINIT message )
 {
   uint32_t mask = 0U;
@@ -56,6 +59,9 @@ void vDATAAPIsendEventAll ( DATA_API_REINIT message )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -77,6 +83,9 @@ DATA_API_STATUS eDATAAPIlogLoad ( uint16_t adr, LOG_RECORD_TYPE* record )
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vDATAAPIincLogSize ( void )
 {
   if ( logCash.size < LOG_SIZE )
@@ -86,6 +95,9 @@ void vDATAAPIincLogSize ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EventGroupHandle_t xDATAAPIgetEventGroup ( void )
 {
   return xDataApiEvents;
@@ -96,6 +108,9 @@ EventGroupHandle_t xDATAAPIgetEventGroup ( void )
  * input:  none
  * output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eDATAAPIdataInit ( void )
 {
   EEPROM_STATUS   res                        = EEPROM_OK;
@@ -249,6 +264,9 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vDATAprintSerialNumber ( void )
 {
   char      buf[36U] = { 0U };
@@ -275,6 +293,9 @@ void vDATAprintSerialNumber ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vDATAAPIprintMemoryMap ( void )
 {
   char buf[36U] = { 0U };
@@ -360,6 +381,9 @@ void vDATAAPIprintMemoryMap ( void )
  * input:  array of task for notifications
  * output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vDATAAPIinit ( void )
 {
   xSemaphore     = xSemaphoreCreateMutex();
@@ -367,6 +391,9 @@ void vDATAAPIinit ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eDATAAPIlogInit ( void )
 {
   EEPROM_STATUS   res     = EEPROM_OK;
@@ -405,6 +432,9 @@ EEPROM_STATUS eDATAAPIlogInit ( void )
  * input:  none
  * output: initialization status
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIisInit ( void )
 {
   DATA_API_STATUS res = DATA_API_STAT_INIT_ERROR;
@@ -432,6 +462,9 @@ DATA_API_STATUS eDATAAPIisInit ( void )
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -533,6 +566,9 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
  * 7. DATA_API_CMD_ERASE - erase all EWA sector in EEPROM
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length )
 {
   DATA_API_STATUS res                 = DATA_API_STAT_OK;
@@ -630,6 +666,9 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* value, int8_t* scale, uint16_t* units )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -734,6 +773,9 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -773,6 +815,9 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
  * 7. DATA_API_CMD_ERASE - set 0 to free data by address in local storage
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -888,6 +933,9 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
  * 7. DATA_API_CMD_ERASE - reset password from the local storage and the EEPROM
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -994,6 +1042,9 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -1050,6 +1101,9 @@ DATA_API_STATUS eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer )
  * 9.  DATA_API_CMD_READ_CASH - read record with cash
  * 10. DATA_API_CMD_COUNTER   - read to adr size of log,
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TYPE* record )
 {
   DATA_API_STATUS res      = DATA_API_STAT_OK;
@@ -1196,6 +1250,9 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
  * 7. DATA_API_CMD_ERASE - none
  * 8. DATA_API_CMD_ADD   - none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
@@ -1333,6 +1390,9 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 DATA_API_STATUS eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8_t length, uint16_t* data )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;

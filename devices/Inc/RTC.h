@@ -20,6 +20,7 @@
 #define  RTC_TIMEOUT          1000U
 #define  RTC_BUSY_TIMEOUT     1U
 #define  RTC_POOL_TIMEOUT     10U
+#define  RTC_MEMORY_SIZE      19U
 #define  RTC_SEMAPHORE_DELAY  ( ( TickType_t ) 10U )
 #define  RTC_TASK_PRIORITY    osPriorityNormal
 #define  RTC_TASK_STACK_SIZE  512U

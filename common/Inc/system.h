@@ -8,6 +8,8 @@
 #ifndef INC_SYSTEM_H_
 #define INC_SYSTEM_H_
 /*----------------------- Includes -------------------------------------*/
+#include "stm32f2xx_hal.h"
+#include "cmsis_os.h"
 /*------------------------ Define --------------------------------------*/
 #define  OPTIMIZ
 #define  OPTIMIZ_LEVEL   "-O2"
@@ -30,9 +32,19 @@
 #if ( ENGINE_TASK_PRIORITY != ELECTRO_TASK_PRIORITY )
   #error Engine and electro tasks have difrent priority
 #endif
+
+#define SYS_MAX_TSAK_NUMBER     20U
+#define SYS_BAR_LENGTH          10U
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Enum ----------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
+typedef struct __packed
+{
+  osThreadId_t thread;
+  uint32_t     size;
+} TASK_ANALIZE;
 /*----------------------- Functions ------------------------------------*/
+void vSYSaddTask ( osThreadId_t thread, uint32_t size );
+void vSYSgetData ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_SYSTEM_H_ */

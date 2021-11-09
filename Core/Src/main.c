@@ -52,6 +52,7 @@
 #include "charger.h"
 #include "mb.h"
 #include "outputData.h"
+#include "system.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1501,6 +1502,7 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     HAL_GPIO_TogglePin( LED_SYS_GPIO_Port, LED_SYS_Pin );
+    //vSYSgetData();
     osDelay( period );
   }
   /* USER CODE END 5 */

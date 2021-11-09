@@ -23,6 +23,7 @@
 #include "debug.h"
 #include "lcd.h"
 #include "charger.h"
+#include "system.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE        engine              = { 0U };
 static OIL_TYPE           oil                 = { 0U };

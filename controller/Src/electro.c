@@ -15,6 +15,7 @@
 #include "fpo.h"
 #include "adc.h"
 #include "alarm.h"
+#include "system.h"
 /*---------------------------------- Define ----------------------------------*/
 /*-------------------------------- Structures --------------------------------*/
 static GENERATOR_TYPE      generator            = { 0U };

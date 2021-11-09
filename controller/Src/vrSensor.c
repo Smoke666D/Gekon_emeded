@@ -8,14 +8,15 @@
 #include "vrSensor.h"
 #include "config.h"
 #include "common.h"
+#include "system.h"
 /*-------------------------------- Structures --------------------------------*/
 static TIM_HandleTypeDef* vrTIM = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 const  fix16_t  vrCoef        = F16( VR_MIN_SEC );
 /*-------------------------------- Variables ---------------------------------*/
-static uint16_t vrCounter     = 1U;
+volatile static uint16_t vrCounter     = 1U;
+volatile static fix16_t  vrSpeed       = 0U;
 static uint16_t vrTeethNumber = 0U;
-static fix16_t  vrSpeed       = 0U;
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -25,6 +26,9 @@ static fix16_t  vrSpeed       = 0U;
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vVRinit ( TIM_HandleTypeDef* tim )
 {
   vrTIM         = tim;
@@ -34,12 +38,18 @@ void vVRinit ( TIM_HandleTypeDef* tim )
   return;
 }
 
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vVRextiCallback ( void )
 {
   vrCounter++;
   return;
 }
 
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vVRtimCallback ( void )
 {
   vrSpeed   = fix16_mul( fix16_div( fix16_from_int( vrCounter ), fix16_from_int( vrTeethNumber ) ), vrCoef ); /* RPM */
@@ -47,6 +57,9 @@ void vVRtimCallback ( void )
   return;
 }
 
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 fix16_t fVRgetSpeed( void )
 {
   return vrSpeed;

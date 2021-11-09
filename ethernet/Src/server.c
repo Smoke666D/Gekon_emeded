@@ -15,6 +15,7 @@
 #include "ip_addr.h"
 #include "opt.h"
 #include "ethernetif.h"
+#include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static struct netconn* nc    = NULL;   // Connection to the port 80
 static struct netconn* in_nc = NULL;   // New user connection
@@ -467,8 +468,8 @@ void vStartNetTask ( void *argument )
   {
     const osThreadAttr_t linkTask_attributes = {
       .name       = "linkTask",
-      .priority   = ( osPriority_t ) osPriorityLow,
-      .stack_size = 512U
+      .priority   = ( osPriority_t ) ETHERNET_LINK_TASK_PRIORITY,
+      .stack_size = ETHERNET_LINK_TASK_STACK_SIZE
     };
     linkHandle = osThreadNew( vLINKTask, NULL, &linkTask_attributes );
   }

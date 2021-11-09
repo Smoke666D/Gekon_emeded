@@ -1,6 +1,7 @@
 /*--------------------------------- Includes ---------------------------------*/
 #include "EEPROM.h"
 #include "cmsis_os2.h"
+#include "system.h"
 /*-------------------------------- Structures --------------------------------*/
 static SPI_HandleTypeDef* EEPROMspi     = NULL;
 static GPIO_TypeDef*      EEPROMnssPort = NULL;
@@ -23,11 +24,14 @@ EEPROM_STATUS eEEPROMpoolUntil ( EEPROM_SR_STATE target );                      
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer )
 {
-  buffer[2U] = ( uint8_t )( adr );
-  buffer[1U] = ( uint8_t )( adr >> 8U );
   buffer[0U] = ( uint8_t )( adr >> 16U );
+  buffer[1U] = ( uint8_t )( adr >> 8U );
+  buffer[2U] = ( uint8_t )( adr );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -39,6 +43,9 @@ void vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer )
  *         size - size of addition data ( can be 0U )
  * Outpur: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMwrite( uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size )
 {
   HAL_StatusTypeDef hal        = HAL_OK;
@@ -94,6 +101,9 @@ EEPROM_STATUS eEEPROMwrite( uint8_t cmd, const uint32_t* adr, uint8_t* data, uin
  *         size - size of addition data ( can be 0U )
  * Outpur: Status of operationM
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMread( uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size )
 {
   HAL_StatusTypeDef hal        = HAL_OK;
@@ -146,6 +156,9 @@ EEPROM_STATUS eEEPROMread( uint8_t cmd, const uint32_t* adr, uint8_t* data, uint
  * Input:  None
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMwriteEnable( void )
 {
   return eEEPROMwrite( EEPROM_WREN, NULL, NULL, 0U );
@@ -156,6 +169,9 @@ EEPROM_STATUS eEEPROMwriteEnable( void )
  * Input:  None
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMwriteDisable( void )
 {
   return eEEPROMwrite( EEPROM_RDSR, NULL, NULL, 0U );
@@ -166,6 +182,9 @@ EEPROM_STATUS eEEPROMwriteDisable( void )
  * Input:  status - status of EEPROM
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMreadSR( EEPROM_SR_STATE* status )
 {
   uint8_t       data = 0x00U;
@@ -194,6 +213,9 @@ EEPROM_STATUS eEEPROMreadSR( EEPROM_SR_STATE* status )
  * Input:  data - data for writing
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMwriteSR( uint8_t data )
 {
   return eEEPROMwrite( EEPROM_RDSR, NULL, &data, 1U );
@@ -204,6 +226,9 @@ EEPROM_STATUS eEEPROMwriteSR( uint8_t data )
  * Input:  none
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMunblock ( void )
 {
   uint8_t       data = 0x00U;
@@ -221,6 +246,9 @@ EEPROM_STATUS eEEPROMunblock ( void )
  * Input:  none
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMblock ( void )
 {
   uint8_t       data = 0x00;
@@ -238,6 +266,9 @@ EEPROM_STATUS eEEPROMblock ( void )
  * Input:  target - target status of EEPROM
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMpoolUntil ( EEPROM_SR_STATE target )
 {
   EEPROM_STATUS   res   = EEPROM_OK;
@@ -261,6 +292,9 @@ EEPROM_STATUS eEEPROMpoolUntil ( EEPROM_SR_STATE target )
  *         len  - length of data array
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMWriteData ( const uint32_t* adr, uint8_t* data, uint8_t len )
 {
   EEPROM_STATUS   res   = EEPROM_OK;
@@ -314,6 +348,9 @@ EEPROM_STATUS eEEPROMWriteData ( const uint32_t* adr, uint8_t* data, uint8_t len
  *         nssPIN  - number of nss pin
  * Output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint32_t nssPIN )
 {
   EEPROM_STATUS res = EEPROM_OK;
@@ -336,6 +373,9 @@ EEPROM_STATUS eEEPROMInit( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssPORT, uint3
  *         len  - length to read
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS   res    = EEPROM_OK;
@@ -395,6 +435,9 @@ EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len )
  *         len  - length to write
  * Output: Status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 EEPROM_STATUS eEEPROMwriteMemory ( uint32_t adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS res    = EEPROM_OK;

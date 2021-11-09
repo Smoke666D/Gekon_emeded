@@ -35,8 +35,6 @@
 #define MB_FUNC_SET_RS_PARAMETERS_ENEBLED       0U
 /*----------------------- RTOS ---------------------------------------------*/
 #define OS_MB_RES_QUEUE_SIZE          3U
-#define OS_MB_TASK_PRIORITY           ( ( osPriority_t ) osPriorityNormal )
-#define OS_MB_TASK_STACK_SIZE         512U
 #define OS_MB_MESSAGE_SIZE            260U
 #define OS_MB_MESSAGE_TIGGER_LEVEL    10U
 #define OS_MB_BLOCK_TIME              ( pdMS_TO_TICKS( 20U ) )

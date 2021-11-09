@@ -14,8 +14,6 @@
 
 #include "lcd.h"
 #include "stm32f2xx_hal_spi.h"
-#include "task.h"
-
 /*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t  xSemaphore = NULL;
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -27,8 +25,8 @@ static uint8_t            lcd_brigth                       = 0U;
 static TIM_HandleTypeDef* lcdTim                           = NULL;
 static SPI_HandleTypeDef* lcdSpi                           = NULL;
 /*------------------------ Extern -------------------------------------------------------------------*/
-void vLCDWriteCommand( uint8_t data )  __attribute__((optimize("-O3")));
-void vLCDSend16Data( uint8_t *arg_prt ) __attribute__((optimize("-O3")));
+void vLCDWriteCommand( uint8_t data );  // __attribute__((optimize("-O3")));
+void vLCDSend16Data( uint8_t *arg_prt );// __attribute__((optimize("-O3")));
 
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -337,9 +335,7 @@ inline void vLCDWriteCommand( uint8_t com )
 void vST7920init(void)
 {
 
-  UBaseType_t  uxOurPriority;
-  uxOurPriority = uxTaskPriorityGet( NULL );
-  vTaskPrioritySet( NULL, configMAX_PRIORITIES - 1 );
+
   HAL_TIM_Base_Start_IT( lcdTim );
   vLCDBrigthInit();
   vLCD_HAL_SPI_DMA_Init();
@@ -361,7 +357,6 @@ void vST7920init(void)
   vLCDWriteCommand( 0x02U );
   osDelay( 1U );
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
-  vTaskPrioritySet( NULL, uxOurPriority );
   return;
 }
 

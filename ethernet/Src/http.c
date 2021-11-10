@@ -7,7 +7,6 @@
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "freeData.h"
 #include "http.h"
-#include "index.h"
 #include "web.h"
 #include "string.h"
 #include "stdio.h"
@@ -19,7 +18,9 @@
 #include "EEPROM.h"
 #include "storage.h"
 #include "RTC.h"
+#include "measurement.h"
 #include "dataAPI.h"
+#include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static char     restBuffer[REST_BUFFER_SIZE] = { 0U };
 static RTC_TIME time;
@@ -235,6 +236,9 @@ STREAM_STATUS cHTTPstreamFile ( HTTP_STREAM* stream )
 /*
  * Stream callback for file trasfer from EEPROM
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 STREAM_STATUS cHTTPstreamFileWebApp ( HTTP_STREAM* stream )
 {
   stream->status = STREAM_CONTINUES;
@@ -251,10 +255,12 @@ STREAM_STATUS cHTTPstreamFileWebApp ( HTTP_STREAM* stream )
 /*
  * Stream call back for configuration data transfer
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 STREAM_STATUS cHTTPstreamConfigs ( HTTP_STREAM* stream )
 {
   uint32_t length = stream->size - stream->start;
-
   if ( ( stream->index == 0U ) && ( length > 1U ) )
   {
     restBuffer[0U] = '[';
@@ -295,9 +301,61 @@ STREAM_STATUS cHTTPstreamConfigs ( HTTP_STREAM* stream )
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
+STREAM_STATUS cHTTPstreamOutput ( HTTP_STREAM* stream )
+{
+  uint32_t length = stream->size - stream->start;
+  uint32_t curent = stream->start + stream->index;
+  if ( ( stream->index == 0U ) && ( length > 1U ) )
+  {
+    restBuffer[0U] = '[';
+    stream->length = uRESTmakeOutput( outputDataReg[curent], outputDataDictionary[curent], &restBuffer[1U] ) + 1U;
+  }
+  else
+  {
+    stream->length = uRESTmakeOutput( outputDataReg[curent], outputDataDictionary[curent], restBuffer );
+  }
+  if ( stream->length == 0U )
+  {
+    stream->status = STREAM_ERROR;
+  }
+  else
+  {
+    stream->index++;
+    if ( ( stream->start + stream->index ) >= stream->size )
+    {
+      if ( length > 1U )
+      {
+        restBuffer[stream->length] = ']';
+      }
+      stream->length++;
+      stream->status = STREAM_END;
+    }
+    else
+    {
+      if ( length > 1U )
+      {
+        restBuffer[stream->length] = ',';
+      }
+      stream->length++;
+      stream->status = STREAM_CONTINUES;
+    }
+    restBuffer[stream->length] = 0U;
+    stream->content = restBuffer;
+  }
+  return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+STREAM_STATUS cHTTPstreamMeasurement ( HTTP_STREAM* stream )
+{
+  return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * Stream call back for charts data transfer
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream )
 {
   uint32_t length = stream->size - stream->start;
@@ -345,6 +403,10 @@ STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream )
 /*
  * Stream callback for time transfer
  */
+
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream )
 {
   restBuffer[stream->length] = 0U;
@@ -355,6 +417,9 @@ STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream )
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
 {
   stream->status             = STREAM_END;
@@ -365,6 +430,20 @@ STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
+STREAM_STATUS cHTTPstreamString ( HTTP_STREAM* stream )
+{
+  stream->status             = STREAM_END;
+  restBuffer[stream->length] = 0U;
+  stream->content            = restBuffer;
+  return stream->status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream )
 {
   LOG_RECORD_TYPE record = { 0U };
@@ -802,6 +881,10 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
           response->contentLength = 0U;
         }
         break;
+      case REST_MEASUREMENT_ERASE:
+        break;
+      case REST_OUTPUT:
+        break;
       case REST_REQUEST_ERROR:
         break;
       default:
@@ -819,17 +902,15 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
  */
 void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remoteIP )
 {
-  char*           strStr                     = NULL;
-  uint16_t        adr                        = 0xFFFFU;
-  REST_REQUEST    request                    = REST_REQUEST_ERROR;
-  REST_ADDRESS    adrFlag                    = REST_NO_ADR;
-  HTTP_STREAM*    stream                     = NULL;
-  uint32_t        i                          = 0U;
-  uint32_t        ewaLen                     = 0U;
-  uint16_t        logAdr                     = 0U;
-  uint8_t         buffer[EEPROM_LENGTH_SIZE] = { 0U };
-  DATA_API_STATUS status                     = DATA_API_STAT_OK;
-  LOG_RECORD_TYPE record                     = { 0U };
+  char*           strStr  = NULL;
+  uint16_t        adr     = 0xFFFFU;
+  REST_REQUEST    request = REST_REQUEST_ERROR;
+  REST_ADDRESS    adrFlag = REST_NO_ADR;
+  HTTP_STREAM*    stream  = NULL;
+  uint32_t        i       = 0U;
+  uint16_t        logAdr  = 0U;
+  LOG_RECORD_TYPE record  = { 0U };
+  DATA_API_STATUS status  = DATA_API_STAT_OK;
   /*----------------- Common header -----------------*/
   strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
@@ -843,36 +924,18 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
   strStr = strstr(path, "index" );
   if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
   {
-    if ( ( data__web_html[0U] != 0xFFU ) && ( data__web_html[WEB_LENGTH - 1U] != 0xFFU ) )
-    {
-      stream                  = &(response->stream);
-      stream->index           = 0U;
-      stream->start           = 0U;
-      stream->content         = ( char* )( data__web_html );
-      stream->length          = WEB_LENGTH;
-      stream->size            = WEB_LENGTH;
-      stream->flag            = STREAM_FLAG_NO_COPY;
-      response->callBack      = cHTTPstreamFileWebApp;
-      response->contetntType  = HTTP_CONTENT_HTML;
-      response->status        = HTTP_STATUS_OK;
-      response->contentLength = stream->size;
-      response->encoding      = HTTP_ENCODING_GZIP;
-    }
-    else
-    {
-      stream                  = &(response->stream);
-      stream->index           = 0U;
-      stream->start           = 0U;
-      stream->content         = ( char* )( data__index_html );
-      stream->length          = INDEX_LENGTH;
-      stream->size            = 1U;
-      stream->flag            = STREAM_FLAG_NO_COPY;
-      response->callBack      = cHTTPstreamFile;
-      response->contetntType  = HTTP_CONTENT_HTML;
-      response->status        = HTTP_STATUS_OK;
-      response->contentLength = INDEX_LENGTH;
-      response->encoding      = HTTP_ENCODING_GZIP;
-    }
+    stream                  = &response->stream;
+    stream->index           = 0U;
+    stream->start           = 0U;
+    stream->content         = ( char* )( data__web_html );
+    stream->length          = WEB_LENGTH;
+    stream->size            = WEB_LENGTH;
+    stream->flag            = STREAM_FLAG_NO_COPY;
+    response->callBack      = cHTTPstreamFileWebApp;
+    response->contetntType  = HTTP_CONTENT_HTML;
+    response->status        = HTTP_STATUS_OK;
+    response->contentLength = stream->size;
+    response->encoding      = HTTP_ENCODING_GZIP;
   }
   /*--------------------- REST ---------------------*/
   else if ( path[0U] > 0U )
@@ -890,7 +953,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           /*------------------ Broadcast -------------------*/
           if ( adrFlag == REST_NO_ADR )
           {
-            stream             = &(response->stream);
+            stream             = &response->stream;
             stream->size       = SETTING_REGISTER_NUMBER;
             stream->index      = 0U;
             stream->start      = 0U;
@@ -912,7 +975,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             {
               response->contentLength = uRESTmakeConfig( configReg[adr], restBuffer );
             }
-            stream                 = &(response->stream);
+            stream                 = &response->stream;
             stream->size           = adr + 1U;
             stream->start          = adr;
             stream->index          = 0U;
@@ -927,7 +990,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           /*------------------ Broadcast -------------------*/
           if ( adrFlag == REST_NO_ADR )
           {
-            stream             = &(response->stream);
+            stream             = &response->stream;
             stream->size       = CHART_NUMBER;
             stream->index      = 0U;
             stream->start      = 0U;
@@ -946,7 +1009,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
         case REST_TIME:
           if ( eRTCgetTime( &time ) == RTC_OK )
           {
-            stream = &(response->stream);
+            stream                  = &response->stream;
             stream->size            = 1U;
             stream->start           = 0U;
             stream->index           = 0U;
@@ -959,27 +1022,27 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           }
           break;
         case REST_FREE_DATA:
-	        if ( adrFlag != REST_NO_ADR )
-	        {
-	          if ( adr < FREE_DATA_SIZE )
-	          {
-	            stream = &(response->stream);
-	            stream->size            = 1U;
-	            stream->start           = adr;
-	            stream->index           = 0U;
-	            stream->flag            = STREAM_FLAG_COPY;
-	            response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
-	            response->callBack      = cHTTPstreamData;
-	            response->contetntType  = HTTP_CONTENT_JSON;
-	            response->status        = HTTP_STATUS_OK;
-	            response->data          = restBuffer;
-	          }
-	        }
+          if ( adrFlag != REST_NO_ADR )
+          {
+            if ( adr < FREE_DATA_SIZE )
+            {
+              stream                  = &response->stream;
+              stream->size            = 1U;
+              stream->start           = adr;
+              stream->index           = 0U;
+              stream->flag            = STREAM_FLAG_COPY;
+              response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
+              response->callBack      = cHTTPstreamData;
+              response->contetntType  = HTTP_CONTENT_JSON;
+              response->status        = HTTP_STATUS_OK;
+              response->data          = restBuffer;
+            }
+          }
           break;
         case REST_LOG:
           if ( adrFlag == REST_NO_ADR )
           {
-            stream             = &(response->stream);
+            stream             = &response->stream;
             stream->size       = LOG_SIZE;
             stream->index      = 0U;
             stream->start      = 0U;
@@ -989,6 +1052,10 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             {
               logAdr = ( uint16_t )i;
               status = eDATAAPIlog( DATA_API_CMD_LOAD, &logAdr, &record );
+              if ( status != DATA_API_STAT_OK )
+              {
+                response->status = HTTP_STATUS_BAD_REQUEST;
+              }
               response->contentLength += uRESTmakeLog( &record, restBuffer );
             }
             response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
@@ -996,6 +1063,111 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->status         = HTTP_STATUS_OK;
             response->data           = restBuffer;
           }
+          break;
+        case REST_MEMORY:
+          if ( MEASUREMENT_ENB > 0U )
+          {
+            stream                  = &response->stream;
+            stream->size            = 1U;
+            stream->start           = 0U;
+            stream->index           = 0U;
+            stream->flag            = STREAM_FLAG_COPY;
+            stream->length          = uRESTmakeMemorySize( restBuffer );
+            response->contentLength = stream->length;
+            response->callBack      = cHTTPstreamString;
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->data          = restBuffer;
+          }
+          break;
+        case REST_MEASUREMENT_LENGTH:
+          if ( MEASUREMENT_ENB > 0U )
+          {
+            stream                  = &response->stream;
+            stream->size            = 1U;
+            stream->start           = 0U;
+            stream->index           = 0U;
+            stream->flag            = STREAM_FLAG_COPY;
+            stream->length          = uRESTmakeMeasurementLength( restBuffer );
+            response->contentLength = stream->length;
+            response->callBack      = cHTTPstreamString;
+            response->contetntType  = HTTP_CONTENT_JSON;
+            response->status        = HTTP_STATUS_OK;
+            response->data          = restBuffer;
+          }
+          break;
+
+        case REST_MEASUREMENT:
+          if ( MEASUREMENT_ENB > 0U )
+          {
+            if ( adrFlag == REST_NO_ADR )
+            {
+              stream->size  = uMEASUREMENTgetSize();
+              stream->start = 0U;
+              for ( i=0U; i<stream->size; i++ )
+              {
+                response->contentLength += uRESTmakeMeasurement( i, restBuffer );
+              }
+              response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+            }
+            else
+            {
+              if ( adr < uMEASUREMENTgetSize() )
+              {
+                response->contentLength += uRESTmakeMeasurement( adr, restBuffer );
+              }
+              stream->size  = adr + 1U;
+              stream->start = adr;
+            }
+            stream                 = &response->stream;
+            stream->index          = 0U;
+            stream->flag           = STREAM_FLAG_COPY;
+            response->callBack     = cHTTPstreamMeasurement;
+            response->contetntType = HTTP_CONTENT_JSON;
+            response->status       = HTTP_STATUS_OK;
+            response->data         = restBuffer;
+          }
+          break;
+        case REST_OUTPUT:
+          if ( adrFlag == REST_NO_ADR )
+          {
+            stream->size  = OUTPUT_DATA_REGISTER_NUMBER;
+            stream->start = 0U;
+            for( i=0U; i<stream->size; i++ )
+            {
+              response->contentLength += uRESTmakeOutput( outputDataReg[i], outputDataDictionary[i], restBuffer );
+            }
+            response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+          }
+          else
+          {
+            if ( adr < OUTPUT_DATA_REGISTER_NUMBER )
+            {
+              response->contentLength += uRESTmakeOutput( outputDataReg[adr], outputDataDictionary[adr], restBuffer );
+            }
+            stream->size  = adr + 1U;
+            stream->start = adr;
+          }
+          stream                 = &response->stream;
+          stream->index          = 0U;
+          stream->flag           = STREAM_FLAG_COPY;
+          response->callBack     = cHTTPstreamOutput;
+          response->contetntType = HTTP_CONTENT_JSON;
+          response->status       = HTTP_STATUS_OK;
+          response->data         = restBuffer;
+          break;
+        case REST_SYSTEM:
+          stream                  = &response->stream;
+          stream->size            = 1U;
+          stream->start           = 0U;
+          stream->index           = 0U;
+          stream->flag            = STREAM_FLAG_COPY;
+          stream->length          = uRESTmakeSystem( restBuffer );
+          response->contentLength = stream->length;
+          response->callBack      = cHTTPstreamString;
+          response->contetntType  = HTTP_CONTENT_JSON;
+          response->status        = HTTP_STATUS_OK;
+          response->data          = restBuffer;
           break;
         case REST_REQUEST_ERROR:
           break;

@@ -15,7 +15,7 @@
 /*-------------------------------- Variables ---------------------------------*/
 #ifdef DEBUG
   static TASK_ANALIZE tasks[SYS_MAX_TSAK_NUMBER] = { 0U };
-  static uint32_t     taskNumber                 = 0U;
+  static uint8_t      taskNumber                 = 0U;
 #endif
 /*-------------------------------- Functions ---------------------------------*/
 
@@ -44,7 +44,7 @@ void vSYSprintLoadBar ( uint8_t procents )
   vLOGICprintDebug( "% " );
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 void vSYSprintUsedData ( uint16_t usage, uint16_t total )
 {
   char buf[10U] = { " " };
@@ -55,7 +55,7 @@ void vSYSprintUsedData ( uint16_t usage, uint16_t total )
   vLOGICprintDebug( " bytes\r\n" );
   return;
 }
-
+/*----------------------------------------------------------------------------*/
 void vSYSprintHeapData ( void )
 {
   uint16_t usage = xPortGetMinimumEverFreeHeapSize();
@@ -65,6 +65,7 @@ void vSYSprintHeapData ( void )
   vSYSprintUsedData( usage, ( uint16_t )( configTOTAL_HEAP_SIZE ) );
   return;
 }
+/*----------------------------------------------------------------------------*/
 void vSYSprintTaskData ( TASK_ANALIZE task )
 {
   uint16_t usage = ( uint16_t )( task.size - uxTaskGetStackHighWaterMark( task.thread ) * 4U );
@@ -90,11 +91,11 @@ void vSYSaddTask ( osThreadId_t thread, uint32_t size )
   #endif
   return;
 }
-
-void vSYSgetData ( void )
+/*----------------------------------------------------------------------------*/
+void vSYSprintData ( void )
 {
   #ifdef DEBUG
-    uint32_t i = 0U;
+    uint8_t i = 0U;
     vLOGICprintDebug( "------------------ freeRTOS ------------------" );
 
     vSYSprintHeapData();
@@ -104,6 +105,30 @@ void vSYSgetData ( void )
     }
     vLOGICprintDebug( "----------------------------------------------" );
   #endif
+}
+/*----------------------------------------------------------------------------*/
+void vSYSgetHeapData ( SYSTEM_DATA* data )
+{
+  data->name  = "heap";
+  data->usage = xPortGetMinimumEverFreeHeapSize();
+  data->total = configTOTAL_HEAP_SIZE;
+  return;
+}
+/*----------------------------------------------------------------------------*/
+uint8_t uSYSgetTaskumber ( void )
+{
+  return taskNumber;
+}
+/*----------------------------------------------------------------------------*/
+void vSYSgetTaskData ( uint8_t n, SYSTEM_DATA* data )
+{
+  if ( n < SYS_MAX_TSAK_NUMBER )
+  {
+    data->name  = pcTaskGetName( tasks[n].thread );
+    data->total = tasks[n].size;
+    data->usage = ( uint16_t )( tasks[n].size - uxTaskGetStackHighWaterMark( tasks[n].thread ) * 4U );
+  }
+  return;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

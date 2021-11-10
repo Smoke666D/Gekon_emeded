@@ -43,8 +43,18 @@ typedef struct __packed
   osThreadId_t thread;
   uint32_t     size;
 } TASK_ANALIZE;
+
+typedef struct __packed
+{
+  char*    name;
+  uint16_t usage;
+  uint16_t total;
+} SYSTEM_DATA;
 /*----------------------- Functions ------------------------------------*/
-void vSYSaddTask ( osThreadId_t thread, uint32_t size );
-void vSYSgetData ( void );
+void    vSYSaddTask ( osThreadId_t thread, uint32_t size );
+void    vSYSprintData ( void );
+void    vSYSgetHeapData ( SYSTEM_DATA* data );
+uint8_t uSYSgetTaskumber ( void );
+void    vSYSgetTaskData ( uint8_t n, SYSTEM_DATA* data );
 /*----------------------------------------------------------------------*/
 #endif /* INC_SYSTEM_H_ */

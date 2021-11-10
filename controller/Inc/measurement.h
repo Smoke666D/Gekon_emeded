@@ -74,6 +74,7 @@ void          vMEASUREMENTinit ( void );
 void          vMEASUREMENTsendCmd ( MEASURMENT_CMD cmd );
 QueueHandle_t pMEASUREMENTgetCommandQueue ( void );
 uint16_t      uMEASUREMENTgetSize ( void );
+uint32_t      uMEASUREMENTgetStorageSize ( void );
 void          vMEASUREMENTtask ( void* argument );
 /*----------------------------------------------------------------------*/
 #endif /* INC_MEASUREMENT_H_ */

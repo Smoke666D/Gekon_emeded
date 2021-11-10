@@ -717,9 +717,9 @@ void vUSBmemorySizeToReport ( USB_REPORT* report )
   report->stat = USB_REPORT_STATE_NON_CON;
   if ( MEASUREMENT_ENB > 0U )
   {
-    report->stat  = USB_REPORT_STATE_OK;
+    report->stat   = USB_REPORT_STATE_OK;
     report->length = 4U;
-    vUint32ToBytes( STORAGE_MEASUREMENT_SIZE, report->data );
+    vUint32ToBytes( uMEASUREMENTgetStorageSize(), report->data );
   }
   return;
 }

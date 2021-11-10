@@ -43,6 +43,8 @@
 #define SETDDM_ADR_CMD 0x80U
 /*----------------------------- Functions ------------------------------------*/
 
+#define SPI_DEFAULT_TIMEOUT 100U
+
 void vLCDBrigthInit(void);
 void vLCD_Init( void );
 void vLCDRedraw( void ) __attribute__((optimize("-O3")));

@@ -39,6 +39,9 @@ void            vLINKTask ( void* argument );
  *         if ipStr[0] = 0x00, initialization havn't finished
  * Output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void cSERVERgetStrIP ( char* ipStr )
 {
   uint8_t i       = 0U;
@@ -67,6 +70,9 @@ void cSERVERgetStrIP ( char* ipStr )
  * Input:  none
  * Output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vSERVERinit ( void )
 {
   vHTTPinit();
@@ -83,6 +89,9 @@ void vSERVERinit ( void )
  * Input:  none
  * Output: server error code
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 SERVER_ERROR eSERVERstart ( void )
 {
   SERVER_ERROR 	servRes   = SERVER_OK;
@@ -117,6 +126,9 @@ SERVER_ERROR eSERVERstart ( void )
  * Input:  none
  * Output: server error code
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 SERVER_ERROR eSERVERstop ( void )
 {
   SERVER_ERROR 	servRes   = SERVER_CLOSE_ERROR;
@@ -130,6 +142,9 @@ SERVER_ERROR eSERVERstop ( void )
   return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
 {
   RECEIVE_MESSAGE res                 = RECEIVE_MESSAGE_ERROR;
@@ -181,6 +196,9 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vSERVERclientClose ( struct netconn* netcon )
 {
   netconn_close( netcon );
@@ -195,6 +213,9 @@ void vSERVERclientClose ( struct netconn* netcon )
  * Input:  none
  * Output: server error code
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 SERVER_ERROR eSERVERlistenRoutine ( void )
 {
   SERVER_ERROR     servRes    = SERVER_OK;
@@ -271,6 +292,9 @@ SERVER_ERROR eSERVERlistenRoutine ( void )
   return servRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
 {
   SERVER_ERROR 	  res       = SERVER_OK;
@@ -339,6 +363,9 @@ SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
  *         output   - buffer for parsed data of response
  * output: status of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
 {
   HTTP_STATUS res                     = HTTP_STATUS_BAD_REQUEST;
@@ -362,6 +389,9 @@ HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char*
  *         output   - response string
  * output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output, uint32_t remoteIP )
 {
   eHTTPparsingRequest( input, request );
@@ -370,6 +400,9 @@ void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vSERVERaddConnection ( void )
 {
   ip4_addr_t ipaddr  = { 0U };
@@ -382,6 +415,9 @@ void vSERVERaddConnection ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vSERVERinitConnection ( void )
 {
   char ipaddrStr[16U] = { 0U };
@@ -403,6 +439,9 @@ void vSERVERinitConnection ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vSERVERcheckPlug ( void )
 {
   uint32_t phyreg = 0U;
@@ -452,6 +491,9 @@ void vSERVERcheckPlug ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vLINKTask ( void* argument )
 {
   for(;;)
@@ -462,6 +504,9 @@ void vLINKTask ( void* argument )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vStartNetTask ( void *argument )
 {
   if ( linkHandle == NULL )

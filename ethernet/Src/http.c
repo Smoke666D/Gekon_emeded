@@ -31,6 +31,9 @@ static AUTH_IP_TYPE ethAuthList[CONNECT_STACK_SIZE] = { 0U }; /* List of authori
 static uint8_t      ethAuthListPointer              = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 AUTH_STATUS eHTTPisAuth ( uint32_t ip )
 {
   PASSWORD_TYPE password = { .data = 0U, .status = PASSWORD_RESET };
@@ -73,6 +76,9 @@ AUTH_STATUS eHTTPisAuth ( uint32_t ip )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vHHTPsetAuth ( uint32_t ip, AUTH_STATUS status )
 {
   uint8_t i = 0U;
@@ -94,6 +100,9 @@ void vHHTPsetAuth ( uint32_t ip, AUTH_STATUS status )
  * Input:  request structure
  * Output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vHTTPcleanRequest ( HTTP_REQUEST *request )
 {
   uint8_t i = 0U;
@@ -118,6 +127,9 @@ void vHTTPcleanRequest ( HTTP_REQUEST *request )
  *         type    - type of content
  * output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 char* vHTTPaddContetntType ( char* httpStr, HTTP_CONTENT type )
 {
   char* strRes = NULL;
@@ -148,6 +160,9 @@ char* vHTTPaddContetntType ( char* httpStr, HTTP_CONTENT type )
   return strRes;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 char* vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding )
 {
   char* strRes = NULL;
@@ -191,6 +206,9 @@ char* vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding )
  *         cache   - cache type to add
  * output: result of operation
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 char* vHTTPaddCache ( char* httpStr, HTTP_CACHE cache)
 {
   char* strRes = NULL;
@@ -221,6 +239,9 @@ char* vHTTPaddCache ( char* httpStr, HTTP_CACHE cache)
 /*
  * Stream call back for file transfer from flash
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 STREAM_STATUS cHTTPstreamFile ( HTTP_STREAM* stream )
 {
   stream->status = STREAM_END;
@@ -439,6 +460,9 @@ STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream )
  * Input:  request structure
  * Output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vHTTPCleanResponse ( HTTP_RESPONSE *response )
 {
   uint32_t i = 0U;
@@ -466,13 +490,15 @@ void vHTTPCleanResponse ( HTTP_RESPONSE *response )
  * Output: 1     - There is valid line in output buffer
  *         0     - There is no valid line in output buffer
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line )
 {
   uint8_t     res   = 0U;
   uint16_t    i     = 0U;
   const char* start = input;
   const char* end   = strchr( input, LF_HEX );
-
   for ( i=0U; i<num; i++ )
   {
     start = strchr( end, LF_HEX );
@@ -490,6 +516,9 @@ uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vHTTPinit ( void )
 {
   uint8_t i = 0U;
@@ -508,6 +537,9 @@ void vHTTPinit ( void )
  *         request - pointer to a the output request structure
  * Output: HTTP status
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
 {
   HTTP_STATUS  res       = HTTP_STATUS_BAD_REQUEST;
@@ -569,8 +601,6 @@ HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE*
   HTTP_STATUS res    = HTTP_STATUS_BAD_REQUEST;
   char*       pchSt  = NULL;
   char*       pchEn  = NULL;
-
-
   pchSt = strchr( input, ' ');
   pchSt++;
   if ( pchSt != NULL )
@@ -609,6 +639,9 @@ HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE*
  *         content  - content of the request
  * Output: none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content, uint32_t remoteIP )
 {
   uint16_t      adr        = 0xFFFFU;
@@ -617,7 +650,6 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
   uint16_t      data       = 0U;
   PASSWORD_TYPE password   = { .status = PASSWORD_RESET,.data = 0U };
   PASSWORD_TYPE passwordSt = { .status = PASSWORD_RESET,.data = 0U };
-
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
   response->cache         = HTTP_CACHE_NO_CACHE_STORE;
   response->connect       = HTTP_CONNECT_CLOSED;
@@ -850,6 +882,9 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
  *          response - structure of response
  * Output:  none
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remoteIP )
 {
   char*           strStr  = NULL;
@@ -1140,6 +1175,9 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
  *         response - structure of response
  * Output: HTTP status
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 void vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response, uint32_t remoteIP )
 {
   vHTTPCleanResponse( response );
@@ -1254,6 +1292,9 @@ HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
  *         response - response structure
  * Output: HTTP_STATUS
  */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
 {
   HTTP_STATUS  res         = HTTP_STATUS_ERROR;

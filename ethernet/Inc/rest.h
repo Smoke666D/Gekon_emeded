@@ -102,6 +102,7 @@ typedef enum
 #define LOG_ACTION_STR              "action"
 #define MEMORY_SIZE_STR             "size"
 #define MESUREMENT_LENGTH_STR       "length"
+#define OUTPUT_NAME_STR             "name"
 #define SYSTEM_TOTAL_STR            "total"
 #define SYSTEM_USAGE_STR            "usage"
 /*------------------------------ Extern --------------------------------------*/

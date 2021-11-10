@@ -198,7 +198,6 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
   position += uRESTmakeStrRecord( CONFIG_REG_TYPE_STR,          ( uint16_t* )( &( reg->atrib->type ) ),  1U, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord( CONFIG_REG_BIT_MAP_SIZE_STR,  reg->atrib->bitMapSize, REST_CONT_RECORD, &output[position] );
   position += uRESTmakeBitMapArray( reg->atrib->bitMapSize, reg->atrib->bitMap, &output[position] );
-  position++;
   output[position] = '}';
   position++;
   return position;
@@ -319,9 +318,9 @@ uint32_t uRESTmakeMeasurement ( uint32_t n, char* output )
 uint32_t uRESTmakeOutput ( const eConfigReg* data, const char* name, char* output )
 {
   uint32_t position = 1U;
-
   output[0U] = '{';
-  position += uRESTmakeStrRecord(    CONFIG_REG_UNITS_STR, ( uint16_t* )( name ),                    strlen( name ),          REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeDigRecord(    CONFIG_REG_ADR_STR,   data->atrib->adr,                                                  REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeStrRecord(    OUTPUT_NAME_STR,      ( uint16_t* )( name ),                    strlen( name ),          REST_CONT_RECORD, &output[position] );
   position += uRESTmakeDigRecord(    CONFIG_REG_VALUE_STR, data->value[0U],                                                   REST_CONT_RECORD, &output[position] );
   position += uRESTmakeSignedRecord( CONFIG_REG_SCALE_STR, data->atrib->scale,                                                REST_CONT_RECORD, &output[position] );
   position += uRESTmakeStrRecord(    CONFIG_REG_UNITS_STR, ( uint16_t* )( &( data->atrib->units ) ), MAX_UNITS_OUTPUT_LENGTH, REST_CONT_RECORD, &output[position] );
@@ -901,6 +900,7 @@ uint32_t uRESTmakeBitMapArray ( uint8_t len, const eConfigBitMap* bitMap, char* 
     position += uRESTmakeBitMap( &bitMap[i], REST_LAST_RECORD, &output[position] );
   }
   output[position] = ']';
+  position++;
   return position;
 }
 /*---------------------------------------------------------------------------------------------------*/

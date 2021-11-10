@@ -285,6 +285,11 @@ QueueHandle_t pMEASUREMENTgetCommandQueue ( void )
   return pMeasurementCommandQueue;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t uMEASUREMENTgetStorageSize ( void )
+{
+  return STORAGE_MEASUREMENT_SIZE;
+}
+/*---------------------------------------------------------------------------------------------------*/
 uint16_t uMEASUREMENTgetSize ( void )
 {
   return measurement.length;

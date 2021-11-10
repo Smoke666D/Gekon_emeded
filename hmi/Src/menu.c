@@ -661,7 +661,7 @@ void vMenuMessageInit ( osThreadId_t xmainprocess )
 
 
 static FLAG xTimeOutFlag = FLAG_RESET;
-
+static FLAG xKeyIgnore   = FLAG_RESET;
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuTask ( void )
 {
@@ -738,17 +738,23 @@ void vMenuTask ( void )
     }
     if ( key > 0U )
     {
-      pCurrMenu->pFunc( pCurrMenu, key );
-      //Если возник таймаут гашения экрана.
+
+      //Если возник таймаут нажатия на клавишу
       if ( TempEvent.KeyCode == time_out )
       {
+	/*
+	 * Если есть нет активных ошибок, то переходим на домашний экран и гасим индикатора
+	 */
         if (fAlarmFlag == FLAG_RESET)
         {
+          xMainMenu.pCurrIndex = HOME_MENU;
           pCurrMenu = &xMainMenu;
           xTimeOutFlag = FLAG_SET;
-          pCurrMenu->pCurrIndex = HOME_MENU;
           vLCDSetLedBrigth(0);
         }
+        /*
+         * Если есть активные ошибки, то переходим на экран активных ошибок
+         */
         else
         {
           vMenuGotoAlarmScreen();
@@ -756,11 +762,24 @@ void vMenuTask ( void )
       }
       else
       {
+	/*
+	 * Если нажаите клавиши происходит после таймаута, то зажигаем индикатор
+	 */
         if (xTimeOutFlag == FLAG_SET)
         {
-           xTimeOutFlag = FLAG_RESET;
-           vLCDBrigthInit();
+           if (xKeyIgnore == FLAG_RESET)
+           {
+               xKeyIgnore   = FLAG_SET;
+               vLCDBrigthInit();
+           }
+           if ((xKeyIgnore == FLAG_SET) && (key & BRAKECODE))
+	   {
+               xKeyIgnore  = FLAG_RESET;
+               xTimeOutFlag = FLAG_RESET;
+	   }
+           return 0;
         }
+        pCurrMenu->pFunc( pCurrMenu, key );
       }
     }
   }

@@ -42,13 +42,14 @@ void vLCDInit ( SemaphoreHandle_t temp, TIM_HandleTypeDef* tim, SPI_HandleTypeDe
 
 void vLCDBrigthInit()
 {
-  lcd_brigth = displayBrightnesLevel.value[0U];
+  vLCDSetLedBrigth(displayBrightnesLevel.value[0U]);
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция установки яркости подсветки индикатора
  */
+static uint16_t LCD_Standby = 0;
 void vLCDSetLedBrigth ( uint8_t brigth )
 {
 
@@ -56,6 +57,21 @@ void vLCDSetLedBrigth ( uint8_t brigth )
   if ( brigth <= displayBrightnesLevel.atrib->max )
   {
     lcd_brigth = brigth;
+    if (lcd_brigth == 0)
+      {
+	LCD_Standby = 1;
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+	vLCDWriteCommand( 0x26U );
+	vLCDWriteCommand( 0x01U );
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+      }
+    else
+      {
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+        vLCDWriteCommand( 0x26U );
+        HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+	LCD_Standby = 0;
+      }
   }
   else
   {
@@ -84,6 +100,13 @@ void vLCDRedraw ( void )
   uint16_t y_start         = 0U;
   uint16_t y_end           = 0U;
   uint8_t  LCD_REDRAW_FLAG = 0U;
+  /*
+   * Если индикатор в спящем режиме, то сразу же выходим
+   */
+  if (LCD_Standby == 1 )
+  {
+      return 0U;
+  }
   //Сравниваем буфер индикатора и буфер библиотеки u8g2
   //Если находим различия, то устанвливаем флаг LCD_REDRAW_FLAG и фиксируем начальную и конечную строку
   //области индикатора, которую необходимо перерисовывать
@@ -130,7 +153,7 @@ void vLCDRedraw ( void )
     xSemaphoreTake( xSemaphore, portMAX_DELAY );
     HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
   }
-  return;
+  return 0U;
 }
 
 
@@ -263,13 +286,7 @@ HAL_StatusTypeDef SPI_Transmit_DMA ( SPI_HandleTypeDef *hspi, uint8_t *pData, ui
   {
     SPI_1LINE_TX( hspi );
   }
-  #if (USE_SPI_CRC != 0U)
-    /* Reset CRC Calculation */
-    if (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
-    {
-      SPI_RESET_CRC(hspi);
-    }
-  #endif /* USE_SPI_CRC */
+
   /* Enable the Tx DMA Stream/Channel */
   if ( HAL_OK != HAL_DMA_Start_IT( hspi->hdmatx,
 				   (uint32_t)hspi->pTxBuffPtr,
@@ -335,7 +352,9 @@ inline void vLCDWriteCommand( uint8_t com )
 void vST7920init(void)
 {
 
-
+ // UBaseType_t  uxOurPriority;
+ // uxOurPriority = uxTaskPriorityGet( NULL );
+ // vTaskPrioritySet( NULL, configMAX_PRIORITIES - 1 );
   HAL_TIM_Base_Start_IT( lcdTim );
   vLCDBrigthInit();
   vLCD_HAL_SPI_DMA_Init();
@@ -357,6 +376,7 @@ void vST7920init(void)
   vLCDWriteCommand( 0x02U );
   osDelay( 1U );
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+//  vTaskPrioritySet( NULL, uxOurPriority);
   return;
 }
 

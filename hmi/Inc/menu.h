@@ -171,7 +171,7 @@ typedef struct __packed
 
 void vMenuInit( u8g2_t* temp );
 void vMenuTask( void );
-void vDrawObject( xScreenObjet* pScreenObjects ); // __attribute__((optimize("-O3")));
+void vDrawObject( xScreenObjet* pScreenObjects )  __attribute__((optimize("-O3")));
 void vGetSettingsData( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsUnit( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
 void vGetSettingsNumber( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );

@@ -1010,9 +1010,9 @@ uint8_t uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPo
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-//#ifdef OPTIMIZ
-//  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-//#endif
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 uint16_t uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output )
 {
   uint16_t shift = uRESTmakeStartRecord( header, output );

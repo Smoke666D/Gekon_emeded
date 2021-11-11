@@ -254,7 +254,7 @@ SERVER_ERROR eSERVERlistenRoutine ( void )
         {
            error = netconn_write( in_nc, serverOutput, strlen( serverOutput ), NETCONN_COPY );  /* Send header of the response */
           /*-------------------- Send content ----------------------*/
-          if ( response.contentLength > 0U )                                           /* There is content */
+          if ( response.content.length > 0U )                                           /* There is content */
           {
             while ( status == STREAM_CONTINUES )
             {

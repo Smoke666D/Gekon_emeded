@@ -71,7 +71,7 @@ typedef enum
   HTTP_CONTENT_JS,
   HTTP_CONTENT_JSON,
   HTTP_CONTENT_XML,
-} HTTP_CONTENT;
+} HTTP_CONTENT_TYPE;
 /*------------------------ Cache control -------------------------------*/
 #define  HTTP_CACHE_STR_NO_CACHE  "no-cache"
 #define  HTTP_CACHE_STR_NO_STORE  "no-store"
@@ -119,13 +119,19 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
+  HTTP_CONTENT_TYPE type;
+  uint32_t          length;
+  char*             data;
+} HTTP_CONTENT;
+
+typedef struct __packed
+{
   HTTP_METHOD   method;
   char          path[HTTP_PATH_LENGTH];
   char          host[HTTP_PATH_LENGTH];
-  HTTP_CONTENT  contetntType;
+  HTTP_CONTENT  content;
   HTTP_CONNECT  connect;
   HTTP_CACHE    cache;
-  char*         content;
 } HTTP_REQUEST;
 
 typedef struct __packed
@@ -147,13 +153,10 @@ typedef struct __packed
   HTTP_METHOD     method;
   /* Header data */
   char            header[HEADER_LENGTH];
-  HTTP_CONTENT    contetntType;
   HTTP_CONNECT    connect;
   HTTP_CACHE      cache;
   HTTP_ENCODING   encoding;
-  /* Content */
-  uint32_t        contentLength;
-  char*           data;
+  HTTP_CONTENT    content;
   /* Stream */
   HTTP_STREAM     stream;
   streamCallBack  callBack;

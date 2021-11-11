@@ -44,7 +44,7 @@ uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos
 uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
 uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
 uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );
-uint8_t    uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output );
+uint16_t   uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output );
 uint32_t   uRESTmakeSystemRecord ( const SYSTEM_DATA* data, char* output );
 uint32_t   uRESTmakeBitMap ( const eConfigBitMap* bitMap, RESTrecordPos last, char* output );
 uint32_t   uRESTmakeBitMapArray ( uint8_t len, const eConfigBitMap* bitMap, char* output );
@@ -1010,12 +1010,12 @@ uint8_t uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPo
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-uint8_t uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output )
+//#ifdef OPTIMIZ
+//  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+//#endif
+uint16_t uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output )
 {
-  uint8_t shift = uRESTmakeStartRecord( header, output );
+  uint16_t shift = uRESTmakeStartRecord( header, output );
   output[shift] = QUOTES_ANCII;
   shift++;
   shift += uEncodeURI( data, dataLen, &output[shift]);

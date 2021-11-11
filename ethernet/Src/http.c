@@ -115,7 +115,7 @@ void vHTTPcleanRequest ( HTTP_REQUEST *request )
   {
     request->host[i] = 0x00U;
   }
-  request->contetntType = HTTP_CONTENT_HTML;
+  request->content.type = HTTP_CONTENT_HTML;
   request->connect      = HTTP_CONNECT_CLOSED;
   request->cache        = HTTP_CACHE_NO_CACHE;
   return;
@@ -130,7 +130,7 @@ void vHTTPcleanRequest ( HTTP_REQUEST *request )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-char* vHTTPaddContetntType ( char* httpStr, HTTP_CONTENT type )
+char* vHTTPaddContentType ( char* httpStr, HTTP_CONTENT_TYPE type )
 {
   char* strRes = NULL;
   strRes = strcat( httpStr, HTTP_CONTENT_LINE );
@@ -473,11 +473,11 @@ void vHTTPCleanResponse ( HTTP_RESPONSE *response )
   {
     response->header[i] = 0U;
   }
-  response->contentLength = 0U;
-  response->contetntType  = HTTP_CONTENT_HTML;
-  response->connect       = HTTP_CONNECT_CLOSED;
-  response->cache         = HTTP_CACHE_NO_CACHE;
-  response->encoding      = HTTP_ENCODING_NO;
+  response->content.length = 0U;
+  response->content.type   = HTTP_CONTENT_HTML;
+  response->connect        = HTTP_CONNECT_CLOSED;
+  response->cache          = HTTP_CACHE_NO_CACHE;
+  response->encoding       = HTTP_ENCODING_NO;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -583,7 +583,7 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
       pchSt  = strstr( req, HTTP_END_HEADER );
       if ( pchSt != NULL )
       {
-        request->content = &pchSt[strlen( HTTP_END_HEADER )];
+        request->content.data = &pchSt[strlen( HTTP_END_HEADER )];
       }
     }
   }
@@ -651,10 +651,10 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
   PASSWORD_TYPE password   = { .status = PASSWORD_RESET,.data = 0U };
   PASSWORD_TYPE passwordSt = { .status = PASSWORD_RESET,.data = 0U };
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
-  response->cache         = HTTP_CACHE_NO_CACHE_STORE;
-  response->connect       = HTTP_CONNECT_CLOSED;
-  response->status        = HTTP_STATUS_BAD_REQUEST;
-  response->contentLength = 0U;
+  response->cache          = HTTP_CACHE_NO_CACHE_STORE;
+  response->connect        = HTTP_CONNECT_CLOSED;
+  response->status         = HTTP_STATUS_BAD_REQUEST;
+  response->content.length = 0U;
   if ( path[0U] > 0U )
   {
     adrFlag = eRESTgetRequest( path, &request, &adr );
@@ -667,17 +667,17 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
           {
             if ( eRESTparsingConfig( content, adr ) == REST_OK )
             {
-              response->contetntType  = HTTP_CONTENT_JSON;
-              response->status        = HTTP_STATUS_OK;
-              response->contentLength = 0U;
+              response->content.type   = HTTP_CONTENT_JSON;
+              response->status         = HTTP_STATUS_OK;
+              response->content.length = 0U;
             }
           }
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
+          response->content.length = 0U;
         }
         break;
       case REST_CHARTS:
@@ -687,17 +687,17 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
           {
             if ( eRESTparsingChart( content, adr ) == REST_OK )
             {
-              response->contetntType  = HTTP_CONTENT_JSON;
-              response->status        = HTTP_STATUS_OK;
-              response->contentLength = 0U;
+              response->content.type   = HTTP_CONTENT_JSON;
+              response->status         = HTTP_STATUS_OK;
+              response->content.length = 0U;
             }
           }
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
+          response->content.length = 0U;
         }
         break;
       case REST_SAVE_CONFIGS:
@@ -705,16 +705,16 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         {
           if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
           {
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->contentLength = 0U;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->content.length = 0U;
           }
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
+          response->content.length = 0U;
         }
         break;
       case REST_SAVE_CHARTS:
@@ -722,16 +722,16 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         {
           if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
           {
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->contentLength = 0U;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->content.length = 0U;
           }
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
+          response->content.length = 0U;
         }
         break;
       case REST_TIME:
@@ -741,17 +741,17 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
           {
             if ( eRTCsetTime( &time ) == RTC_OK )
             {
-              response->contetntType  = HTTP_CONTENT_JSON;
-              response->status        = HTTP_STATUS_OK;
-              response->contentLength = 0U;
+              response->content.type   = HTTP_CONTENT_JSON;
+              response->status         = HTTP_STATUS_OK;
+              response->content.length = 0U;
             }
           }
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
+          response->content.length = 0U;
         }
         break;
       case REST_FREE_DATA:
@@ -765,9 +765,9 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
               {
                 if ( eDATAAPIfreeData( DATA_API_CMD_SAVE, adr, &data ) == DATA_API_STAT_OK )
                 {
-                  response->contetntType  = HTTP_CONTENT_JSON;
-                  response->status        = HTTP_STATUS_OK;
-                  response->contentLength = 0U;
+                  response->content.type   = HTTP_CONTENT_JSON;
+                  response->status         = HTTP_STATUS_OK;
+                  response->content.length = 0U;
                 }
               }
             }
@@ -775,9 +775,9 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
+          response->content.type  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.length = 0U;
         }
         break;
       case REST_LOG_ERASE:
@@ -785,16 +785,16 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         {
           if ( eDATAAPIlog( DATA_API_CMD_ERASE, NULL, NULL ) == DATA_API_STAT_OK )
           {
-            response->contetntType  = HTTP_CONTENT_JSON;
+            response->content.type  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
-            response->contentLength = 0U;
+            response->content.length = 0U;
           }
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
+          response->content.type  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.length = 0U;
         }
         break;
       case REST_PASSWORD:
@@ -806,18 +806,18 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
             {
               if ( eDATAAPIpassword( DATA_API_CMD_SAVE, NULL ) == DATA_API_STAT_OK )
               {
-                response->contetntType  = HTTP_CONTENT_JSON;
+                response->content.type  = HTTP_CONTENT_JSON;
                 response->status        = HTTP_STATUS_OK;
-                response->contentLength = 0U;
+                response->content.length = 0U;
               }
             }
           }
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
+          response->content.type  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.length = 0U;
         }
         break;
       case REST_AUTH:
@@ -830,24 +830,24 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
               if ( password.data == passwordSt.data )
               {
                 vHHTPsetAuth( remoteIP, AUTH_DONE );
-                response->contetntType  = HTTP_CONTENT_JSON;
+                response->content.type  = HTTP_CONTENT_JSON;
                 response->status        = HTTP_STATUS_OK;
-                response->contentLength = 0U;
+                response->content.length = 0U;
               }
               else
               {
-                response->contetntType  = HTTP_CONTENT_JSON;
+                response->content.type  = HTTP_CONTENT_JSON;
                 response->status        = HTTP_STATUS_UNAUTHORIZED;
-                response->contentLength = 0U;
+                response->content.length = 0U;
               }
             }
           }
           else
           {
             vHHTPsetAuth( remoteIP, AUTH_DONE );
-            response->contetntType  = HTTP_CONTENT_JSON;
+            response->content.type  = HTTP_CONTENT_JSON;
             response->status        = HTTP_STATUS_OK;
-            response->contentLength = 0U;
+            response->content.length = 0U;
           }
         }
         break;
@@ -858,9 +858,9 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         else
         {
-          response->contetntType  = HTTP_CONTENT_JSON;
+          response->content.type  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_UNAUTHORIZED;
-          response->contentLength = 0U;
+          response->content.length = 0U;
         }
         break;
       case REST_MEASUREMENT_ERASE:
@@ -902,7 +902,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
   response->cache         = HTTP_CACHE_NO_CACHE_STORE;
   response->connect       = HTTP_CONNECT_CLOSED;
   response->status        = HTTP_STATUS_BAD_REQUEST;
-  response->contentLength = 0U;
+  response->content.length = 0U;
   response->encoding      = HTTP_ENCODING_NO;
   /*----------------- Parsing path -----------------*/
   /*------------------ INDEX.HTML ------------------*/
@@ -917,9 +917,9 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
     stream->size            = WEB_LENGTH;
     stream->flag            = STREAM_FLAG_NO_COPY;
     response->callBack      = cHTTPstreamFileWebApp;
-    response->contetntType  = HTTP_CONTENT_HTML;
+    response->content.type  = HTTP_CONTENT_HTML;
     response->status        = HTTP_STATUS_OK;
-    response->contentLength = stream->size;
+    response->content.length = stream->size;
     response->encoding      = HTTP_ENCODING_GZIP;
   }
   /*--------------------- REST ---------------------*/
@@ -946,19 +946,19 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->callBack = cHTTPstreamConfigs;
             for( i=0U; i<stream->size; i++ )
             {
-              response->contentLength += uRESTmakeConfig( configReg[i], restBuffer );
+              response->content.length += uRESTmakeConfig( configReg[i], restBuffer );
             }
-            response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
-            response->contetntType   = HTTP_CONTENT_JSON;
+            response->content.length += 1U + stream->size;            /* '[' + ']' + ',' */
+            response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
-            response->data           = restBuffer;
+            response->content.data   = restBuffer;
           }
           /*------------- Specific address ------------------*/
           else
           {
             if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) )
             {
-              response->contentLength = uRESTmakeConfig( configReg[adr], restBuffer );
+              response->content.length = uRESTmakeConfig( configReg[adr], restBuffer );
             }
             stream                 = &response->stream;
             stream->size           = adr + 1U;
@@ -966,9 +966,9 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             stream->index          = 0U;
             stream->flag           = STREAM_FLAG_COPY;
             response->callBack     = cHTTPstreamConfigs;
-            response->contetntType = HTTP_CONTENT_JSON;
+            response->content.type = HTTP_CONTENT_JSON;
             response->status       = HTTP_STATUS_OK;
-            response->data         = restBuffer;
+            response->content.data = restBuffer;
           }
           break;
         case REST_CHARTS:
@@ -983,27 +983,27 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->callBack = cHTTPstreamCharts;
             for ( i=0U; i<stream->size; i++ )
             {
-              response->contentLength += uRESTmakeChart( charts[i], restBuffer );
+              response->content.length += uRESTmakeChart( charts[i], restBuffer );
             }
-            response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
-            response->contetntType   = HTTP_CONTENT_JSON;
+            response->content.length += 1U + stream->size;            /* '[' + ']' + ',' */
+            response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
-            response->data           = restBuffer;
+            response->content.data   = restBuffer;
           }
           break;
         case REST_TIME:
           if ( eRTCgetTime( &time ) == RTC_OK )
           {
-            stream                  = &response->stream;
-            stream->size            = 1U;
-            stream->start           = 0U;
-            stream->index           = 0U;
-            stream->flag            = STREAM_FLAG_COPY;
-            response->contentLength = uRESTmakeTime( &time, restBuffer );;
-            response->callBack      = cHTTPstreamTime ;
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->data          = restBuffer;
+            stream                   = &response->stream;
+            stream->size             = 1U;
+            stream->start            = 0U;
+            stream->index            = 0U;
+            stream->flag             = STREAM_FLAG_COPY;
+            response->content.length = uRESTmakeTime( &time, restBuffer );;
+            response->callBack       = cHTTPstreamTime ;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->content.data   = restBuffer;
           }
           break;
         case REST_FREE_DATA:
@@ -1011,16 +1011,16 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           {
             if ( adr < FREE_DATA_SIZE )
             {
-              stream                  = &response->stream;
-              stream->size            = 1U;
-              stream->start           = adr;
-              stream->index           = 0U;
-              stream->flag            = STREAM_FLAG_COPY;
-              response->contentLength = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
-              response->callBack      = cHTTPstreamData;
-              response->contetntType  = HTTP_CONTENT_JSON;
-              response->status        = HTTP_STATUS_OK;
-              response->data          = restBuffer;
+              stream                   = &response->stream;
+              stream->size             = 1U;
+              stream->start            = adr;
+              stream->index            = 0U;
+              stream->flag             = STREAM_FLAG_COPY;
+              response->content.length = uRESTmakeData( *freeDataArray[stream->start], restBuffer );;
+              response->callBack       = cHTTPstreamData;
+              response->content.type   = HTTP_CONTENT_JSON;
+              response->status         = HTTP_STATUS_OK;
+              response->content.data   = restBuffer;
             }
           }
           break;
@@ -1041,44 +1041,44 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
               {
                 response->status = HTTP_STATUS_BAD_REQUEST;
               }
-              response->contentLength += uRESTmakeLog( &record, restBuffer );
+              response->content.length += uRESTmakeLog( &record, restBuffer );
             }
-            response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
-            response->contetntType   = HTTP_CONTENT_JSON;
+            response->content.length += 1U + stream->size;            /* '[' + ']' + ',' */
+            response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
-            response->data           = restBuffer;
+            response->content.data   = restBuffer;
           }
           break;
         case REST_MEMORY:
           if ( MEASUREMENT_ENB > 0U )
           {
-            stream                  = &response->stream;
-            stream->size            = 1U;
-            stream->start           = 0U;
-            stream->index           = 0U;
-            stream->flag            = STREAM_FLAG_COPY;
-            stream->length          = uRESTmakeMemorySize( restBuffer );
-            response->contentLength = stream->length;
-            response->callBack      = cHTTPstreamString;
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->data          = restBuffer;
+            stream                   = &response->stream;
+            stream->size             = 1U;
+            stream->start            = 0U;
+            stream->index            = 0U;
+            stream->flag             = STREAM_FLAG_COPY;
+            stream->length           = uRESTmakeMemorySize( restBuffer );
+            response->content.length = stream->length;
+            response->callBack       = cHTTPstreamString;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->content.data   = restBuffer;
           }
           break;
         case REST_MEASUREMENT_LENGTH:
           if ( MEASUREMENT_ENB > 0U )
           {
-            stream                  = &response->stream;
-            stream->size            = 1U;
-            stream->start           = 0U;
-            stream->index           = 0U;
-            stream->flag            = STREAM_FLAG_COPY;
-            stream->length          = uRESTmakeMeasurementLength( restBuffer );
-            response->contentLength = stream->length;
-            response->callBack      = cHTTPstreamString;
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->data          = restBuffer;
+            stream                   = &response->stream;
+            stream->size             = 1U;
+            stream->start            = 0U;
+            stream->index            = 0U;
+            stream->flag             = STREAM_FLAG_COPY;
+            stream->length           = uRESTmakeMeasurementLength( restBuffer );
+            response->content.length = stream->length;
+            response->callBack       = cHTTPstreamString;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->content.data   = restBuffer;
           }
           break;
 
@@ -1092,15 +1092,15 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
               stream->start = 0U;
               for ( i=0U; i<stream->size; i++ )
               {
-                response->contentLength += uRESTmakeMeasurement( i, restBuffer );
+                response->content.length += uRESTmakeMeasurement( i, restBuffer );
               }
-              response->contentLength += 1U + stream->size;            /* '[' + ']' + ',' */
+              response->content.length += 1U + stream->size;            /* '[' + ']' + ',' */
             }
             else
             {
               if ( adr < uMEASUREMENTgetSize() )
               {
-                response->contentLength += uRESTmakeMeasurement( adr, restBuffer );
+                response->content.length += uRESTmakeMeasurement( adr, restBuffer );
               }
               stream->size  = adr + 1U;
               stream->start = adr;
@@ -1108,26 +1108,26 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             stream->index          = 0U;
             stream->flag           = STREAM_FLAG_COPY;
             response->callBack     = cHTTPstreamMeasurement;
-            response->contetntType = HTTP_CONTENT_JSON;
+            response->content.type = HTTP_CONTENT_JSON;
             response->status       = HTTP_STATUS_OK;
-            response->data         = restBuffer;
+            response->content.data = restBuffer;
           }
           break;
         case REST_OUTPUT:
           if ( ( adrFlag == REST_YES_ADR ) && ( adr < OUTPUT_DATA_REGISTER_NUMBER ) )
           {
             vOUTPUTupdate( adr );
-            stream                  = &response->stream;
-            stream->size            = 1U;
-            stream->start           = 0U;
-            stream->index           = 0U;
-            stream->flag            = STREAM_FLAG_COPY;
-            stream->length          = uRESTmakeOutput( outputDataReg[adr], outputDataDictionary[adr], restBuffer );
-            response->contentLength = stream->length;
-            response->callBack      = cHTTPstreamString;
-            response->contetntType  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
-            response->data          = restBuffer;
+            stream                   = &response->stream;
+            stream->size             = 1U;
+            stream->start            = 0U;
+            stream->index            = 0U;
+            stream->flag             = STREAM_FLAG_COPY;
+            stream->length           = uRESTmakeOutput( outputDataReg[adr], outputDataDictionary[adr], restBuffer );
+            response->content.length = stream->length;
+            response->callBack       = cHTTPstreamString;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
+            response->content.data   = restBuffer;
           }
           else
           {
@@ -1141,30 +1141,30 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           stream->index           = 0U;
           stream->flag            = STREAM_FLAG_COPY;
           stream->length          = uRESTmakeSystem( restBuffer );
-          response->contentLength = stream->length;
+          response->content.length = stream->length;
           response->callBack      = cHTTPstreamString;
-          response->contetntType  = HTTP_CONTENT_JSON;
+          response->content.type  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_OK;
-          response->data          = restBuffer;
+          response->content.data  = restBuffer;
           break;
         case REST_REQUEST_ERROR:
           break;
         default:
           response->status        = HTTP_STATUS_BAD_REQUEST;
-          response->contentLength = 0U;
+          response->content.length = 0U;
           break;
       }
     }
     else
     {
       response->status        = HTTP_STATUS_UNAUTHORIZED;
-      response->contentLength = 0U;
+      response->content.length = 0U;
     }
   }
   else
   {
     response->status        = HTTP_STATUS_NON_CONNECT;
-    response->contentLength = 0U;
+    response->content.length = 0U;
   }
   return;
 }
@@ -1195,7 +1195,7 @@ void vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response, uint32
       break;
     case HTTP_METHOD_PUT:
       response->method = HTTP_METHOD_PUT;
-      eHTTPbuildPutResponse( request->path, response, request->content, remoteIP );
+      eHTTPbuildPutResponse( request->path, response, request->content.data, remoteIP );
       break;
     case HTTP_METHOD_HEAD:
       break;
@@ -1331,14 +1331,14 @@ HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
             // LENGTH
             if ( strcat( httpStr, HTTP_LENGTH_LINE ) != NULL )
             {
-              if ( itoa( response->contentLength, buffer, 10U ) != NULL )
+              if ( itoa( response->content.length, buffer, 10U ) != NULL )
               {
                 if ( strcat( httpStr, buffer ) != NULL )
                 {
                   if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
                   {
                     // CONTENT TYPE
-                    if ( vHTTPaddContetntType( httpStr, response->contetntType ) != NULL )
+                    if ( vHTTPaddContentType( httpStr, response->content.type ) != NULL )
                     {
                       // ENCODING
                       if ( vHTTPaddContentEncoding ( httpStr, response->encoding ) != NULL )

@@ -108,7 +108,7 @@ UART_HandleTypeDef huart3;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 1024,//128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for netTask */
@@ -1482,7 +1482,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+static FRESULT  fres = FR_OK;
+static FILINFO  finfo;
+static FIL      file;
+static char     fbuf[20U] = { 0U };
+static uint32_t fcount = 0U;
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1531,6 +1535,23 @@ void StartDefaultTask(void *argument)
       vOUTPUTinit();
       vMBinit( mbInit );                          /* Start ModBus                              */
       HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
+
+
+      osDelay( 1000U );
+      fres = f_mount( &SDFatFS, SDPath, 1 );
+      if ( fres == FR_OK )
+      {
+        fres = f_stat( "file.txt", &finfo );
+        if ( fres == FR_OK )
+        {
+          fres = f_open( &file, "file.txt", FA_READ );
+          if ( fres == FR_OK )
+          {
+            fres = f_read( &file, fbuf, file.fsize, &fcount );
+          }
+        }
+      }
+      osDelay( 1000U );
     }
     else
     {

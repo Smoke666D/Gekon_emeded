@@ -20,7 +20,7 @@
 #define  CONTROLLER_TASK_PRIORITY      osPriorityNormal
 #define  MEASUREMENT_TASK_PRIORITY     osPriorityLow
 #define  MB_TASK_PRIORITY              osPriorityNormal
-#define  FATSD_TASK_PRIORITY           osPriorityLow
+#define  FATSD_TASK_PRIORITY           osPriorityNormal
 #define  ETHERNET_LINK_TASK_PRIORITY   osPriorityLow
 #define  FPI_TASK_STACK_SIZE           ( 1024U - 180U * 4U  ) /* HWM = 25*/
 #define  ENGINE_TASK_STACK_SIZE        1024U

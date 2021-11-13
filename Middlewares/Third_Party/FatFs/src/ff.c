@@ -812,7 +812,8 @@ FRESULT move_window (
 		res = sync_window(fs);		/* Write-back changes */
 #endif
 		if (res == FR_OK) {			/* Fill sector window with new data */
-			if (disk_read(fs->drv, fs->win.d8, sector, 1) != RES_OK) {
+		  res = disk_read(fs->drv, fs->win.d8, sector, 1);
+			if (res != RES_OK) {
 				sector = 0xFFFFFFFF;	/* Invalidate window if data is not reliable */
 				res = FR_DISK_ERR;
 			}

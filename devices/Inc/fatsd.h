@@ -15,9 +15,9 @@
 #define MIN_FAT32              65526U
 #define FILES_NUMBER           3U
 #define SEMAPHORE_ACCSEE_DELAY ( ( TickType_t ) 1000U )
-#define CONFIG_FILE_NAME       u8"config.json"
-#define MEASUREMEMT_FILE_NAME  u8"measurement.json"
-#define LOG_FILE_NAME          u8"log.json"
+#define CONFIG_FILE_NAME       u8"config.jsn\0"
+#define MEASUREMEMT_FILE_NAME  u8"measure.jsn\0"
+#define LOG_FILE_NAME          u8"log.jsn\0"
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
@@ -35,7 +35,7 @@ typedef enum
 typedef char* ( *lineParserCallback )( uint16_t length );
 /*----------------------- Structures -----------------------------------*/
 /*------------------------ Functions -----------------------------------*/
-void     vFATSDinit ( const GPIO_TYPE* cd );
+void     vFATSDinit ( const GPIO_TYPE* cd, const SD_HandleTypeDef* sd );
 uint8_t  uFATSDisMount ( void );
 FRESULT  eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
 FRESULT  eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );

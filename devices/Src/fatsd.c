@@ -17,6 +17,7 @@ static SemaphoreHandle_t xFileAccessSemaphore = NULL;
 static FILINFO           finfo                = { 0U };
 static FIL               file                 = { 0U };
 static GPIO_TYPE         sdCD                 = { 0U };
+static SD_HandleTypeDef* hsd                  = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -83,6 +84,9 @@ FRESULT eFATSDunmount ( void )
 /*---------------------------------------------------------------------------------------------------*/
 void vFATSDtask ( void* argument )
 {
+  FRESULT res   = FR_OK;
+  uint8_t retSD = 0U;
+  HAL_SD_MspDeInit( hsd );
   for (;;)
   {
     if ( position == SD_EXTRACTED )
@@ -90,13 +94,12 @@ void vFATSDtask ( void* argument )
       if ( HAL_GPIO_ReadPin( sdCD.port, sdCD.pin ) == GPIO_PIN_RESET )
       {
         position = SD_INSERTED;
-        if ( mounted == 0U )
+        HAL_SD_MspInit( hsd );
+        retSD    = FATFS_LinkDriver( &SD_Driver, SDPath );
+        res      = eFATSDmount();
+        if ( res == FR_OK )
         {
-          res = eFATSDmount();
-          if ( res == FR_OK )
-          {
-            mounted = 1U;
-          }
+          mounted = 1U;
         }
       }
     }
@@ -106,6 +109,8 @@ void vFATSDtask ( void* argument )
       {
         position = SD_EXTRACTED;
         res      = eFATSDunmount();
+        retSD    = FATFS_UnLinkDriverEx( SDPath, 0 );
+        HAL_SD_MspDeInit( hsd );
         mounted  = 0U;
       }
     }
@@ -116,9 +121,10 @@ void vFATSDtask ( void* argument )
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vFATSDinit ( const GPIO_TYPE* cd )
+void vFATSDinit ( const GPIO_TYPE* cd, const SD_HandleTypeDef* sd )
 {
   sdCD = *cd;
+  hsd  = ( SD_HandleTypeDef* )sd;
   xFileAccessSemaphore = xSemaphoreCreateMutex();
   const osThreadAttr_t fatsdTask_attributes = {
     .name       = "fatsdTask",

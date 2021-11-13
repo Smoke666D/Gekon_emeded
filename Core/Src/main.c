@@ -330,7 +330,7 @@ int main(void)
   MX_TIM8_Init();
   MX_IWDG_Init();
   MX_SDIO_SD_Init();
-  MX_FATFS_Init();
+  //MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
   vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
@@ -1535,7 +1535,7 @@ void StartDefaultTask(void *argument)
       vOUTPUTinit();
       vMBinit( mbInit );                          /* Start ModBus                              */
       HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
-      vFATSDinit( &sdGPIO );
+      vFATSDinit( &sdGPIO, &hsd );
     }
     else
     {
@@ -1550,7 +1550,6 @@ void StartDefaultTask(void *argument)
   for(;;)
   {
     HAL_GPIO_TogglePin( LED_SYS_GPIO_Port, LED_SYS_Pin );
-    //vSYSgetData();
     osDelay( period );
   }
   /* USER CODE END 5 */

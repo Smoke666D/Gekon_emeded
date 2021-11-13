@@ -55,6 +55,7 @@
 #include "mb.h"
 #include "outputData.h"
 #include "system.h"
+#include "fatsd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -269,6 +270,10 @@ static const MB_INIT_TYPE mbInit = {
 static const GPIO_TYPE chargGPIO = {
   .pin = CHARG_ON_Pin,
   .port = CHARG_ON_GPIO_Port,
+};
+static const GPIO_TYPE sdGPIO = {
+  .pin = SDIO_CD_Pin,
+  .port = SDIO_CD_GPIO_Port
 };
 /* USER CODE END PFP */
 
@@ -1482,11 +1487,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static FRESULT  fres = FR_OK;
-static FILINFO  finfo;
-static FIL      file;
-static char     fbuf[20U] = { 0U };
-static uint32_t fcount = 0U;
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1535,23 +1535,7 @@ void StartDefaultTask(void *argument)
       vOUTPUTinit();
       vMBinit( mbInit );                          /* Start ModBus                              */
       HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
-
-
-      osDelay( 1000U );
-      fres = f_mount( &SDFatFS, SDPath, 1 );
-      if ( fres == FR_OK )
-      {
-        fres = f_stat( "file.txt", &finfo );
-        if ( fres == FR_OK )
-        {
-          fres = f_open( &file, "file.txt", FA_READ );
-          if ( fres == FR_OK )
-          {
-            fres = f_read( &file, fbuf, file.fsize, &fcount );
-          }
-        }
-      }
-      osDelay( 1000U );
+      vFATSDinit( &sdGPIO );
     }
     else
     {

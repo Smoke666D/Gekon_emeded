@@ -467,7 +467,7 @@ EEPROM_STATUS eSTORAGEsaveFreeData ( FREE_DATA_ADR n )
 EEPROM_STATUS eSTORAGEsetFreeData ( FREE_DATA_ADR n, const uint16_t* data )
 {
   *freeDataArray[n] = *data;
-  return eSTORAGEsaveFreeData( ( STORAGE_FREE_DATA_ADR + 2 * n ) );
+  return eSTORAGEsaveFreeData( n );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* data )

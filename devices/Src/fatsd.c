@@ -18,6 +18,7 @@ static FILINFO           finfo                = { 0U };
 static FIL               file                 = { 0U };
 static GPIO_TYPE         sdCD                 = { 0U };
 static SD_HandleTypeDef* hsd                  = NULL;
+static HAL_SD_CardInfoTypeDef cardInfo = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -25,6 +26,8 @@ static uint32_t    fcount    = 0U;
 static uint32_t    lineCount = 0U;
 static SD_POSITION position  = SD_EXTRACTED;
 static uint8_t     mounted   = 0U;
+
+static char        fbuf[20U] = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
@@ -34,11 +37,13 @@ FRESULT eFATSDcheckFile ( const char* path )
   FRESULT res = f_stat( path, &finfo );
   if ( res == FR_NO_FILE )
   {
+    taskENTER_CRITICAL();
     res = f_open( &file, path, FA_CREATE_NEW );
     if ( res == FR_OK )
     {
       res = f_close( &file );
     }
+    taskEXIT_CRITICAL();
   }
   return res;
 }
@@ -54,7 +59,12 @@ FRESULT eFATSDmount ( void )
     res = f_mount( &SDFatFS, SDPath, 1U );
     if ( res == FR_NO_FILESYSTEM )
     {
-      res = f_mkfs( SDPath, 0U, MIN_FAT32 );
+      taskENTER_CRITICAL();
+      while ( res != FR_OK )
+      {
+        res = f_mkfs( SDPath, 0U, MIN_FAT32 );
+      }
+      taskEXIT_CRITICAL();
     }
     if ( res == FR_OK )
     {
@@ -95,11 +105,13 @@ void vFATSDtask ( void* argument )
       {
         position = SD_INSERTED;
         HAL_SD_MspInit( hsd );
-        retSD    = FATFS_LinkDriver( &SD_Driver, SDPath );
-        res      = eFATSDmount();
+        BSP_SD_GetCardInfo( &cardInfo );
+        retSD = FATFS_LinkDriver( &SD_Driver, SDPath );
+        res   = eFATSDmount();
         if ( res == FR_OK )
         {
           mounted = 1U;
+          res = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
         }
       }
     }
@@ -233,6 +245,7 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
+      taskENTER_CRITICAL();
       res = f_open( &file, fileNames[n], FA_WRITE );
       if ( res == FR_OK )
       {
@@ -244,8 +257,15 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
             res = f_write( &file, line, length, ( UINT* )&counter );
             if ( res == FR_OK )
             {
-              res = f_close( &file );
-              if ( ( res == FR_OK ) && ( length != counter ) )
+              if ( length == counter )
+              {
+                res = f_close( &file );
+                if ( ( res == FR_OK ) && ( length != counter ) )
+                {
+                  res = FR_WRITE_COUNTER_ERROR;
+                }
+              }
+              else
               {
                 res = FR_WRITE_COUNTER_ERROR;
               }
@@ -257,6 +277,7 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
           res = FR_INVALID_OBJECT;
         }
       }
+      taskEXIT_CRITICAL();
       xSemaphoreGive( xFileAccessSemaphore );
     }
     else

@@ -106,6 +106,7 @@ void vFATSDtask ( void* argument )
 {
   FRESULT res   = FR_OK;
   uint8_t retSD = 0U;
+  uint32_t size = 0;
   HAL_SD_MspDeInit( hsd );
   for (;;)
   {
@@ -125,6 +126,8 @@ void vFATSDtask ( void* argument )
             mounted = 1U;
             res = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
             res = eFILEreadLineByLine( FATSD_FILE_LOG, vFILEstringCounter );
+            size = uFATSDgetFullSpace();
+            size = uFATSDgetFreeSpace();
           }
         }
         else
@@ -310,6 +313,9 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Return free space at SD card in Kb
+ */
 uint32_t uFATSDgetFreeSpace ( void )
 {
   uint32_t size = 0U;
@@ -320,7 +326,26 @@ uint32_t uFATSDgetFreeSpace ( void )
     res = f_getfree( SDPath, ( DWORD* )&size, &fs );
     if ( res == FR_OK )
     {
-      size *= fs->csize;
+      size *= fs->csize / 2U;
+    }
+  }
+  return size;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Return full space at SD card in Kb
+ */
+uint32_t uFATSDgetFullSpace ( void )
+{
+  uint32_t size = 0U;
+  FRESULT  res  = FR_OK;
+  FATFS*   fs   = NULL;
+  if ( mounted > 0U )
+  {
+    res = f_getfree( SDPath, ( DWORD* )&size, &fs );
+    if ( res == FR_OK )
+    {
+      size = ( fs->n_fatent - 2 ) * fs->csize / 2U;
     }
   }
   return size;

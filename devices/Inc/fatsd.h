@@ -40,5 +40,6 @@ uint8_t  uFATSDisMount ( void );
 FRESULT  eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
 FRESULT  eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
 uint32_t uFATSDgetFreeSpace ( void );
+uint32_t uFATSDgetFullSpace ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FATSD_H_ */

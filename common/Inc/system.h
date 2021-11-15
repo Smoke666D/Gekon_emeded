@@ -20,6 +20,7 @@
 #define  CONTROLLER_TASK_PRIORITY      osPriorityNormal
 #define  MEASUREMENT_TASK_PRIORITY     osPriorityLow
 #define  MB_TASK_PRIORITY              osPriorityNormal
+#define  FATSD_TASK_PRIORITY           osPriorityNormal
 #define  ETHERNET_LINK_TASK_PRIORITY   osPriorityLow
 #define  FPI_TASK_STACK_SIZE           ( 1024U - 180U * 4U  ) /* HWM = 25*/
 #define  ENGINE_TASK_STACK_SIZE        1024U
@@ -28,6 +29,7 @@
 #define  MEASUREMENT_TASK_STACK_SIZE   1024U
 #define  MB_TASK_STACK_SIZE            512U
 #define  ETHERNET_LINK_TASK_STACK_SIZE 512U
+#define  FATSD_TASK_STACK_SIZE         1024U
 
 #if ( ENGINE_TASK_PRIORITY != ELECTRO_TASK_PRIORITY )
   #error Engine and electro tasks have difrent priority

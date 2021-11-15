@@ -28,6 +28,7 @@ static SD_POSITION position  = SD_EXTRACTED;
 static uint8_t     mounted   = 0U;
 
 static char        fbuf[20U] = { 0U };
+static uint8_t     strCount  = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
@@ -92,6 +93,15 @@ FRESULT eFATSDunmount ( void )
   return f_mount( NULL, SDPath, 1U );
 }
 /*---------------------------------------------------------------------------------------------------*/
+char* vFILEstringCounter ( uint16_t length )
+{
+  if ( length > 0U )
+  {
+    strCount++;
+  }
+  return fbuf;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vFATSDtask ( void* argument )
 {
   FRESULT res   = FR_OK;
@@ -107,11 +117,19 @@ void vFATSDtask ( void* argument )
         HAL_SD_MspInit( hsd );
         BSP_SD_GetCardInfo( &cardInfo );
         retSD = FATFS_LinkDriver( &SD_Driver, SDPath );
-        res   = eFATSDmount();
-        if ( res == FR_OK )
+        if ( retSD == 0 )
         {
-          mounted = 1U;
-          res = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
+          res   = eFATSDmount();
+          if ( res == FR_OK )
+          {
+            mounted = 1U;
+            res = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
+            res = eFILEreadLineByLine( FATSD_FILE_LOG, vFILEstringCounter );
+          }
+        }
+        else
+        {
+          res = FR_LINK_ERROR;
         }
       }
     }

@@ -218,7 +218,8 @@ typedef enum {
 	FR_INVALID_PARAMETER,	/* (19) Given parameter is invalid */
 	FR_WRITE_COUNTER_ERROR,
 	FR_BUSY,
-	FR_NO_MOUNT
+	FR_NO_MOUNT,
+	FR_LINK_ERROR
 } FRESULT;
 
 

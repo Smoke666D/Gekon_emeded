@@ -18,7 +18,7 @@ static FILINFO           finfo                = { 0U };
 static FIL               file                 = { 0U };
 static GPIO_TYPE         sdCD                 = { 0U };
 static SD_HandleTypeDef* hsd                  = NULL;
-static HAL_SD_CardInfoTypeDef cardInfo = { 0U };
+static HAL_SD_CardInfoTypeDef cardInfo        = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -116,15 +116,16 @@ void vFATSDtask ( void* argument )
       {
         position = SD_INSERTED;
         HAL_SD_MspInit( hsd );
-        BSP_SD_GetCardInfo( &cardInfo );
         retSD = FATFS_LinkDriver( &SD_Driver, SDPath );
         if ( retSD == 0 )
         {
           res   = eFATSDmount();
+          BSP_SD_GetCardInfo( &cardInfo );
           if ( res == FR_OK )
           {
             mounted = 1U;
             res = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
+            strCount = 0U;
             res = eFILEreadLineByLine( FATSD_FILE_LOG, vFILEstringCounter );
             size = uFATSDgetFullSpace();
             size = uFATSDgetFreeSpace();

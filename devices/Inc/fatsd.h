@@ -31,6 +31,13 @@ typedef enum
   FATSD_FILE_MEASUREMENT,
   FATSD_FILE_LOG
 } FATSD_FILE;
+typedef enum
+{
+  SD_STATUS_EXTRACTED,
+  SD_STATUS_MOUNTED,
+  SD_STATUS_LOCKED,
+  SD_STATUS_ERROR
+} SD_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 typedef char* ( *lineParserCallback )( uint16_t length );
 /*----------------------- Structures -----------------------------------*/

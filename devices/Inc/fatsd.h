@@ -22,8 +22,8 @@
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
-  SD_EXTRACTED,
-  SD_INSERTED
+  SD_EXTRACTED = SD_NOT_PRESENT,
+  SD_INSERTED  = SD_PRESENT
 } SD_POSITION;
 typedef enum
 {
@@ -41,9 +41,20 @@ typedef enum
 /*----------------------- Callbacks ------------------------------------*/
 typedef char* ( *lineParserCallback )( uint16_t length );
 /*----------------------- Structures -----------------------------------*/
+typedef struct __packed
+{
+  FATSD_FILE file : 2U;
+  uint8_t    lock : 1U;
+} FATSD_CACHE;
+typedef struct __packed
+{
+  SD_STATUS   status   : 2U;
+  uint8_t     mounted  : 1U;
+  SD_POSITION position : 1U;
+
+} FATSD_TYPE;
 /*------------------------ Functions -----------------------------------*/
-void     vFATSDinit ( const GPIO_TYPE* cd, const SD_HandleTypeDef* sd );
-uint8_t  uFATSDisMount ( void );
+void     vFATSDinit ( const SD_HandleTypeDef* sd );
 FRESULT  eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
 FRESULT  eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
 uint32_t uFATSDgetFreeSpace ( void );

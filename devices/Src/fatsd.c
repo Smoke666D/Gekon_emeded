@@ -12,21 +12,19 @@
 #include "system.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
-static osThreadId_t      fatsdHandle          = NULL;
-static SemaphoreHandle_t xFileAccessSemaphore = NULL;
-static FILINFO           finfo                = { 0U };
-static FIL               file                 = { 0U };
-static GPIO_TYPE         sdCD                 = { 0U };
-static SD_HandleTypeDef* hsd                  = NULL;
-static HAL_SD_CardInfoTypeDef cardInfo        = { 0U };
+static osThreadId_t           fatsdHandle          = NULL;
+static SemaphoreHandle_t      xFileAccessSemaphore = NULL;
+static FILINFO                finfo                = { 0U };
+static FIL                    file                 = { 0U };
+
+static SD_HandleTypeDef*      hsd                  = NULL;
+static HAL_SD_CardInfoTypeDef cardInfo             = { 0U };
+static FATSD_TYPE             fatsd                = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
 static uint32_t    fcount    = 0U;
 static uint32_t    lineCount = 0U;
-static SD_POSITION position  = SD_EXTRACTED;
-static uint8_t     mounted   = 0U;
-
 static char        fbuf[20U] = { 0U };
 static uint8_t     strCount  = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -110,11 +108,11 @@ void vFATSDtask ( void* argument )
   HAL_SD_MspDeInit( hsd );
   for (;;)
   {
-    if ( position == SD_EXTRACTED )
+    if ( fatsd.position == SD_EXTRACTED )
     {
-      if ( HAL_GPIO_ReadPin( sdCD.port, sdCD.pin ) == GPIO_PIN_RESET )
+      if ( HAL_GPIO_ReadPin( SD_DETECT_GPIO_PORT, SD_DETECT_PIN ) == GPIO_PIN_RESET )
       {
-        position = SD_INSERTED;
+        fatsd.position = SD_INSERTED;
         HAL_SD_MspInit( hsd );
         retSD = FATFS_LinkDriver( &SD_Driver, SDPath );
         if ( retSD == 0 )
@@ -123,12 +121,12 @@ void vFATSDtask ( void* argument )
           BSP_SD_GetCardInfo( &cardInfo );
           if ( res == FR_OK )
           {
-            mounted = 1U;
-            res = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
-            strCount = 0U;
-            res = eFILEreadLineByLine( FATSD_FILE_LOG, vFILEstringCounter );
-            size = uFATSDgetFullSpace();
-            size = uFATSDgetFreeSpace();
+            fatsd.mounted = 1U;
+            res           = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
+            strCount      = 0U;
+            res           = eFILEreadLineByLine( FATSD_FILE_LOG, vFILEstringCounter );
+            size          = uFATSDgetFullSpace();
+            size          = uFATSDgetFreeSpace();
           }
         }
         else
@@ -139,13 +137,13 @@ void vFATSDtask ( void* argument )
     }
     else
     {
-      if ( HAL_GPIO_ReadPin( sdCD.port, sdCD.pin ) == GPIO_PIN_SET )
+      if ( HAL_GPIO_ReadPin( SD_DETECT_GPIO_PORT, SD_DETECT_PIN ) == GPIO_PIN_SET )
       {
-        position = SD_EXTRACTED;
-        res      = eFATSDunmount();
-        retSD    = FATFS_UnLinkDriverEx( SDPath, 0 );
+        fatsd.position = SD_EXTRACTED;
+        res            = eFATSDunmount();
+        retSD          = FATFS_UnLinkDriverEx( SDPath, 0 );
         HAL_SD_MspDeInit( hsd );
-        mounted  = 0U;
+        fatsd.mounted  = 0U;
       }
     }
     osDelay( 1000U );
@@ -155,10 +153,10 @@ void vFATSDtask ( void* argument )
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vFATSDinit ( const GPIO_TYPE* cd, const SD_HandleTypeDef* sd )
+void vFATSDinit ( const SD_HandleTypeDef* sd )
 {
-  sdCD = *cd;
-  hsd  = ( SD_HandleTypeDef* )sd;
+  hsd                  = ( SD_HandleTypeDef* )sd;
+  fatsd.position       = SD_EXTRACTED;
   xFileAccessSemaphore = xSemaphoreCreateMutex();
   const osThreadAttr_t fatsdTask_attributes = {
     .name       = "fatsdTask",
@@ -167,11 +165,6 @@ void vFATSDinit ( const GPIO_TYPE* cd, const SD_HandleTypeDef* sd )
   };
   fatsdHandle = osThreadNew( vFATSDtask, NULL, &fatsdTask_attributes );
   return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-uint8_t uFATSDisMount ( void )
-{
-  return mounted;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -189,7 +182,7 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
   uint8_t  counter  = 0U;
   uint32_t chars    = 0U;
   char     data[2U] = { 0U };
-  if ( mounted > 0U )
+  if ( fatsd.mounted > 0U )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
@@ -263,7 +256,7 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
 {
   FRESULT  res     = FR_OK;
   uint32_t counter = 0U;
-  if ( mounted > 0U )
+  if ( fatsd.mounted > 0U )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
@@ -322,7 +315,7 @@ uint32_t uFATSDgetFreeSpace ( void )
   uint32_t size = 0U;
   FRESULT  res  = FR_OK;
   FATFS*   fs   = NULL;
-  if ( mounted > 0U )
+  if ( fatsd.mounted > 0U )
   {
     res = f_getfree( SDPath, ( DWORD* )&size, &fs );
     if ( res == FR_OK )
@@ -341,7 +334,7 @@ uint32_t uFATSDgetFullSpace ( void )
   uint32_t size = 0U;
   FRESULT  res  = FR_OK;
   FATFS*   fs   = NULL;
-  if ( mounted > 0U )
+  if ( fatsd.mounted > 0U )
   {
     res = f_getfree( SDPath, ( DWORD* )&size, &fs );
     if ( res == FR_OK )
@@ -354,8 +347,7 @@ uint32_t uFATSDgetFullSpace ( void )
 /*---------------------------------------------------------------------------------------------------*/
 SD_STATUS eFATSDgetStatus ( void )
 {
-  SD_STATUS res;
-  return res;
+  return fatsd.status;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

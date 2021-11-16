@@ -333,7 +333,9 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
     {
       fPassowordCorrect = FLAG_RESET;
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+
       fDownScreen = FLAG_RESET;
       ucActiveObject = NO_SELECT_D;
       fTimeEdit   = FLAG_RESET;
@@ -342,6 +344,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
       }
       uiSetting  = FIRST_SETTING ;
+      return;
     }
     if ( ( ucActiveObject !=NO_SELECT_D) && (uDataType == BITMAP))
     {
@@ -547,6 +550,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
          //Переход в меню
          pCurrMenu = &xSettingsMenu;
          pCurrMenu->pCurrIndex = 0U;
+         key_ready =0;
       }
       break;
     case KEY_UP_BREAK:

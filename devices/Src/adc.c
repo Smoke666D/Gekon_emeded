@@ -1407,6 +1407,9 @@ uint8_t vADCGetADC12Data()
     xGEN_F1_VDD =0;
     xGEN_F2_VDD =0;
     xGEN_F3_VDD =0;
+    xGEN_F1_CUR =0;
+    xGEN_F2_CUR =0;
+    xGEN_F3_CUR =0;
     xGEN_FREQ  =0;
     xCosFi = 0;
     xEventGroupSetBits( xADCEvent, GEN_READY );

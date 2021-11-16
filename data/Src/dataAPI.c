@@ -122,6 +122,7 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
   SYSTEM_EVENT    eraseEv                    = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
   LOG_RECORD_TYPE eraseRec                   = { .time = 0U, .event = eraseEv };
   uint16_t        serialBuffer[6U]           = { 0U };
+  uint16_t        buf                        = 0U;
 
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
@@ -235,6 +236,11 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
         for ( i=0U; i<FREE_DATA_SIZE; i++ )
         {
           res = eSTORAGEreadFreeData( i );
+          if ( *freeDataArray[i] == 0xFFFF )
+          {
+            buf = 0U;
+            res = eSTORAGEsetFreeData( i, &buf );
+          }
           if ( res != EEPROM_OK )
           {
             break;
@@ -242,6 +248,11 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
         }
         if ( res == EEPROM_OK )
         {
+          if ( *freeDataArray[ENGINE_WORK_MINUTES_ADR] > 60U )
+          {
+            buf = 0U;
+            eSTORAGEsetFreeData( ENGINE_WORK_MINUTES_ADR, &buf );
+          }
           vSYSserial( ">>EEPROM free data read: done!\n\r" );
         }
         else

@@ -333,7 +333,9 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
     {
       fPassowordCorrect = FLAG_RESET;
       menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject].ObjectParamert[3U] = 0U;
+
       pCurrMenu = menu->pHomeMenu[menu->pCurrIndex].pUpScreenSet;
+
       fDownScreen = FLAG_RESET;
       ucActiveObject = NO_SELECT_D;
       fTimeEdit   = FLAG_RESET;
@@ -342,6 +344,7 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
         eDATAAPIconfigValue(DATA_API_CMD_LOAD,uiSetting,NULL);
       }
       uiSetting  = FIRST_SETTING ;
+      return;
     }
     if ( ( ucActiveObject !=NO_SELECT_D) && (uDataType == BITMAP))
     {
@@ -547,6 +550,7 @@ void xInfoScreenCallBack ( xScreenSetObject* menu, char key )
          //Переход в меню
          pCurrMenu = &xSettingsMenu;
          pCurrMenu->pCurrIndex = 0U;
+         key_ready =0;
       }
       break;
     case KEY_UP_BREAK:
@@ -661,7 +665,7 @@ void vMenuMessageInit ( osThreadId_t xmainprocess )
 
 
 static FLAG xTimeOutFlag = FLAG_RESET;
-
+static FLAG xKeyIgnore   = FLAG_RESET;
 /*---------------------------------------------------------------------------------------------------*/
 void vMenuTask ( void )
 {
@@ -738,17 +742,23 @@ void vMenuTask ( void )
     }
     if ( key > 0U )
     {
-      pCurrMenu->pFunc( pCurrMenu, key );
-      //Если возник таймаут гашения экрана.
+
+      //Если возник таймаут нажатия на клавишу
       if ( TempEvent.KeyCode == time_out )
       {
+	/*
+	 * Если есть нет активных ошибок, то переходим на домашний экран и гасим индикатора
+	 */
         if (fAlarmFlag == FLAG_RESET)
         {
+          xMainMenu.pCurrIndex = HOME_MENU;
           pCurrMenu = &xMainMenu;
           xTimeOutFlag = FLAG_SET;
-          pCurrMenu->pCurrIndex = HOME_MENU;
           vLCDSetLedBrigth(0);
         }
+        /*
+         * Если есть активные ошибки, то переходим на экран активных ошибок
+         */
         else
         {
           vMenuGotoAlarmScreen();
@@ -756,11 +766,24 @@ void vMenuTask ( void )
       }
       else
       {
+	/*
+	 * Если нажаите клавиши происходит после таймаута, то зажигаем индикатор
+	 */
         if (xTimeOutFlag == FLAG_SET)
         {
-           xTimeOutFlag = FLAG_RESET;
-           vLCDBrigthInit();
+           if (xKeyIgnore == FLAG_RESET)
+           {
+               xKeyIgnore   = FLAG_SET;
+               vLCDBrigthInit();
+           }
+           if ((xKeyIgnore == FLAG_SET) && (key & BRAKECODE))
+	   {
+               xKeyIgnore  = FLAG_RESET;
+               xTimeOutFlag = FLAG_RESET;
+	   }
+           return 0;
         }
+        pCurrMenu->pFunc( pCurrMenu, key );
       }
     }
   }

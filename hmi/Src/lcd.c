@@ -25,9 +25,9 @@ static uint8_t            lcd_brigth                       = 0U;
 static TIM_HandleTypeDef* lcdTim                           = NULL;
 static SPI_HandleTypeDef* lcdSpi                           = NULL;
 /*------------------------ Extern -------------------------------------------------------------------*/
-void vLCDWriteCommand( uint8_t data );  // __attribute__((optimize("-O3")));
-void vLCDSend16Data( uint8_t *arg_prt );// __attribute__((optimize("-O3")));
-
+void vLCDWriteCommand( uint8_t data )   __attribute__((optimize("-O3")));
+void vLCDSend16Data( uint8_t *arg_prt ) __attribute__((optimize("-O3")));
+HAL_StatusTypeDef SPI_Transmit_DMA ( SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t size ) __attribute__((optimize("-O3")));
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция инициализации драйвера LCD, передается указатель на симофор, для реализации задержек
@@ -42,13 +42,14 @@ void vLCDInit ( SemaphoreHandle_t temp, TIM_HandleTypeDef* tim, SPI_HandleTypeDe
 
 void vLCDBrigthInit()
 {
-  lcd_brigth = displayBrightnesLevel.value[0U];
+  vLCDSetLedBrigth(displayBrightnesLevel.value[0U]);
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Функция установки яркости подсветки индикатора
  */
+static uint16_t LCD_Standby = 0;
 void vLCDSetLedBrigth ( uint8_t brigth )
 {
 
@@ -56,6 +57,21 @@ void vLCDSetLedBrigth ( uint8_t brigth )
   if ( brigth <= displayBrightnesLevel.atrib->max )
   {
     lcd_brigth = brigth;
+    if (lcd_brigth == 0)
+      {
+	LCD_Standby = 1;
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+	vLCDWriteCommand( 0x26U );
+	vLCDWriteCommand( 0x01U );
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+      }
+    else
+      {
+	HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
+        vLCDWriteCommand( 0x26U );
+        HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+	LCD_Standby = 0;
+      }
   }
   else
   {
@@ -84,6 +100,13 @@ void vLCDRedraw ( void )
   uint16_t y_start         = 0U;
   uint16_t y_end           = 0U;
   uint8_t  LCD_REDRAW_FLAG = 0U;
+  /*
+   * Если индикатор в спящем режиме, то сразу же выходим
+   */
+  if (LCD_Standby == 1 )
+  {
+      return;
+  }
   //Сравниваем буфер индикатора и буфер библиотеки u8g2
   //Если находим различия, то устанвливаем флаг LCD_REDRAW_FLAG и фиксируем начальную и конечную строку
   //области индикатора, которую необходимо перерисовывать
@@ -166,9 +189,6 @@ void vLCDdelay ( void )
   return;
 }
 
-#define SPI_DEFAULT_TIMEOUT 100U
-
-
 static HAL_StatusTypeDef SPI_WaitFlagStateUntilTimeout1(SPI_HandleTypeDef *hspi, uint32_t Flag, FlagStatus State,
                                                        uint32_t Timeout, uint32_t Tickstart)
 {
@@ -233,8 +253,21 @@ void vLCD_HAL_SPI_DMA_Init()
   lcdSpi->hdmatx->XferCpltCallback     = SPI_DMATransmit; /* Set the SPI TxDMA transfer complete callback */
   lcdSpi->hdmatx->XferErrorCallback    = NULL;            /* Set the DMA error callback */
   lcdSpi->hdmatx->XferAbortCallback    = NULL;            /* Set the DMA AbortCpltCallback */
+  /* Init field not used in handle to zero */
+  lcdSpi->pRxBuffPtr  = ( uint8_t* )NULL;
+  lcdSpi->TxISR       = NULL;
+  lcdSpi->RxISR       = NULL;
+  lcdSpi->RxXferSize  = 0U;
+  lcdSpi->RxXferCount = 0U;
+  /* Configure communication direction : 1Line */
+  if ( lcdSpi->Init.Direction == SPI_DIRECTION_1LINE )
+  {
+    SPI_1LINE_TX( lcdSpi );
+  }
   return;
 }
+
+
 
 HAL_StatusTypeDef SPI_Transmit_DMA ( SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t size )
 {
@@ -252,24 +285,7 @@ HAL_StatusTypeDef SPI_Transmit_DMA ( SPI_HandleTypeDef *hspi, uint8_t *pData, ui
   hspi->pTxBuffPtr  = ( uint8_t* )pData;
   hspi->TxXferSize  = size;
   hspi->TxXferCount = size;
-  /* Init field not used in handle to zero */
-  hspi->pRxBuffPtr  = ( uint8_t* )NULL;
-  hspi->TxISR       = NULL;
-  hspi->RxISR       = NULL;
-  hspi->RxXferSize  = 0U;
-  hspi->RxXferCount = 0U;
-  /* Configure communication direction : 1Line */
-  if ( hspi->Init.Direction == SPI_DIRECTION_1LINE )
-  {
-    SPI_1LINE_TX( hspi );
-  }
-  #if (USE_SPI_CRC != 0U)
-    /* Reset CRC Calculation */
-    if (hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
-    {
-      SPI_RESET_CRC(hspi);
-    }
-  #endif /* USE_SPI_CRC */
+
   /* Enable the Tx DMA Stream/Channel */
   if ( HAL_OK != HAL_DMA_Start_IT( hspi->hdmatx,
 				   (uint32_t)hspi->pTxBuffPtr,
@@ -335,14 +351,16 @@ inline void vLCDWriteCommand( uint8_t com )
 void vST7920init(void)
 {
 
-
+  UBaseType_t  uxOurPriority;
+  uxOurPriority = uxTaskPriorityGet( NULL );
+  vTaskPrioritySet( NULL, configMAX_PRIORITIES - 1 );
   HAL_TIM_Base_Start_IT( lcdTim );
   vLCDBrigthInit();
   vLCD_HAL_SPI_DMA_Init();
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET );
   osDelay( 1U );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
-  osDelay( 100U );
+  osDelay( 60U );
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );
   vLCDWriteCommand( 0x38U );
   osDelay( 1U );
@@ -351,12 +369,13 @@ void vST7920init(void)
   vLCDWriteCommand( 0x08U );
   osDelay( 1U );
   vLCDWriteCommand( 0x01U );
-  osDelay( 11U );
+  osDelay( 20U );
   vLCDWriteCommand( 0x06U );
   osDelay( 1U );
   vLCDWriteCommand( 0x02U );
   osDelay( 1U );
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET );
+  vTaskPrioritySet( NULL, uxOurPriority);
   return;
 }
 

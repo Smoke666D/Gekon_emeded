@@ -51,7 +51,6 @@ typedef struct __packed
   SD_STATUS   status   : 2U;
   uint8_t     mounted  : 1U;
   SD_POSITION position : 1U;
-
 } FATSD_TYPE;
 /*------------------------ Functions -----------------------------------*/
 void     vFATSDinit ( const SD_HandleTypeDef* sd );

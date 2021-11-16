@@ -23,10 +23,10 @@ static FATSD_TYPE             fatsd                = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
-static uint32_t    fcount    = 0U;
-static uint32_t    lineCount = 0U;
-static char        fbuf[20U] = { 0U };
-static uint8_t     strCount  = 0U;
+static uint32_t fcount    = 0U;
+static uint32_t lineCount = 0U;
+static uint8_t  strCount  = 0U;
+static char     fbuf[FATSD_BUFFER_SIZE] = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
@@ -348,6 +348,11 @@ uint32_t uFATSDgetFullSpace ( void )
 SD_STATUS eFATSDgetStatus ( void )
 {
   return fatsd.status;
+}
+/*---------------------------------------------------------------------------------------------------*/
+char* cFATSDgetBuffer ( void )
+{
+  return fbuf;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

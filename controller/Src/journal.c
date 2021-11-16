@@ -8,6 +8,9 @@
 #include "journal.h"
 #include "dataAPI.h"
 #include "dataProces.h"
+#include "system.h"
+#include "fatsd.h"
+#include "rest.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -47,6 +50,12 @@ LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
 {
   LOG_STATUS res  = LOG_STATUS_ERROR;
+
+  #ifdef WRITE_LOG_TO_SD
+    uint32_t length = uRESTmakeLog( record, cFATSDgetBuffer() );
+    eFILEaddLine( FATSD_FILE_LOG, cFATSDgetBuffer(), length );
+  #endif
+
   if ( eDATAAPIlog( DATA_API_CMD_ADD, NULL, record ) == DATA_API_STAT_OK )
   {
     vDATAAPIincLogSize();

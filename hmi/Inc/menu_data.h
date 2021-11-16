@@ -21,7 +21,7 @@
 #define SETTINGS_MENU_COUNT    2U
 #define YESNO_MENU_COUNT       1U
 #define EVENT_MENU_COUNT       1U
-#define ABOUT_MENU_COUNT       3U
+#define ABOUT_MENU_COUNT       4U
 #define ALARM_MENU_COUNT       1U
 #define PASSWORD_MENU_COUNT    1U
 #define MESSAGE_MENU_COUNT     1U

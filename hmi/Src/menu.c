@@ -1401,6 +1401,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
                 vUToStr(TS,tt[0]/1000,0);
                 vStrCopy(Data,TS);
                 vUToStr(TS,tt[0]%1000,0);
+                vStrAdd(Data,".");
                 vStrAdd(Data,TS);
             }
             break;

@@ -24,7 +24,7 @@ FATFS SDFatFS;    /* File system object for SD logical drive */
 FIL SDFile;       /* File object for SD */
 
 /* USER CODE BEGIN Variables */
-
+#include "RTC.h"
 /* USER CODE END Variables */
 
 void MX_FATFS_Init(void)
@@ -45,7 +45,16 @@ void MX_FATFS_Init(void)
 DWORD get_fattime(void)
 {
   /* USER CODE BEGIN get_fattime */
-  return 0;
+  DWORD    res = 0U;
+  RTC_TIME rtc = { 0U };
+  vRTCgetCashTime( &rtc );
+  res =  ( ( ( DWORD ) rtc.year + FAT_SHIFT_YEAR ) << 25U ) |
+         ( ( DWORD ) rtc.month << 21U ) |
+         ( ( DWORD ) rtc.day   << 16U ) |
+         ( ( DWORD ) rtc.hour  << 11U ) |
+         ( ( DWORD ) rtc.min   << 5U  ) |
+         ( ( DWORD ) rtc.sec   >> 1U  );
+  return res;
   /* USER CODE END get_fattime */
 }
 

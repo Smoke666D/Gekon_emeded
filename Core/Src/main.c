@@ -271,10 +271,6 @@ static const GPIO_TYPE chargGPIO = {
   .pin = CHARG_ON_Pin,
   .port = CHARG_ON_GPIO_Port,
 };
-static const GPIO_TYPE sdGPIO = {
-  .pin = SDIO_CD_Pin,
-  .port = SDIO_CD_GPIO_Port
-};
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -1535,7 +1531,7 @@ void StartDefaultTask(void *argument)
       vOUTPUTinit();
       vMBinit( mbInit );                          /* Start ModBus                              */
       HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
-      vFATSDinit( &sdGPIO, &hsd );
+      vFATSDinit( &hsd );
     }
     else
     {

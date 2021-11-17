@@ -22,8 +22,8 @@
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
-  SD_EXTRACTED,
-  SD_INSERTED
+  SD_EXTRACTED = SD_NOT_PRESENT,
+  SD_INSERTED  = SD_PRESENT
 } SD_POSITION;
 typedef enum
 {
@@ -31,15 +31,34 @@ typedef enum
   FATSD_FILE_MEASUREMENT,
   FATSD_FILE_LOG
 } FATSD_FILE;
+typedef enum
+{
+  SD_STATUS_EXTRACTED,
+  SD_STATUS_MOUNTED,
+  SD_STATUS_LOCKED,
+  SD_STATUS_ERROR
+} SD_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 typedef char* ( *lineParserCallback )( uint16_t length );
 /*----------------------- Structures -----------------------------------*/
+typedef struct __packed
+{
+  FATSD_FILE file : 2U;
+  uint8_t    lock : 1U;
+} FATSD_CACHE;
+typedef struct __packed
+{
+  SD_STATUS   status   : 2U;
+  uint8_t     mounted  : 1U;
+  SD_POSITION position : 1U;
+} FATSD_TYPE;
 /*------------------------ Functions -----------------------------------*/
-void     vFATSDinit ( const GPIO_TYPE* cd, const SD_HandleTypeDef* sd );
-uint8_t  uFATSDisMount ( void );
-FRESULT  eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
-FRESULT  eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
-uint32_t uFATSDgetFreeSpace ( void );
-uint32_t uFATSDgetFullSpace ( void );
+void      vFATSDinit ( const SD_HandleTypeDef* sd );
+FRESULT   eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
+FRESULT   eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
+uint32_t  uFATSDgetFreeSpace ( void );
+uint32_t  uFATSDgetFullSpace ( void );
+SD_STATUS eFATSDgetStatus ( void );
+char*     cFATSDgetBuffer ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FATSD_H_ */

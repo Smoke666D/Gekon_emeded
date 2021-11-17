@@ -56,6 +56,8 @@
 #include "outputData.h"
 #include "system.h"
 #include "fatsd.h"
+
+#include "dataSD.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -1532,6 +1534,11 @@ void StartDefaultTask(void *argument)
       vMBinit( mbInit );                          /* Start ModBus                              */
       HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
       vFATSDinit( &hsd );
+      while ( eFATSDgetStatus() != SD_STATUS_MOUNTED )
+      {
+        osDelay( 100U );
+      }
+      eSDsaveConfig();
     }
     else
     {

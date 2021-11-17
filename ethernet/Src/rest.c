@@ -203,6 +203,17 @@ uint32_t uRESTmakeConfig ( const eConfigReg* reg, char* output )
   return position;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t uRESTmakeShortCongig ( const eConfigReg* reg, char* output )
+{
+  uint32_t position = 1U;
+  output[0U] = '{';
+  position += uRESTmakeDigRecord(   CONFIG_REG_ADR_STR,   reg->atrib->adr, REST_CONT_RECORD, &output[position] );
+  position += uRESTmakeValueRecord( CONFIG_REG_VALUE_STR, reg->value,      reg->atrib->len, reg->atrib->type , REST_LAST_RECORD, &output[position] );
+  output[position] = '}';
+  position++;
+  return position;
+}
+/*---------------------------------------------------------------------------------------------------*/
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif

@@ -39,6 +39,7 @@ void     vSYSgetUniqueID16 ( uint16_t* id );
 uint8_t  uEncodeURI ( const uint16_t* input, uint8_t length, char* output );
 void     vDecodeURI ( const char* input, uint16_t* output, uint8_t length );
 uint8_t  uSYSisConst ( void* ptr );
+uint32_t uSYSputChar ( char* str, uint32_t length, char ch );
 uint32_t uSYSendString ( char* str, uint32_t length );
 /*----------------------------------------------------------------------*/
 #endif /* INC_COMMON_H_ */

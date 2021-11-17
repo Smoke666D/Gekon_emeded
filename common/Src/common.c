@@ -135,6 +135,14 @@ uint8_t uSYSisConst ( void* ptr )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t uSYSputChar ( char* str, uint32_t length, char ch )
+{
+  uint32_t res = length;
+  str[res] = ch;
+  res++;
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 uint32_t uSYSendString ( char* str, uint32_t length )
 {
   uint32_t res = length;

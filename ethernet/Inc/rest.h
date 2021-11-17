@@ -109,6 +109,7 @@ typedef enum
 extern const char 	*restRequestStr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/
 uint32_t     uRESTmakeConfig ( const eConfigReg* reg, char* output );
+uint32_t     uRESTmakeShortCongig ( const eConfigReg* reg, char* output );
 uint32_t     uRESTmakeChart ( const eChartData* chart, char* output );
 uint32_t     uRESTmakeTime ( const RTC_TIME* time, char* output );
 uint32_t     uRESTmakeMemorySize ( char* output );

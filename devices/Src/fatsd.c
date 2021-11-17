@@ -270,10 +270,9 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
+FRESULT eFILEerase ( FATSD_FILE n )
 {
-  FRESULT  res     = FR_OK;
-  uint32_t counter = 0U;
+  FRESULT res = FR_OK;
   if ( fatsd.status == SD_STATUS_MOUNTED )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
@@ -282,21 +281,62 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
       res = f_open( &file, fileNames[n], FA_WRITE );
       if ( res == FR_OK )
       {
+        res = f_truncate( &file );
+        if ( res == FR_OK )
+        {
+          res = f_close( &file );
+        }
+      }
+      taskEXIT_CRITICAL();
+      if ( res != FR_OK )
+      {
+        fatsd.status = SD_STATUS_ERROR;
+      }
+      xSemaphoreGive( xFileAccessSemaphore );
+    }
+    else
+    {
+      res = FR_BUSY;
+    }
+  }
+  else
+  {
+    res = FR_NO_MOUNT;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+static uint8_t fl = 0U;
+FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
+{
+  FRESULT  res     = FR_OK;
+  uint32_t counter = 0U;
+  fl = 0U;
+  if ( fatsd.status == SD_STATUS_MOUNTED )
+  {
+    fl = 1U;
+    if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
+    {
+      taskENTER_CRITICAL();
+      res = f_open( &file, fileNames[n], FA_WRITE );
+      fl = 2U;
+      if ( res == FR_OK )
+      {
         if ( f_error( &file ) == 0U )
         {
+          fl = 3U;
           res = f_lseek( &file, file.fsize );
           if ( res == FR_OK )
           {
+            fl = 4U;
             res = f_write( &file, line, length, ( UINT* )&counter );
             if ( res == FR_OK )
             {
+              fl = 5U;
               if ( length == counter )
               {
+                fl = 6U;
                 res = f_close( &file );
-                if ( ( res == FR_OK ) && ( length != counter ) )
-                {
-                  res = FR_WRITE_COUNTER_ERROR;
-                }
               }
               else
               {

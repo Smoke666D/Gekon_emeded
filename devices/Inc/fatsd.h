@@ -53,11 +53,12 @@ typedef struct __packed
   SD_POSITION position : 1U;
 } FATSD_TYPE;
 /*------------------------ Functions -----------------------------------*/
-void     vFATSDinit ( const SD_HandleTypeDef* sd );
-FRESULT  eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
-FRESULT  eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
-uint32_t uFATSDgetFreeSpace ( void );
-uint32_t uFATSDgetFullSpace ( void );
-char*    cFATSDgetBuffer ( void );
+void      vFATSDinit ( const SD_HandleTypeDef* sd );
+FRESULT   eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
+FRESULT   eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
+uint32_t  uFATSDgetFreeSpace ( void );
+uint32_t  uFATSDgetFullSpace ( void );
+SD_STATUS eFATSDgetStatus ( void );
+char*     cFATSDgetBuffer ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_FATSD_H_ */

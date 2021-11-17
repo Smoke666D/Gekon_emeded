@@ -48,7 +48,7 @@ DWORD get_fattime(void)
   DWORD    res = 0U;
   RTC_TIME rtc = { 0U };
   vRTCgetCashTime( &rtc );
-  res =  ( ( ( DWORD ) rtc.year - FAT_START_YEAR ) << 25U ) |
+  res =  ( ( ( DWORD ) rtc.year + FAT_SHIFT_YEAR ) << 25U ) |
          ( ( DWORD ) rtc.month << 21U ) |
          ( ( DWORD ) rtc.day   << 16U ) |
          ( ( DWORD ) rtc.hour  << 11U ) |

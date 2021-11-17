@@ -123,11 +123,13 @@ void vFATSDtask ( void* argument )
           {
             fatsd.mounted = 1U;
             fatsd.status  = SD_STATUS_MOUNTED;
+            /*
             res           = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
             strCount      = 0U;
             res           = eFILEreadLineByLine( FATSD_FILE_LOG, vFILEstringCounter );
             size          = uFATSDgetFullSpace();
             size          = uFATSDgetFreeSpace();
+            */
           }
           else if ( res == FR_LOCKED )
           {

@@ -374,24 +374,25 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
               break;
         }
       }
+  /*Блок редактирования данных типа числа*/
   if ((uDataType ==  NUMBER) && ( ucActiveObject !=NO_SELECT_D))
   {
      switch (key)
     {
-         case KEY_STOP:
+         case KEY_STOP: /*Клавишами стоп и старт увеличиваем/уменьшаем значение уставки на 1*/
          case KEY_START:
               ucActiveObject = CHANGE_D;
               eDATAAPIconfigValue(key == KEY_STOP ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
               break;
-         case KEY_DOWN:
+         case KEY_DOWN: /*Клавишами вверх и вниз увеличиваем/уменьшаем значение уставки на 10*/
          case KEY_UP:
               ucActiveObject = CHANGE_D;
               for ( uint8_t i=0U; i<10U; i++ )
               {
-                 eDATAAPIconfigValue( key == KEY_STOP ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
+                 eDATAAPIconfigValue( key == KEY_DOWN ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
               }
               break;
-         case KEY_AUTO:
+         case KEY_AUTO: /*Клавише авто подтверждаем измениея и переходим в окно подтвердить уставку*/
               pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
               vExitCurObject();
               return;

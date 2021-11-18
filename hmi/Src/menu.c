@@ -19,7 +19,7 @@
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
 #define CHANGE_D      2U
-#define VIEW_DELAY    10U
+#define VIEW_DELAY    25U
 
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2             = NULL;
@@ -1467,11 +1467,11 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            vPrintAinData(Data, ID);
            break;
       case  IN_VDD:
-           fix16_to_str( xADCGetVDD(), Data, 2U );
+           fix16_to_str( xADCGetVDD(), Data, 1U );
            vStrAdd(Data,"В");
            break;
       case IN_CAC:
-           fix16_to_str( xADCGetCAC(), Data, 2U );
+           fix16_to_str( xADCGetCAC(), Data, 1U );
            vStrAdd(Data,"В");
            break;
       case NET_L2_LINE_V:

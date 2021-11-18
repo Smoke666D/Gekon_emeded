@@ -322,8 +322,49 @@ uint8_t vSelectNewObject( xScreenSetObject* menu, uint8_t i)
 return ( 0U );
 }
 
+#define DIR_INC 0x01
+#define DIR_DEC 0x02
+
+void vSettingCheck(uint8_t direction)
+{
+  uint8_t dir =direction;
+  eConfigAttributes xAtrib                  = { 0U };
+  eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+  if (( xAtrib.type == 'C') || ( xAtrib.len > 1U))
+   for (;;)
+   {
+      switch (dir)
+      {
+	case DIR_INC:
+	  if  (uiSetting >= SETTING_REGISTER_NUMBER - 2U)
+	  {
+	   dir = DIR_DEC;
+	  }
+	  else
+	  {
+	      uiSetting++;
+	  }
+	  break;
+	case DIR_DEC:
+	  if (uiSetting <= FIRST_SETTING)
+	  {
+	    dir = DIR_INC;
+	  }
+	  else
+	  {
+	      uiSetting--;
+	  }
+	  break;
+      }
+      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+       if (( xAtrib.type != 'C') && (xAtrib.len == 1U)) {
+	   return;
+       }
 
 
+   }
+
+}
 
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
@@ -424,6 +465,10 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                 break;
         }
      }
+
+
+
+
     //Обащя навигация по меню, есди не ничего для рекатирования не выбратно
     if ( ucActiveObject == NO_SELECT_D )
     {
@@ -432,18 +477,22 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
            case KEY_STOP:
             uiSetting       -= ( uiSetting > FIRST_VALID_SETTING   )  ? 1U : 0U;     //Уменьшаем номер текущей уставки
             menu->pCurrIndex = ( uiSetting < FIRST_SETTING )          ? 1U : 0U;     //Если перешли к окну времени
+            vSettingCheck(DIR_DEC);
             break;
           case KEY_START:
             uiSetting        += ( uiSetting <= ( SETTING_REGISTER_NUMBER - 2U ) ) ? 1U : 0U; //Увиличиваем номер текущей уставки
             menu->pCurrIndex  = ( uiSetting >= FIRST_SETTING )                    ? 0U : 1U; //Если перескакивам из окна ред. времени обранто
+            vSettingCheck(DIR_INC);
             break;
           case KEY_DOWN:
             uiSetting       -= ( uiSetting >= 10U )        ? 10U : 0U ;             //Уменьшаем номер текущей уставки на 10
             menu->pCurrIndex = (uiSetting < FIRST_SETTING) ? 1U : 0U;               //Если перешли к окну времени
+            vSettingCheck(DIR_DEC);
             break;
           case KEY_UP:
             uiSetting       += (  uiSetting <= ( SETTING_REGISTER_NUMBER - 12U )  ) ? 10U : 0U; //Увиличиваем номер текущей уставки на 10
             menu->pCurrIndex =  (uiSetting >=FIRST_SETTING) ? 0U : 1U;                          //Если перескакивам из окна ред. времени обранто
+            vSettingCheck(DIR_INC);
             break;
           case KEY_AUTO:
             if ((fPassowordCorrect == FLAG_SET) || (systemPassword.status == PASSWORD_RESET) )

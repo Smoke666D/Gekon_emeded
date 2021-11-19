@@ -30,7 +30,7 @@
 #define CHART_DATA_DOTS_STR     "dots"
 #define CHART_DOT_X_STR         "x"
 #define CHART_DOT_Y_STR         "y"
-#define OIL_Y_MAX_DEF           2U
+#define OIL_Y_MAX_DEF           15U
 #define COOLANT_Y_MAX_DEF       250U
 #define FUEL_Y_MAX_DEF          100U
 #define RESIST_X_MAX_DEF        1500U

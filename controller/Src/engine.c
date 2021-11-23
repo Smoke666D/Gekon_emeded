@@ -118,6 +118,8 @@ static fix16_t        currentSpeed                                     = 0U;
 static fix16_t        oilVal                                           = 0U;
 static fix16_t        coolantVal                                       = 0U;
 static fix16_t        fuelVal                                          = 0U;
+static fix16_t        batteryVal                                       = 0U;
+static fix16_t        chargerVal                                       = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -205,7 +207,7 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
 
   *value = sensor->get();
-  //vERRORcheck( &sensor->cutout, eSENSORcheckCutout( sensor->channel ) );
+  vERRORcheck( &sensor->cutout, eSENSORcheckCutout( sensor->channel ) );
   if ( sensor->cutout.status != ALARM_STATUS_IDLE )
   {
     sensor->status = SENSOR_STATUS_LINE_ERROR;
@@ -256,9 +258,9 @@ fix16_t fOILprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &oil.pressure, &value );
-  if ( uSENSORisAnalog( oil.pressure ) > 0U )
+  if ( ( uSENSORisAnalog( oil.pressure ) > 0U ) && ( oil.pressure.status != SENSOR_STATUS_LINE_ERROR ) )
   {
-    vALARMcheck( &oil.alarm, value );
+    vALARMcheck( &oil.alarm,    value );
     vALARMcheck( &oil.preAlarm, value );
   }
   else if ( uSENSORisDiscret( oil.pressure ) > 0U )
@@ -276,13 +278,13 @@ fix16_t fCOOLANTprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &coolant.temp, &value );
-  if ( uSENSORisAnalog( coolant.temp ) > 0U )
+  if ( ( uSENSORisAnalog( coolant.temp ) > 0U ) && ( coolant.temp.status != SENSOR_STATUS_LINE_ERROR ) )
   {
-    vALARMcheck( &coolant.alarm, value );
+    vALARMcheck( &coolant.alarm,        value );
     vALARMcheck( &coolant.electroAlarm, value );
-    vALARMcheck( &coolant.preAlarm, value );
-    vRELAYautoProces( &coolant.heater, value );
-    vRELAYautoProces( &coolant.cooler, value );
+    vALARMcheck( &coolant.preAlarm,     value );
+    vRELAYautoProces( &coolant.heater,  value );
+    vRELAYautoProces( &coolant.cooler,  value );
   }
   else if ( uSENSORisDiscret( coolant.temp ) > 0U)
   {
@@ -299,7 +301,7 @@ fix16_t fFUELprocess ( void )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  if ( uSENSORisAnalog( fuel.level ) > 0U )
+  if ( ( uSENSORisAnalog( fuel.level ) > 0U ) && ( fuel.level.status != SENSOR_STATUS_LINE_ERROR ) )
   {
     vALARMcheck( &fuel.lowAlarm,      value );
     vALARMcheck( &fuel.lowPreAlarm,   value );
@@ -1308,6 +1310,16 @@ fix16_t fENGINEgetFuelLevel ( void )
   return fuelVal;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fENGINEgetChargerVoltage ( void )
+{
+  return chargerVal;
+}
+/*----------------------------------------------------------------------------*/
+  fix16_t fENGINEgetBatteryVoltage ( void )
+{
+  return batteryVal;
+}
+/*----------------------------------------------------------------------------*/
 TRIGGER_STATE eENGINEgetTurnout ( void )
 {
   return engine.firstTurnout;
@@ -1317,7 +1329,6 @@ TRIGGER_STATE eENGINEgetTurnout ( void )
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
 {
-  fix16_t         chargerVal  = 0U;
   fix16_t         genFreqVal  = 0U;
   SYSTEM_TIMER    commonTimer = { 0U };
   ENGINE_COMMAND  inputCmd    = ENGINE_CMD_NONE;
@@ -1408,12 +1419,16 @@ void vENGINEtask ( void* argument )
     /*------------------------------------------------------------------*/
     /*------------------------- Process inputs -------------------------*/
     /*------------------------------------------------------------------*/
-    oilVal       = fOILprocess();
-    coolantVal   = fCOOLANTprocess();
-    fuelVal      = fFUELprocess();
-    chargerVal   = fCHARGERprocess();
-    fBATTERYprocess();
-    genFreqVal   = xADCGetGENLFreq();
+    vERRORcheck( &engine.sensorCommonError, eSENSORcheckCutout( SENSOR_CHANNEL_COMMON ) );
+    if ( engine.sensorCommonError.trig != TRIGGER_SET )
+    {
+      oilVal     = fOILprocess();
+      coolantVal = fCOOLANTprocess();
+      fuelVal    = fFUELprocess();
+    }
+    chargerVal = fCHARGERprocess();
+    batteryVal = fBATTERYprocess();
+    genFreqVal = xADCGetGENLFreq();
 
     if ( speed.enb == PERMISSION_ENABLE )
     {
@@ -1424,7 +1439,6 @@ void vENGINEtask ( void* argument )
       currentSpeed = fSPEEDfromFreq( genFreqVal );
     }
 
-    //vERRORcheck( &engine.sensorCommonError, eSENSORcheckCutout( SENSOR_CHANNEL_COMMON ) );
     /*------------------------------------------------------------------*/
     /*--------------------- Static condition check ---------------------*/
     /*------------------------------------------------------------------*/

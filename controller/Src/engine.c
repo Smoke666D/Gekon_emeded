@@ -149,21 +149,20 @@ TRIGGER_STATE uENGINEisSensorCutout ( fix16_t value )
 /*----------------------------------------------------------------------------*/
 uint8_t eSENSORcheckCutout ( SENSOR_CHANNEL source )
 {
-  uint8_t res = 0U;
-
+  uint8_t res = uADCGetDCChError();
   switch ( source )
   {
     case SENSOR_CHANNEL_OIL:
-      res = uADCGetDCChError( OP_CHANEL_ERROR );
+      res &= OP_CHANEL_ERROR;
       break;
     case SENSOR_CHANNEL_COOLANT:
-      res = uADCGetDCChError( CT_CHANEL_ERROR );
+      res &= CT_CHANEL_ERROR;
       break;
     case SENSOR_CHANNEL_FUEL:
-      res = uADCGetDCChError( FL_CHANEL_ERROR );
+      res &= FL_CHANEL_ERROR;
       break;
     case SENSOR_CHANNEL_COMMON:
-      res = uADCGetDCChError( COMMON_ERROR );
+      res &= COMMON_ERROR;
       break;
     default:
       break;
@@ -207,14 +206,14 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
   eFunctionError funcStat = SENSOR_STATUS_NORMAL;
 
   *value = sensor->get();
-  vERRORcheck( &sensor->cutout, eSENSORcheckCutout( sensor->channel ) );
-  if ( sensor->cutout.status != ALARM_STATUS_IDLE )
+  if ( uSENSORisAnalog( *sensor ) > 0U )
   {
-    sensor->status = SENSOR_STATUS_LINE_ERROR;
-  }
-  else
-  {
-    if ( uSENSORisAnalog( *sensor ) > 0U )
+    vERRORcheck( &sensor->cutout, eSENSORcheckCutout( sensor->channel ) );
+    if ( sensor->cutout.status != ALARM_STATUS_IDLE )
+    {
+      sensor->status = SENSOR_STATUS_LINE_ERROR;
+    }
+    else
     {
       funcStat = eCHARTfunc( sensor->chart, sensor->get(), value );
       switch ( funcStat )
@@ -236,32 +235,41 @@ void vSENSORprocess ( SENSOR* sensor, fix16_t* value )
           break;
       }
     }
-    else if ( sensor->type == SENSOR_TYPE_NORMAL_OPEN )
-    {
-      sensor->trig   = !uENGINEisSensorCutout( *value );
-      sensor->status = SENSOR_STATUS_NORMAL;
-    }
-    else if ( sensor->type == SENSOR_TYPE_NORMAL_CLOSE )
-    {
-      sensor->trig   = uENGINEisSensorCutout( *value );
-      sensor->status = SENSOR_STATUS_NORMAL;
-    }
-    else
-    {
-      sensor->status = SENSOR_STATUS_NORMAL;
-    }
+  }
+  else if ( sensor->type == SENSOR_TYPE_NORMAL_OPEN )
+  {
+    sensor->trig   = !uENGINEisSensorCutout( *value );
+    sensor->status = SENSOR_STATUS_NORMAL;
+  }
+  else if ( sensor->type == SENSOR_TYPE_NORMAL_CLOSE )
+  {
+    sensor->trig   = uENGINEisSensorCutout( *value );
+    sensor->status = SENSOR_STATUS_NORMAL;
+  }
+  else
+  {
+    sensor->status = SENSOR_STATUS_NORMAL;
   }
   return;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fOILprocess ( void )
+fix16_t fOILprocess ( TRIGGER_STATE common )
 {
   fix16_t value = 0U;
   vSENSORprocess( &oil.pressure, &value );
-  if ( ( uSENSORisAnalog( oil.pressure ) > 0U ) && ( oil.pressure.status != SENSOR_STATUS_LINE_ERROR ) )
+  if ( uSENSORisAnalog( oil.pressure ) > 0U )
   {
-    vALARMcheck( &oil.alarm,    value );
-    vALARMcheck( &oil.preAlarm, value );
+    if ( ( common == TRIGGER_IDLE ) &&
+	 ( oil.pressure.status != SENSOR_STATUS_LINE_ERROR ) )
+    {
+      vALARMcheck( &oil.alarm,    value );
+      vALARMcheck( &oil.preAlarm, value );
+    }
+    else
+    {
+      vALARMforceReset( &oil.alarm );
+      vALARMforceReset( &oil.preAlarm );
+    }
   }
   else if ( uSENSORisDiscret( oil.pressure ) > 0U )
   {
@@ -274,17 +282,27 @@ fix16_t fOILprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fCOOLANTprocess ( void )
+fix16_t fCOOLANTprocess ( TRIGGER_STATE common )
 {
   fix16_t value = 0U;
   vSENSORprocess( &coolant.temp, &value );
-  if ( ( uSENSORisAnalog( coolant.temp ) > 0U ) && ( coolant.temp.status != SENSOR_STATUS_LINE_ERROR ) )
+  if ( uSENSORisAnalog( coolant.temp ) > 0U )
   {
-    vALARMcheck( &coolant.alarm,        value );
-    vALARMcheck( &coolant.electroAlarm, value );
-    vALARMcheck( &coolant.preAlarm,     value );
-    vRELAYautoProces( &coolant.heater,  value );
-    vRELAYautoProces( &coolant.cooler,  value );
+    if ( ( common == TRIGGER_IDLE ) &&
+	 ( coolant.temp.status != SENSOR_STATUS_LINE_ERROR ) )
+    {
+      vALARMcheck( &coolant.alarm,        value );
+      vALARMcheck( &coolant.electroAlarm, value );
+      vALARMcheck( &coolant.preAlarm,     value );
+      vRELAYautoProces( &coolant.heater,  value );
+      vRELAYautoProces( &coolant.cooler,  value );
+    }
+    else
+    {
+      vALARMforceReset( &coolant.alarm );
+      vALARMforceReset( &coolant.electroAlarm );
+      vALARMforceReset( &coolant.preAlarm );
+    }
   }
   else if ( uSENSORisDiscret( coolant.temp ) > 0U)
   {
@@ -297,17 +315,28 @@ fix16_t fCOOLANTprocess ( void )
   return value;
 }
 /*----------------------------------------------------------------------------*/
-fix16_t fFUELprocess ( void )
+fix16_t fFUELprocess ( TRIGGER_STATE common )
 {
   fix16_t value = 0U;
   vSENSORprocess( &fuel.level, &value );
-  if ( ( uSENSORisAnalog( fuel.level ) > 0U ) && ( fuel.level.status != SENSOR_STATUS_LINE_ERROR ) )
+  if ( uSENSORisAnalog( fuel.level ) > 0U )
   {
-    vALARMcheck( &fuel.lowAlarm,      value );
-    vALARMcheck( &fuel.lowPreAlarm,   value );
-    vALARMcheck( &fuel.hightAlarm,    value );
-    vALARMcheck( &fuel.hightPreAlarm, value );
-    vRELAYautoProces( &fuel.booster,  value );
+    if ( ( common == TRIGGER_IDLE ) &&
+       ( fuel.level.status != SENSOR_STATUS_LINE_ERROR ) )
+    {
+      vALARMcheck( &fuel.lowAlarm,      value );
+      vALARMcheck( &fuel.lowPreAlarm,   value );
+      vALARMcheck( &fuel.hightAlarm,    value );
+      vALARMcheck( &fuel.hightPreAlarm, value );
+      vRELAYautoProces( &fuel.booster,  value );
+    }
+    else
+    {
+      vALARMforceReset( &fuel.hightAlarm );
+      vALARMforceReset( &fuel.hightPreAlarm );
+      vALARMforceReset( &fuel.lowAlarm );
+      vALARMforceReset( &fuel.lowPreAlarm );
+    }
   }
   else if ( uSENSORisDiscret( fuel.level ) > 0U )
   {
@@ -430,7 +459,8 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
       #endif
     }
   }
-  if ( ( starter.startCrit.critOilPressEnb == PERMISSION_ENABLE ) && ( pressure >= starter.startCrit.critOilPressLevel ) )
+  if ( ( starter.startCrit.critOilPressEnb == PERMISSION_ENABLE ) &&
+       ( pressure >= starter.startCrit.critOilPressLevel ) )
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
@@ -470,38 +500,25 @@ uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, TRIGGER
 
   if ( engine.startCheckOil == PERMISSION_ENABLE )
   {
-    switch ( oil.pressure.type )
+    if ( uSENSORisAnalog( oil.pressure ) > 0U )
     {
-      case SENSOR_TYPE_NONE:
+      if ( ( pressure < oil.trashhold ) ||
+	   ( oil.pressure.cutout.trig != TRIGGER_IDLE ) ||
+           ( engine.sensorCommonError.trig != TRIGGER_IDLE ) )
+      {
         oilRes = 1U;
-        break;
-      case SENSOR_TYPE_NORMAL_OPEN:
-        if ( oilTrig == TRIGGER_SET )
-        {
-          oilRes = 1U;
-        }
-        break;
-     case SENSOR_TYPE_NORMAL_CLOSE:
-        if ( TRIGGER_SET == TRIGGER_SET )
-        {
-          oilRes = 1U;
-        }
-        break;
-      case SENSOR_TYPE_RESISTIVE:
-        if ( pressure < oil.trashhold )
-        {
-          oilRes = 1U;
-        }
-        break;
-      case SENSOR_TYPE_CURRENT:
-        if ( pressure < oil.trashhold )
-        {
-          oilRes = 1U;
-        }
-        break;
-      default:
-        oilRes = 0U;
-        break;
+      }
+    }
+    else if ( uSENSORisDiscret( oil.pressure) > 0U )
+    {
+      if ( oilTrig == TRIGGER_SET )
+      {
+        oilRes = 1U;
+      }
+    }
+    else
+    {
+      oilRes = 1U;
     }
   }
   else
@@ -821,7 +838,7 @@ void vENGINEdataInit ( void )
   fuel.level.trig                 = TRIGGER_IDLE;
   fuel.level.cutout.active        = PERMISSION_ENABLE;
   fuel.level.cutout.status        = ALARM_STATUS_IDLE;
-  fuel.level.cutout.ack           = PERMISSION_ENABLE;
+  fuel.level.cutout.ack           = PERMISSION_DISABLE;
   fuel.level.cutout.event.action  = ACTION_EMERGENCY_STOP;
   fuel.level.cutout.event.type    = EVENT_FUEL_LEVEL_SENSOR_ERROR;
   fuel.level.cutout.trig          = TRIGGER_IDLE;
@@ -983,7 +1000,7 @@ void vENGINEdataInit ( void )
   engine.stopError.trig                 = TRIGGER_IDLE;
   engine.sensorCommonError.enb          = PERMISSION_ENABLE;
   engine.sensorCommonError.active       = PERMISSION_ENABLE;
-  engine.sensorCommonError.ack          = PERMISSION_ENABLE;
+  engine.sensorCommonError.ack          = PERMISSION_DISABLE;
   engine.sensorCommonError.event.action = ACTION_EMERGENCY_STOP;
   engine.sensorCommonError.event.type   = EVENT_SENSOR_COMMON_ERROR;
   engine.sensorCommonError.status       = ALARM_STATUS_IDLE;
@@ -1197,6 +1214,9 @@ void vENGINEresetAlarms ( void )
   vERRORreset( &engine.stopError         );
   vERRORreset( &engine.startError        );
   vERRORreset( &engine.sensorCommonError );
+  vERRORreset( &oil.pressure.cutout      );
+  vERRORreset( &fuel.level.cutout        );
+  vERRORreset( &coolant.temp.cutout      );
   engine.banStart = PERMISSION_DISABLE;
   return;
 }
@@ -1420,12 +1440,9 @@ void vENGINEtask ( void* argument )
     /*------------------------- Process inputs -------------------------*/
     /*------------------------------------------------------------------*/
     vERRORcheck( &engine.sensorCommonError, eSENSORcheckCutout( SENSOR_CHANNEL_COMMON ) );
-    if ( engine.sensorCommonError.trig != TRIGGER_SET )
-    {
-      oilVal     = fOILprocess();
-      coolantVal = fCOOLANTprocess();
-      fuelVal    = fFUELprocess();
-    }
+    oilVal     = fOILprocess( engine.sensorCommonError.trig );
+    coolantVal = fCOOLANTprocess( engine.sensorCommonError.trig );
+    fuelVal    = fFUELprocess( engine.sensorCommonError.trig );
     chargerVal = fCHARGERprocess();
     batteryVal = fBATTERYprocess();
     genFreqVal = xADCGetGENLFreq();

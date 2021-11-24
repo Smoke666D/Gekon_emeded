@@ -549,6 +549,18 @@ void vERRORrelax ( ERROR_TYPE* error )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
+void vERRORforceRelax ( ERROR_TYPE* error )
+{
+  LOG_RECORD_TYPE rec = { 0U };
+  if ( error->trig != TRIGGER_IDLE )
+  {
+    rec.event = error->event;
+    eLOGICERactiveErrorList( ERROR_LIST_CMD_ACK, &rec, NULL );
+    vERRORreset( error );
+  }
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
 void vEVENTtriggering ( SYSTEM_EVENT event )
 {
   LOG_RECORD_TYPE record = { 0U };
@@ -579,10 +591,27 @@ void vERRORholding ( ERROR_TYPE* error )
   return;
 }
 /*-----------------------------------------------------------------------------------------*/
+uint8_t uALARMisTrig ( ALARM_TYPE* alarm )
+{
+  uint8_t res = 0U;
+  if ( alarm->error.trig == TRIGGER_SET )
+  {
+    res = 1U;
+  }
+  return res;
+}
+/*-----------------------------------------------------------------------------------------*/
 void vALARMreset ( ALARM_TYPE* alarm )
 {
   vLOGICresetTimer( &alarm->timer );
   vERRORrelax( &alarm->error );
+  return;
+}
+/*-----------------------------------------------------------------------------------------*/
+void vALARMforceReset ( ALARM_TYPE* alarm )
+{
+  vLOGICresetTimer( &alarm->timer );
+  vERRORforceRelax( &alarm->error );
   return;
 }
 /*-----------------------------------------------------------------------------------------*/

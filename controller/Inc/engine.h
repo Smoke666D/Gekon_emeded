@@ -235,6 +235,8 @@ fix16_t          fENGINEgetSpeed ( void );
 fix16_t          fENGINEgetOilPressure ( void );
 fix16_t          fENGINEgetCoolantTemp ( void );
 fix16_t          fENGINEgetFuelLevel ( void );
+fix16_t          fENGINEgetChargerVoltage ( void );
+fix16_t          fENGINEgetBatteryVoltage ( void );
 RELAY_STATUS     eENGINEgetChargerState ( void );
 TRIGGER_STATE    eENGINEgetTurnout ( void );
 /*----------------------------------------------------------------------*/

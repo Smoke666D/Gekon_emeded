@@ -159,7 +159,7 @@ const eConfigAttributes displaySleepDelayAtrib =
 {
    .adr        = 8U,
    .scale      = 0U,
-   .min        = 0U,
+   .min        = 5U,
    .max        = 600U,
    .units      = { 0xd181U, 0xd0b5U, 0xd0baU, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,

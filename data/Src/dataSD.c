@@ -8,11 +8,17 @@
 #include "dataSD.h"
 #include "config.h"
 #include "rest.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "system.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
+static osThreadId_t sdHandle = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 static SD_CONFIG_STATUS status = SD_CONFIG_STATUS_FAT_ERROR;
+static uint8_t          flag   = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -46,7 +52,35 @@ char* cSDreadConfigCallback ( uint16_t length )
   return buf;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vSDtask ( void* argument )
+{
+  for (;;)
+  {
+    if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
+    {
+      flag = 1U;
+    }
+    else
+    {
+      flag = 0U;
+    }
+    osDelay( 100U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+void vSDinit ( void )
+{
+  const osThreadAttr_t fatsdTask_attributes = {
+    .name       = "fatsdTask",
+    .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,
+    .stack_size = FATSD_TASK_STACK_SIZE
+  };
+  sdHandle = osThreadNew( vSDtask, NULL, &fatsdTask_attributes );
+  return;
+}
 /*---------------------------------------------------------------------------------------------------*/
 FRESULT eSDsaveConfig ( void )
 {

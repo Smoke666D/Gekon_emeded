@@ -778,7 +778,6 @@ FRESULT sync_window (
 	UINT nf;
 	FRESULT res = FR_OK;
 
-
 	if (fs->wflag) {	/* Write back the sector if it is dirty */
 		wsect = fs->winsect;	/* Current sector number */
 		if (disk_write(fs->drv, fs->win.d8, wsect, 1) != RES_OK) {
@@ -2927,13 +2926,11 @@ FRESULT f_sync (
 /*-----------------------------------------------------------------------*/
 /* Close File                                                            */
 /*-----------------------------------------------------------------------*/
-
 FRESULT f_close (
 	FIL *fp		/* Pointer to the file object to be closed */
 )
 {
 	FRESULT res;
-
 
 #if !_FS_READONLY
 	res = f_sync(fp);					/* Flush cached data */

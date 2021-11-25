@@ -21,6 +21,7 @@ typedef enum
 } SD_CONFIG_STATUS;
 /*----------------------- Structures -----------------------------------*/
 /*------------------------ Functions -----------------------------------*/
+void    vSDinit ( void );
 FRESULT eSDsaveConfig ( void );
 FRESULT eSDloadConfig ( void );
 /*----------------------------------------------------------------------*/

@@ -19,6 +19,7 @@ static osThreadId_t sdHandle = NULL;
 /*----------------------- Variables -----------------------------------------------------------------*/
 static SD_CONFIG_STATUS status = SD_CONFIG_STATUS_FAT_ERROR;
 static uint8_t          flag   = 0U;
+static FRESULT          confRes;
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -56,11 +57,12 @@ void vSDtask ( void* argument )
 {
   for (;;)
   {
-    if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
+    if ( ( eFATSDgetStatus() == SD_STATUS_MOUNTED ) && ( flag == 0U ) )
     {
+      confRes = eSDsaveConfig();
       flag = 1U;
     }
-    else
+    else if ( ( eFATSDgetStatus() != SD_STATUS_MOUNTED ) && ( flag == 1U ) )
     {
       flag = 0U;
     }

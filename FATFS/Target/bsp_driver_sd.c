@@ -49,6 +49,7 @@ static SemaphoreHandle_t xSemaphore  = NULL;
 __weak uint8_t BSP_SD_Init(void)
 {
   uint8_t sd_state = MSD_OK;
+  HAL_StatusTypeDef halState = HAL_OK;
   /* Check if the SD card is plugged in the slot */
   if (BSP_SD_IsDetected() != SD_PRESENT)
   {
@@ -63,7 +64,8 @@ __weak uint8_t BSP_SD_Init(void)
     if (sd_state == MSD_OK)
     {
       /* Enable wide operation */
-      if (HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B) != HAL_OK)
+      halState = HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B);
+      if ( halState != HAL_OK )
       {
         sd_state = MSD_ERROR;
       }

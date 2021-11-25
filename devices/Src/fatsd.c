@@ -267,13 +267,25 @@ FRESULT eFILEerase ( FATSD_FILE n )
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
       res = f_open( &file, fileNames[n], FA_WRITE );
-      if ( res == FR_OK )
+      if ( res == FR_NO_FILE )
+      {
+        res = f_open( &file, fileNames[n], FA_CREATE_NEW );
+        if ( res == FR_OK )
+        {
+          res = f_close( &file );
+        }
+      }
+      else if ( res == FR_OK )
       {
         res = f_truncate( &file );
         if ( res == FR_OK )
         {
           res = f_close( &file );
         }
+      }
+      else
+      {
+
       }
       if ( res != FR_OK )
       {

@@ -56,6 +56,8 @@
 #include "outputData.h"
 #include "system.h"
 #include "fatsd.h"
+
+#include "dataSD.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

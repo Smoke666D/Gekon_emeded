@@ -50,7 +50,6 @@ FRESULT eFATSDcheckFile ( const char* path )
 FRESULT eFATSDmount ( void )
 {
   FRESULT res = FR_OK;
-  uint8_t i   = 0U;
   fcount    = 0U;
   lineCount = 0U;
   if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
@@ -58,22 +57,9 @@ FRESULT eFATSDmount ( void )
     res = f_mount( &SDFatFS, SDPath, 1U );
     if ( res == FR_NO_FILESYSTEM )
     {
-      taskENTER_CRITICAL();
       while ( res != FR_OK )
       {
         res = f_mkfs( SDPath, 0U, MIN_FAT32 );
-      }
-      taskEXIT_CRITICAL();
-    }
-    if ( res == FR_OK )
-    {
-      for ( i=0U; i<FILES_NUMBER; i++ )
-      {
-        res = eFATSDcheckFile( fileNames[i] );
-        if ( res != FR_OK )
-        {
-          break;
-        }
       }
     }
     xSemaphoreGive( xFileAccessSemaphore );
@@ -87,8 +73,10 @@ FRESULT eFATSDmount ( void )
 /*---------------------------------------------------------------------------------------------------*/
 FRESULT eFATSDunmount ( void )
 {
+  FRESULT res   = FR_OK;
   xSemaphoreGive( xFileAccessSemaphore );
-  return f_mount( NULL, SDPath, 1U );
+  res = f_mount( NULL, SDPath, 1U );
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 char* vFILEstringCounter ( uint16_t length )
@@ -104,7 +92,7 @@ void vFATSDtask ( void* argument )
 {
   FRESULT res   = FR_OK;
   uint8_t retSD = 0U;
-  uint32_t size = 0;
+  osDelay( 1000U );
   HAL_SD_MspDeInit( hsd );
   for (;;)
   {
@@ -123,13 +111,6 @@ void vFATSDtask ( void* argument )
           {
             fatsd.mounted = 1U;
             fatsd.status  = SD_STATUS_MOUNTED;
-            /*
-            res           = eFILEaddLine( FATSD_FILE_LOG, u8"SD inserted\n", 12U );
-            strCount      = 0U;
-            res           = eFILEreadLineByLine( FATSD_FILE_LOG, vFILEstringCounter );
-            size          = uFATSDgetFullSpace();
-            size          = uFATSDgetFreeSpace();
-            */
           }
           else if ( res == FR_LOCKED )
           {
@@ -154,7 +135,16 @@ void vFATSDtask ( void* argument )
         fatsd.position = SD_EXTRACTED;
         res            = eFATSDunmount();
         retSD          = FATFS_UnLinkDriverEx( SDPath, 0 );
-        HAL_SD_MspDeInit( hsd );
+        HAL_SD_DeInit( hsd );
+          SDIO->POWER = 0x00000000;
+          SDIO->CLKCR = 0x00000000;
+          SDIO->ARG = 0x00000000;
+          SDIO->CMD = 0x00000000;
+          SDIO->DTIMER = 0x00000000;
+          SDIO->DLEN = 0x00000000;
+          SDIO->DCTRL = 0x00000000;
+          SDIO->ICR = 0x00C007FF;
+          SDIO->MASK = 0x00000000;
         fatsd.mounted  = 0U;
         fatsd.status   = SD_STATUS_EXTRACTED;
       }
@@ -194,8 +184,9 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
   char*    output   = NULL;
   uint32_t i        = 0U;
   uint8_t  counter  = 0U;
-  uint32_t chars    = 0U;
-  char     data[2U] = { 0U };
+  uint32_t length   = 0U;
+  uint32_t temp     = 0U;
+  uint8_t  data[2U] = { 0U };
   if ( ( fatsd.status == SD_STATUS_MOUNTED ) || ( fatsd.status == SD_STATUS_LOCKED ) )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
@@ -217,21 +208,21 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
               {
                 if ( data[0U] == '\n')       /* EOL */
                 {
-                  output[chars] = 0x00;
-                  chars++;
-                  output = callback( chars );
-                  chars  = 0U;
+                  output[length] = 0x00;
+                  length++;
+                  output = callback( length );
+                  length = 0U;
                 }
                 else if ( data[0U] == 0x00 ) /* EOF */
                 {
-                  output[chars] = 0x00;
-                  chars++;
+                  output[length] = 0x00;
+                  length++;
                   break;
                 }
                 else /*  */
                 {
-                  output[chars] = data[0U];
-                  chars++;
+                  output[length] = data[0U];
+                  length++;
                 }
               }
               else
@@ -241,7 +232,7 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
             }
             if ( res == FR_OK )
             {
-              output = callback( chars );
+              output = callback( length );
               output = callback( 0U );
               res    = f_close( &file );
             }
@@ -270,32 +261,89 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
+FRESULT eFILEerase ( FATSD_FILE n )
 {
-  FRESULT  res     = FR_OK;
-  uint32_t counter = 0U;
+  FRESULT res = FR_OK;
   if ( fatsd.status == SD_STATUS_MOUNTED )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
-      taskENTER_CRITICAL();
       res = f_open( &file, fileNames[n], FA_WRITE );
+      if ( res == FR_NO_FILE )
+      {
+        res = f_open( &file, fileNames[n], FA_CREATE_NEW );
+        if ( res == FR_OK )
+        {
+          res = f_close( &file );
+        }
+      }
+      else if ( res == FR_OK )
+      {
+        res = f_truncate( &file );
+        if ( res == FR_OK )
+        {
+          res = f_close( &file );
+        }
+      }
+      else
+      {
+
+      }
+      if ( res != FR_OK )
+      {
+        fatsd.status = SD_STATUS_ERROR;
+      }
+      xSemaphoreGive( xFileAccessSemaphore );
+    }
+    else
+    {
+      res = FR_BUSY;
+    }
+  }
+  else
+  {
+    res = FR_NO_MOUNT;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+static uint8_t fl = 0U;
+FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
+{
+  FRESULT  res     = FR_OK;
+  uint32_t counter = 0U;
+  fl = 0U;
+  if ( fatsd.status == SD_STATUS_MOUNTED )
+  {
+    fl = 1U;
+    if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
+    {
+      res = f_open( &file, fileNames[n], ( FA_OPEN_ALWAYS | FA_WRITE ) );
+      fl = 2U;
       if ( res == FR_OK )
       {
         if ( f_error( &file ) == 0U )
         {
+          fl = 3U;
           res = f_lseek( &file, file.fsize );
           if ( res == FR_OK )
           {
+            fl = 4U;
             res = f_write( &file, line, length, ( UINT* )&counter );
             if ( res == FR_OK )
             {
+              fl = 5U;
               if ( length == counter )
               {
-                res = f_close( &file );
-                if ( ( res == FR_OK ) && ( length != counter ) )
+                fl = 6U;
+                if ( SDIO->FIFOCNT != 0U )
                 {
-                  res = FR_WRITE_COUNTER_ERROR;
+                  fl = 7U;
+                }
+                res = f_close( &file );
+                if ( res != FR_OK )
+                {
+                  fl = 8U;
                 }
               }
               else
@@ -310,7 +358,6 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
           res = FR_INVALID_OBJECT;
         }
       }
-      taskEXIT_CRITICAL();
       if ( res != FR_OK )
       {
         fatsd.status = SD_STATUS_ERROR;

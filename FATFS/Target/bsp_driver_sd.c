@@ -28,7 +28,9 @@
 /* USER CODE END 0 */
 #else
 /* USER CODE BEGIN FirstSection */
-/* can be used to modify / undefine following code or add new definitions */
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "semphr.h"
 /* USER CODE END FirstSection */
 /* Includes ------------------------------------------------------------------*/
 #include "bsp_driver_sd.h"
@@ -38,7 +40,7 @@
 extern SD_HandleTypeDef hsd;
 
 /* USER CODE BEGIN BeforeInitSection */
-/* can be used to modify / undefine following code or add code */
+static SemaphoreHandle_t xSemaphore  = NULL;
 /* USER CODE END BeforeInitSection */
 /**
   * @brief  Initializes the SD card device.
@@ -52,16 +54,24 @@ __weak uint8_t BSP_SD_Init(void)
   {
     return MSD_ERROR;
   }
-  /* HAL SD initialization */
-  sd_state = HAL_SD_Init(&hsd);
-  /* Configure SD Bus width (4 bits mode selected) */
-  if (sd_state == MSD_OK)
+
+  if ( HAL_SD_GetState( &hsd ) != HAL_SD_STATE_READY )
   {
-    /* Enable wide operation */
-    if (HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B) != HAL_OK)
+    /* HAL SD initialization */
+    sd_state = HAL_SD_Init(&hsd);
+    /* Configure SD Bus width (4 bits mode selected) */
+    if (sd_state == MSD_OK)
     {
-      sd_state = MSD_ERROR;
+      /* Enable wide operation */
+      if ( HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B) != HAL_OK )
+      {
+        sd_state = MSD_ERROR;
+      }
     }
+  }
+  if ( xSemaphore == NULL )
+  {
+    xSemaphore = xSemaphoreCreateMutex();
   }
 
   return sd_state;
@@ -105,7 +115,16 @@ __weak uint8_t BSP_SD_ReadBlocks(uint32_t *pData, uint32_t ReadAddr, uint32_t Nu
 {
   uint8_t sd_state = MSD_OK;
 
-  if (HAL_SD_ReadBlocks(&hsd, (uint8_t *)pData, ReadAddr, NumOfBlocks, Timeout) != HAL_OK)
+  if ( xSemaphoreTake( xSemaphore, 1000U ) == pdTRUE )
+  {
+    //if (HAL_SD_ReadBlocks(&hsd, (uint8_t *)pData, ReadAddr, NumOfBlocks, Timeout) != HAL_OK)
+    if (HAL_SD_ReadBlocks_DMA(&hsd, (uint8_t *)pData, ReadAddr, NumOfBlocks ) != HAL_OK)
+    {
+      sd_state = MSD_ERROR;
+    }
+    xSemaphoreGive( xSemaphore );
+  }
+  else
   {
     sd_state = MSD_ERROR;
   }
@@ -128,7 +147,16 @@ __weak uint8_t BSP_SD_WriteBlocks(uint32_t *pData, uint32_t WriteAddr, uint32_t 
 {
   uint8_t sd_state = MSD_OK;
 
-  if (HAL_SD_WriteBlocks(&hsd, (uint8_t *)pData, WriteAddr, NumOfBlocks, Timeout) != HAL_OK)
+  if ( xSemaphoreTake( xSemaphore, 1000U ) == pdTRUE )
+  {
+    //if (HAL_SD_WriteBlocks(&hsd, (uint8_t *)pData, WriteAddr, NumOfBlocks, Timeout) != HAL_OK)
+    if (HAL_SD_WriteBlocks_DMA(&hsd, (uint8_t *)pData, WriteAddr, NumOfBlocks ) != HAL_OK)
+    {
+      sd_state = MSD_ERROR;
+    }
+    xSemaphoreGive( xSemaphore );
+  }
+  else
   {
     sd_state = MSD_ERROR;
   }

@@ -56,6 +56,7 @@ typedef struct __packed
 void      vFATSDinit ( const SD_HandleTypeDef* sd );
 FRESULT   eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
 FRESULT   eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
+FRESULT   eFILEerase ( FATSD_FILE n );
 uint32_t  uFATSDgetFreeSpace ( void );
 uint32_t  uFATSDgetFullSpace ( void );
 SD_STATUS eFATSDgetStatus ( void );

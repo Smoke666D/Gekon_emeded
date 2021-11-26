@@ -92,6 +92,7 @@ void vFATSDtask ( void* argument )
 {
   FRESULT res   = FR_OK;
   uint8_t retSD = 0U;
+  osDelay( 1000U );
   HAL_SD_MspDeInit( hsd );
   for (;;)
   {

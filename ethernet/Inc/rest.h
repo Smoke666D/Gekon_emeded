@@ -121,6 +121,7 @@ uint32_t     uRESTmakeOutput ( const eConfigReg* data, const char* name, char* o
 uint32_t     uRESTmakeMeasurement ( uint32_t n, char* output );
 REST_ADDRESS eRESTgetRequest ( char* path, REST_REQUEST* request, uint16_t* adr );
 REST_ERROR   eRESTparsingConfig ( char* input, uint16_t adr );
+REST_ERROR   eRESTparsingShortConfig ( const char* input );
 REST_ERROR   eRESTparsingChart ( char* input, uint16_t adr );
 REST_ERROR   eRESTparsingTime ( char* input, RTC_TIME* time );
 REST_ERROR   eRESTparsingFreeData ( char* input, uint16_t* data );

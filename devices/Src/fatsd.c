@@ -183,8 +183,9 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
   char*    output   = NULL;
   uint32_t i        = 0U;
   uint8_t  counter  = 0U;
-  uint32_t chars    = 0U;
-  char     data[2U] = { 0U };
+  uint32_t length   = 0U;
+  uint32_t temp     = 0U;
+  uint8_t  data[2U] = { 0U };
   if ( ( fatsd.status == SD_STATUS_MOUNTED ) || ( fatsd.status == SD_STATUS_LOCKED ) )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
@@ -206,21 +207,21 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
               {
                 if ( data[0U] == '\n')       /* EOL */
                 {
-                  output[chars] = 0x00;
-                  chars++;
-                  output = callback( chars );
-                  chars  = 0U;
+                  output[length] = 0x00;
+                  length++;
+                  output = callback( length );
+                  length = 0U;
                 }
                 else if ( data[0U] == 0x00 ) /* EOF */
                 {
-                  output[chars] = 0x00;
-                  chars++;
+                  output[length] = 0x00;
+                  length++;
                   break;
                 }
                 else /*  */
                 {
-                  output[chars] = data[0U];
-                  chars++;
+                  output[length] = data[0U];
+                  length++;
                 }
               }
               else
@@ -230,7 +231,7 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
             }
             if ( res == FR_OK )
             {
-              output = callback( chars );
+              output = callback( length );
               output = callback( 0U );
               res    = f_close( &file );
             }

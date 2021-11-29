@@ -22,12 +22,19 @@ typedef enum
   ERROR_LIST_STATUS_NOT_EMPTY,
   ERROR_LIST_STATUS_OVER,
 } ERROR_LIST_STATUS;
+typedef enum
+{
+  ERROR_LIST_EVENT_OLD,
+  ERROR_LIST_EVENT_NEW
+} ERROR_LIST_EVENT;
 /*----------------------- Callbacks ------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
   ERROR_LIST_STATUS status : 2U;
+  ERROR_LIST_EVENT  event  : 1U;
   LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
+  SYSTEM_EVENT      stamp[ACTIV_ERROR_LIST_SIZE];
   uint8_t           counter;
 } ACTIVE_ERROR_LIST;
 /*----------------------- Extern ---------------------------------------*/

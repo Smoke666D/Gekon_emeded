@@ -9,9 +9,10 @@
 #include "dataAPI.h"
 #include "dataProces.h"
 #include "system.h"
-#include "fatsd.h"
+//#include "fatsd.h"
 #include "rest.h"
 #include "common.h"
+#include "dataSD.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -53,14 +54,13 @@ LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
   LOG_STATUS res  = LOG_STATUS_ERROR;
 
   #ifdef WRITE_LOG_TO_SD
-    uint32_t length = 0U;
-    FRESULT  fatres = FR_OK;
-    if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
-    {
-      length = uRESTmakeLog( record, cFATSDgetBuffer() );
-      length = uSYSendString( cFATSDgetBuffer(), length );
-      fatres = eFILEaddLine( FATSD_FILE_LOG, cFATSDgetBuffer(), length );
-    }
+    SD_ROUTINE sdRoutine = { 0U };
+    sdRoutine.buffer = cFATSDgetBuffer();
+    sdRoutine.cmd    = SD_COMMAND_WRITE;
+    sdRoutine.file   = FATSD_FILE_LOG;
+    sdRoutine.length = uRESTmakeLog( record, sdRoutine.buffer );
+    sdRoutine.length = uSYSendString( sdRoutine.buffer, sdRoutine.length );
+    vSDsendRoutine( sdRoutine );
   #endif
 
   if ( eDATAAPIlog( DATA_API_CMD_ADD, NULL, record ) == DATA_API_STAT_OK )

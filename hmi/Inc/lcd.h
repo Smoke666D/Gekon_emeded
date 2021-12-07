@@ -43,10 +43,12 @@
 #define SETDDM_ADR_CMD 0x80U
 /*----------------------------- Functions ------------------------------------*/
 
+#define SPI_DEFAULT_TIMEOUT 100U
+
 void vLCDBrigthInit(void);
 void vLCD_Init( void );
-void vLCDRedraw( void ); //__attribute__((optimize("-O3")));
-void vLCDdelay( void );//  __attribute__((optimize("-O3")));
+void vLCDRedraw( void ) __attribute__((optimize("-O3")));
+void vLCDdelay( void )  __attribute__((optimize("-O3")));
 void vST7920init(void);
 uint8_t ucLCDGetLedBrigth(void);
 void vLCDSetLedBrigth(uint8_t brigth);

@@ -142,7 +142,7 @@ ELECTRO_SCHEME xADCGetScheme(void)
 /*
  *  Функция возращает наряжения АКБ.
  */
-fix16_t xADCGetVDD()
+fix16_t xADCGetVDD ( void )
 {
   fix16_t xVDD =0;
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
@@ -154,7 +154,7 @@ fix16_t xADCGetVDD()
 }
 
 
-fix16_t xADCGetCAC()
+fix16_t xADCGetCAC ( void )
 {
   fix16_t xCAC =0;
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
@@ -165,185 +165,185 @@ fix16_t xADCGetCAC()
 
 }
 
-fix16_t xADCGetSOP()
+fix16_t xADCGetSOP ( void )
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return (xSOP);
 }
-fix16_t xADCGetSCT()
+
+fix16_t xADCGetSCT ( void )
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return (xSCT);
 }
-fix16_t xADCGetSFL()
+
+fix16_t xADCGetSFL ( void )
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return xSFL;
 }
 
-fix16_t xADCGetNETLFreq()
+fix16_t xADCGetNETLFreq ( void )
 {
   vADCNetDataUpdate();
   return GENERATOR_DATA[NET_FREQ];
 }
 
-
-fix16_t xADCGetNETL1()
+fix16_t xADCGetNETL1 ( void )
 {
   vADCNetDataUpdate();
   return GENERATOR_DATA[NET_L1_FASE_V];
 }
-fix16_t xADCGetNETL2()
+
+fix16_t xADCGetNETL2 ( void )
 {
   vADCNetDataUpdate();
   return GENERATOR_DATA[NET_L2_FASE_V];
-
 }
+
 fix16_t xADCGetNETL3()
 {
   vADCNetDataUpdate();
   return GENERATOR_DATA[NET_L3_FASE_V];
 }
 
-fix16_t xADCGetNETL1Lin()
+fix16_t xADCGetNETL1Lin ( void )
 {
   vADCNetDataUpdate();
   return GENERATOR_DATA[NET_L1_LINE_V];
 }
-fix16_t xADCGetNETL2Lin()
+
+fix16_t xADCGetNETL2Lin ( void )
 {
   vADCNetDataUpdate();
   return GENERATOR_DATA[NET_L2_LINE_V];
-
 }
-fix16_t xADCGetNETL3Lin()
+
+fix16_t xADCGetNETL3Lin ( void )
 {
   vADCNetDataUpdate();
   return GENERATOR_DATA[NET_L3_LINE_V];
 }
 
-
-fix16_t xADCGetGENLFreq()
+fix16_t xADCGetGENLFreq ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_FREQ];
 }
 
-fix16_t xADCGetGENL1()
+fix16_t xADCGetGENL1 ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L1_FASE_V];
 }
 
-fix16_t xADCGetGENL2()
+fix16_t xADCGetGENL2 ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L2_FASE_V];
 }
 
-fix16_t xADCGetGENL3()
+fix16_t xADCGetGENL3 ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L3_FASE_V];
 }
 
-fix16_t xADCGetGENL1Lin()
+fix16_t xADCGetGENL1Lin ( void )
 {
   vADCGeneratorDataUpdate();
   return  GENERATOR_DATA[GEN_L1_LINE_V];
 }
 
-fix16_t xADCGetGENL2Lin()
+fix16_t xADCGetGENL2Lin ( void )
 {
   vADCGeneratorDataUpdate();
   return  GENERATOR_DATA[GEN_L2_LINE_V];
 }
 
-fix16_t xADCGetGENL3Lin()
+fix16_t xADCGetGENL3Lin ( void )
 {
   vADCGeneratorDataUpdate();
   return  GENERATOR_DATA[GEN_L3_LINE_V];
 }
 
-fix16_t xADCGetGENL1Cur()
+fix16_t xADCGetGENL1Cur ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L1_CUR] ;
 }
-fix16_t xADCGetGENL2Cur()
+
+fix16_t xADCGetGENL2Cur ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L2_CUR] ;
 }
-fix16_t xADCGetGENL3Cur()
+
+fix16_t xADCGetGENL3Cur ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L3_CUR];
 }
 
-
-fix16_t xADCGetCOSFi()
+fix16_t xADCGetCOSFi ( void )
 {
   xEventGroupWaitBits(xADCEvent,CUR_READY,pdTRUE,pdTRUE,5);
   return xCosFi;
 }
 
-fix16_t xADCGetGENActivePower()
+fix16_t xADCGetGENActivePower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_ACTIVE_POWER];
 }
 
-fix16_t xADCGetGENReactivePower()
+fix16_t xADCGetGENReactivePower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_REACTIVE_POWER];
 }
 
-fix16_t xADCGetGENRealPower()
+fix16_t xADCGetGENRealPower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_REAL_POWER];
 }
 
-fix16_t xADCGetGENL1ActivePower()
+fix16_t xADCGetGENL1ActivePower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L1_ACTIVE_POWER];
 }
 
-fix16_t xADCGetGENL2ActivePower()
+fix16_t xADCGetGENL2ActivePower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L2_ACTIVE_POWER];
 }
 
-fix16_t xADCGetGENL3ActivePower()
+fix16_t xADCGetGENL3ActivePower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L3_ACTIVE_POWER];
 }
 
-
-fix16_t xADCGetGENL1RealPower()
+fix16_t xADCGetGENL1RealPower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L1_REAL_POWER];
 }
 
-fix16_t xADCGetGENL2RealPower()
+fix16_t xADCGetGENL2RealPower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L2_REAL_POWER];
 }
 
-fix16_t xADCGetGENL3RealPower()
+fix16_t xADCGetGENL3RealPower ( void )
 {
   vADCGeneratorDataUpdate();
   return GENERATOR_DATA[GEN_L3_REAL_POWER];
 }
-
-
 
 fix16_t xADCGetREG(uint16_t reg)
 {
@@ -352,45 +352,36 @@ fix16_t xADCGetREG(uint16_t reg)
   else
     vADCNetDataUpdate();
   return GENERATOR_DATA[reg];
-
 }
-
-
 /*
  *  Функция возвращает мговенную мощность переменного тока
  */
 
-uint8_t uADCGetDCChError()
+uint8_t uADCGetDCChError ( void )
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
   return uADCError;
-
 }
 
-
-uint8_t uADCGetValidDataFlag()
+uint8_t uADCGetValidDataFlag ( void )
 {
   xEventGroupWaitBits(xADCEvent,DC_READY,pdTRUE,pdTRUE,5);
-
   return ADC_VALID_DATA;
-
 }
 
-xADCRotatinType xADCGetGenFaseRotation()
+xADCRotatinType xADCGetGenFaseRotation ( void )
 {
   xEventGroupWaitBits(xADCEvent,GEN_READY,pdTRUE,pdTRUE,5);
   return (uGenFaseRotation);
-
 }
 
-xADCRotatinType xADCGetNetFaseRotation()
+xADCRotatinType xADCGetNetFaseRotation ( void )
 {
   xEventGroupWaitBits(xADCEvent,NET_READY,pdTRUE,pdTRUE,5);
   return (uNetFaseRotation);
-
 }
 
-void vADCNetDataUpdate()
+void vADCNetDataUpdate ( void )
 {
   EventBits_t GenFlag;
   GenFlag = xEventGroupGetBits(xADCEvent);
@@ -423,11 +414,11 @@ void vADCNetDataUpdate()
            break;
     }
   }
-
+  return;
 }
 
 
-void vADCGeneratorDataUpdate()
+void vADCGeneratorDataUpdate ( void )
 {
   EventBits_t GenFlag;
   fix16_t temp;
@@ -769,14 +760,7 @@ void vADCConvertToVDD ( uint8_t AnalogSwitch )
   return;
 }
 
-
-
-
-
-
-
-
-void  vADC3FrInit(uint16_t freq)
+void vADC3FrInit ( uint16_t freq )
 {
   htim3.Init.Period = 60000000U / ( freq  );
   HAL_TIM_Base_Init(&htim3);
@@ -784,30 +768,22 @@ void  vADC3FrInit(uint16_t freq)
   return;
 }
 
-
-void  vADC12FrInit(uint16_t freq)
+void vADC12FrInit ( uint16_t freq )
 {
-
-    htim8.Init.Period = 120000000U/ (freq);
-    HAL_TIM_Base_Init(&htim8);
-
-    htim2.Init.Period = 60000000U / ( freq  );
-    HAL_TIM_Base_Init(&htim2);
-
-    HAL_TIM_Base_Start_IT( &htim2 );
-    HAL_TIM_Base_Start_IT( &htim8 );
-    return;
+  htim8.Init.Period = 120000000U/ (freq);
+  HAL_TIM_Base_Init(&htim8);
+  htim2.Init.Period = 60000000U / ( freq  );
+  HAL_TIM_Base_Init(&htim2);
+  HAL_TIM_Base_Start_IT( &htim2 );
+  HAL_TIM_Base_Start_IT( &htim8 );
+  return;
 }
-
-
-
 /*
  *
  *
  */
-void vADC3DCInit(xADCFSMType xADCType)
+void vADC3DCInit ( xADCFSMType xADCType )
 {
-
   HAL_ADC_DeInit(&hadc3);
   HAL_ADC_DeInit(&hadc1);
   hadc3.Init.ScanConvMode = ENABLE;
@@ -822,10 +798,7 @@ void vADC3DCInit(xADCFSMType xADCType)
       hadc3.Init.NbrOfConversion = 9;
   else
      hadc3.Init.NbrOfConversion = 4;
-
   HAL_ADC_Init(&hadc3);
-
-
   if (xADCType == DC)
         hadc1.Init.NbrOfConversion = 4;
     else
@@ -834,10 +807,6 @@ void vADC3DCInit(xADCFSMType xADCType)
     HAL_ADC_Init(&hadc1);
 
 }
-
-
-
-
 
 void vADC_Ready ( uint8_t adc_number )
 {
@@ -864,7 +833,7 @@ void vADC_Ready ( uint8_t adc_number )
 }
 
 
-static void ADC_DMAConv(DMA_HandleTypeDef *hdma)
+static void ADC_DMAConv ( DMA_HandleTypeDef *hdma )
 {
   /* Retrieve ADC handle corresponding to current DMA handle */
   ADC_HandleTypeDef* hadc = ( ADC_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
@@ -937,10 +906,6 @@ static void ADC_DMAErro(DMA_HandleTypeDef *hdma)
 
 }
 
-
-
-
-
 void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 {
 
@@ -966,10 +931,6 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
    __HAL_ADC_ENABLE(hadc);
 
    osDelay(3);
-
-
-
-
     /* Start conversion if ADC is effectively enabled */
     if(HAL_IS_BIT_SET(hadc->Instance->CR2, ADC_CR2_ADON))
     {
@@ -1027,7 +988,8 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
     return;
 
 }
-void vADCConfigInit(void)
+
+void vADCConfigInit ( void )
 {
   uint16_t bitmask;
   eConfigAttributes atrib;
@@ -1203,7 +1165,6 @@ void vCurConvert(int16_t * data, int16_t * ref, int16_t off)
   return;
 }
 
-
 void vDecNetural(int16_t * data)
 {
  for (int16_t i = 0;i<ADC_FRAME_SIZE<<2;i=i+4)
@@ -1218,10 +1179,6 @@ void vDecNetural(int16_t * data)
 
 #define MAX_ZERO_POINT 20
 #define FASE_DETECT_HISTERESIS  30
-
-
-
-
 
 uint8_t vADCFindFreq(int16_t * data, uint16_t * count, uint8_t off, int16_t AMP)
 {
@@ -1276,8 +1233,6 @@ uint8_t vADCFindFreq(int16_t * data, uint16_t * count, uint8_t off, int16_t AMP)
   if (index > 4) res = LOW_FREQ;
   return (res);
 }
-
-
 
 uint8_t vADCGetADC3Data()
 {
@@ -1407,6 +1362,9 @@ uint8_t vADCGetADC12Data()
     xGEN_F1_VDD =0;
     xGEN_F2_VDD =0;
     xGEN_F3_VDD =0;
+    xGEN_F1_CUR =0;
+    xGEN_F2_CUR =0;
+    xGEN_F3_CUR =0;
     xGEN_FREQ  =0;
     xCosFi = 0;
     xEventGroupSetBits( xADCEvent, GEN_READY );
@@ -1621,8 +1579,6 @@ uint16_t GetAverVDD(uint8_t channel,uint8_t size,uint8_t offset,int16_t * source
    Buffer =Buffer/size;
    return  ( (uint16_t)Buffer );
 }
-
-
 /*
  * Процедура настройки параметров алгоритма определния частоты в зависимости от амплитуды входного сигнала
  */

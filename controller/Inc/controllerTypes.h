@@ -260,7 +260,6 @@ typedef enum
 } DEVICE_STATUS;
 /*----------------------- Callbacks ------------------------------------*/
 typedef uint16_t ( *getDataCallBack )( void );           /* Callback to get 2 byte data */
-typedef fix16_t  ( *getValueCallBack )( void );          /* Callback to get sensor value */
 typedef void     ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */
 typedef void     ( *commandCallBack )( void );           /* Callback to get 2 byte data */
 /*----------------------- Structures -----------------------------------*/

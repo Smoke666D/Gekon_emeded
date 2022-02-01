@@ -30,6 +30,9 @@ typedef struct __packed
   GPIO_TypeDef* port;
   uint16_t      pin;
 } GPIO_TYPE;
+/*----------------------- Callbacks ------------------------------------*/
+typedef fix16_t  ( *getValueCallBack )( void );          /* Callback to get value */
+typedef void     ( *setValueCallBack )( fix16_t );       /* Callback to set value */
 /*----------------------- Functions ------------------------------------*/
 void     vSYSInitSerial ( UART_HandleTypeDef* uart );
 void     vSYSserial ( const char* msg );
@@ -41,5 +44,6 @@ void     vDecodeURI ( const char* input, uint16_t* output, uint8_t length );
 uint8_t  uSYSisConst ( void* ptr );
 uint32_t uSYSputChar ( char* str, uint32_t length, char ch );
 uint32_t uSYSendString ( char* str, uint32_t length );
+fix16_t  fSYSconstrain ( fix16_t in, fix16_t min, fix16_t max );
 /*----------------------------------------------------------------------*/
 #endif /* INC_COMMON_H_ */

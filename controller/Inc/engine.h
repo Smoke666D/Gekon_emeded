@@ -12,6 +12,7 @@
 #include "chart.h"
 #include "fix16.h"
 #include "controllerTypes.h"
+#include "common.h"
 #include "fpo.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/

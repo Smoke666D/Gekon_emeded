@@ -11,6 +11,7 @@
 #include "stm32f2xx_hal.h"
 #include "fix16.h"
 #include "controllerTypes.h"
+#include "common.h"
 /*------------------------ Macros --------------------------------------*/
 /*------------------------ Define --------------------------------------*/
 #define  GENERATOR_LINE_NUMBER             3U

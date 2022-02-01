@@ -7,11 +7,11 @@
 /*----------------------- Includes -------------------------------------*/
 #include "pid.h"
 #include "system.h"
+#include "stdio.h"
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
 /*------------------------ Define --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/
-static const fix1_33  = F16( 1.33f );
 /*---------------------- Structures ------------------------------------*/
 static PID_TYPE       pids[PID_MAX_NUMBER]       = { 0U };
 static osThreadId_t   pidHandles[PID_MAX_NUMBER] = { 0U };
@@ -19,7 +19,8 @@ static PID_TUNER_TYPE tuner                      = { 0U };
 /*----------------------- Variables ------------------------------------*/
 /*----------------------- External -------------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-
+void vPIDtuning ( void );
+void vPIDtask ( void* argument );
 /*----------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -92,14 +93,19 @@ void vPIDtuning ( void )
 
     case PID_TUNER_STATE_CALC:   // считаем
       tcalc  = fix16_div( fix16_sub( tuner.period1, fix16_mul( fix16_to_float( 0.693f ), tuner.period2 ) ), fix16_to_float( 0.307f ) );
-      koef   = fix16_div( tuner.beta, fix16_abs( fix16_sub( end, start ) ) );
+      koef   = fix16_div( tuner.beta, fix16_abs( fix16_sub( tuner.end, tuner.start ) ) );
       buffer = fix16_div( tcalc, fix16_sub( tuner.period2, tcalc ) );
       tauI   = fix16_mul( tcalc, fix16_div( fix16_add( fix16_from_int( 32U ), fix16_mul( fix16_from_int( 6U ), buffer ) ), fix16_add( fix16_from_int( 13U ), fix16_mul( fix16_from_int( 8U ),  buffer ) ) ) );
       tauD   = fix16_div( fix16_mul( tcalc, fix16_from_int( 4U ) ), fix16_add( fix16_from_int( 11U ), fix16_mul( fix16_from_int( 2U ), buffer ) ) );
       tuner.pid->Kp = fix16_div( fix16_add( fix16_to_float( 1.33f ), fix16_div( buffer, 4.0 ) ), fix16_mul( buffer, koef ) );
       tuner.pid->Ki = fix16_div( tuner.pid->Kp, tauI );
       tuner.pid->Kd = fix16_mul( tuner.pid->Kp, tauD );
-      tuner.state = PID_TUNER_STATE_FINISH;    // конец
+      tuner.state = PID_TUNER_STATE_FINISH;
+      break;
+
+    case PID_TUNER_STATE_FINISH:
+      break;
+    default:
       break;
   }
   return;
@@ -138,8 +144,8 @@ void vPIDinit ( const PID_INIT* data, uint8_t length )
       pids[i].Ki         = data->Ki;
       pids[i].Kp         = data->Kp;
       pids[i].SampleTime = data->sampleTime;
-      pids[i].min     = data->outMin;
-      pids[i].max     = data->outMax;
+      pids[i].min        = data->min;
+      pids[i].max        = data->max;
       pids[i].get        = data->get;
       pids[i].setpoint   = data->setpoint;
       pids[i].set        = data->set;
@@ -149,7 +155,7 @@ void vPIDinit ( const PID_INIT* data, uint8_t length )
         .priority   = ( osPriority_t ) PID_TASK_PRIORITY,
         .stack_size = PID_TASK_STACK_SIZE
       };
-      encoderHandle = osThreadNew( vENCODERtask, ( void* )( &pids[i] ), &attributes );
+      pidHandles[i] = osThreadNew( vPIDtask, ( void* )( &pids[i] ), &attributes );
     }
   }
   return;

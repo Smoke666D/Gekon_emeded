@@ -136,15 +136,15 @@ void vFATSDtask ( void* argument )
         res            = eFATSDunmount();
         retSD          = FATFS_UnLinkDriverEx( SDPath, 0 );
         HAL_SD_DeInit( hsd );
-          SDIO->POWER = 0x00000000;
-          SDIO->CLKCR = 0x00000000;
-          SDIO->ARG = 0x00000000;
-          SDIO->CMD = 0x00000000;
+          SDIO->POWER  = 0x00000000;
+          SDIO->CLKCR  = 0x00000000;
+          SDIO->ARG    = 0x00000000;
+          SDIO->CMD    = 0x00000000;
           SDIO->DTIMER = 0x00000000;
-          SDIO->DLEN = 0x00000000;
-          SDIO->DCTRL = 0x00000000;
-          SDIO->ICR = 0x00C007FF;
-          SDIO->MASK = 0x00000000;
+          SDIO->DLEN   = 0x00000000;
+          SDIO->DCTRL  = 0x00000000;
+          SDIO->ICR    = 0x00C007FF;
+          SDIO->MASK   = 0x00000000;
         fatsd.mounted  = 0U;
         fatsd.status   = SD_STATUS_EXTRACTED;
       }
@@ -158,16 +158,18 @@ void vFATSDtask ( void* argument )
 /*---------------------------------------------------------------------------------------------------*/
 void vFATSDinit ( const SD_HandleTypeDef* sd )
 {
-  hsd                  = ( SD_HandleTypeDef* )sd;
-  fatsd.position       = SD_EXTRACTED;
-  fatsd.status         = SD_STATUS_EXTRACTED;
-  xFileAccessSemaphore = xSemaphoreCreateMutex();
-  const osThreadAttr_t fatsdTask_attributes = {
-    .name       = "fatsdTask",
-    .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,
-    .stack_size = FATSD_TASK_STACK_SIZE
-  };
-  fatsdHandle = osThreadNew( vFATSDtask, NULL, &fatsdTask_attributes );
+  #if defined( FATSD )
+    hsd                  = ( SD_HandleTypeDef* )sd;
+    fatsd.position       = SD_EXTRACTED;
+    fatsd.status         = SD_STATUS_EXTRACTED;
+    xFileAccessSemaphore = xSemaphoreCreateMutex();
+    const osThreadAttr_t fatsdTask_attributes = {
+      .name       = "fatsdTask",
+      .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,
+      .stack_size = FATSD_TASK_STACK_SIZE
+    };
+    fatsdHandle = osThreadNew( vFATSDtask, NULL, &fatsdTask_attributes );
+  #endif
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

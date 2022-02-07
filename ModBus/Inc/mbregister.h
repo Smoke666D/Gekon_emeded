@@ -89,7 +89,7 @@ typedef enum
 #define ROM_REGISTER_CRC_ADR           0U
 #define ROM_REGISTER_DATA_OFS          1U
 /*----------------------- Functions -----------------------------------------------------------------*/
-MB_DATA_STATUS eMBreadData ( uint8_t adr, uint16_t* data, uint16_t length );
+MB_DATA_STATUS eMBreadData ( uint8_t adr, uint8_t* data, uint16_t length );
 MB_DATA_STATUS eMBwriteData ( uint8_t adr, const uint16_t* data, uint16_t length );
 /*-------------- OS ---------------*/
 MB_INIT_STATE  eMBeventGroupInit ( void );

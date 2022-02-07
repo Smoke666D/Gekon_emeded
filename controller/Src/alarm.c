@@ -378,6 +378,7 @@ void vALARMreInit ( void )
 ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr )
 {
   uint8_t i              = 0U;
+  uint8_t j              = 0U;
   uint8_t warningCounter = 0U;
   uint8_t number         = 0U;
   switch ( cmd )
@@ -385,25 +386,22 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
     case ERROR_LIST_CMD_ERASE:
       if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
       {
+        activeErrorList.stamp.counter = 0U;
         for ( i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
         {
           if ( activeErrorList.array[i].time > 0U )
           {
-            activeErrorList.stamp[i].action = activeErrorList.array[i].event.action;
-            activeErrorList.stamp[i].type   = activeErrorList.array[i].event.type;
-          }
-          else
-          {
-            activeErrorList.stamp[i].action = ACTION_NONE;
-            activeErrorList.stamp[i].type   = EVENT_NONE;
+            activeErrorList.stamp.array[activeErrorList.stamp.counter] = activeErrorList.array[i].event;
+            activeErrorList.stamp.counter++;
           }
           activeErrorList.array[i].time         = 0U;
           activeErrorList.array[i].event.action = ACTION_NONE;
           activeErrorList.array[i].event.type   = EVENT_NONE;
         }
-        activeErrorList.event   = ERROR_LIST_EVENT_OLD;
-        activeErrorList.counter = 0U;
-        activeErrorList.status  = ERROR_LIST_STATUS_EMPTY;
+        activeErrorList.stamp.status = STAMP_LIST_EVENT_OLD;
+        activeErrorList.counter      = 0U;
+        activeErrorList.status       = ERROR_LIST_STATUS_EMPTY;
+        vFPOsetBuzzer( RELAY_OFF );
         vFPOsetWarning( RELAY_OFF );
         vALARMsetError( EVENT_NONE, cmd );
         vALARMsetWarning( EVENT_NONE, cmd );
@@ -433,6 +431,50 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           {
             activeErrorList.counter--;
           }
+          /* ---- */
+          number = ACTIV_ERROR_LIST_SIZE;
+          for ( i=0U; i<activeErrorList.stamp.counter; i++ )
+          {
+            if ( ( activeErrorList.stamp.array[i].type   == record->event.type   ) &&
+                 ( activeErrorList.stamp.array[i].action == record->event.action ) )
+            {
+              number = i;
+              break;
+            }
+          }
+          if ( number <= activeErrorList.stamp.counter )
+          {
+            for ( i=number; i<activeErrorList.stamp.counter; i++ )
+            {
+              activeErrorList.stamp.array[i] = activeErrorList.stamp.array[i + 1U];
+            }
+            activeErrorList.stamp.counter--;
+          }
+          if ( activeErrorList.stamp.counter == 0U )
+          {
+            activeErrorList.stamp.status = STAMP_LIST_EVENT_OLD;
+            for ( i=0U; i<activeErrorList.counter; i++ )
+            {
+              for ( j=0U; j<activeErrorList.stamp.counter; j++ )
+              {
+                if ( ( activeErrorList.array[i].event.action == activeErrorList.stamp.array[j].action ) &&
+                     ( activeErrorList.array[i].event.type   == activeErrorList.stamp.array[j].type   ) )
+                {
+                  activeErrorList.stamp.status = STAMP_LIST_EVENT_NEW;
+                  break;
+                }
+              }
+            }
+            if ( activeErrorList.stamp.status == STAMP_LIST_EVENT_OLD )
+            {
+              vFPOsetBuzzer( RELAY_OFF );
+            }
+            else
+            {
+              vFPOsetBuzzer( RELAY_ON );
+            }
+          }
+          /* ---- */
           if ( uALARMisWarning( *record ) > 0U )
           {
             vALARMsetWarning( record->event.type, cmd );
@@ -482,15 +524,20 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           }
           activeErrorList.array[activeErrorList.counter] = *record;
           activeErrorList.counter++;
-          activeErrorList.status = ERROR_LIST_STATUS_NOT_EMPTY;
-          activeErrorList.event  = ERROR_LIST_EVENT_NEW;
+          activeErrorList.status       = ERROR_LIST_STATUS_NOT_EMPTY;
+          activeErrorList.stamp.status = STAMP_LIST_EVENT_NEW;
           for ( i=0U; i<activeErrorList.counter; i++ )
           {
-            if ( ( activeErrorList.stamp[i].action == record->event.action ) &&
-                 ( activeErrorList.stamp[i].type   == record->event.type ) )
+            if ( ( activeErrorList.stamp.array[i].action == record->event.action ) &&
+                 ( activeErrorList.stamp.array[i].type   == record->event.type   ) )
             {
-              activeErrorList.event  = ERROR_LIST_EVENT_OLD;
+              activeErrorList.stamp.status  = STAMP_LIST_EVENT_OLD;
+              break;
             }
+          }
+          if ( activeErrorList.stamp.status == STAMP_LIST_EVENT_NEW )
+          {
+            vFPOsetBuzzer( RELAY_ON );
           }
         }
         else

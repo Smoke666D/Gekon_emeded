@@ -24,18 +24,24 @@ typedef enum
 } ERROR_LIST_STATUS;
 typedef enum
 {
-  ERROR_LIST_EVENT_OLD,
-  ERROR_LIST_EVENT_NEW
-} ERROR_LIST_EVENT;
+  STAMP_LIST_EVENT_OLD,
+  STAMP_LIST_EVENT_NEW
+} STAMP_LIST_EVENT;
 /*----------------------- Callbacks ------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  ERROR_LIST_STATUS status : 2U;
-  ERROR_LIST_EVENT  event  : 1U;
-  LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
-  SYSTEM_EVENT      stamp[ACTIV_ERROR_LIST_SIZE];
+  STAMP_LIST_EVENT  status : 1U;
+  SYSTEM_EVENT      array[ACTIV_ERROR_LIST_SIZE];
   uint8_t           counter;
+} STAMP_LIST;
+
+typedef struct __packed
+{
+  ERROR_LIST_STATUS status : 2U;
+  LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
+  uint8_t           counter;
+  STAMP_LIST        stamp;
 } ACTIVE_ERROR_LIST;
 /*----------------------- Extern ---------------------------------------*/
 /*----------------------- Functions ------------------------------------*/

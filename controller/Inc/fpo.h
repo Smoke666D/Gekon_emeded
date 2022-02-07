@@ -14,7 +14,7 @@
 /*------------------------ Define --------------------------------------*/
 #define  FPO_NUMBER           10U
 #define  FPO_DIS_NUMBER       ( FPO_NUMBER / 2U )
-#define  FPO_FUNCTION_NUMBER  21U
+#define  FPO_FUNCTION_NUMBER  22U
 #define  FPO_A                0U
 #define  FPO_B                1U
 #define  FPO_C                2U
@@ -58,6 +58,7 @@ typedef enum
   FPO_FUN_STARTER_RELAY,           /* 18 Реле стартера */
   FPO_FUN_PREHEAT,                 /* 19 Выход предпрогрева */
   FPO_FUN_IDLING,                  /* 20 Работа на холостом ходу */
+  FPO_FUN_BUZZER,                  /* 21 Звуковая сигнализация */
 } FPO_FUNCTION;
 
 typedef enum
@@ -166,6 +167,8 @@ void          vFPOsetReadyToStart ( RELAY_STATUS stat );
 TRIGGER_STATE eFPOgetReadyToStart ( void );
 void          vFPOsetDpsReady ( RELAY_STATUS stat );
 TRIGGER_STATE eFPOgetDpsReady ( void );
+void          vFPOsetBuzzer ( RELAY_STATUS stat );
+TRIGGER_STATE eFPOgetBuzzer ( void );
 TRIGGER_STATE eFPOgetState ( uint8_t n );
 uint16_t      uFPOgetData ( void );
 /*----------------------------------------------------------------------*/

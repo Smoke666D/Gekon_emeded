@@ -24,3 +24,5 @@ tmp/
 *.o
 *.su
 *.dump
+
+*.launch

@@ -215,8 +215,12 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
           serialNumber1.value[0U]     = serialBuffer[3U];
           serialNumber1.value[1U]     = serialBuffer[4U];
           serialNumber1.value[2U]     = serialBuffer[5U];
-          versionController.value[0U] = HARDWARE_VERSION;
-          versionFirmware.value[0U]   = SOFTWARE_VERSION;
+          versionController.value[0U] = HARDWARE_VERSION_MAJOR;
+          versionController.value[1U] = HARDWARE_VERSION_MINOR;
+          versionController.value[2U] = HARDWARE_VERSION_ASSEMB;
+          versionFirmware.value[0U]   = FIRMWARE_VERSION_MAJOR;
+          versionFirmware.value[1U]   = FIRMWARE_VERSION_MINOR;
+          versionFirmware.value[2U]   = FIRMWARE_VERSION_FIX;
           versionBootloader.value[0U] = 1U;
           deviceID.value[0U]          = DEVICE_ID;
           vSYSserial( ">>EEPROM configurations read: done!\n\r" );

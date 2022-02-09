@@ -2,7 +2,7 @@
  */
 #include   "config.h"
 
-uint16_t versionControllerValue[1U] = { 1U };
+uint16_t versionControllerValue[3U] = { 1U, 0U, 0U };
 const eConfigAttributes versionControllerAtrib =
 {
    .adr        = 0U,
@@ -11,7 +11,7 @@ const eConfigAttributes versionControllerAtrib =
    .max        = 0U,
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
+   .len        = 3U,
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
@@ -21,7 +21,7 @@ eConfigReg versionController =
    .value = versionControllerValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t versionFirmwareValue[1U] = { 1U };
+uint16_t versionFirmwareValue[3U] = { 1U, 0U, 0U };
 const eConfigAttributes versionFirmwareAtrib =
 {
    .adr        = 1U,
@@ -30,7 +30,7 @@ const eConfigAttributes versionFirmwareAtrib =
    .max        = 0U,
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
+   .len        = 3U,
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
@@ -40,7 +40,7 @@ eConfigReg versionFirmware =
    .value = versionFirmwareValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t versionBootloaderValue[1U] = { 1U };
+uint16_t versionBootloaderValue[3U] = { 1U, 0U, 0U };
 const eConfigAttributes versionBootloaderAtrib =
 {
    .adr        = 2U,
@@ -49,7 +49,7 @@ const eConfigAttributes versionBootloaderAtrib =
    .max        = 0U,
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 1U,
+   .len        = 3U,
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };
@@ -159,7 +159,7 @@ const eConfigAttributes displaySleepDelayAtrib =
 {
    .adr        = 8U,
    .scale      = 0U,
-   .min        = 0U,
+   .min        = 5U,
    .max        = 600U,
    .units      = { 0xd181U, 0xd0b5U, 0xd0baU, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,

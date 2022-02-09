@@ -15,7 +15,7 @@
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             4U
 #define   CONFIG_MAX_SIZE              49U     // bytes
-#define   CONFIG_TOTAL_SIZE            536U   // bytes
+#define   CONFIG_TOTAL_SIZE            548U   // bytes
 #define   MIN_CONFIG_SCALE             ( -2 )
 #define   MAX_CONFIG_SCALE             ( 0 )
 #define   CONFIG_SCALE_NUM             ( 3 )

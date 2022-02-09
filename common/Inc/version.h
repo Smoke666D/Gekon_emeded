@@ -8,9 +8,14 @@
 #ifndef INC_VERSION_H_
 #define INC_VERSION_H_
 /*------------------------ Define --------------------------------------*/
-#define SOFTWARE_VERSION	01750U
-#define HARDWARE_VERSION	00004U
+#define SOFTWARE_VERSION	      01750U
+#define HARDWARE_VERSION	      00004U
 #define DEVICE_ID               00001U
+
+#define FIRMWARE_VERSION_MAJOR  1U
+#define FIRMWARE_VERSION_MINOR  1U
+#define FIRMWARE_VERSION_FIX    0U
+
 
 #define DEVICE_ID_GECCO_1       "Геко-1"
 /*----------------------------------------------------------------------*/

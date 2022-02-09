@@ -39,7 +39,8 @@ const uint8_t eFPOfuctionList[FPO_FUNCTION_NUMBER] =
   FPO_FUN_FUEL_RELAY,             /* 17 */
   FPO_FUN_STARTER_RELAY,          /* 18 */
   FPO_FUN_PREHEAT,                /* 19 */
-  FPO_FUN_IDLING                  /* 20 */
+  FPO_FUN_IDLING,                 /* 20 */
+  FPO_FUN_BUZZER                  /* 21 */
 };
 const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
 {
@@ -63,16 +64,21 @@ const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
   "FUEL_RELAY",
   "STARTER_RELAY",
   "PREHEAT",
-  "IDLING"
+  "IDLING",
+  "BUZZER"
 };
 const char* cFPOnames[FPO_NUMBER] =
 {
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F"
+  "A", /* 0 */
+  "B", /* 1 */
+  "C", /* 2 */
+  "D", /* 3 */
+  "E", /* 4 */
+  "F", /* 5 */
+  "G", /* 6 */
+  "H", /* 7 */
+  "I", /* 8 */
+  "J"  /* 9 */
 };
 /*-------------------------------- Variables ---------------------------------*/
 static FPO* dpsReadyFPO     = NULL;  /* 1 */
@@ -95,6 +101,7 @@ static FPO* pumpFPO         = NULL;  /* 17 */
 static FPO* starterFPO      = NULL;  /* 18 */
 static FPO* preheaterFPO    = NULL;  /* 19 */
 static FPO* idleFPO         = NULL;  /* 20 */
+static FPO* buzzerFPO       = NULL;  /* 21 */
 
 static uint16_t fpoDataReg      = 0U;
 /*-------------------------------- Functions ---------------------------------*/
@@ -109,7 +116,6 @@ void vFPOsetupStartup ( void );
 void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun )
 {
   uint8_t i = 0U;
-
   *fpo = NULL;
   for ( i=0U; i<FPO_NUMBER; i++ )
   {
@@ -453,6 +459,17 @@ TRIGGER_STATE eFPOgetMainsOffImp ( void )
   return mainsImpOffFPO->state;
 }
 /*----------------------------------------------------------------------------*/
+void vFPOsetBuzzer ( RELAY_STATUS stat )
+{
+  vFPOsetRelay( buzzerFPO, stat );
+  return;
+}
+/*----------------------------------------------------------------------------*/
+TRIGGER_STATE eFPOgetBuzzer ( void )
+{
+  return buzzerFPO->state;
+}
+/*----------------------------------------------------------------------------*/
 void vFPOtest ( void )
 {
   uint8_t i = 0U;
@@ -519,6 +536,7 @@ void vFPOdataInit ( void )
   vFPOanaliz( &pumpFPO,         FPO_FUN_FUEL_RELAY             );
   vFPOanaliz( &stopSolenoidFPO, FPO_FUN_STOP_SOLENOID          );
   vFPOanaliz( &idleFPO,         FPO_FUN_IDLING                 );
+  vFPOanaliz( &buzzerFPO,       FPO_FUN_BUZZER                 );
   vFPOanaliz( &genSwFPO,        FPO_FUN_TURN_ON_GEN            );
   vFPOanaliz( &genImpOnFPO,     FPO_FUN_TURN_ON_GEN_IMPULSE    );
   vFPOanaliz( &genImpOffFPO,    FPO_FUN_TURN_OFF_GEN_IMPULSE   );

@@ -11,18 +11,19 @@
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 #include "system.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
-static osThreadId_t sdHandle = NULL;
+static osThreadId_t  sdHandle                       = NULL;
+static QueueHandle_t pSDqueue                       = NULL;
+static StaticQueue_t xSDqueue                       = { 0U };
+static SD_ROUTINE    sdQueueBuffer[SD_QUEUE_LENGTH] = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 static SD_CONFIG_STATUS status = SD_CONFIG_STATUS_FAT_ERROR;
-static uint8_t          flag   = 0U;
-static FRESULT          confRes;
 static uint8_t          configCheker = 0U;
 /*----------------------- Functions -----------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -53,21 +54,35 @@ char* cSDreadConfigCallback ( uint16_t length )
 /*---------------------------------------------------------------------------------------------------*/
 void vSDtask ( void* argument )
 {
+  SD_ROUTINE input = { 0U };
+  FRESULT    res   = FR_OK;
   for (;;)
   {
-    if ( ( eFATSDgetStatus() == SD_STATUS_MOUNTED ) && ( flag == 0U ) )
+    if ( xQueueReceive( pSDqueue, &input, 0U ) == pdPASS )
     {
-      confRes = eSDsaveConfig();
-      flag = 1U;
-    }
-    else if ( ( eFATSDgetStatus() == SD_STATUS_MOUNTED ) && ( flag == 1U ) )
-    {
-      confRes = eSDloadConfig();
-      flag = 2U;
-    }
-    else if ( ( eFATSDgetStatus() != SD_STATUS_MOUNTED ) && ( flag == 1U ) )
-    {
-      flag = 0U;
+      if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
+      {
+        switch ( input.file )
+        {
+          case FATSD_FILE_CONFIG:
+            if ( input.cmd == SD_COMMAND_READ )
+            {
+              res = eSDloadConfig();
+            }
+            else
+            {
+              res = eSDsaveConfig();
+            }
+            break;
+          case FATSD_FILE_MEASUREMENT:
+            break;
+          case FATSD_FILE_LOG:
+            res = eFILEaddLine( FATSD_FILE_LOG, input.buffer, input.length );
+            break;
+          default:
+            break;
+        }
+      }
     }
     osDelay( 1000U );
   }
@@ -83,7 +98,21 @@ void vSDinit ( void )
     .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,
     .stack_size = FATSD_TASK_STACK_SIZE
   };
+  pSDqueue = xQueueCreateStatic( SD_QUEUE_LENGTH,
+                                sizeof( SD_ROUTINE ),
+                                sdQueueBuffer,
+                                &xSDqueue );
   sdHandle = osThreadNew( vSDtask, NULL, &fatsdTask_attributes );
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vSDsendRoutine ( SD_ROUTINE routine )
+{
+  SD_ROUTINE sdRoutine = routine;
+  if ( pSDqueue != NULL )
+  {
+    xQueueSend( pSDqueue, &sdRoutine, portMAX_DELAY );
+  }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

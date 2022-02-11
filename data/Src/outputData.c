@@ -800,7 +800,7 @@ eConfigReg deviceStatus =
    .value = deviceStatusValue,
 };
 /*----------------------------------------------------------------*/
-const eConfigBitMap statusBitMap[6U] = 
+const eConfigBitMap statusBitMap[7U] = 
 {
    { 1U, 0U },     // statusAlarm
    { 2U, 1U },     // statusWarning
@@ -808,6 +808,7 @@ const eConfigBitMap statusBitMap[6U] =
    { 8U, 3U },     // statusDPSready
    { 16U, 4U },     // statusReadyToStart
    { 32U, 5U },     // statusGeneratorRedy
+   { 64U, 6U },     // statusAutoMode
 };
 uint16_t statusValue[1U] = { 0U };
 const eConfigAttributes statusAtrib =
@@ -819,7 +820,7 @@ const eConfigAttributes statusAtrib =
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_BITMAP,
    .len        = 1U,
-   .bitMapSize = 6U,
+   .bitMapSize = 7U,
    .bitMap     = statusBitMap
 };
 eConfigReg status =

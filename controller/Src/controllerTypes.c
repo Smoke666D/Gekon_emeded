@@ -19,15 +19,15 @@ static DEVICE_INFO        deviceInfo         = { 0U };
 /*--------------------------------- Constant ---------------------------------*/
 const fix16_t fix100U = F16( 100U );
 const char* logActionsDictionary[LOG_ACTION_SIZE] = {
-    "Нет",
-    "Предупреждение",
-    "Аварийная остановка",
-    "Отключение",
-    "Плановая остановка",
-    "Остановка до устранения ошибки",
-    "Запрет следующего старта",
-    "Автостарт",
-    "Автостоп"
+    "Нет",                            /* 0 */
+    "Предупреждение",                 /* 1 */
+    "Аварийная остановка",            /* 2 */
+    "Отключение",                     /* 3 */
+    "Плановая остановка",             /* 4 */
+    "Остановка до устранения ошибки", /* 5 */
+    "Запрет следующего старта",       /* 6 */
+    "Автостарт",                      /* 7 */
+    "Автостоп"                        /* 8 */
 };
 const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Нет",                               /* 0  */
@@ -73,58 +73,59 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Пользователькое событие B",         /* 40 */
     "Пользователькое событие C",         /* 41 */
     "Пользователькое событие D",         /* 42 */
-    "Ошибка чередования фаз сети"        /* 43 */
+    "Ошибка чередования фаз сети",       /* 43 */
     "Ошибка чередования фаз генератора", /* 44 */
     "Утечка топлива"                     /* 45 */
 };
 #if ( DEBUG_SERIAL_ALARM > 0U )
   const char* eventTypesStr[LOG_TYPES_SIZE] =
   {
-    "NONE",                       /* NONE */
-    "EXTERN_EMERGENCY_STOP",      /* EMERGENCY_STOP */
-    "START_FAIL",                 /* EMERGENCY_STOP */
-    "STOP_FAIL",                  /* EMERGENCY_STOP */
-    "OIL_LOW_PRESSURE",           /* WARNING & EMERGENCY_STOP */
-    "OIL_SENSOR_ERROR",           /* EMERGENCY_STOP */
-    "ENGINE_HIGHT_TEMP",          /* WARNING & EMERGENCY_STOP */
-    "ENGINE_TEMP_SENSOR_ERROR",   /* EMERGENCY_STOP */
-    "FUEL_LOW_LEVEL",             /* WARNING & EMERGENCY_STOP */
-    "FUEL_HIGHT_LEVEL",           /* WARNING & EMERGENCY_STOP */
-    "FUEL_LEVEL_SENSOR_ERROR",    /* EMERGENCY_STOP */
-    "SPEED_HIGHT",                /* EMERGENCY_STOP */
-    "SPEED_LOW",                  /* EMERGENCY_STOP */
-    "SPEED_SENSOR_ERROR",         /* EMERGENCY_STOP */
-    "CHARGER_FAIL",               /* WARNING */
-    "BATTERY_LOW",                /* WARNING */
-    "BATTERY_HIGHT",              /* WARNING */
-    "GENERATOR_LOW_VOLTAGE",      /* WARNING & EMERGENCY_STOP */
-    "GENERATOR_HIGHT_VOLTAGE",    /* WARNING & EMERGENCY_STOP */
-    "GENERATOR_LOW_FREQUENCY",    /* WARNING & EMERGENCY_STOP */
-    "GENERATOR_HIGHT_FREQUENCY",  /* WARNING & EMERGENCY_STOP */
-    "PHASE_IMBALANCE",            /* EMERGENCY_STOP */
-    "OVER_CURRENT",               /* EMERGENCY_STOP */
-    "OVER_POWER",                 /* EMERGENCY_STOP */
-    "SHORT_CIRCUIT",              /* EMERGENCY_STOP */
-    "MAINS_LOW_VOLTAGE",          /* WARNING */
-    "MAINS_HIGHT_VOLTAGE",        /* WARNING */
-    "MAINS_LOW_FREQUENCY",        /* WARNING */
-    "MAINS_HIGHT_FREQUENCY",      /* WARNING */
-    "MAINTENANCE_OIL",            /* WARNING */
-    "MAINTENANCE_AIR",            /* WARNING */
-    "MAINTENANCE_FUEL",           /* WARNING */
-    "MAINS_ENGINE_START",
-    "MAINS_ENGINE_STOP",
-    "MAINS_OK",
-    "MAINS_FAIL",
-    "INTERRUPTED_START",
-    "INTERRUPTED_STOP",
-    "SENSOR_COMMON_ERROR",
-    "USER_FUNCTION_A",
-    "USER_FUNCTION_B",
-    "USER_FUNCTION_C",
-    "USER_FUNCTION_D",
-    "MAINS_PHASE_SEQUENCE",
-    "GENERATOR_PHASE_SEQUENCE",
+    "NONE",                       /* 00 NONE */
+    "EXTERN_EMERGENCY_STOP",      /* 01 EMERGENCY_STOP */
+    "START_FAIL",                 /* 02 EMERGENCY_STOP */
+    "STOP_FAIL",                  /* 03 EMERGENCY_STOP */
+    "OIL_LOW_PRESSURE",           /* 04 WARNING & EMERGENCY_STOP */
+    "OIL_SENSOR_ERROR",           /* 05 EMERGENCY_STOP */
+    "ENGINE_HIGHT_TEMP",          /* 06 WARNING & EMERGENCY_STOP */
+    "ENGINE_TEMP_SENSOR_ERROR",   /* 07 EMERGENCY_STOP */
+    "FUEL_LOW_LEVEL",             /* 08 WARNING & EMERGENCY_STOP */
+    "FUEL_HIGHT_LEVEL",           /* 09 WARNING & EMERGENCY_STOP */
+    "FUEL_LEVEL_SENSOR_ERROR",    /* 10 EMERGENCY_STOP */
+    "SPEED_HIGHT",                /* 11 EMERGENCY_STOP */
+    "SPEED_LOW",                  /* 12 EMERGENCY_STOP */
+    "SPEED_SENSOR_ERROR",         /* 13 EMERGENCY_STOP */
+    "CHARGER_FAIL",               /* 14 WARNING */
+    "BATTERY_LOW",                /* 15 WARNING */
+    "BATTERY_HIGHT",              /* 16 WARNING */
+    "GENERATOR_LOW_VOLTAGE",      /* 17 WARNING & EMERGENCY_STOP */
+    "GENERATOR_HIGHT_VOLTAGE",    /* 18 WARNING & EMERGENCY_STOP */
+    "GENERATOR_LOW_FREQUENCY",    /* 19 WARNING & EMERGENCY_STOP */
+    "GENERATOR_HIGHT_FREQUENCY",  /* 20 WARNING & EMERGENCY_STOP */
+    "PHASE_IMBALANCE",            /* 21 EMERGENCY_STOP */
+    "OVER_CURRENT",               /* 22 EMERGENCY_STOP */
+    "OVER_POWER",                 /* 23 EMERGENCY_STOP */
+    "SHORT_CIRCUIT",              /* 24 EMERGENCY_STOP */
+    "MAINS_LOW_VOLTAGE",          /* 25 WARNING */
+    "MAINS_HIGHT_VOLTAGE",        /* 26 WARNING */
+    "MAINS_LOW_FREQUENCY",        /* 27 WARNING */
+    "MAINS_HIGHT_FREQUENCY",      /* 28 WARNING */
+    "MAINTENANCE_OIL",            /* 29 WARNING */
+    "MAINTENANCE_AIR",            /* 30 WARNING */
+    "MAINTENANCE_FUEL",           /* 31 WARNING */
+    "MAINS_ENGINE_START",         /* 32 */
+    "MAINS_ENGINE_STOP",          /* 33 */
+    "MAINS_OK",                   /* 34 */
+    "MAINS_FAIL",                 /* 35 */
+    "INTERRUPTED_START",          /* 36 */
+    "INTERRUPTED_STOP",           /* 37 */
+    "SENSOR_COMMON_ERROR",        /* 38 */
+    "USER_FUNCTION_A",            /* 39 */
+    "USER_FUNCTION_B",            /* 40 */
+    "USER_FUNCTION_C",            /* 41 */
+    "USER_FUNCTION_D",            /* 42 */
+    "MAINS_PHASE_SEQUENCE",       /* 43 */
+    "GENERATOR_PHASE_SEQUENCE",   /* 44 */
+    "FUEL_LEAK"                   /* 45 */
   };
   const char* alarmActionStr[LOG_ACTION_SIZE] =
   {

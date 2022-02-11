@@ -880,15 +880,22 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
 
   if ( ( usbAuthorization == AUTH_DONE ) || ( report->cmd == USB_REPORT_CMD_AUTHORIZATION ) )
   {
-    if ( ( eCONTROLLERgetMode()   == CONTROLLER_MODE_MANUAL  ) ||
-         ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_IDLE  ) ||
-         ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_ERROR ) )
+    if ( eCONTROLLERgetMode() == CONTROLLER_MODE_MANUAL )
     {
-      res = callback( report );
+      if ( ( eCONTROLLERgetMode()   == CONTROLLER_MODE_MANUAL  ) ||
+           ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_IDLE  ) ||
+           ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_ERROR ) )
+      {
+        res = callback( report );
+      }
+      else
+      {
+        res = USB_STATUS_ENGINE_NON_STOP;
+      }
     }
     else
     {
-      res = USB_STATUS_ENGINE_NON_STOP;
+      res = USB_REPORT_STATE_AUTO_MODE;
     }
   }
   else

@@ -221,7 +221,9 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
           versionFirmware.value[0U]   = FIRMWARE_VERSION_MAJOR;
           versionFirmware.value[1U]   = FIRMWARE_VERSION_MINOR;
           versionFirmware.value[2U]   = FIRMWARE_VERSION_FIX;
-          versionBootloader.value[0U] = 1U;
+          versionBootloader.value[0U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 16U ) & 0xFF );
+          versionBootloader.value[1U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 8U  ) & 0xFF );
+          versionBootloader.value[2U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR )        ) & 0xFF );
           deviceID.value[0U]          = DEVICE_ID;
           vSYSserial( ">>EEPROM configurations read: done!\n\r" );
         }

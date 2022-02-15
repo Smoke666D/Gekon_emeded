@@ -123,7 +123,6 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
   LOG_RECORD_TYPE eraseRec                   = { .time = 0U, .event = eraseEv };
   uint16_t        serialBuffer[6U]           = { 0U };
   uint16_t        buf                        = 0U;
-
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
     res = eSTORAGEreadMap( map );
@@ -135,21 +134,20 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
            ( REWRITE_ALL_EEPROM != 0U               ) ||
            ( valid              == 0U               ) )
       {
-	if ( sr == STORAGE_SR_EMPTY )
-	{
-	  vSYSserial( ">>EEPROM empty. It's first power up.\n\r" );
-	}
-	if ( REWRITE_ALL_EEPROM > 0 )
-	{
-	  vSYSserial( ">>There is software flag to erase EEPROM.\n\r" );
-	}
-	if ( valid == 0 )
-	{
-	  vSYSserial( ">>The memory map is wrong. Maybe there is the new software with new changed map\n\r" );
-	}
-	vSYSserial( ">>All data in EEPROM is default.\n\r" );
-	vFREEDATAerase();
-
+	      if ( sr == STORAGE_SR_EMPTY )
+	      {
+	        vSYSserial( ">>EEPROM empty. It's first power up.\n\r" );
+	      }
+	      if ( REWRITE_ALL_EEPROM > 0 )
+	      {
+	        vSYSserial( ">>There is software flag to erase EEPROM.\n\r" );
+	      }
+	      if ( valid == 0 )
+	      {
+	        vSYSserial( ">>The memory map is wrong. Maybe there is the new software with new changed map\n\r" );
+	      }
+	      vSYSserial( ">>All data in EEPROM is default.\n\r" );
+	      vFREEDATAerase();
         res = eSTORAGEwriteConfigs();
         if ( res == EEPROM_OK )
         {
@@ -169,18 +167,18 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
               res = eSTORAGEsavePassword();
               if ( res == EEPROM_OK )
               {
-        	res = eSTORAGEwriteLogPointer( 0U );
-        	if ( res == EEPROM_OK )
-        	{
-        	  for ( i=0U; i<LOG_SIZE; i++ )
-        	  {
-        	    if ( eSTORAGEwriteLogRecord( i, &eraseRec ) != EEPROM_OK )
-        	    {
-        	      res = DATA_API_STAT_EEPROM_ERROR;
-        	      break;
-        	    }
-        	  }
-        	}
+        	      res = eSTORAGEwriteLogPointer( 0U );
+        	      if ( res == EEPROM_OK )
+        	      {
+        	        for ( i=0U; i<LOG_SIZE; i++ )
+        	        {
+        	          if ( eSTORAGEwriteLogRecord( i, &eraseRec ) != EEPROM_OK )
+        	          {
+        	            res = DATA_API_STAT_EEPROM_ERROR;
+        	            break;
+        	          }
+        	        }
+        	      }
               }
               if ( res == EEPROM_OK )
               {
@@ -417,8 +415,8 @@ EEPROM_STATUS eDATAAPIlogInit ( void )
   EEPROM_STATUS   res     = EEPROM_OK;
   LOG_RECORD_TYPE record  = { 0U };
   uint16_t        pointer = 0U;
-  logCash.adr    = 0xFFFFU;
-  res = eSTORAGEreadLogPointer( &pointer );
+  logCash.adr = 0xFFFFU;
+  res         = eSTORAGEreadLogPointer( &pointer );
   if ( res == EEPROM_OK )
   {
     if ( pointer == 0xFFFF )
@@ -456,7 +454,6 @@ EEPROM_STATUS eDATAAPIlogInit ( void )
 DATA_API_STATUS eDATAAPIisInit ( void )
 {
   DATA_API_STATUS res = DATA_API_STAT_INIT_ERROR;
-
   if ( ( xSemaphore != NULL ) && ( initDone > 0U) )
   {
     res = DATA_API_STAT_OK;
@@ -486,7 +483,6 @@ DATA_API_STATUS eDATAAPIisInit ( void )
 DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
-
   if ( adr < CHART_NUMBER )
   {
     if ( ( xSemaphore != NULL ) && ( initDone > 0U ) && ( xCHARTgetSemophore() != NULL) )
@@ -515,10 +511,6 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
             if ( eSTORAGEwriteCharts() != EEPROM_OK )
             {
               res = DATA_API_STAT_EEPROM_ERROR;
-            }
-            else
-            {
-
             }
             xSemaphoreGive( xSemaphore );
           }
@@ -592,7 +584,6 @@ DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data,
   DATA_API_STATUS res                 = DATA_API_STAT_OK;
   uint32_t        i                   = 0U;
   uint8_t         buf[EWA_ERASE_SIZE] = { 0U };
-
   if ( ( adr + length ) < STORAGE_WEB_SIZE )
   {
     if ( xSemaphore != NULL )
@@ -691,7 +682,6 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint8_t         i   = 0U;
-
   if ( adr < SETTING_REGISTER_NUMBER )
   {
     if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
@@ -797,7 +787,6 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
 DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfigAttributes* atrib )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
-
   if ( adr < SETTING_REGISTER_NUMBER )
   {
     switch ( cmd )
@@ -840,7 +829,6 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint16_t        i   = 0U;
-
   if ( adr < FREE_DATA_SIZE )
   {
     if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
@@ -957,7 +945,6 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
 DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
-
   if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
   {
     switch( cmd )
@@ -1019,7 +1006,7 @@ DATA_API_STATUS eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* pas )
       case DATA_API_CMD_ERASE:
         if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
         {
-          flTakeSource = 16U;
+          flTakeSource          = 16U;
           systemPassword.status = PASSWORD_RESET;
           systemPassword.data   = 0U;
           if ( eSTORAGEsavePassword() != EEPROM_OK )
@@ -1129,7 +1116,6 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
   uint16_t        i        = 0U;
   SYSTEM_EVENT    eraseEv  = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
   LOG_RECORD_TYPE eraseRec = { .time = 0U, .event = eraseEv };
-
   if ( *adr < LOG_SIZE )
   {
     if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
@@ -1201,11 +1187,9 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
             }
           }
           break;
-
         case DATA_API_CMD_COUNTER:
           *adr = logCash.size;
           break;
-
         case DATA_API_CMD_LOAD:
           res = eDATAAPIlogLoad( *adr, record );
           break;
@@ -1275,7 +1259,6 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
   uint8_t         i   = 0U;
-
   if ( adr < SETTING_REGISTER_NUMBER )
   {
     if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
@@ -1414,7 +1397,6 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
 DATA_API_STATUS eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8_t length, uint16_t* data )
 {
   DATA_API_STATUS res = DATA_API_STAT_OK;
-
   if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
   {
     switch ( cmd )
@@ -1468,7 +1450,6 @@ DATA_API_STATUS eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8
         break;
     }
   }
-
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/

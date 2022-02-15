@@ -55,6 +55,7 @@
   
       (+) Enable/Disable peripheral clock using RCC peripheral macros related to SDMMC
           peripheral.
+
       (+) Enable the Power ON State using the SDIO_PowerState_ON() 
           function and disable it using the function SDIO_PowerState_OFF().
                 
@@ -251,6 +252,7 @@ HAL_StatusTypeDef SDIO_Init(SDIO_TypeDef *SDIOx, SDIO_InitTypeDef Init)
     [..]
     This subsection provides a set of functions allowing to manage the SDMMC data 
     transfers.
+
 @endverbatim
   * @{
   */
@@ -294,6 +296,7 @@ HAL_StatusTypeDef SDIO_WriteFIFO(SDIO_TypeDef *SDIOx, uint32_t *pWriteData)
     [..]
     This subsection provides a set of functions allowing to control the SDMMC data 
     transfers.
+
 @endverbatim
   * @{
   */
@@ -502,6 +505,7 @@ HAL_StatusTypeDef SDIO_SetSDMMCReadWaitMode(SDIO_TypeDef *SDIOx, uint32_t SDIO_R
  ===============================================================================  
     [..]
     This subsection provides a set of functions allowing to manage the needed commands.
+
 @endverbatim
   * @{
   */

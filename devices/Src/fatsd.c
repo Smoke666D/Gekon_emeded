@@ -12,11 +12,11 @@
 #include "system.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
+#if defined( FATSD )
 static osThreadId_t           fatsdHandle          = NULL;
 static SemaphoreHandle_t      xFileAccessSemaphore = NULL;
 static FILINFO                finfo                = { 0U };
 static FIL                    file                 = { 0U };
-
 static SD_HandleTypeDef*      hsd                  = NULL;
 static HAL_SD_CardInfoTypeDef cardInfo             = { 0U };
 static FATSD_TYPE             fatsd                = { 0U };
@@ -27,7 +27,9 @@ static uint32_t fcount    = 0U;
 static uint32_t lineCount = 0U;
 static uint8_t  strCount  = 0U;
 static char     fbuf[FATSD_BUFFER_SIZE] = { 0U };
+#endif
 /*----------------------- Functions -----------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -73,7 +75,7 @@ FRESULT eFATSDmount ( void )
 /*---------------------------------------------------------------------------------------------------*/
 FRESULT eFATSDunmount ( void )
 {
-  FRESULT res   = FR_OK;
+  FRESULT res = FR_OK;
   xSemaphoreGive( xFileAccessSemaphore );
   res = f_mount( NULL, SDPath, 1U );
   return res;
@@ -136,15 +138,15 @@ void vFATSDtask ( void* argument )
         res            = eFATSDunmount();
         retSD          = FATFS_UnLinkDriverEx( SDPath, 0 );
         HAL_SD_DeInit( hsd );
-          SDIO->POWER  = 0x00000000;
-          SDIO->CLKCR  = 0x00000000;
-          SDIO->ARG    = 0x00000000;
-          SDIO->CMD    = 0x00000000;
-          SDIO->DTIMER = 0x00000000;
-          SDIO->DLEN   = 0x00000000;
-          SDIO->DCTRL  = 0x00000000;
-          SDIO->ICR    = 0x00C007FF;
-          SDIO->MASK   = 0x00000000;
+        SDIO->POWER    = 0x00000000;
+        SDIO->CLKCR    = 0x00000000;
+        SDIO->ARG      = 0x00000000;
+        SDIO->CMD      = 0x00000000;
+        SDIO->DTIMER   = 0x00000000;
+        SDIO->DLEN     = 0x00000000;
+        SDIO->DCTRL    = 0x00000000;
+        SDIO->ICR      = 0x00C007FF;
+        SDIO->MASK     = 0x00000000;
         fatsd.mounted  = 0U;
         fatsd.status   = SD_STATUS_EXTRACTED;
       }

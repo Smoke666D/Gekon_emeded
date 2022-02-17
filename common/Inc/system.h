@@ -13,7 +13,6 @@
 /*------------------------ Define --------------------------------------*/
 #define  OPTIMIZ
 #define  OPTIMIZ_LEVEL   "-O2"
-#define  WRITE_LOG_TO_SD
 
 #define  FPI_TASK_PRIORITY             osPriorityLow
 #define  ENGINE_TASK_PRIORITY          osPriorityLow     /* Engine and Electro priority need to be equal */

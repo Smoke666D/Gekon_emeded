@@ -53,7 +53,7 @@ LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
 {
   LOG_STATUS res  = LOG_STATUS_ERROR;
 
-  #ifdef WRITE_LOG_TO_SD
+  #if ( defined( WRITE_LOG_TO_SD ) && defined ( FATSD ) )
     SD_ROUTINE sdRoutine = { 0U };
     sdRoutine.buffer = cFATSDgetBuffer();
     sdRoutine.cmd    = SD_COMMAND_WRITE;

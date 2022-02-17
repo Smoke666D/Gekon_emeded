@@ -55,7 +55,6 @@ char* cSDreadConfigCallback ( uint16_t length )
 void vSDtask ( void* argument )
 {
   SD_ROUTINE input = { 0U };
-  FRESULT    res   = FR_OK;
   for (;;)
   {
     if ( xQueueReceive( pSDqueue, &input, 0U ) == pdPASS )
@@ -67,17 +66,19 @@ void vSDtask ( void* argument )
           case FATSD_FILE_CONFIG:
             if ( input.cmd == SD_COMMAND_READ )
             {
-              res = eSDloadConfig();
+              ( void )eSDloadConfig();
             }
             else
             {
-              res = eSDsaveConfig();
+              ( void )eSDsaveConfig();
             }
             break;
           case FATSD_FILE_MEASUREMENT:
             break;
           case FATSD_FILE_LOG:
-            res = eFILEaddLine( FATSD_FILE_LOG, input.buffer, input.length );
+            #if defined( WRITE_LOG_TO_SD )
+              ( void )eFILEaddLine( FATSD_FILE_LOG, input.buffer, input.length );
+            #endif
             break;
           default:
             break;
@@ -93,16 +94,18 @@ void vSDtask ( void* argument )
 /*---------------------------------------------------------------------------------------------------*/
 void vSDinit ( void )
 {
-  const osThreadAttr_t fatsdTask_attributes = {
-    .name       = "fatsdTask",
-    .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,
-    .stack_size = FATSD_TASK_STACK_SIZE
-  };
-  pSDqueue = xQueueCreateStatic( SD_QUEUE_LENGTH,
-                                sizeof( SD_ROUTINE ),
-                                sdQueueBuffer,
-                                &xSDqueue );
-  sdHandle = osThreadNew( vSDtask, NULL, &fatsdTask_attributes );
+  #if defined ( FATSD )
+    const osThreadAttr_t fatsdTask_attributes = {
+      .name       = "fatsdTask",
+      .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,
+      .stack_size = FATSD_TASK_STACK_SIZE
+    };
+    pSDqueue = xQueueCreateStatic( SD_QUEUE_LENGTH,
+                                  sizeof( SD_ROUTINE ),
+                                  ( uint8_t* )sdQueueBuffer,
+                                  &xSDqueue );
+    sdHandle = osThreadNew( vSDtask, NULL, &fatsdTask_attributes );
+  #endif
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

@@ -130,74 +130,67 @@ void vHTTPcleanRequest ( HTTP_REQUEST *request )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-char* vHTTPaddContentType ( char* httpStr, HTTP_CONTENT_TYPE type )
+void vHTTPaddContentType ( char* httpStr, HTTP_CONTENT_TYPE type )
 {
-  char* strRes = NULL;
-  strRes = strcat( httpStr, HTTP_CONTENT_LINE );
+  ( void )strcat( httpStr, HTTP_CONTENT_LINE );
   switch ( type )
   {
     case HTTP_CONTENT_HTML:
-      strRes = strcat( httpStr, HTTP_CONTENT_STR_HTML );
+      ( void )strcat( httpStr, HTTP_CONTENT_STR_HTML );
       break;
     case HTTP_CONTENT_CSS:
-      strRes = strcat( httpStr, HHTP_CONTENT_STR_CSS );
+      ( void )strcat( httpStr, HHTP_CONTENT_STR_CSS );
       break;
     case HTTP_CONTENT_JS:
-      strRes = strcat( httpStr, HTTP_CONTENT_STR_JS );
+      ( void )strcat( httpStr, HTTP_CONTENT_STR_JS );
       break;
     case HTTP_CONTENT_JSON:
-      strRes = strcat( httpStr, HTTP_CONTENT_STR_JSON );
+      ( void )strcat( httpStr, HTTP_CONTENT_STR_JSON );
       break;
     case HTTP_CONTENT_XML:
-      strRes = strcat( httpStr, HTTP_CONTENT_STR_XML );
+      ( void )strcat( httpStr, HTTP_CONTENT_STR_XML );
       break;
     default:
-      strRes = strcat( httpStr, "Error" );
+      ( void )strcat( httpStr, "Error" );
       break;
   }
-  strRes = strcat( httpStr, HTTP_END_LINE );
-
-  return strRes;
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-char* vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding )
+void vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding )
 {
-  char* strRes = NULL;
   if ( encoding != HTTP_ENCODING_NO )
   {
-    strRes = strcat( httpStr, HTTP_ENCODING_LINE );
+    ( void )strcat( httpStr, HTTP_ENCODING_LINE );
     switch ( encoding )
     {
       case HTTP_ENCODING_NO:
         break;
       case HTTP_ENCODING_GZIP:
-        strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_GZIP );
+        ( void )strcat( httpStr, HTTP_CONTENT_ENCODING_GZIP );
         break;
       case HTTP_ENCODING_COMPRESS:
-        strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_COMPRESS );
+        ( void )strcat( httpStr, HTTP_CONTENT_ENCODING_COMPRESS );
         break;
       case HTTP_ENCODING_DEFLATE:
-        strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_DEFLATE );
+        ( void )strcat( httpStr, HTTP_CONTENT_ENCODING_DEFLATE );
         break;
       case HTTP_ENCODING_INDENTITY:
-        strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_INDENTITY );
+        ( void )strcat( httpStr, HTTP_CONTENT_ENCODING_INDENTITY );
         break;
       case HTTP_ENCODING_BR:
-        strRes = strcat( httpStr, HTTP_CONTENT_ENCODING_BR );
+        ( void )strcat( httpStr, HTTP_CONTENT_ENCODING_BR );
         break;
       default:
         break;
     }
-    strRes = strcat( httpStr, HTTP_END_LINE );
+    ( void )strcat( httpStr, HTTP_END_LINE );
   }
-  else
-  {
-    strRes = httpStr;
-  }
-  return strRes;
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -209,31 +202,30 @@ char* vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-char* vHTTPaddCache ( char* httpStr, HTTP_CACHE cache)
+void vHTTPaddCache ( char* httpStr, HTTP_CACHE cache)
 {
-  char* strRes = NULL;
-  strRes = strcat( httpStr, HTTP_CACHE_CONTROL );
+  ( void )strcat( httpStr, HTTP_CACHE_CONTROL );
   switch ( cache )
   {
     case HTTP_CACHE_NO_CACHE:
-      strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+      ( void )strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
       break;
     case HTTP_CACHE_NO_STORE:
-      strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+      ( void )strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
       break;
     case HTTP_CACHE_NO_CACHE_STORE:
-      strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
-      strRes = strcat( httpStr, "," );
-      strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+      ( void )strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+      ( void )strcat( httpStr, "," );
+      ( void )strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
       break;
     default:
-      strRes = strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
-      strRes = strcat( httpStr, "," );
-      strRes = strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
+      ( void )strcat( httpStr, HTTP_CACHE_STR_NO_CACHE );
+      ( void )strcat( httpStr, "," );
+      ( void )strcat( httpStr, HTTP_CACHE_STR_NO_STORE );
       break;
   }
-  strRes = strcat( httpStr, HTTP_END_LINE );
-  return strRes;
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -501,8 +493,7 @@ uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line )
   const char* end   = strchr( input, LF_HEX );
   for ( i=0U; i<num; i++ )
   {
-    start = strchr( end, LF_HEX );
-    start++;
+    start = strchr( end, LF_HEX ) + 1U;
     end   = strchr( start, LF_HEX );
   }
   if ( start && end)
@@ -574,7 +565,7 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
       pchEnd = strchr( pchSt, ' ' );
       if ( ( strlen( pchSt ) - strlen( pchEnd ) ) > 2U )
       {
-        if( strncpy( request->path, ( pchSt ), ( strlen( pchSt ) - strlen( pchEnd ) ) ) == NULL )
+        if ( strncpy( request->path, ( pchSt ), ( strlen( pchSt ) - strlen( pchEnd ) ) ) == NULL )
         {
           res = HTTP_STATUS_BAD_REQUEST;
         }
@@ -642,7 +633,7 @@ HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE*
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content, uint32_t remoteIP )
+void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content, uint32_t remoteIP )
 {
   uint16_t      adr        = 0xFFFFU;
   REST_REQUEST  request    = 0U;
@@ -885,7 +876,7 @@ void eHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remoteIP )
+void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remoteIP )
 {
   char*           strStr  = NULL;
   uint16_t        adr     = 0xFFFFU;
@@ -1079,7 +1070,6 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->content.data   = restBuffer;
           #endif
           break;
-
         case REST_MEASUREMENT:
           #if defined( FATSD )
             stream = &response->stream;
@@ -1132,35 +1122,35 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           }
           break;
         case REST_SYSTEM:
-          stream                  = &response->stream;
-          stream->size            = 1U;
-          stream->start           = 0U;
-          stream->index           = 0U;
-          stream->flag            = STREAM_FLAG_COPY;
-          stream->length          = uRESTmakeSystem( restBuffer );
+          stream                   = &response->stream;
+          stream->size             = 1U;
+          stream->start            = 0U;
+          stream->index            = 0U;
+          stream->flag             = STREAM_FLAG_COPY;
+          stream->length           = uRESTmakeSystem( restBuffer );
           response->content.length = stream->length;
-          response->callBack      = cHTTPstreamString;
-          response->content.type  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_OK;
-          response->content.data  = restBuffer;
+          response->callBack       = cHTTPstreamString;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_OK;
+          response->content.data   = restBuffer;
           break;
         case REST_REQUEST_ERROR:
           break;
         default:
-          response->status        = HTTP_STATUS_BAD_REQUEST;
+          response->status         = HTTP_STATUS_BAD_REQUEST;
           response->content.length = 0U;
           break;
       }
     }
     else
     {
-      response->status        = HTTP_STATUS_UNAUTHORIZED;
+      response->status         = HTTP_STATUS_UNAUTHORIZED;
       response->content.length = 0U;
     }
   }
   else
   {
-    response->status        = HTTP_STATUS_NON_CONNECT;
+    response->status         = HTTP_STATUS_NON_CONNECT;
     response->content.length = 0U;
   }
   return;
@@ -1185,14 +1175,14 @@ void vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response, uint32
       break;
     case HTTP_METHOD_GET:
       response->method = HTTP_METHOD_GET;
-      eHTTPbuildGetResponse( request->path, response, remoteIP );
+      vHTTPbuildGetResponse( request->path, response, remoteIP );
       break;
     case HTTP_METHOD_POST:
       response->method = HTTP_METHOD_POST;
       break;
     case HTTP_METHOD_PUT:
       response->method = HTTP_METHOD_PUT;
-      eHTTPbuildPutResponse( request->path, response, request->content.data, remoteIP );
+      vHTTPbuildPutResponse( request->path, response, request->content.data, remoteIP );
       break;
     case HTTP_METHOD_HEAD:
       break;
@@ -1242,45 +1232,20 @@ HTTP_STATUS eHTTPbuildRequest ( HTTP_REQUEST* request )
  *         response - response structure
  * Output: HTTP_STATUS
  */
-HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
+void vHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
 {
-  HTTP_STATUS res = HTTP_STATUS_BAD_REQUEST;
-
-  if ( strcpy( httpStr, "GET " ) != NULL )
-  {
-    if ( strcat( httpStr, request->path ) != NULL )
-    {
-      if( strcat( httpStr, " HTTP/1.1" ) != NULL )
-      {
-        if( strcat( httpStr, HTTP_END_LINE ) != NULL )
-        {
-          if( strcat( httpStr, HTTP_HOST_LINE ) != NULL )
-          {
-            if( strcat( httpStr, request->host ) != NULL )
-            {
-              if( strcat( httpStr, HTTP_END_LINE ) != NULL )
-              {
-                if( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
-                {
-                  if( strcat( httpStr, HTTP_END_LINE ) != NULL )
-                  {
-                    if( vHTTPaddCache( httpStr, request->cache ) != NULL )
-                    {
-                      if( strcat( httpStr, HTTP_END_LINE ) != NULL )
-                      {
-                        res = HTTP_STATUS_OK;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return res;
+  ( void )strcpy( httpStr, "GET " );
+  ( void )strcat( httpStr, request->path );
+  ( void )strcat( httpStr, " HTTP/1.1" );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  ( void )strcat( httpStr, HTTP_HOST_LINE );
+  ( void )strcat( httpStr, request->host );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  ( void )strcat( httpStr, HTTP_CONN_LINE );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  vHTTPaddCache( httpStr, request->cache );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
@@ -1292,81 +1257,40 @@ HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
+void vHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
 {
-  HTTP_STATUS  res         = HTTP_STATUS_ERROR;
   char         buffer[30U] = { 0U };
-  char*        strRes      = NULL;
-
   // STATUS
   switch( response->status )
   {
     case HTTP_STATUS_OK:
-      strRes = strcpy( httpStr, HTTP_OK_STATUS_LINE );
+      ( void )strcpy( httpStr, HTTP_OK_STATUS_LINE );
       break;
     case HTTP_STATUS_BAD_REQUEST:
-      strRes = strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
+      ( void )strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
       break;
     case HTTP_STATUS_UNAUTHORIZED:
-      strRes = strcpy( httpStr, HTTP_UNAUTHORIZED_LINE );
+      ( void )strcpy( httpStr, HTTP_UNAUTHORIZED_LINE );
       break;
     default:
-      strRes = strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
+      ( void )strcpy( httpStr, HTTP_NOT_FOUND_STATUS_LINE );
       break;
   }
-  if ( strRes != NULL )
-  {
-    if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
-    {
-      // DATE
-      if ( strcat( httpStr, HTTP_DATE_LINE ) != NULL )
-      {
-        if ( strcat( httpStr, response->header ) != NULL )
-        {
-          if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
-          {
-            // LENGTH
-            if ( strcat( httpStr, HTTP_LENGTH_LINE ) != NULL )
-            {
-              if ( itoa( response->content.length, buffer, 10U ) != NULL )
-              {
-                if ( strcat( httpStr, buffer ) != NULL )
-                {
-                  if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
-                  {
-                    // CONTENT TYPE
-                    if ( vHTTPaddContentType( httpStr, response->content.type ) != NULL )
-                    {
-                      // ENCODING
-                      if ( vHTTPaddContentEncoding ( httpStr, response->encoding ) != NULL )
-                      {
-                        // CACHE
-                        if ( vHTTPaddCache( httpStr, response->cache ) != NULL )
-                        {
-                          // CONNECTION
-                          if ( strcat( httpStr, HTTP_CONN_LINE ) != NULL )
-                          {
-                            if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
-                            {
-                              if ( strcat( httpStr, HTTP_END_LINE ) != NULL )
-                              {
-                                res = HTTP_STATUS_OK;
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  return res;
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  ( void )strcat( httpStr, HTTP_DATE_LINE );
+  ( void )strcat( httpStr, response->header );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  ( void )strcat( httpStr, HTTP_LENGTH_LINE);
+  ( void )itoa( response->content.length, buffer, 10U );
+  ( void )strcat( httpStr, buffer );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  vHTTPaddContentType( httpStr, response->content.type );
+  vHTTPaddContentEncoding ( httpStr, response->encoding );
+  vHTTPaddCache( httpStr, response->cache );
+  ( void )strcat( httpStr, HTTP_CONN_LINE );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  ( void )strcat( httpStr, HTTP_END_LINE );
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

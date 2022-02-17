@@ -370,13 +370,10 @@ HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char*
 {
   HTTP_STATUS res                     = HTTP_STATUS_BAD_REQUEST;
   char        buffer[HTTP_BUFER_SIZE] = { 0U };
-
-  if ( eHTTPmakeRequest( request, buffer ) == HTTP_STATUS_OK )
+  vHTTPmakeRequest( request, buffer );
+  if ( eHTTPsendRequest( request->host, buffer ) == SERVER_OK )
   {
-    if ( eHTTPsendRequest( request->host, buffer ) == SERVER_OK )
-    {
-      res = eHTTPparsingResponse( buffer, output, response );
-    }
+    res = eHTTPparsingResponse( buffer, output, response );
   }
   return res;
 }
@@ -396,7 +393,7 @@ void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response
 {
   eHTTPparsingRequest( input, request );
   vHTTPbuildResponse( request, response, remoteIP );
-  eHTTPmakeResponse( output, response );
+  vHTTPmakeResponse( output, response );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

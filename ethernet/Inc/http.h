@@ -235,9 +235,9 @@ typedef struct __packed
 void        vHTTPinit ( void );
 HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request );                           /* Parsing data from request text */
 void        vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response, uint32_t remoteIP ); /* Build response in response structure */
-HTTP_STATUS eHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response );                             /* Make string response from response structure */
+void        vHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response );                             /* Make string response from response structure */
 HTTP_STATUS eHTTPbuildRequest ( HTTP_REQUEST* request );                                              /* Build request structure */
-HTTP_STATUS eHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr );                          /* Make string request from request structure */
+void        vHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr );                          /* Make string request from request structure */
 HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE* response );          /* Parsing data from response text */
 /*----------------------------------------------------------------------*/
 #endif /* INC_HTTP_H_ */

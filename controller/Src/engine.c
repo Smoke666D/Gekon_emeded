@@ -126,16 +126,6 @@ void vENGINEtask ( void* argument );
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-fix16_t getChargerInput ( void )
-{
-  fix16_t res = 0U;
-  return res;
-}
-void setChargerOutput ( RELAY_STATUS status )
-{
-  return;
-}
-/*----------------------------------------------------------------------------*/
 TRIGGER_STATE uENGINEisSensorCutout ( fix16_t value )
 {
   TRIGGER_STATE res = TRIGGER_IDLE;

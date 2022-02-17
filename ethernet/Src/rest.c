@@ -1012,7 +1012,7 @@ uint8_t uRESTmakeStartRecord ( const char* header, char* output )
 uint8_t uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
-  itoa( data, &output[shift], 10U );
+  ( void )itoa( data, &output[shift], 10U );
   shift += strlen( &output[shift] );
   if ( last == REST_CONT_RECORD )
   {
@@ -1031,7 +1031,7 @@ uint8_t uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len,
   uint8_t  shift = uRESTmakeStartRecord( header, output );
   if ( len == 1U )
   {
-    itoa( data[0U], &output[shift], 10U );
+    ( void )itoa( data[0U], &output[shift], 10U );
     shift += strlen( &output[shift] );
   }
   else
@@ -1050,7 +1050,7 @@ uint8_t uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len,
       }
       else
       {
-        itoa( data[i], &output[shift], 10U );
+        ( void )itoa( data[i], &output[shift], 10U );
         shift += strlen( &output[shift] );
       }
       output[shift] = ',';
@@ -1085,7 +1085,7 @@ uint8_t uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos la
 uint8_t uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output )
 {
   uint8_t shift = uRESTmakeStartRecord( header, output );
-  itoa( (uint32_t)data, &output[shift], 10U );
+  ( void )itoa( (uint32_t)data, &output[shift], 10U );
   shift += strlen( &output[shift] );
   if ( last == REST_CONT_RECORD )
   {

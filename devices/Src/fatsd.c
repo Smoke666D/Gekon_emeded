@@ -148,7 +148,7 @@ void vFATSDtask ( void* argument )
         SDIO->ICR      = 0x00C007FF;
         SDIO->MASK     = 0x00000000;
         fatsd.mounted  = 0U;
-        fatsd.status   = SD_STATUS_EXTRACTED;
+        fatsd.status   = SD_STATUS_UNMOUNTED;
       }
     }
     osDelay( 1000U );
@@ -163,7 +163,7 @@ void vFATSDinit ( const SD_HandleTypeDef* sd )
   #if defined( FATSD )
     hsd                  = ( SD_HandleTypeDef* )sd;
     fatsd.position       = SD_EXTRACTED;
-    fatsd.status         = SD_STATUS_EXTRACTED;
+    fatsd.status         = SD_STATUS_UNMOUNTED;
     xFileAccessSemaphore = xSemaphoreCreateMutex();
     const osThreadAttr_t fatsdTask_attributes = {
       .name       = "fatsdTask",

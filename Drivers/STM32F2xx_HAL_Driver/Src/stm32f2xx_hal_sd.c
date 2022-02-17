@@ -3043,6 +3043,7 @@ static uint32_t SD_FindSCR(SD_HandleTypeDef *hsd, uint32_t *pSCR)
   uint32_t index = 0U;
   uint32_t tempscr[2U] = {0U, 0U};
   uint32_t *scr = pSCR;
+  uint32_t fifo = 0U;
 
   /* Set Block Size To 8 Bytes */
   errorstate = SDMMC_CmdBlockLength(hsd->Instance, 8U);
@@ -3072,15 +3073,22 @@ static uint32_t SD_FindSCR(SD_HandleTypeDef *hsd, uint32_t *pSCR)
   {
     return errorstate;
   }
+  /*!!!!! HAL ERROR !!!!!*/
+  if (!__HAL_SD_GET_FLAG(hsd, SDIO_FLAG_DATAEND))
+  {
+    HAL_Delay(2U);
+  }
+  /*!!!!! HAL ERROR !!!!!*/
 
   while(!__HAL_SD_GET_FLAG(hsd, SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT))
   {
     if(__HAL_SD_GET_FLAG(hsd, SDIO_FLAG_RXDAVL))
     {
-      *(tempscr + index) = SDIO_ReadFIFO(hsd->Instance);
+      fifo = SDIO_ReadFIFO(hsd->Instance);
+      *(tempscr + index) = fifo;
       index++;
     }
-    else if(!__HAL_SD_GET_FLAG(hsd, SDIO_FLAG_RXACT))
+    else
     {
       break;
     }

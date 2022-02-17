@@ -311,44 +311,28 @@ FRESULT eFILEerase ( FATSD_FILE n )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-static uint8_t fl = 0U;
 FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
 {
   FRESULT  res     = FR_OK;
   uint32_t counter = 0U;
-  fl = 0U;
   if ( fatsd.status == SD_STATUS_MOUNTED )
   {
-    fl = 1U;
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
       res = f_open( &file, fileNames[n], ( FA_OPEN_ALWAYS | FA_WRITE ) );
-      fl = 2U;
       if ( res == FR_OK )
       {
         if ( f_error( &file ) == 0U )
         {
-          fl = 3U;
           res = f_lseek( &file, file.fsize );
           if ( res == FR_OK )
           {
-            fl = 4U;
             res = f_write( &file, line, length, ( UINT* )&counter );
             if ( res == FR_OK )
             {
-              fl = 5U;
               if ( length == counter )
               {
-                fl = 6U;
-                if ( SDIO->FIFOCNT != 0U )
-                {
-                  fl = 7U;
-                }
                 res = f_close( &file );
-                if ( res != FR_OK )
-                {
-                  fl = 8U;
-                }
               }
               else
               {

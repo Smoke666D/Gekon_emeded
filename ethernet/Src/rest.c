@@ -255,7 +255,7 @@ uint32_t uRESTmakeMemorySize ( char* output )
 {
   uint32_t position = 1U;
   output[0U] = '{';
-  position += uRESTmakeDigRecord( MEMORY_SIZE_STR, uMEASUREMENTgetStorageSize(), REST_LAST_RECORD, &output[position] );
+  //position += uRESTmakeDigRecord( MEMORY_SIZE_STR, uMEASUREMENTgetStorageSize(), REST_LAST_RECORD, &output[position] );
   output[position] = '}';
   position++;
   return position;

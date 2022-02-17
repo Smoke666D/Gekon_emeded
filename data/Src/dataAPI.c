@@ -1391,68 +1391,6 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-DATA_API_STATUS eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8_t length, uint16_t* data )
-{
-  DATA_API_STATUS res = DATA_API_STAT_OK;
-  if ( ( xSemaphore != NULL ) && ( initDone > 0U ) )
-  {
-    switch ( cmd )
-    {
-      case DATA_API_CMD_READ:
-        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
-        {
-          if ( eSTORAGEreadMeasurement( *adr, length, data ) != EEPROM_OK )
-          {
-            res = DATA_API_STAT_EEPROM_ERROR;
-          }
-          xSemaphoreGive( xSemaphore );
-        }
-        break;
-      case DATA_API_CMD_ERASE:
-        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
-        {
-          if ( eSTORAGEeraseMeasurement() != EEPROM_OK )
-          {
-            res = DATA_API_STAT_EEPROM_ERROR;
-          }
-          measurementNumberCash = 0U;
-          xSemaphoreGive( xSemaphore );
-        }
-        break;
-      case DATA_API_CMD_ADD:
-        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
-        {
-
-          if ( eSTORAGEaddMeasurement( measurementNumberCash, length, data ) != EEPROM_OK )
-          {
-            res = DATA_API_STAT_EEPROM_ERROR;
-          }
-          measurementNumberCash++;
-          xSemaphoreGive( xSemaphore );
-        }
-        break;
-      case DATA_API_CMD_COUNTER:
-        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
-        {
-          if ( eSTORAGEreadMeasurementCounter( adr ) != EEPROM_OK )
-          {
-            res = DATA_API_STAT_EEPROM_ERROR;
-          }
-          measurementNumberCash = *adr;
-          xSemaphoreGive( xSemaphore );
-        }
-        break;
-      default:
-        res = DATA_API_STAT_CMD_ERROR;
-        break;
-    }
-  }
-  return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 

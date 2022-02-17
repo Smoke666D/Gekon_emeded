@@ -714,83 +714,20 @@ USB_STATUS eUSBerasePassword( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBmemorySizeToReport ( USB_REPORT* report )
 {
-  report->stat = USB_REPORT_STATE_NON_CON;
-  if ( MEASUREMENT_ENB > 0U )
-  {
-    report->stat   = USB_REPORT_STATE_OK;
-    report->length = 4U;
-    vUint32ToBytes( uMEASUREMENTgetStorageSize(), report->data );
-  }
+  report->stat = USB_REPORT_STATE_BAD_REQ;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBmeasurementToReport ( USB_REPORT* report )
 {
-  uint8_t         i                                = 0U;
-  uint16_t        data[MEASUREMENT_CHANNEL_NUMBER] = { 0U };
-  DATA_API_STATUS status                           = DATA_API_STAT_BUSY;
-  report->stat = USB_REPORT_STATE_NON_CON;
-  if ( MEASUREMENT_ENB > 0U )
-  {
-    report->length = uMEASUREMENTgetSize() * 2U;
-    while ( status == DATA_API_STAT_BUSY )
-    {
-      status = eDATAAPImeasurement( DATA_API_CMD_READ, &report->adr, uMEASUREMENTgetSize(), data );
-    }
-    if ( status == DATA_API_STAT_OK )
-    {
-      report->stat = USB_REPORT_STATE_OK;
-      for ( i=0U; i<uMEASUREMENTgetSize(); i++ )
-      {
-        vUint16ToBytes( data[i], &report->data[i * 2U] );
-      }
-    }
-  }
+  report->stat = USB_REPORT_STATE_BAD_REQ;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBmeasurementLengthToReport ( USB_REPORT* report )
 {
-  DATA_API_STATUS status = DATA_API_STAT_BUSY;
-  uint16_t        data   = 0U;
-  report->stat   = USB_REPORT_STATE_NON_CON;
-  report->length = 0U;
-  if ( MEASUREMENT_ENB > 0U )
-  {
-    while ( status == DATA_API_STAT_BUSY )
-    {
-      status = eDATAAPImeasurement( DATA_API_CMD_COUNTER, &data, 0U, NULL );
-    }
-    if ( status == DATA_API_STAT_OK )
-    {
-      report->stat   = USB_REPORT_STATE_OK;
-      report->length = 2U;
-      vUint16ToBytes( data, report->data );
-    }
-  }
+  report->stat = USB_REPORT_STATE_BAD_REQ;
   return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBeraseMeasurement ( const USB_REPORT* report )
-{
-  USB_STATUS      res    = USB_STATUS_FORBIDDEN;
-  DATA_API_STATUS status = DATA_API_STAT_BUSY;
-  if ( MEASUREMENT_ENB > 0U )
-  {
-    while ( status == DATA_API_STAT_BUSY )
-    {
-      status = eDATAAPImeasurement( DATA_API_CMD_ERASE, NULL, 0U, NULL );
-    }
-    if ( status != DATA_API_STAT_OK )
-    {
-      res = USB_STATUS_STORAGE_ERROR;
-    }
-    else
-    {
-      res = USB_STATUS_DONE;
-    }
-  }
-  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBoutputToReport ( USB_REPORT* report )
@@ -1048,9 +985,6 @@ void vStartUsbTask ( void *argument )
           break;
         case USB_REPORT_CMD_GET_MEASUREMENT:
           vUSBsend( &report, vUSBmeasurementToReport );
-          break;
-        case USB_REPORT_CMD_ERASE_MEASUREMENT:
-          vUSBget( &report, eUSBeraseMeasurement );
           break;
         case USB_REPORT_CMD_GET_MEASUREMENT_LENGTH:
           vUSBsend( &report, vUSBmeasurementLengthToReport );

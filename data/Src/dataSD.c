@@ -74,6 +74,9 @@ void vSDtask ( void* argument )
             }
             break;
           case FATSD_FILE_MEASUREMENT:
+            #if defined( MEASUREMENT )
+              ( void )eFILEaddLine( FATSD_FILE_MEASUREMENT, input.buffer, input.length );
+            #endif
             break;
           case FATSD_FILE_LOG:
             #if defined( WRITE_LOG_TO_SD )
@@ -109,9 +112,9 @@ void vSDinit ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vSDsendRoutine ( SD_ROUTINE routine )
+void vSDsendRoutine ( SD_ROUTINE* routine )
 {
-  SD_ROUTINE sdRoutine = routine;
+  SD_ROUTINE sdRoutine = *routine;
   if ( pSDqueue != NULL )
   {
     xQueueSend( pSDqueue, &sdRoutine, portMAX_DELAY );

@@ -28,29 +28,30 @@
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
-  DATA_API_CMD_READ,      /* Read data from local register */
+  DATA_API_CMD_READ,      /* Read data from local register                                                  */
   DATA_API_CMD_READ_CASH, /* Read data from the EEPROM first time and from cash next time with same address */
-  DATA_API_CMD_WRITE,     /* Save data from external data buffer to the data register */
-  DATA_API_CMD_INC,       /* Increment data in the register, the external data buffer is ignored */
-  DATA_API_CMD_DEC,       /* Decrement data in the register, the external data buffer is ignored */
-  DATA_API_CMD_SAVE,      /* Save all data registers to the EEPROM. The input data is ignore */
-  DATA_API_CMD_LOAD,      /* Load all data registers from the EEPROM. The input data is ignore */
-  DATA_API_CMD_ERASE,     /* Erase memory sector in EEPORM */
-  DATA_API_CMD_ADD,       /* Add record to variable size data */
-  DATA_API_CMD_COUNTER,   /* Read size of data */
+  DATA_API_CMD_WRITE,     /* Save data from external data buffer to the data register                       */
+  DATA_API_CMD_INC,       /* Increment data in the register, the external data buffer is ignored            */
+  DATA_API_CMD_DEC,       /* Decrement data in the register, the external data buffer is ignored            */
+  DATA_API_CMD_SAVE,      /* Save all data registers to the EEPROM. The input data is ignore                */
+  DATA_API_CMD_LOAD,      /* Load all data registers from the EEPROM. The input data is ignore              */
+  DATA_API_CMD_ERASE,     /* Erase memory sector in EEPORM                                                  */
+  DATA_API_CMD_ADD,       /* Add record to variable size data                                               */
+  DATA_API_CMD_COUNTER,   /* Read size of data                                                              */
+  DATA_API_CMD_NEW        /* Create new record table or file ( in file system )                             */
 } DATA_API_COMMAND;
 
 typedef enum
 {
-  DATA_API_STAT_OK,            /* All done correct */
+  DATA_API_STAT_OK,            /* All done correct                       */
   DATA_API_STAT_BUSY,          /* The API is busy with another operation */
-  DATA_API_STAT_INIT_ERROR,    /* Semaphore didn't initiated  */
-  DATA_API_STAT_CMD_ERROR,     /* Wrong command error */
-  DATA_API_STAT_MIN_ERROR,     /* Data is too small */
-  DATA_API_STAT_MAX_ERROR,     /* Data is too big */
-  DATA_API_STAT_ADR_ERROR,     /* Wrong address */
-  DATA_API_STAT_EEPROM_ERROR,  /* Error during EEPROM write operation */
-  DATA_API_STAT_ERROR,         /* Other error */
+  DATA_API_STAT_INIT_ERROR,    /* Semaphore didn't initiated             */
+  DATA_API_STAT_CMD_ERROR,     /* Wrong command error                    */
+  DATA_API_STAT_MIN_ERROR,     /* Data is too small                      */
+  DATA_API_STAT_MAX_ERROR,     /* Data is too big                        */
+  DATA_API_STAT_ADR_ERROR,     /* Wrong address                          */
+  DATA_API_STAT_EEPROM_ERROR,  /* Error during EEPROM write operation    */
+  DATA_API_STAT_ERROR,         /* Other error                            */
 } DATA_API_STATUS;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed

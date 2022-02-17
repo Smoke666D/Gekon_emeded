@@ -60,7 +60,7 @@ LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
     sdRoutine.file   = FATSD_FILE_LOG;
     sdRoutine.length = uRESTmakeLog( record, sdRoutine.buffer );
     sdRoutine.length = uSYSendString( sdRoutine.buffer, sdRoutine.length );
-    vSDsendRoutine( sdRoutine );
+    vSDsendRoutine( &sdRoutine );
   #endif
 
   if ( eDATAAPIlog( DATA_API_CMD_ADD, NULL, record ) == DATA_API_STAT_OK )

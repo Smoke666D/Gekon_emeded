@@ -36,9 +36,9 @@ typedef struct __packed
   uint32_t   length;
 } SD_ROUTINE;
 /*------------------------ Functions -----------------------------------*/
-void    vSDinit ( void );
-void    vSDsendRoutine ( SD_ROUTINE routine );
-FRESULT eSDsaveConfig ( void );
-FRESULT eSDloadConfig ( void );
+void     vSDinit ( void );
+void     vSDsendRoutine ( SD_ROUTINE* routine );
+FRESULT  eSDsaveConfig ( void );
+FRESULT  eSDloadConfig ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATASD_H_ */

@@ -89,8 +89,8 @@ void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
 {
   uint8_t i          = 0U;
   uint8_t j          = 0U;
-  char    cBuf[2U]   = {0U,0U};
-  uint8_t hexBuf[8U] = {0U,0U,0U,0U,0U,0U,0U,0U};
+  char    cBuf[2U]   = { 0U };
+  uint8_t hexBuf[8U] = { 0U };
 
   for( i=0; i<8U; i++ )
   {
@@ -137,18 +137,14 @@ uint8_t uSYSisConst ( void* ptr )
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uSYSputChar ( char* str, uint32_t length, char ch )
 {
-  uint32_t res = length;
-  str[res] = ch;
-  res++;
-  return res;
+  str[length] = ch;
+  return ( length + 1U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uSYSendString ( char* str, uint32_t length )
 {
-  uint32_t res = length;
-  str[res] = '\n';
-  res++;
-  return res;
+  str[length] = '\n';
+  return ( length + 1U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 fix16_t fSYSconstrain ( fix16_t in, fix16_t min, fix16_t max )

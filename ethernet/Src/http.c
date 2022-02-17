@@ -1050,8 +1050,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           }
           break;
         case REST_MEMORY:
-          if ( MEASUREMENT_ENB > 0U )
-          {
+          #if defined( FATSD )
             stream                   = &response->stream;
             stream->size             = 1U;
             stream->start            = 0U;
@@ -1063,11 +1062,10 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
             response->content.data   = restBuffer;
-          }
+          #endif
           break;
         case REST_MEASUREMENT_LENGTH:
-          if ( MEASUREMENT_ENB > 0U )
-          {
+          #if defined( FATSD )
             stream                   = &response->stream;
             stream->size             = 1U;
             stream->start            = 0U;
@@ -1079,12 +1077,11 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
             response->content.data   = restBuffer;
-          }
+          #endif
           break;
 
         case REST_MEASUREMENT:
-          if ( MEASUREMENT_ENB > 0U )
-          {
+          #if defined( FATSD )
             stream = &response->stream;
             if ( adrFlag == REST_NO_ADR )
             {
@@ -1111,7 +1108,7 @@ void eHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             response->content.type = HTTP_CONTENT_JSON;
             response->status       = HTTP_STATUS_OK;
             response->content.data = restBuffer;
-          }
+          #endif
           break;
         case REST_OUTPUT:
           if ( ( adrFlag == REST_YES_ADR ) && ( adr < OUTPUT_DATA_REGISTER_NUMBER ) )

@@ -21,6 +21,7 @@
 #define  MEASUREMENT_TASK_PRIORITY     osPriorityLow
 #define  MB_TASK_PRIORITY              osPriorityNormal
 #define  FATSD_TASK_PRIORITY           osPriorityLow
+#define  NET_TASK_PRIORITY             osPriorityLow
 #define  ETHERNET_LINK_TASK_PRIORITY   osPriorityLow
 #define  PID_TASK_PRIORITY             osPriorityNormal
 #define  FPI_TASK_STACK_SIZE           ( 1024U - 180U * 4U  ) /* HWM = 25*/
@@ -29,6 +30,7 @@
 #define  CONTROLLER_TASK_STACK_SIZE    1024U
 #define  MEASUREMENT_TASK_STACK_SIZE   1024U
 #define  MB_TASK_STACK_SIZE            512U
+#define  NET_TASK_STACK_SIZE           ( 448U * 4U )
 #define  ETHERNET_LINK_TASK_STACK_SIZE 512U
 #define  FATSD_TASK_STACK_SIZE         1024U
 #define  PID_TASK_STACK_SIZE           512U

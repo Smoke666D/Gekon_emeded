@@ -114,13 +114,6 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 1024,//128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for netTask */
-osThreadId_t netTaskHandle;
-const osThreadAttr_t netTask_attributes = {
-  .name = "netTask",
-  .stack_size = 448 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
 /* Definitions for lcdTask */
 osThreadId_t lcdTaskHandle;
 const osThreadAttr_t lcdTask_attributes = {
@@ -189,7 +182,6 @@ static void MX_TIM8_Init(void);
 static void MX_IWDG_Init(void);
 static void MX_SDIO_SD_Init(void);
 void StartDefaultTask(void *argument);
-extern void vStartNetTask(void *argument);
 void StartLcdTask(void *argument);
 extern void vStartUsbTask(void *argument);
 extern void StartADCTask(void *argument);
@@ -362,9 +354,6 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* creation of netTask */
-  netTaskHandle = osThreadNew(vStartNetTask, NULL, &netTask_attributes);
 
   /* creation of lcdTask */
   lcdTaskHandle = osThreadNew(StartLcdTask, NULL, &lcdTask_attributes);
@@ -1505,6 +1494,7 @@ void StartDefaultTask(void *argument)
   uint8_t       period = 100U;
   vSYSserial( ">>Start Default Task!\n\r" );
   HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
+  vSERVERinit();
   res = eDATAAPIdataInit();                       /* Data from EEPROM initialization           */
   if ( res == EEPROM_OK )
   {

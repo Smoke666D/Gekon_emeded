@@ -19,6 +19,7 @@
 /*----------------------- Structures ----------------------------------------------------------------*/
 static struct netconn* nc    = NULL;   // Connection to the port 80
 static struct netconn* in_nc = NULL;   // New user connection
+static osThreadId_t netTaskHandle = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char defaultIp[IP4ADDR_STRLEN_MAX] = { '0', '0', '.', '0', '0', '.', '0', '0', '.', '0', '0', 0U, 0U, 0U, 0U, 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -31,57 +32,6 @@ SERVER_ERROR    eHTTPsendRequest ( const char* hostName, char* httpStr );
 RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length );
 void            vLINKTask ( void* argument );
 /*---------------------------------------------------------------------------------------------------*/
-/**
- * Read local IP address of device in char array format
- * Input:  buffer of char for IP address
- *         length of buffer is IP4ADDR_STRLEN_MAX = 16
- *         from ip4_addr.h
- *         if ipStr[0] = 0x00, initialization havn't finished
- * Output: none
- */
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-void cSERVERgetStrIP ( char* ipStr )
-{
-  uint8_t i       = 0U;
-  char*   pointer = ip4addr_ntoa( &gnetif.ip_addr );
-  if ( serverState == SERVER_STATE_UP )
-  {
-    for( i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
-    {
-      ipStr[i] = pointer[i];
-    }
-  }
-  else
-  {
-    for ( i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
-    {
-      ipStr[i] = defaultIp[i];
-    }
-  }
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-/*
- * Waiting the end of server initialization.
- * IP address available after the end of this function.
- * Run it one time after MX_LWIP_Init().
- * Input:  none
- * Output: none
- */
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-void vSERVERinit ( void )
-{
-  vHTTPinit();
-  while ( gnetif.ip_addr.addr == 0U )
-  {
-    osDelay( 1U );		// Wait the ip to reach the structure
-  }
-  return;
-}
 /*---------------------------------------------------------------------------------------------------*/
 /**
  * Start server. Open 80 port and start listen it.
@@ -206,6 +156,47 @@ void vSERVERclientClose ( struct netconn* netcon )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Make response for input request
+ * input:  input    - input http string
+ *         request  - output structure after parsing
+ *         response - output structure
+ *         output   - response string
+ * output: none
+ */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
+void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output, uint32_t remoteIP )
+{
+  eHTTPparsingRequest( input, request );
+  vHTTPbuildResponse( request, response, remoteIP );
+  vHTTPmakeResponse( output, response );
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Send request, get and parsing response
+ * input:  request  - input request structure
+ *         response - output response structure
+ *         output   - buffer for parsed data of response
+ * output: status of operation
+ */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
+HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
+{
+  HTTP_STATUS res                     = HTTP_STATUS_BAD_REQUEST;
+  char        buffer[HTTP_BUFER_SIZE] = { 0U };
+  vHTTPmakeRequest( request, buffer );
+  if ( eHTTPsendRequest( request->host, buffer ) == SERVER_OK )
+  {
+    res = eHTTPparsingResponse( buffer, output, response );
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /**
  * Routine handler of incoming packages.
  * Listen 80 port. For all new connection
@@ -227,7 +218,6 @@ SERVER_ERROR eSERVERlistenRoutine ( void )
   uint32_t         len        = 0U;
   STREAM_STATUS    status     = STREAM_CONTINUES;
   uint32_t         remoteIP   = 0U;
-  err_t            error      = ERR_OK;
 
   if ( netconn_accept( nc, &in_nc ) != ERR_OK )                 // Grab new connection && Block until we get an incoming connection
   {
@@ -252,7 +242,7 @@ SERVER_ERROR eSERVERlistenRoutine ( void )
         /*-------------------- Send response ---------------------*/
         if ( response.status != HTTP_STATUS_ERROR )
         {
-           error = netconn_write( in_nc, serverOutput, strlen( serverOutput ), NETCONN_COPY );  /* Send header of the response */
+           ( void )netconn_write( in_nc, serverOutput, strlen( serverOutput ), NETCONN_COPY );  /* Send header of the response */
           /*-------------------- Send content ----------------------*/
           if ( response.content.length > 0U )                                           /* There is content */
           {
@@ -261,7 +251,7 @@ SERVER_ERROR eSERVERlistenRoutine ( void )
               status = response.callBack( &response.stream );
               if ( status != STREAM_ERROR )
               {
-                error = netconn_write( in_nc, response.stream.content, response.stream.length, response.stream.flag );	/* Send content */
+                ( void )netconn_write( in_nc, response.stream.content, response.stream.length, response.stream.flag );	/* Send content */
               }
               else
               {
@@ -295,10 +285,34 @@ SERVER_ERROR eSERVERlistenRoutine ( void )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
+void vStartNetTask ( void *argument )
+{
+  if ( linkHandle == NULL )
+  {
+    const osThreadAttr_t linkTask_attributes = {
+      .name       = "linkTask",
+      .priority   = ( osPriority_t ) ETHERNET_LINK_TASK_PRIORITY,
+      .stack_size = ETHERNET_LINK_TASK_STACK_SIZE
+    };
+    linkHandle = osThreadNew( vLINKTask, NULL, &linkTask_attributes );
+  }
+  for(;;)
+  {
+    if ( serverState == SERVER_STATE_UP )
+    {
+      eSERVERlistenRoutine();
+    }
+    osDelay( 10U );
+  }
+}
+/*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
 SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
 {
   SERVER_ERROR 	  res       = SERVER_OK;
-  #if LWIP_DNS
+  #if ( LWIP_DNS > 0U )
   struct netconn* ncr       = NULL;
   struct netbuf*  nbr       = NULL;
   char*           IPstr     = NULL;
@@ -356,47 +370,6 @@ SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-/*
- * Send request, get and parsing response
- * input:  request  - input request structure
- *         response - output response structure
- *         output   - buffer for parsed data of response
- * output: status of operation
- */
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output )
-{
-  HTTP_STATUS res                     = HTTP_STATUS_BAD_REQUEST;
-  char        buffer[HTTP_BUFER_SIZE] = { 0U };
-  vHTTPmakeRequest( request, buffer );
-  if ( eHTTPsendRequest( request->host, buffer ) == SERVER_OK )
-  {
-    res = eHTTPparsingResponse( buffer, output, response );
-  }
-  return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
-/*
- * Make response for input request
- * input:  input    - input http string
- *         request  - output structure after parsing
- *         response - output structure
- *         output   - response string
- * output: none
- */
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-void eHTTPresponse ( char* input, HTTP_REQUEST* request, HTTP_RESPONSE* response, char* output, uint32_t remoteIP )
-{
-  eHTTPparsingRequest( input, request );
-  vHTTPbuildResponse( request, response, remoteIP );
-  vHTTPmakeResponse( output, response );
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
@@ -419,7 +392,11 @@ void vSERVERinitConnection ( void )
 {
   char ipaddrStr[16U] = { 0U };
   vSYSserial( ">>DHCP: ");
-  vSERVERinit();
+  vHTTPinit();
+  while ( gnetif.ip_addr.addr == 0U )
+  {
+    osDelay( 1U );    // Wait the ip to reach the structure
+  }
   vSYSserial( "done!\n\r");
   cSERVERgetStrIP( ipaddrStr );
   vSYSserial( ">>IP address: ");
@@ -501,34 +478,63 @@ void vLINKTask ( void* argument )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*----------------------- PABLIC --------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Waiting the end of server initialization.
+ * IP address available after the end of this function.
+ * Run it one time after MX_LWIP_Init().
+ * Input:  none
+ * Output: none
+ */
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-void vStartNetTask ( void *argument )
+void vSERVERinit ( void )
 {
-  if ( linkHandle == NULL )
-  {
-    const osThreadAttr_t linkTask_attributes = {
-      .name       = "linkTask",
-      .priority   = ( osPriority_t ) ETHERNET_LINK_TASK_PRIORITY,
-      .stack_size = ETHERNET_LINK_TASK_STACK_SIZE
+  #if defined( ETHERNET )
+    const osThreadAttr_t netTask_attributes = {
+      .name = "netTask",
+      .stack_size = NET_TASK_STACK_SIZE,
+      .priority = (osPriority_t) NET_TASK_PRIORITY,
     };
-    linkHandle = osThreadNew( vLINKTask, NULL, &linkTask_attributes );
-  }
-  for(;;)
-  {
-    if ( serverState == SERVER_STATE_UP )
-    {
-      eSERVERlistenRoutine();
-    }
-    osDelay( 10U );
-  }
+    netTaskHandle = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
+  #endif
+  return;
 }
-
-
-
-
-
-
-
+/*---------------------------------------------------------------------------------------------------*/
+/*
+ * Read local IP address of device in char array format
+ * Input:  buffer of char for IP address
+ *         length of buffer is IP4ADDR_STRLEN_MAX = 16
+ *         from ip4_addr.h
+ *         if ipStr[0] = 0x00, initialization havn't finished
+ * Output: none
+ */
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
+void cSERVERgetStrIP ( char* ipStr )
+{
+  uint8_t i       = 0U;
+  char*   pointer = ip4addr_ntoa( &gnetif.ip_addr );
+  if ( serverState == SERVER_STATE_UP )
+  {
+    for( i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
+    {
+      ipStr[i] = pointer[i];
+    }
+  }
+  else
+  {
+    for ( i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
+    {
+      ipStr[i] = defaultIp[i];
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------------*/
 

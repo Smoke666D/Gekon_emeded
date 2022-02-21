@@ -20,6 +20,7 @@
 #include "dataProces.h"
 #include "OutputData.h"
 #include "outputProcessing.h"
+#include "fatsd.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 extern USBD_HandleTypeDef  hUsbDeviceFS;
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -134,8 +135,15 @@ void vUSBtimeToReport ( USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBfreeDataToReport ( USB_REPORT* report )
 {
+  uint32_t size = 0U;
   report->stat   = USB_REPORT_STATE_OK;
   report->length = 2U;
+  if ( ( report->adr == SD_FREE_LOW_ADR ) && ( eFATSDgetStatus() == SD_STATUS_MOUNTED ) )
+  {
+    size = uFATSDgetFreeSpace();
+    *freeDataArray[SD_FREE_LOW_ADR]   = ( uint16_t )( size );
+    *freeDataArray[SD_FREE_HIGHT_ADR] = ( uint16_t )( size >> 16U );
+  }
   vUint16ToBytes( *freeDataArray[report->adr], report->data );
   return;
 }
@@ -514,87 +522,6 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBreportToEWA ( const USB_REPORT* report )
-{
-  USB_STATUS      res           = USB_STATUS_DONE;
-  uint8_t         length        = 0U;
-  static uint32_t index         = 0U;
-  DATA_API_STATUS status        = DATA_API_STAT_BUSY;
-  uint16_t        i             = 0;
-  uint32_t        checkAdr      = 0U;
-  uint8_t         checkData[4U] = { 0U };
-  if ( report->length > 0U )
-  {
-    if ( ( report->length - index ) >= USB_DATA_SIZE )
-    {
-      length = USB_DATA_SIZE;
-    }
-    else
-    {
-      length = ( uint8_t )( report->length - index );
-    }
-    while ( status == DATA_API_STAT_BUSY )
-    {
-      status = DATA_API_STAT_OK;
-      status = eDATAAPIewa( DATA_API_CMD_SAVE, ( STORAGE_EWA_DATA_ADR + index ), report->data, length );
-    }
-    if ( status == DATA_API_STAT_OK )
-    {
-      checkAdr = STORAGE_EWA_DATA_ADR + index;
-      for ( i=0U; i<length; i++ )
-      {
-        status = DATA_API_STAT_BUSY;
-        while ( status == DATA_API_STAT_BUSY )
-        {
-          status = eDATAAPIewa( DATA_API_CMD_LOAD, checkAdr, checkData, 1U );
-        }
-        if ( ( report->data[i] != checkData[0U] ) || ( status != DATA_API_STAT_OK ) )
-        {
-          res = USB_STATUS_STORAGE_ERROR;
-          break;
-        }
-        checkAdr++;
-      }
-      if ( res != USB_STATUS_STORAGE_ERROR )
-      {
-        index += length;
-        if ( index < report->length )
-        {
-          res = USB_STATUS_CONT;
-        }
-        else if ( index == report->length )
-        {
-          index  = 0U;
-          status = DATA_API_STAT_BUSY;
-          while ( status == DATA_API_STAT_BUSY )
-          {
-            status = eDATAAPIewa( DATA_API_CMD_SAVE, STORAGE_EWA_ADR, &( report->buf[USB_LEN2_BYTE] ), EEPROM_LENGTH_SIZE );
-          }
-          if ( status == DATA_API_STAT_OK )
-          {
-            res = USB_STATUS_DONE;
-          }
-          else
-          {
-            res = USB_STATUS_STORAGE_ERROR;
-          }
-        }
-        else
-        {
- 	        index = 0U;
-	        res   = USB_STATUS_ERROR_LENGTH;
-        }
-      }
-    }
-    else
-    {
-	    index = 0U;
-	    res = USB_STATUS_STORAGE_ERROR;
-    }
-  }
-  return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
 /*
  * Convert report structure to the output buffer
  * input:  report structure
@@ -710,12 +637,6 @@ USB_STATUS eUSBerasePassword( const USB_REPORT* report )
     res = USB_STATUS_STORAGE_ERROR;
   }
   return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vUSBmemorySizeToReport ( USB_REPORT* report )
-{
-  report->stat = USB_REPORT_STATE_BAD_REQ;
-  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBmeasurementToReport ( USB_REPORT* report )
@@ -944,9 +865,6 @@ void vStartUsbTask ( void *argument )
         case USB_REPORT_CMD_PUT_CHART_FUEL:
           vUSBget( &report, eUSBreportToChart );
           break;
-        case USB_REPORT_CMD_PUT_EWA:
-          vUSBget( &report, eUSBreportToEWA );
-          break;
         case USB_REPORT_CMD_SAVE_CONFIG:
           vUSBget( &report, eUSBsaveConfigs );
           break;
@@ -980,20 +898,20 @@ void vStartUsbTask ( void *argument )
         case USB_REPORT_CMD_ERASE_PASSWORD:
           vUSBget( &report, eUSBerasePassword );
           break;
-        case USB_REPORT_CMD_GET_MEMORY_SIZE:
-          vUSBsend( &report, vUSBmemorySizeToReport );
-          break;
-        case USB_REPORT_CMD_GET_MEASUREMENT:
-          vUSBsend( &report, vUSBmeasurementToReport );
-          break;
-        case USB_REPORT_CMD_GET_MEASUREMENT_LENGTH:
-          vUSBsend( &report, vUSBmeasurementLengthToReport );
-          break;
         case USB_REPORT_CMD_GET_OUTPUT:
           vUSBsend( &report, vUSBoutputToReport );
           break;
         case USB_REPORT_CMD_PUT_OUTPUT:
           vUSBget( &report, eUSBreportToOutput );
+          break;
+
+
+
+        case USB_REPORT_CMD_GET_MEASUREMENT:
+          vUSBsend( &report, vUSBmeasurementToReport );
+          break;
+        case USB_REPORT_CMD_GET_MEASUREMENT_LENGTH:
+          vUSBsend( &report, vUSBmeasurementLengthToReport );
           break;
         default:
           break;

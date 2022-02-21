@@ -10,6 +10,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "system.h"
+#include "freeData.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 #if defined( FATSD )
@@ -92,8 +93,9 @@ char* vFILEstringCounter ( uint16_t length )
 /*---------------------------------------------------------------------------------------------------*/
 void vFATSDtask ( void* argument )
 {
-  FRESULT res   = FR_OK;
-  uint8_t retSD = 0U;
+  FRESULT  res   = FR_OK;
+  uint8_t  retSD = 0U;
+  uint32_t size  = 0U;
   osDelay( 1000U );
   HAL_SD_MspDeInit( hsd );
   for (;;)
@@ -111,8 +113,11 @@ void vFATSDtask ( void* argument )
           BSP_SD_GetCardInfo( &cardInfo );
           if ( res == FR_OK )
           {
-            fatsd.mounted = 1U;
-            fatsd.status  = SD_STATUS_MOUNTED;
+            fatsd.mounted                     = 1U;
+            fatsd.status                      = SD_STATUS_MOUNTED;
+            size                              = uFATSDgetFullSpace();
+            *freeDataArray[SD_SIZE_LOW_ADR]   = ( uint16_t )( size );
+            *freeDataArray[SD_SIZE_HIGHT_ADR] = ( uint16_t )( size >> 16U );
           }
           else if ( res == FR_LOCKED )
           {
@@ -149,6 +154,10 @@ void vFATSDtask ( void* argument )
         SDIO->MASK     = 0x00000000;
         fatsd.mounted  = 0U;
         fatsd.status   = SD_STATUS_UNMOUNTED;
+        *freeDataArray[SD_SIZE_LOW_ADR]   = 0U;
+        *freeDataArray[SD_SIZE_HIGHT_ADR] = 0U;
+        *freeDataArray[SD_FREE_LOW_ADR]   = 0U;
+        *freeDataArray[SD_FREE_HIGHT_ADR] = 0U;
       }
     }
     osDelay( 1000U );
@@ -189,7 +198,6 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
   uint32_t i        = 0U;
   uint8_t  counter  = 0U;
   uint32_t length   = 0U;
-  uint32_t temp     = 0U;
   uint8_t  data[2U] = { 0U };
   if ( ( fatsd.status == SD_STATUS_MOUNTED ) || ( fatsd.status == SD_STATUS_LOCKED ) )
   {

@@ -25,21 +25,29 @@ uint16_t powerFullUsage               = 0U;  /*  8 */
 uint16_t fuelUsage                    = 0U;  /*  9 */
 uint16_t fuelRate                     = 0U;  /* 10 */
 uint16_t fuelAverageSize              = 0U;  /* 11 */
+uint16_t sdSizeLow                    = 0U;  /* 12 */
+uint16_t sdSizeHight                  = 0U;  /* 13 */
+uint16_t sdFreeLow                    = 0U;  /* 14 */
+uint16_t sdFreeHight                  = 0U;  /* 15 */
 
 uint16_t* const freeDataArray[FREE_DATA_SIZE] =
 {
-  &engineWorkTime,
-  &engineWorkMinutes,
-  &engineStartsNumber,
-  &maintenanceAlarmOilTimeLeft,
-  &maintenanceAlarmAirTimeLeft,
-  &maintenanceAlarmFuelTimeLeft,
-  &powerReactiveUsage,
-  &powerActiveUsage,
-  &powerFullUsage,
-  &fuelUsage,
-  &fuelRate,
-  &fuelAverageSize
+  &engineWorkTime,               /*  0 */
+  &engineWorkMinutes,            /*  1 */
+  &engineStartsNumber,           /*  2 */
+  &maintenanceAlarmOilTimeLeft,  /*  3 */
+  &maintenanceAlarmAirTimeLeft,  /*  4 */
+  &maintenanceAlarmFuelTimeLeft, /*  5 */
+  &powerReactiveUsage,           /*  6 */
+  &powerActiveUsage,             /*  7 */
+  &powerFullUsage,               /*  8 */
+  &fuelUsage,                    /*  9 */
+  &fuelRate,                     /* 10 */
+  &fuelAverageSize,              /* 11 */
+  &sdSizeLow,                    /* 12 */
+  &sdSizeHight,                  /* 13 */
+  &sdFreeLow,                    /* 14 */
+  &sdFreeHight                   /* 15 */
 };
 
 void vFREEDATAerase ( void )

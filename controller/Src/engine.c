@@ -24,6 +24,7 @@
 #include "lcd.h"
 #include "charger.h"
 #include "system.h"
+#include "measurement.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE        engine              = { 0U };
 static OIL_TYPE           oil                 = { 0U };
@@ -513,10 +514,10 @@ uint8_t uENGINEisUnban( void )
   uint8_t         size   = 0U;
   uint8_t         i      = 0U;
   LOG_RECORD_TYPE record = { 0U };
-  eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, NULL, &size );
+  ( void )eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, NULL, &size );
   for ( i=0U; i<size; i++ )
   {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
+    ( void )eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
     if ( record.event.action == ACTION_BAN_START )
     {
       res = 0U;
@@ -1403,7 +1404,7 @@ void vENGINEtask ( void* argument )
     coolantVal   = fCOOLANTprocess();
     fuelVal      = fFUELprocess();
     chargerVal   = fCHARGERprocess();
-    fBATTERYprocess();
+    ( void )fBATTERYprocess();
     genFreqVal   = xADCGetGENLFreq();
 
     if ( speed.enb == PERMISSION_ENABLE )
@@ -1453,6 +1454,7 @@ void vENGINEtask ( void* argument )
           switch ( starter.status )
           {
             case STARTER_STATUS_IDLE:
+              vMEASUREMENTsendCmd( MEASURMENT_CMD_START );
               vFPOsetReadyToStart( RELAY_OFF );
               engine.stopError.active            = PERMISSION_DISABLE;
               speed.lowAlarm.error.active        = PERMISSION_DISABLE;
@@ -1637,8 +1639,8 @@ void vENGINEtask ( void* argument )
               engine.cmd        = ENGINE_CMD_NONE;
               starter.status    = STARTER_STATUS_IDLE;
               starter.iteration = 0U;
-              eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
-              eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
+              ( void )eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
+              ( void )eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
               vLOGICprintStarterStatus( starter.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_START;
@@ -1740,6 +1742,7 @@ void vENGINEtask ( void* argument )
               planStop.status  = STOP_STATUS_IDLE;
               blockTimerFinish = TRIGGER_IDLE;
               starterFinish    = TRIGGER_IDLE;
+              vMEASUREMENTsendCmd( MEASURMENT_CMD_STOP );
               vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_STATUS_OK:
@@ -1752,6 +1755,7 @@ void vENGINEtask ( void* argument )
               vLOGICprintPlanStopStatus( planStop.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_STOP;
+              vMEASUREMENTsendCmd( MEASURMENT_CMD_STOP );
               vEVENTtriggering( event );
               break;
             default:
@@ -1870,6 +1874,7 @@ void vENGINEtask ( void* argument )
             emgencyStopStatus       = EMERGENCY_STATUS_IDLE;
             engine.cmd              = ENGINE_CMD_NONE;
             engine.stopError.active = PERMISSION_ENABLE;
+            vMEASUREMENTsendCmd( MEASURMENT_CMD_STOP );
             break;
           default:
             emgencyStopStatus = EMERGENCY_STATUS_IDLE;

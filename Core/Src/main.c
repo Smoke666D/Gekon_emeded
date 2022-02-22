@@ -1518,12 +1518,12 @@ void StartDefaultTask(void *argument)
       vELECTROinit( &htim12 );                    /**/
       vLOGICinit( &htim5 );                       /**/
       vCONTROLLERinit( &controllerInitStruct );   /**/
-      vMEASUREMENTinit();                         /**/
       vOUTPUTinit();
       vMBinit( mbInit );                          /* Start ModBus                              */
       HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
       vFATSDinit( &hsd );
       vSDinit();
+      vMEASUREMENTinit();                         /**/
     }
     else
     {

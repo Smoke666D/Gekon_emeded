@@ -63,8 +63,6 @@ typedef struct __packed
   MEASURMENT_STATE state : 3U;   /* Current state of the measurement tread              */
   MEASURMENT_CMD   cmd   : 2U;   /* Current command for measurement tread               */
   uint8_t          length;       /* Number of active measurement channels               */
-  uint16_t         size;         /* Number of measurement iteration 0xFFFF - infinitely */
-  uint16_t         counter;      /* Current number of measurements after start          */
   SYSTEM_TIMER     timer;        /* Timer to calculate measurement delay                */
   uint8_t          channels[MEASUREMENT_CHANNEL_NUMBER];
 } MEASUREMENT_TYPE;

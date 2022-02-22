@@ -55,6 +55,7 @@ char* cSDreadConfigCallback ( uint16_t length )
 void vSDtask ( void* argument )
 {
   SD_ROUTINE input = { 0U };
+  FRESULT    res   = FR_OK;
   for (;;)
   {
     if ( xQueueReceive( pSDqueue, &input, 0U ) == pdPASS )
@@ -66,29 +67,30 @@ void vSDtask ( void* argument )
           case FATSD_FILE_CONFIG:
             if ( input.cmd == SD_COMMAND_READ )
             {
-              ( void )eSDloadConfig();
+              res = eSDloadConfig();
             }
             else
             {
-              ( void )eSDsaveConfig();
+              res = eSDsaveConfig();
             }
             break;
           case FATSD_FILE_MEASUREMENT:
             #if defined( MEASUREMENT )
-              ( void )eFILEaddLine( FATSD_FILE_MEASUREMENT, input.buffer, input.length );
+              res = eFILEaddLine( FATSD_FILE_MEASUREMENT, input.buffer, input.length );
             #endif
             break;
           case FATSD_FILE_LOG:
             #if defined( WRITE_LOG_TO_SD )
-              ( void )eFILEaddLine( FATSD_FILE_LOG, input.buffer, input.length );
+              res = eFILEaddLine( FATSD_FILE_LOG, input.buffer, input.length );
             #endif
             break;
           default:
             break;
         }
       }
+      res = FR_OK;
     }
-    osDelay( 1000U );
+    //osDelay( 1000U );
   }
   return;
 }

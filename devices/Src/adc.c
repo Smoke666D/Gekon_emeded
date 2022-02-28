@@ -150,6 +150,7 @@ fix16_t xADCGetVDD ( void )
   xVDD = fix16_mul( fix16_from_int( uVDD ),  xVDD_CF );
  //Вычитаем падение на диоде
   xVDD = fix16_sub( xVDD, VT4 );
+
   return (xVDD);
 }
 

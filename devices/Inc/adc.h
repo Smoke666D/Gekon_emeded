@@ -107,7 +107,7 @@
 #define R3             1416U
 #define R12            22.2
 #define R12_R11        122.2
-#define VT4            0U
+#define VT4            -0.4
 #define MAX_RESISTANCE 5000U
 #define DELTA          ( 0.04 * 4095U / 3.3 )
 #define IN_VDD         2U

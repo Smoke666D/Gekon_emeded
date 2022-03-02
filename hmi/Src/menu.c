@@ -1395,12 +1395,22 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
        case HW_VER:
        case SW_VER:
             eDATAAPIconfigAtrib(DATA_API_CMD_READ, ( ID == HW_VER ) ? VERSION_CONTROLLER_ADR : VERSION_FIRMWARE_ADR ,&ATR);
-            if (ATR.len ==1 )
+            if (ATR.len ==3 )
             {
                 eDATAAPIconfigValue(DATA_API_CMD_READ, (ID == HW_VER ) ? VERSION_CONTROLLER_ADR : VERSION_FIRMWARE_ADR ,(uint16_t*)&tt);
-                vUToStr(TS,tt[0]/1000,0);
+                vUToStr(TS,tt[0]/10,0);
                 vStrCopy(Data,TS);
-                vUToStr(TS,tt[0]%1000,0);
+                vUToStr(TS,tt[0]%10,0);
+                 vStrAdd(Data,TS);
+                vStrAdd(Data,".");
+                vUToStr(TS,tt[1]/10,0);
+                vStrAdd(Data,TS);
+                vUToStr(TS,tt[1]%10,0);
+                vStrAdd(Data,TS);
+                vStrAdd(Data,".");
+                vUToStr(TS,tt[2]/10,0);
+                vStrAdd(Data,TS);
+                vUToStr(TS,tt[2]%10,0);
                 vStrAdd(Data,TS);
             }
             break;

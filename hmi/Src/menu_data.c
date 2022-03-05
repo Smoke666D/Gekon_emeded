@@ -69,6 +69,7 @@ static xScreenObjet const EngineMainScreen[]=
   { 0U, FONT_SIZE*14U, ( LINE4_HIGTH + 2U ), 40U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)vGetDataForMenu,  OIL_PRESSURE },
   { 0U, FONT_SIZE*14U, ( LINE2 + 3U ),       40U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetDataForMenu, COOL_TEMP},
   { 0U, FONT_SIZE*14U, ( LINE3 + 3U ),       40U, LINE4_HIGTH, HW_DATA, RigthText, NULL, (void*)&vGetDataForMenu, ENGINE_SPEED },
+  { 0U, FONT_SIZE*18U, LINE3, 50U, 0U, TEXT_STRING, RigthText, "$176", NULL, 0U},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 

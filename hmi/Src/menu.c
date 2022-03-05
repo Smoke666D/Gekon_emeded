@@ -808,10 +808,51 @@ void vMenuGotoAlarmScreen( void)
       return;
 }
 
+
+uint8_t GetNumber(char temp)
+{
+  uint8_t res;
+  switch (temp)
+  {
+    case '0':
+     res =0;
+     break;
+    case '1':
+     res = 1;
+     break;
+    case '2':
+     res = 2;
+     break;
+    case '3':
+     res = 3;
+     break;
+    case '4':
+     res = 4;
+     break;
+    case '5':
+     res =5;
+     break;
+    case '6':
+     res = 6;
+     break;
+    case '7':
+     res = 7;
+     break;
+    case '8':
+     res = 8;
+     break;
+    case '9':
+     res = 9;
+     break;
+  }
+  return res;
+}
+
 /*---------------------------------------------------------------------------------------------------*/
 void vDrawObject( xScreenObjet * pScreenObjects)
 {
   char* TEXT      = NULL;
+  uint8_t sTEXT[2]={0,0,0};
   uint8_t  Insert    = 0U;
   char  Text[40U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ',' ',' ',' '};
   uint8_t  i         = 0U;
@@ -926,7 +967,17 @@ void vDrawObject( xScreenObjet * pScreenObjects)
           }
           else
           {
-            u8g2_DrawUTF8( u8g2, pScreenObjects[i].x, pScreenObjects[i]. y, TEXT );
+            if (TEXT[0]!='$')
+            {
+              u8g2_DrawUTF8( u8g2, pScreenObjects[i].x, pScreenObjects[i]. y, TEXT );
+            }
+            else
+            {
+
+              u8g2_SetFont( u8g2, FONT_TYPES );
+              sTEXT[0] =GetNumber(TEXT[1])*100+GetNumber(TEXT[2])*10+GetNumber(TEXT[3]);
+              u8g2_DrawStr( u8g2, pScreenObjects[i].x, pScreenObjects[i]. y, sTEXT );
+            }
           }
           break;
         default:
@@ -1331,7 +1382,7 @@ void vPrintAinData(char* Data, uint8_t ID)
            case SENSOR_TYPE_RESISTIVE:
              eCHARTfunc(charts[COOLANT_CHART_ADR], xADCGetSCT() ,   &temp);
              fix16_to_str( temp, Data, 0U );
-             vStrAdd(Data," гр.С");
+             vStrAdd(Data,"    С");
              break;
           case SENSOR_TYPE_NORMAL_OPEN:
           case SENSOR_TYPE_NORMAL_CLOSE:

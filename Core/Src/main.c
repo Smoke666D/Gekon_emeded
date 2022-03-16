@@ -264,6 +264,30 @@ static const GPIO_TYPE chargGPIO = {
   .pin = CHARG_ON_Pin,
   .port = CHARG_ON_GPIO_Port,
 };
+static const EEPROM_TYPE storEE = {
+  .SRWD      = M95Mxx_SRWD,
+  .ID        = M95Mxx_ID,
+  .protect   = M95Mxx_PROTECTION,
+  .size      = M95M01_SIZE,
+  .page      = M95Mxx_PAGE_SIZE,
+  .frequensy = M95Mxx_CLOCK_FREQ,
+  .timeout   = M95Mxx_TIMEOUT,
+  .spi       = &hspi1,
+  .cs.pin    = EEPROM_NSS_Pin,
+  .cs.port   = EEPROM_NSS_GPIO_Port,
+};
+static const EEPROM_TYPE macEE = {
+  .SRWD      = AA02E48_SRWD,
+  .ID        = AA02E48_ID,
+  .protect   = AA02E48_PROTECTION,
+  .size      = AA02E48_SIZE,
+  .page      = AA02E48_PAGE_SIZE,
+  .frequensy = AA02E48_CLOCK_FREQ,
+  .timeout   = AA02E48_TIMEOUT,
+  .spi       = &hspi1,
+  .cs.pin    = EEPROM_NSS_Pin,
+  .cs.port   = EEPROM_NSS_GPIO_Port,
+};
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/

@@ -358,7 +358,7 @@ void vST7920init(void)
   vLCDBrigthInit();
   vLCD_HAL_SPI_DMA_Init();
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET );
-  osDelay( 1U );
+  osDelay( 10U );
   HAL_GPIO_WritePin( LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET );
   osDelay( 60U );
   HAL_GPIO_WritePin( LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET );

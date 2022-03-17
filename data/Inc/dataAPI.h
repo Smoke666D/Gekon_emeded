@@ -63,7 +63,7 @@ typedef struct __packed
 } LOG_CASH_TYPE;
 /*------------------------ Functions -----------------------------------*/
 EEPROM_STATUS      eDATAAPIdataInit ( void );
-void               vDATAAPIinit ( void );
+void               vDATAAPIinit ( const EEPROM_TYPE* storage );
 EEPROM_STATUS      eDATAAPIlogInit ( void );
 DATA_API_STATUS    eDATAAPIisInit ( void );
 DATA_API_STATUS    eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* data );
@@ -72,7 +72,6 @@ DATA_API_STATUS    eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t
 DATA_API_STATUS    eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* chart );
 DATA_API_STATUS    eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint16_t* data );
 DATA_API_STATUS    eDATAAPIpassword ( DATA_API_COMMAND cmd, PASSWORD_TYPE* password );
-DATA_API_STATUS    eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length );
 DATA_API_STATUS    eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TYPE* record );
 DATA_API_STATUS    eDATAAPIlogPointer ( DATA_API_COMMAND cmd, uint16_t* pointer );
 DATA_API_STATUS    eDATAAPImeasurement ( DATA_API_COMMAND cmd, uint16_t* adr, uint8_t length, uint16_t* data );

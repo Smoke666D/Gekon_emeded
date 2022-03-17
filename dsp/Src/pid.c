@@ -149,7 +149,7 @@ void vPIDinit ( const PID_INIT* data, uint8_t length )
       pids[i].get        = data->get;
       pids[i].setpoint   = data->setpoint;
       pids[i].set        = data->set;
-      sprintf( name, "pidTask%d", i );
+      ( void )sprintf( name, "pidTask%d", i );
       const osThreadAttr_t attributes = {
         .name       = name,
         .priority   = ( osPriority_t ) PID_TASK_PRIORITY,

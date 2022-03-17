@@ -652,7 +652,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
     switch ( request )
     {
       case REST_CONFIGS:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
           {
@@ -672,7 +672,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_CHARTS:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( ( adr != 0xFFFFU ) && ( adr < SETTING_REGISTER_NUMBER ) && ( adrFlag != REST_NO_ADR ) )
           {
@@ -692,7 +692,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_SAVE_CONFIGS:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
           {
@@ -709,7 +709,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_SAVE_CHARTS:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( eDATAAPIchart( DATA_API_CMD_SAVE, 0U, NULL ) == DATA_API_STAT_OK )
           {
@@ -726,7 +726,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_TIME:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( eRESTparsingTime( content, &time ) == REST_OK )
           {
@@ -746,7 +746,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_FREE_DATA:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( adr < FREE_DATA_SIZE )
           {
@@ -772,7 +772,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_LOG_ERASE:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( eDATAAPIlog( DATA_API_CMD_ERASE, NULL, NULL ) == DATA_API_STAT_OK )
           {
@@ -789,7 +789,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_PASSWORD:
-        if ( eHTTPisAuth( remoteIP ) )
+        if ( eHTTPisAuth( remoteIP ) == AUTH_DONE )
         {
           if ( eRESTparsingPassword( content, &password ) == REST_OK )
           {
@@ -843,11 +843,7 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         break;
       case REST_ERASE_PASSWORD:
-        if ( eHTTPisAuth( remoteIP ) )
-        {
-
-        }
-        else
+        if ( eHTTPisAuth( remoteIP ) == AUTH_VOID )
         {
           response->content.type  = HTTP_CONTENT_JSON;
           response->status        = HTTP_STATUS_UNAUTHORIZED;

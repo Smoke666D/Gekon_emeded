@@ -114,7 +114,7 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
       if ( pchEn != NULL )
       {
         pchEn -= 1U;
-        strncpy( buffer, pchSt, ( pchEn - pchSt ) );
+        ( void )strncpy( buffer, pchSt, ( pchEn - pchSt ) );
         contentLengthHeader = atoi( buffer );
         if ( contentLengthHeader > 0U )
         {
@@ -135,6 +135,10 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
         else if ( message[length - 1U] == CR_HEX )
         {
           res = RECEIVE_MESSAGE_COMPLETE;
+        }
+        else
+        {
+
         }
       }
     }
@@ -406,7 +410,10 @@ void vSERVERinitConnection ( void )
   if ( eSERVERstart() != SERVER_OK )
   {
     vSYSserial( "fail!\n\r" );
-    while( 1U ) osDelay( 1U );
+    while( 1U )
+    {
+      osDelay( 1U );
+    }
   }
   vSYSserial( "done!\n\r" );
   vSYSserial( ">>Server ready and listen port 80!\n\r" );
@@ -496,7 +503,7 @@ void vSERVERinit ( void )
     const osThreadAttr_t netTask_attributes = {
       .name = "netTask",
       .stack_size = NET_TASK_STACK_SIZE,
-      .priority = (osPriority_t) NET_TASK_PRIORITY,
+      .priority = (osPriority_t) NET_TASK_PRIORITY
     };
     netTaskHandle = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
   #endif

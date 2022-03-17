@@ -281,7 +281,6 @@ RTC_STATUS eRTCgetTime ( RTC_TIME* time )
 {
   uint8_t    buffer[RTC_TIME_SIZE] = { 0U };
   RTC_STATUS res                   = RTC_OK;
-  uint8_t    adr                   = 0U;
   if ( xRTCSemaphore != NULL )
   {
     if ( xSemaphoreTake( xRTCSemaphore, RTC_SEMAPHORE_DELAY ) == pdTRUE )
@@ -289,13 +288,13 @@ RTC_STATUS eRTCgetTime ( RTC_TIME* time )
       res = eRTCread( RTC_SECONDS, buffer, RTC_TIME_SIZE );
       if ( res == RTC_OK )
       {
-        time->sec   = bcdToDec( buffer[adr++] & RTC_SEC_MSK );
-        time->min   = bcdToDec( buffer[adr++] & RTC_MIN_MSK );
-        time->hour  = bcdToDec( buffer[adr++] & RTC_HOUR_MSK );
-        time->wday  = buffer[adr++] & RTC_WDAY_MSK;
-        time->day   = bcdToDec( buffer[adr++] & RTC_DAY_MSK );
-        time->month = bcdToDec( buffer[adr++] & RTC_MONTH_MSK );
-        time->year  = bcdToDec( buffer[adr++] & RTC_YEAR_MSK );
+        time->sec   = bcdToDec( buffer[0U] & RTC_SEC_MSK );
+        time->min   = bcdToDec( buffer[1U] & RTC_MIN_MSK );
+        time->hour  = bcdToDec( buffer[2U] & RTC_HOUR_MSK );
+        time->wday  = buffer[3U] & RTC_WDAY_MSK;
+        time->day   = bcdToDec( buffer[4U] & RTC_DAY_MSK );
+        time->month = bcdToDec( buffer[5U] & RTC_MONTH_MSK );
+        time->year  = bcdToDec( buffer[6U] & RTC_YEAR_MSK );
       }
       xSemaphoreGive( xRTCSemaphore );
     }
@@ -320,20 +319,19 @@ RTC_STATUS eRTCsetTime ( RTC_TIME* time )
 {
   RTC_STATUS res                   = eVarifyTime( time );
   uint8_t    buffer[RTC_TIME_SIZE] = { 0U };
-  uint8_t    adr                   = 0U;
   if ( xRTCSemaphore != NULL )
   {
     if ( xSemaphoreTake( xRTCSemaphore, RTC_SEMAPHORE_DELAY ) == pdTRUE )
     {
       if ( res == RTC_OK )
       {
-        buffer[adr++] = decToBcd( time->sec );
-        buffer[adr++] = decToBcd( time->min );
-        buffer[adr++] = decToBcd( time->hour );
-        buffer[adr++] = ( uint8_t )time->wday;
-        buffer[adr++] = decToBcd( time->day );
-        buffer[adr++] = decToBcd( ( uint8_t )time->month );
-        buffer[adr++] = decToBcd( time->year );
+        buffer[0U] = decToBcd( time->sec );
+        buffer[1U] = decToBcd( time->min );
+        buffer[2U] = decToBcd( time->hour );
+        buffer[3U] = ( uint8_t )time->wday;
+        buffer[4U] = decToBcd( time->day );
+        buffer[5U] = decToBcd( ( uint8_t )time->month );
+        buffer[6U] = decToBcd( time->year );
         res = eRTCwrite( RTC_SECONDS, buffer, RTC_TIME_SIZE );
         osDelay( RTC_POOL_TIMEOUT );
         if ( res == RTC_OK )

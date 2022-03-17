@@ -453,6 +453,10 @@ void vFPITask ( void* argument )
               {
                 fpis[i].state = FPI_IDLE;
               }
+              else
+              {
+
+              }
               break;
             default:
               fpis[i].state = FPI_IDLE;

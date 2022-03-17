@@ -219,12 +219,12 @@ void vSTATUSsetup ( DEVICE_STATUS status, timerID_t id )
 void vLOGICprintTime ( uint32_t time )
 {
   char buffer[21] = { 0U };
-  sprintf( &buffer[0U],  "%02d.", (uint16_t)GET_LOG_DAY( time ) );
-  sprintf( &buffer[3U],  "%02d.", (uint16_t)GET_LOG_MONTH( time ) );
-  sprintf( &buffer[6U],  "%04d/", (uint16_t)GET_LOG_YEAR( time ) );
-  sprintf( &buffer[11U], "%02d:", (uint16_t)GET_LOG_HOUR( time ) );
-  sprintf( &buffer[14U], "%02d:", (uint16_t)GET_LOG_MIN( time ) );
-  sprintf( &buffer[17U], "%02d",  (uint16_t)GET_LOG_SEC( time ) );
+  ( void )sprintf( &buffer[0U],  "%02d.", (uint16_t)GET_LOG_DAY( time ) );
+  ( void )sprintf( &buffer[3U],  "%02d.", (uint16_t)GET_LOG_MONTH( time ) );
+  ( void )sprintf( &buffer[6U],  "%04d/", (uint16_t)GET_LOG_YEAR( time ) );
+  ( void )sprintf( &buffer[11U], "%02d:", (uint16_t)GET_LOG_HOUR( time ) );
+  ( void )sprintf( &buffer[14U], "%02d:", (uint16_t)GET_LOG_MIN( time ) );
+  ( void )sprintf( &buffer[17U], "%02d",  (uint16_t)GET_LOG_SEC( time ) );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -399,7 +399,7 @@ void vLOGICresetAllTimers ( void )
 uint8_t uLOGICisTimer ( SYSTEM_TIMER* timer )
 {
   uint8_t res = 0U;
-  if ( ( ( 1U << timer->id ) & aciveCounters ) )
+  if ( ( ( 1U << timer->id ) & aciveCounters ) > 0U )
   {
     if ( targetArray[timer->id] <= counterArray[timer->id] )
     {
@@ -430,7 +430,7 @@ void vLOGICprintActiveTimers ( void )
   else
   {
     vLOGICprintDebug( ">>************************\r\n" );
-    sprintf( buffer,  "%d", activeNumber );
+    ( void )sprintf( buffer,  "%d", activeNumber );
     vLOGICprintDebug( ">>There are " );
     vLOGICprintDebug( buffer );
     vLOGICprintDebug( " active timers\r\n" );

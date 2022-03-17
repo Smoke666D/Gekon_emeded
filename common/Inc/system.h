@@ -11,7 +11,7 @@
 #include "stm32f2xx_hal.h"
 #include "cmsis_os.h"
 /*------------------------ Define --------------------------------------*/
-#define  OPTIMIZ
+//#define  OPTIMIZ
 #define  OPTIMIZ_LEVEL   "-O2"
 
 #define  FPI_TASK_PRIORITY             osPriorityLow

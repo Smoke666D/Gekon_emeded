@@ -429,24 +429,24 @@ void vSERVERcheckPlug ( void )
     case SERVER_STATE_PLUG:
       if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
       {
-	if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
-	{
-	  netif_set_default( &gnetif );
-	  netif_set_up( &gnetif );
-	  dhcp_start( &gnetif );
-	  vSERVERinitConnection();
-	  serverState = SERVER_STATE_UP;
-	}
+	      if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
+	      {
+	        netif_set_default( &gnetif );
+	        netif_set_up( &gnetif );
+	        dhcp_start( &gnetif );
+	        vSERVERinitConnection();
+	        serverState = SERVER_STATE_UP;
+	      }
       }
       break;
     case SERVER_STATE_DOWN:
       if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
       {
-	if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
-	{
-	  netif_set_up( &gnetif );
-	  serverState = SERVER_STATE_UP;
-	}
+	      if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
+	      {
+	        netif_set_up( &gnetif );
+	        serverState = SERVER_STATE_UP;
+	      }
       }
       break;
     case SERVER_STATE_UP:

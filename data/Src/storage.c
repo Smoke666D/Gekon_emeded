@@ -124,11 +124,10 @@ EEPROM_STATUS eSTORAGEreadUint32 ( uint32_t* data, uint32_t* adr )
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-void vSTORAGEinit ( const EEPROM_TYPE* eeprom )
+EEPROM_STATUS eSTORAGEinit ( const EEPROM_TYPE* eeprom )
 {
   storageEEPROM = eeprom;
-  eEEPROMInit( eeprom );
-  return;
+  return eEEPROMInit( eeprom );
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uSTORAGEgetSize ( void )
@@ -143,7 +142,7 @@ EEPROM_STATUS eSTORAGEreadSR ( uint8_t* sr )
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteSR ( const uint8_t* sr )
 {
-  return eEEPROMwriteMemory( storageEEPROM, STORAGE_SR_ADR, sr, 1U );
+  return eEEPROMwriteMemory( storageEEPROM, STORAGE_SR_ADR, ( uint8_t* )sr, 1U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteMap ( void )
@@ -201,14 +200,14 @@ EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output )
 uint8_t uSTORAGEcheckMap ( const uint32_t* map )
 {
   uint8_t res = 0U;
-  if ( ( map[2U] == ( uint32_t )( STORAGE_CONFIG_SIZE         ) ) &&
-       ( map[3U] == ( uint32_t )( STORAGE_CHART_SIZE          ) ) &&
-       ( map[4U] == ( uint32_t )( STORAGE_FREE_DATA_SIZE      ) ) &&
-       ( map[5U] == ( uint32_t )( STORAGE_PASSWORD_SIZE       ) ) &&
-       ( map[6U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE    ) ) &&
-       ( map[7U] == ( uint32_t )( STORAGE_LOG_SIZE            ) ) &&
-       ( map[8U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) &&
-       ( map[9U] == ( uint32_t )( STORAGE_MEASUREMENT_SR_SIZE ) ) )
+  if ( ( map[0U] == ( uint32_t )( STORAGE_CONFIG_SIZE         ) ) &&
+       ( map[1U] == ( uint32_t )( STORAGE_CHART_SIZE          ) ) &&
+       ( map[2U] == ( uint32_t )( STORAGE_FREE_DATA_SIZE      ) ) &&
+       ( map[3U] == ( uint32_t )( STORAGE_PASSWORD_SIZE       ) ) &&
+       ( map[4U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE    ) ) &&
+       ( map[5U] == ( uint32_t )( STORAGE_LOG_SIZE            ) ) &&
+       ( map[6U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) &&
+       ( map[7U] == ( uint32_t )( STORAGE_MEASUREMENT_SR_SIZE ) ) )
   {
     res = 1U;
   }
@@ -314,7 +313,7 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   uint8_t       i                            = 0U;
   uint32_t      adr                          = STORAGE_CONFIG_ADR;
   uint8_t       size                         = 0U;
-  for( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
+  for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
     size = uConfigToBlob( configReg[i], &configBuffer[1U] );
     if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )

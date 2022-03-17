@@ -14,7 +14,7 @@
 #include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
 #define  STORAGE_SR_SIZE             1U                                  /* byte */
-#define  STORAGE_MAP_SIZE            40U                                 /* byte */
+#define  STORAGE_MAP_SIZE            32U                                 /* byte */
 #define  STORAGE_CONFIG_SIZE         CONFIG_TOTAL_SIZE                   /* byte */
 #define  STORAGE_CHART_SIZE          ( CHART_CHART_SIZE * CHART_NUMBER ) /* byte */
 #define  STORAGE_FREE_DATA_SIZE      ( FREE_DATA_SIZE * 2U )             /* byte */
@@ -48,7 +48,7 @@
 /*----------------------- Structures -----------------------------------*/
 
 /*------------------------ Functions -----------------------------------*/
-void          vSTORAGEinit ( const EEPROM_TYPE* eeprom );
+EEPROM_STATUS eSTORAGEinit ( const EEPROM_TYPE* eeprom );
 uint32_t      uSTORAGEgetSize ( void );
 EEPROM_STATUS eSTORAGEreadSR ( uint8_t* sr );
 EEPROM_STATUS eSTORAGEwriteSR ( const uint8_t* sr );

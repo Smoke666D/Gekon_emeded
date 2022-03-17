@@ -1520,7 +1520,7 @@ void StartDefaultTask(void *argument)
   vSYSserial( ">>Start Default Task!\n\r" );
   HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   vSERVERinit();
-  if ( eEEPROMInit( &storEE ) == EEPROM_OK )  /* EEPROM initialization */
+  if ( eSTORAGEinit( &storEE ) == EEPROM_OK )  /* EEPROM initialization */
   {
     if ( eDATAAPIdataInit() == EEPROM_OK ) /* Data from EEPROM initialization           */
     {

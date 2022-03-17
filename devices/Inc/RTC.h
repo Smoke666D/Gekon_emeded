@@ -17,10 +17,10 @@
 
 #if defined( RTC_DEVICE_DS3231 )
   #include "RTC_DS3231.h"
-  #define  RTC_CODE  0x01
+  #define  RTC_CODE  0U
 #elif defined( RTC_DEVICE_MAX31329 )
   #include "RTC_MAX31329.h"
-  #define  RTC_CODE  0x02
+  #define  RTC_CODE  1U
 #else
   #error "There is no RTC device defined!"
 #endif

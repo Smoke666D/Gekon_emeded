@@ -106,7 +106,7 @@ EEPROM_STATUS eEEPROMread ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint32
   EEPROM_STATUS     res        = EEPROM_OK;
   uint8_t           buffer[4U] = { cmd, 0x00U, 0x00U, 0x00U };
   uint8_t           bufferLen  = 1U;
-  if ( eeprom->spi != NULL )
+  if ( ( eeprom != NULL ) && ( eeprom->spi != NULL ) )
   {
     if ( adr != NULL )
     {
@@ -323,25 +323,28 @@ EEPROM_STATUS eEEPROMWriteData ( const EEPROM_TYPE* eeprom, const uint32_t* adr,
     if ( eeprom->page - ( *adr - ( ( ( uint8_t )( *adr / eeprom->page ) ) * eeprom->page ) ) >= len )
     {
       res = eEEPROMreadSR( eeprom, &state );
-      if ( ( state & EEPROM_SR_SRWD ) == 0U )
+      if ( ( ( state & EEPROM_SR_SRWD ) == 0U ) && ( res == EEPROM_OK ) )
       {
-        res = eEEPROMpoolUntil( eeprom, EEPROM_SR_IDLE );
-        if ( res == EEPROM_OK )
+        if ( state != EEPROM_SR_WRITE_READY )
         {
-          res = eEEPROMwriteEnable( eeprom );
+          res = eEEPROMpoolUntil( eeprom, EEPROM_SR_IDLE );
           if ( res == EEPROM_OK )
           {
-            res = eEEPROMpoolUntil( eeprom, EEPROM_SR_WRITE_READY );
+            res = eEEPROMwriteEnable( eeprom );
             if ( res == EEPROM_OK )
             {
-              res = eEEPROMwrite( eeprom, EEPROM_CMD_WRITE, adr, data, ( uint16_t )len );
-              osDelay( eeprom->timeout );
-              if ( res == EEPROM_OK )
-              {
-                res = eEEPROMwriteDisable( eeprom );
-                osDelay( eeprom->timeout );
-              }
+              res = eEEPROMpoolUntil( eeprom, EEPROM_SR_WRITE_READY );
             }
+          }
+        }
+        if ( res == EEPROM_OK )
+        {
+          res = eEEPROMwrite( eeprom, EEPROM_CMD_WRITE, adr, data, ( uint16_t )len );
+          osDelay( eeprom->timeout );
+          if ( res == EEPROM_OK )
+          {
+            res = eEEPROMwriteDisable( eeprom );
+            osDelay( eeprom->timeout );
           }
         }
       }

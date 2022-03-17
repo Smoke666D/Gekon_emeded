@@ -103,7 +103,7 @@ typedef struct __packed
 #define  AA02E48_TIMEOUT        10U     /* Ticks */
 /*----------------------- Functions ------------------------------------*/
 EEPROM_STATUS eEEPROMInit ( const EEPROM_TYPE* eeprom ); /* Installation of EEPROM */
-EEPROM_STATUS eEEPROMreadMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len );  /* Read memory of EEPROM */
+EEPROM_STATUS eEEPROMreadMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len );        /* Read memory of EEPROM */
 EEPROM_STATUS eEEPROMwriteMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len ); /* Write data to memory of EEPROM */
 /*----------------------------------------------------------------------*/
 #endif /* INC_EEPROM_H_ */

@@ -128,7 +128,7 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
     res = eSTORAGEreadMap( map );
     if ( res == EEPROM_OK )
     {
-      res = eEEPROMreadMemory( eeprom, STORAGE_SR_ADR, &sr, 1U );
+      res   = eEEPROMreadMemory( eeprom, STORAGE_SR_ADR, &sr, 1U );
       valid = uSTORAGEcheckMap( map );
       if ( ( sr                 == STORAGE_SR_EMPTY ) ||
            ( REWRITE_ALL_EEPROM != 0U               ) ||

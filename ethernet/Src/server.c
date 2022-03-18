@@ -17,9 +17,9 @@
 #include "ethernetif.h"
 #include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static struct netconn* nc    = NULL;   // Connection to the port 80
-static struct netconn* in_nc = NULL;   // New user connection
-static osThreadId_t netTaskHandle = NULL;
+static struct netconn* nc            = NULL;   // Connection to the port 80
+static struct netconn* in_nc         = NULL;   // New user connection
+static osThreadId_t    netTaskHandle = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char defaultIp[IP4ADDR_STRLEN_MAX] = { '0', '0', '.', '0', '0', '.', '0', '0', '.', '0', '0', 0U, 0U, 0U, 0U, 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -50,7 +50,7 @@ SERVER_ERROR eSERVERstart ( void )
   nc = netconn_new( NETCONN_TCP );                   // Create new network connection TCP TYPE
   if ( nc != NULL )
   {
-    netconRes = netconn_bind ( nc, IP_ADDR_ANY, 80 ); // Bind connection to well known port number 80
+    netconRes = netconn_bind ( nc, IP_ADDR_ANY, 80U ); // Bind connection to well known port number 80
     if ( netconRes == ERR_OK )
     {
       netconRes = netconn_listen( nc );	             // Tell connection to go into listening mode

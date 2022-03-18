@@ -53,7 +53,7 @@ EEPROM_STATUS eEEPROMwrite ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint3
     if ( adr != NULL )
     {
       vEEPROMmakeAdr( *adr, &buffer[1U] );
-      bufferLen  = 4U;
+      bufferLen = 4U;
     }
     while ( eeprom->spi->State != HAL_SPI_STATE_READY )
     {
@@ -111,7 +111,7 @@ EEPROM_STATUS eEEPROMread ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint32
     if ( adr != NULL )
     {
       vEEPROMmakeAdr( *adr, &buffer[1U] );
-      bufferLen  = 4U;
+      bufferLen = 4U;
     }
     while ( eeprom->spi->State != HAL_SPI_STATE_READY )
     {

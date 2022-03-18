@@ -766,8 +766,8 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         }
         else
         {
-          response->content.type  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
           response->content.length = 0U;
         }
         break;
@@ -776,15 +776,15 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
         {
           if ( eDATAAPIlog( DATA_API_CMD_ERASE, NULL, NULL ) == DATA_API_STAT_OK )
           {
-            response->content.type  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
             response->content.length = 0U;
           }
         }
         else
         {
-          response->content.type  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
           response->content.length = 0U;
         }
         break;
@@ -821,14 +821,14 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
               if ( password.data == passwordSt.data )
               {
                 vHHTPsetAuth( remoteIP, AUTH_DONE );
-                response->content.type  = HTTP_CONTENT_JSON;
-                response->status        = HTTP_STATUS_OK;
+                response->content.type   = HTTP_CONTENT_JSON;
+                response->status         = HTTP_STATUS_OK;
                 response->content.length = 0U;
               }
               else
               {
-                response->content.type  = HTTP_CONTENT_JSON;
-                response->status        = HTTP_STATUS_UNAUTHORIZED;
+                response->content.type   = HTTP_CONTENT_JSON;
+                response->status         = HTTP_STATUS_UNAUTHORIZED;
                 response->content.length = 0U;
               }
             }
@@ -836,8 +836,8 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
           else
           {
             vHHTPsetAuth( remoteIP, AUTH_DONE );
-            response->content.type  = HTTP_CONTENT_JSON;
-            response->status        = HTTP_STATUS_OK;
+            response->content.type   = HTTP_CONTENT_JSON;
+            response->status         = HTTP_STATUS_OK;
             response->content.length = 0U;
           }
         }
@@ -845,8 +845,8 @@ void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content,
       case REST_ERASE_PASSWORD:
         if ( eHTTPisAuth( remoteIP ) == AUTH_VOID )
         {
-          response->content.type  = HTTP_CONTENT_JSON;
-          response->status        = HTTP_STATUS_UNAUTHORIZED;
+          response->content.type   = HTTP_CONTENT_JSON;
+          response->status         = HTTP_STATUS_UNAUTHORIZED;
           response->content.length = 0U;
         }
         break;
@@ -886,28 +886,28 @@ void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
   /*----------------- Common header -----------------*/
   strStr = strcpy( response->header, "Thu, 06 Feb 2020 15:11:53 GMT" );
   response->header[strlen("Thu, 06 Feb 2020 15:11:53 GMT")] = 0U;
-  response->cache         = HTTP_CACHE_NO_CACHE_STORE;
-  response->connect       = HTTP_CONNECT_CLOSED;
-  response->status        = HTTP_STATUS_BAD_REQUEST;
+  response->cache          = HTTP_CACHE_NO_CACHE_STORE;
+  response->connect        = HTTP_CONNECT_CLOSED;
+  response->status         = HTTP_STATUS_BAD_REQUEST;
   response->content.length = 0U;
-  response->encoding      = HTTP_ENCODING_NO;
+  response->encoding       = HTTP_ENCODING_NO;
   /*----------------- Parsing path -----------------*/
   /*------------------ INDEX.HTML ------------------*/
   strStr = strstr(path, "index" );
   if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
   {
-    stream                  = &response->stream;
-    stream->index           = 0U;
-    stream->start           = 0U;
-    stream->content         = ( char* )( data__web_html );
-    stream->length          = WEB_LENGTH;
-    stream->size            = WEB_LENGTH;
-    stream->flag            = STREAM_FLAG_NO_COPY;
-    response->callBack      = cHTTPstreamFileWebApp;
-    response->content.type  = HTTP_CONTENT_HTML;
-    response->status        = HTTP_STATUS_OK;
+    stream                   = &response->stream;
+    stream->index            = 0U;
+    stream->start            = 0U;
+    stream->content          = ( char* )( data__web_html );
+    stream->length           = WEB_LENGTH;
+    stream->size             = WEB_LENGTH;
+    stream->flag             = STREAM_FLAG_NO_COPY;
+    response->callBack       = cHTTPstreamFileWebApp;
+    response->content.type   = HTTP_CONTENT_HTML;
+    response->status         = HTTP_STATUS_OK;
     response->content.length = stream->size;
-    response->encoding      = HTTP_ENCODING_GZIP;
+    response->encoding       = HTTP_ENCODING_GZIP;
   }
   /*--------------------- REST ---------------------*/
   else if ( path[0U] > 0U )

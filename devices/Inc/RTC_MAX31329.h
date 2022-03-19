@@ -54,33 +54,33 @@
 /*-------------------------- Enum --------------------------------------*/
 typedef enum
 {
-  RTC_SR,
-  RTC_CR,
-  RTC_RESET,
-  RTC_CONFIG1,
-  RTC_CONFIG2,
-  RTC_TIMER_CONFIG,
-  RTC_SECONDS,
-  RTC_MINUTES,
-  RTC_HOURS,
-  RTC_WDAY,
-  RTC_DAY,
-  RTC_MONTH,
-  RTC_YEAR,
-  RTC_ALARM1_SECONDS,
-  RTC_ALARM1_MINUTES,
-  RTC_ALARM1_HOURS,
-  RTC_ALARM1_DAY,
-  RTC_ALARM1_MONTH,
-  RTC_ALARM1_YEAR,
-  RTC_ALARM2_MINUTES,
-  RTC_ALARM2_HOURS,
-  RTC_ALARM2_DAY,
-  RTC_TIMER_COUNTER,
-  RTC_TIMER_INIT,
-  RTC_PWR_MGMT,
-  RTC_TRICKLE,
-  RTC_RAM0
+  RTC_SR,             /* 00 */
+  RTC_CR,             /* 01 */
+  RTC_RESET,          /* 02 */
+  RTC_CONFIG1,        /* 03 */
+  RTC_CONFIG2,        /* 04 */
+  RTC_TIMER_CONFIG,   /* 05 */
+  RTC_SECONDS,        /* 06 */
+  RTC_MINUTES,        /* 07 */
+  RTC_HOURS,          /* 08 */
+  RTC_WDAY,           /* 09 */
+  RTC_DAY,            /* 10 */
+  RTC_MONTH,          /* 11 */
+  RTC_YEAR,           /* 12 */
+  RTC_ALARM1_SECONDS, /* 13 */
+  RTC_ALARM1_MINUTES, /* 14 */
+  RTC_ALARM1_HOURS,   /* 15 */
+  RTC_ALARM1_DAY,     /* 16 */
+  RTC_ALARM1_MONTH,   /* 17 */
+  RTC_ALARM1_YEAR,    /* 18 */
+  RTC_ALARM2_MINUTES, /* 19 */
+  RTC_ALARM2_HOURS,   /* 20 */
+  RTC_ALARM2_DAY,     /* 21 */
+  RTC_TIMER_COUNTER,  /* 22 */
+  RTC_TIMER_INIT,     /* 23 */
+  RTC_PWR_MGMT,       /* 24 */
+  RTC_TRICKLE,        /* 25 */
+  RTC_RAM0            /* 26 */
 } RTC_REGISTER;
 /*----------------------- Structures -----------------------------------*/
 /*------------------------ Functions -----------------------------------*/

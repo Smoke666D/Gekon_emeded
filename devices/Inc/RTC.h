@@ -21,6 +21,9 @@
 #elif defined( RTC_DEVICE_MAX31329 )
   #include "RTC_MAX31329.h"
   #define  RTC_CODE  1U
+#elif defined( RTC_DEVICE_M41T62 )
+  #include "RTC_M41T62.h"
+  #define  RTC_CODE  2U
 #else
   #error "There is no RTC device defined!"
 #endif

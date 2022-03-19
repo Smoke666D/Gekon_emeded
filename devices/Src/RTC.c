@@ -15,7 +15,7 @@ static osThreadId_t       rtcHandle     = NULL;
 static SemaphoreHandle_t  xRTCSemaphore = NULL;
 static RTC_TIME           cashTime      = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
-static const char* rtcNames[2U] = { "DS3231", "MAX31329" };
+static const char* rtcNames[3U] = { "DS3231", "MAX31329", "M41T62" };
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 RTC_STATUS eRTCsend ( uint8_t* data, uint8_t size );
@@ -215,6 +215,7 @@ RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm )
  * Input:  target state
  * Outout: result of checking
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
 {
   uint8_t    status = 0U;
@@ -230,6 +231,7 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

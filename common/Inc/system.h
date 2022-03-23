@@ -11,7 +11,7 @@
 #include "stm32f2xx_hal.h"
 #include "cmsis_os.h"
 /*------------------------ Define --------------------------------------*/
-#define  OPTIMIZ
+//#define  OPTIMIZ
 #define  OPTIMIZ_LEVEL   "-O2"
 
 #define  FPI_TASK_PRIORITY             osPriorityLow
@@ -24,6 +24,7 @@
 #define  NET_TASK_PRIORITY             osPriorityLow
 #define  ETHERNET_LINK_TASK_PRIORITY   osPriorityLow
 #define  PID_TASK_PRIORITY             osPriorityNormal
+#define  RTC_TASK_PRIORITY             osPriorityNormal
 #define  FPI_TASK_STACK_SIZE           ( 1024U - 180U * 4U  ) /* HWM = 25*/
 #define  ENGINE_TASK_STACK_SIZE        1024U
 #define  ELECTRO_TASK_STACK_SIZE       1024U
@@ -34,7 +35,9 @@
 #define  ETHERNET_LINK_TASK_STACK_SIZE 512U
 #define  FATSD_TASK_STACK_SIZE         1024U
 #define  PID_TASK_STACK_SIZE           512U
-
+#define  RTC_TASK_STACK_SIZE           512U
+/* RTOS semaphores */
+#define  RTC_SEMAPHORE_DELAY           ( ( TickType_t ) 10U )
 #if ( ENGINE_TASK_PRIORITY != ELECTRO_TASK_PRIORITY )
   #error Engine and electro tasks have difrent priority
 #endif

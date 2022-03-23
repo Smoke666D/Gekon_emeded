@@ -72,7 +72,6 @@ REST_ADDRESS eRESTgetRequest ( char* path, REST_REQUEST* request, uint16_t* adr 
   uint8_t       p1         = 0U;
   uint8_t       j          = 0U;
   char          buffer[5U] = { 0U };
-
   while ( pchStr == NULL )
   {
     pchStr = strstr( path, restRequestStr[i] );

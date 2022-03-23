@@ -6,6 +6,8 @@
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
 #include "RTC.h"
+#include "system.h"
+#include "common.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 static I2C_HandleTypeDef* RTCi2c        = NULL;
@@ -13,19 +15,21 @@ static osThreadId_t       rtcHandle     = NULL;
 static SemaphoreHandle_t  xRTCSemaphore = NULL;
 static RTC_TIME           cashTime      = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
+static const char* rtcNames[3U] = { "DS3231", "MAX31329", "M41T62" };
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 RTC_STATUS eRTCsend ( uint8_t* data, uint8_t size );
 RTC_STATUS eRTCget ( uint8_t* data, uint8_t size );
 RTC_STATUS eRTCwrite ( uint8_t adr, uint8_t* data, uint8_t size );
 RTC_STATUS eRTCread ( uint8_t adr, uint8_t* data, uint8_t size );
-RTC_STATUS eRTCgetStatus ( uint8_t* status );
 uint8_t    bcdToDec ( uint8_t num );
 uint8_t    decToBcd ( uint8_t num );
 RTC_STATUS uRTCpoolSRUntil ( uint8_t target );
 RTC_STATUS eVarifyTime ( RTC_TIME* time );
-RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm );
 void       vRTCTask ( void *argument );
+#if defined( RTC_ADDITIONAL )
+  RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm );
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -34,7 +38,7 @@ void vRTCTask ( void *argument )
   for (;;)
   {
     eRTCgetTime( &cashTime );
-    osDelay( 60000U );
+    osDelay( RTC_TASK_DELAY );
   }
   return;
 }
@@ -190,6 +194,7 @@ RTC_STATUS eVarifyTime ( RTC_TIME* time )
  * Input:  alarm structure
  * Output: result of checking
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm )
 {
   RTC_STATUS res = RTC_OK;
@@ -203,7 +208,14 @@ RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
+/*
+ * Pool status RTC register until it become target state
+ * Input:  target state
+ * Outout: result of checking
+ */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
 {
   uint8_t    status = 0U;
@@ -219,11 +231,7 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
   }
   return res;
 }
-/*---------------------------------------------------------------------------------------------------*/
-RTC_STATUS eRTCgetStatus ( uint8_t* status )
-{
-  return eRTCread( RTC_SR, status, 1U );
-}
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
@@ -234,6 +242,9 @@ RTC_STATUS eRTCgetStatus ( uint8_t* status )
  */
 void vRTCinit ( I2C_HandleTypeDef* hi2c )
 {
+  vSYSserial( ">>There is " );
+  vSYSserial( rtcNames[RTC_CODE] );
+  vSYSserial( " chip as RTC \n\r" );
   vRTCcleanTime( &cashTime );
   RTCi2c        = hi2c;
   xRTCSemaphore = xSemaphoreCreateMutex();
@@ -272,7 +283,6 @@ RTC_STATUS eRTCgetTime ( RTC_TIME* time )
 {
   uint8_t    buffer[RTC_TIME_SIZE] = { 0U };
   RTC_STATUS res                   = RTC_OK;
-
   if ( xRTCSemaphore != NULL )
   {
     if ( xSemaphoreTake( xRTCSemaphore, RTC_SEMAPHORE_DELAY ) == pdTRUE )
@@ -280,13 +290,13 @@ RTC_STATUS eRTCgetTime ( RTC_TIME* time )
       res = eRTCread( RTC_SECONDS, buffer, RTC_TIME_SIZE );
       if ( res == RTC_OK )
       {
-        time->sec   = bcdToDec( buffer[RTC_SECONDS] & RTC_SEC_MSK );
-        time->min   = bcdToDec( buffer[RTC_MINUTES] & RTC_MIN_MSK );
-        time->hour  = bcdToDec( buffer[RTC_HOURS] );
-        time->wday  = buffer[RTC_WDAY] & RTC_WDAY_MSK;
-        time->day   = bcdToDec( buffer[RTC_DAY] & RTC_DAY_MSK );
-        time->month = bcdToDec( buffer[RTC_MONTH] & RTC_MONTH_MSK );
-        time->year  = bcdToDec( buffer[RTC_YEAR] & RTC_YEAR_MSK );
+        time->sec   = bcdToDec( buffer[0U] & RTC_SEC_MSK );
+        time->min   = bcdToDec( buffer[1U] & RTC_MIN_MSK );
+        time->hour  = bcdToDec( buffer[2U] & RTC_HOUR_MSK );
+        time->wday  = buffer[3U] & RTC_WDAY_MSK;
+        time->day   = bcdToDec( buffer[4U] & RTC_DAY_MSK );
+        time->month = bcdToDec( buffer[5U] & RTC_MONTH_MSK );
+        time->year  = bcdToDec( buffer[6U] & RTC_YEAR_MSK );
       }
       xSemaphoreGive( xRTCSemaphore );
     }
@@ -317,13 +327,13 @@ RTC_STATUS eRTCsetTime ( RTC_TIME* time )
     {
       if ( res == RTC_OK )
       {
-        buffer[RTC_SECONDS] = decToBcd( time->sec );
-        buffer[RTC_MINUTES] = decToBcd( time->min );
-        buffer[RTC_HOURS]   = decToBcd( time->hour );
-        buffer[RTC_WDAY]    = ( uint8_t )time->wday;
-        buffer[RTC_DAY]     = decToBcd( time->day );
-        buffer[RTC_MONTH]   = decToBcd( ( uint8_t )time->month );
-        buffer[RTC_YEAR]    = decToBcd( time->year );
+        buffer[0U] = decToBcd( time->sec );
+        buffer[1U] = decToBcd( time->min );
+        buffer[2U] = decToBcd( time->hour );
+        buffer[3U] = ( uint8_t )time->wday;
+        buffer[4U] = decToBcd( time->day );
+        buffer[5U] = decToBcd( ( uint8_t )time->month );
+        buffer[6U] = decToBcd( time->year );
         res = eRTCwrite( RTC_SECONDS, buffer, RTC_TIME_SIZE );
         osDelay( RTC_POOL_TIMEOUT );
         if ( res == RTC_OK )
@@ -356,6 +366,7 @@ void vRTCgetCashTime ( RTC_TIME* time )
  * Input:  Signed calibration value
  * Output: Status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS vRTCsetCalibration ( signed char value )
 {
   RTC_FREQ   freq   = RTC_FREQ_1HZ;
@@ -386,12 +397,14 @@ RTC_STATUS vRTCsetCalibration ( signed char value )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Read calibration value from the RTC
  * Input:  Signed calibration value
  * Output: Status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCgetCalibration ( signed char* value )
 {
   uint8_t    buffer = 0x00U;
@@ -402,12 +415,14 @@ RTC_STATUS eRTCgetCalibration ( signed char* value )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Read temperature from the RTC
  * Input:  Float temperature
  * Output: Status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCgetTemperature ( float* data )
 {
   uint8_t    buffer[2U] = { 0U };
@@ -418,6 +433,7 @@ RTC_STATUS eRTCgetTemperature ( float* data )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Setup temperature compensation oscillator
@@ -425,6 +441,7 @@ RTC_STATUS eRTCgetTemperature ( float* data )
  *               1 - enable
  * Output: status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb )
 {
   RTC_FREQ   freq     = RTC_FREQ_1HZ;
@@ -465,6 +482,7 @@ RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Setup alarm of RTC
@@ -472,6 +490,7 @@ RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb )
  *         alarm - structure of alarm
  * Output: Status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm )
 {
   RTC_STATUS res        = eVerifyAlarm( alarm );
@@ -503,7 +522,7 @@ RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm )
           {
             buffer[4U] &= ~RTC_CR_A1IE;
           }
-          res = eRTCwrite( RTC_ALARM1_SECONRTC, &buffer[0U], 5U );
+          res = eRTCwrite( RTC_ALARM1_SECONDS, &buffer[0U], 5U );
           break;
         case 2:
           if ( alarm->ie > 0U )
@@ -524,6 +543,7 @@ RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Read alarm data from the RTC
@@ -531,6 +551,7 @@ RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm )
  *         alarm - structure of alarm
  * Output: Status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm )
 {
   RTC_STATUS res        = RTC_OK;
@@ -538,7 +559,7 @@ RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm )
   switch ( n )
   {
     case 1:
-      res = eRTCread( RTC_ALARM1_SECONRTC, buffer, 4U );
+      res = eRTCread( RTC_ALARM1_SECONDS, buffer, 4U );
       if ( res == RTC_OK )
       {
         res = eRTCread( RTC_CR, &buffer[4U], 1U );
@@ -584,6 +605,7 @@ RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Read alarm status from the RTC
@@ -593,6 +615,7 @@ RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm )
  *             3 - 1st and 2nd alarms
  * Output: Status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS vRTCclearAlarm ( uint8_t n )
 {
   uint8_t    data = 0x00U;
@@ -618,6 +641,7 @@ RTC_STATUS vRTCclearAlarm ( uint8_t n )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Check alarm status
@@ -628,6 +652,7 @@ RTC_STATUS vRTCclearAlarm ( uint8_t n )
  *         3 - 1st and 2nd alarms
  *         4 - error
  */
+#if defined( RTC_ADDITIONAL )
 uint8_t uRTCcheckIfAlarm ( void )
 {
   uint8_t    res  = 0U;
@@ -650,7 +675,9 @@ uint8_t uRTCcheckIfAlarm ( void )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCsetExternSquareWave ( uint8_t enb )
 {
   uint8_t    data = 0x00U;
@@ -670,7 +697,9 @@ RTC_STATUS eRTCsetExternSquareWave ( uint8_t enb )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCsetInterrupt ( uint8_t ext )
 {
   uint8_t    data = 0x00U;
@@ -689,7 +718,9 @@ RTC_STATUS eRTCsetInterrupt ( uint8_t ext )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq )
 {
   uint8_t    data = 0x00U;
@@ -718,6 +749,7 @@ RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Setup oscillator of the RTC
@@ -725,6 +757,7 @@ RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq )
  *         freq - frequency of oscillator
  * Output: status of operation
  */
+#if defined( RTC_ADDITIONAL )
 RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq )
 {
   uint8_t    data = 0x00U;
@@ -761,6 +794,7 @@ RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq )
   }
   return res;
 }
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

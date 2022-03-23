@@ -14,36 +14,25 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
+
+#if defined( RTC_DEVICE_DS3231 )
+  #include "RTC_DS3231.h"
+  #define  RTC_CODE  0U
+#elif defined( RTC_DEVICE_MAX31329 )
+  #include "RTC_MAX31329.h"
+  #define  RTC_CODE  1U
+#elif defined( RTC_DEVICE_M41T62 )
+  #include "RTC_M41T62.h"
+  #define  RTC_CODE  2U
+#else
+  #error "There is no RTC device defined!"
+#endif
 /*------------------------ Define --------------------------------------*/
-#define  RTC_DEVICE_ADR       0xD0U
-#define  RTC_MEMORY_SIZE      19U
+//#define  RTC_ADDITIONAL
 #define  RTC_TIMEOUT          1000U
 #define  RTC_BUSY_TIMEOUT     1U
 #define  RTC_POOL_TIMEOUT     10U
-#define  RTC_MEMORY_SIZE      19U
-#define  RTC_SEMAPHORE_DELAY  ( ( TickType_t ) 10U )
-#define  RTC_TASK_PRIORITY    osPriorityNormal
-#define  RTC_TASK_STACK_SIZE  512U
-/*----- RTC register addresses ----------*/
-#define  RTC_SECONDS          0x00U
-#define  RTC_MINUTES          0x01U
-#define  RTC_HOURS            0X02U
-#define  RTC_WDAY             0x03U
-#define  RTC_DAY              0x04U
-#define  RTC_MONTH            0x05U
-#define  RTC_YEAR             0x06U
-#define  RTC_ALARM1_SECONRTC  0x07U
-#define  RTC_ALARM1_MINUTES   0x08U
-#define  RTC_ALARM1_HOURS     0x09U
-#define  RTC_ALARM1_DAY       0x0AU
-#define  RTC_ALARM2_MINUTES   0x0BU
-#define  RTC_ALARM2_HOURS     0x0CU
-#define  RTC_ALARM2_DAY       0x0DU
-#define  RTC_CR               0x0EU  /* Control Register */
-#define  RTC_SR               0x0FU  /* Status Register */
-#define  RTC_AO               0x10U  /* Aging Offset */
-#define  RTC_UTR              0x11U  /* Temperature Register (Upper Byte) signed char */
-#define  RTC_LTR              0x12U  /* Temperature Register (Lower Byte) */
+#define  RTC_TASK_DELAY       60000U
 /*--------- Time encoding ---------------*/
 #define  RTC_TIME_SIZE        7U
 #define  RTC_SEC_MSK          0x7FU
@@ -66,25 +55,6 @@
 #define  RTC_AM_WHOUR         0x08U  /* Alarm when hours, minutes, and seconRTC match */
 #define  RTC_AM_WDATE         0x00U  /* Alarm when date, hours, minutes, and seconRTC match */
 #define  RTC_AM_WDAY          0x10U  /* Alarm when day, hours, minutes, and seconRTC match */
-/*---------- Control Register -----------*/
-#define  RTC_CR_A1IE          0x01U  /* Alarm 1 Interrupt Enable */
-#define  RTC_CR_A2IE          0x02U  /* Alarm 2 Interrupt Enable */
-#define  RTC_CR_INTCN         0x04U  /* Interrupt Control */
-#define  RTC_CR_RS1           0x08U  /* Rate Select */
-#define  RTC_CR_RS2           0x10U  /* Rate Select */
-#define  RTC_CR_CONV          0x20U  /* Convert Temperature */
-#define  RTC_CR_BBSQW         0x40U  /* Battery-Backed Square-Wave Enable */
-#define  RTC_CR_EOSC          0x80U  /* Enable Oscillator */
-#define  RTC_CR_RS_1Hz        0x00U  /* Frequency of the square-wave output is 1 Hz */
-#define  RTC_CR_RS_1024Hz     0x08U  /* Frequency of the square-wave output is 1.024 kHz */
-#define  RTC_CR_RS_4096Hz     0x10U  /* Frequency of the square-wave output is 4.096 kHz */
-#define  RTC_CR_RS_8192Hz     0x18U  /* Frequency of the square-wave output is 8.192 kHz */
-/*---------- Status Register ------------*/
-#define  RTC_SR_A1F           0x01U  /* Alarm 1 Flag */
-#define  RTC_SR_A2F           0x02U  /* Alarm 2 Flag */
-#define  RTC_SR_BSY           0x04U  /* Busy */
-#define  RTC_SR_EN32KHZ       0x08U  /* Enable 32kHz Output */
-#define  RTC_SR_OSF           0x80U  /* Oscillator Stop Flag */
 /*---------- Temperature ----------------*/
 #define  RTC_UTR_MSK          0xFFU
 #define  RTC_LTR_MSK          0xC0U
@@ -172,6 +142,7 @@ typedef struct __packed
   uint8_t      year;
 } RTC_TIME; /* 7 byte */
 
+#if defined( RTC_ADDITIONAL )
 typedef struct __packed
 {
   uint8_t         sec;
@@ -183,23 +154,26 @@ typedef struct __packed
   uint8_t         rate;      /* Rate of alarm */
   uint8_t         ie   : 1U; /* Interrupt enable */
 } RTC_ALARM;
+#endif
 /*------------------------ Functions -----------------------------------*/
 void       vRTCinit ( I2C_HandleTypeDef* hi2c );             /* Ok */
-void       vRTCgetCashTime ( RTC_TIME* time );
-void       vRTCcleanTime ( RTC_TIME* time );
+void       vRTCgetCashTime ( RTC_TIME* time );               /* Ok */
+void       vRTCcleanTime ( RTC_TIME* time );                 /* Ok */
 RTC_STATUS eRTCgetTime ( RTC_TIME* time );                   /* Ok */
 RTC_STATUS eRTCsetTime ( RTC_TIME* time );                   /* Ok */
-RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq ); /**/
-RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq );                  /**/
-RTC_STATUS vRTCsetCalibration ( signed char value );         /**/
-RTC_STATUS eRTCgetCalibration ( signed char* value );        /**/
-RTC_STATUS eRTCgetTemperature ( float* data );               /**/
-RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb );   /**/
-RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm );     /**/
-RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm );     /**/
-RTC_STATUS vRTCclearAlarm ( uint8_t n );                     /**/
-uint8_t    uRTCcheckIfAlarm ( void );                        /**/
-RTC_STATUS eRTCsetExternSquareWave ( uint8_t enb );          /**/
-RTC_STATUS eRTCsetInterrupt ( uint8_t ext );                 /**/
+#if defined( RTC_ADDITIONAL )
+  RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq ); /**/
+  RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq );                  /**/
+  RTC_STATUS vRTCsetCalibration ( signed char value );         /**/
+  RTC_STATUS eRTCgetCalibration ( signed char* value );        /**/
+  RTC_STATUS eRTCgetTemperature ( float* data );               /**/
+  RTC_STATUS eRTCsetTemperatureCompensation ( uint8_t enb );   /**/
+  RTC_STATUS eRTCsetAlarm ( uint8_t n, RTC_ALARM* alarm );     /**/
+  RTC_STATUS eRTCgetAlarm ( uint8_t n, RTC_ALARM* alarm );     /**/
+  RTC_STATUS vRTCclearAlarm ( uint8_t n );                     /**/
+  uint8_t    uRTCcheckIfAlarm ( void );                        /**/
+  RTC_STATUS eRTCsetExternSquareWave ( uint8_t enb );          /**/
+  RTC_STATUS eRTCsetInterrupt ( uint8_t ext );                 /**/
+#endif
 /*----------------------------------------------------------------------*/
 #endif /* INC_RTC_H_ */

@@ -188,6 +188,7 @@ extern void vKeyboardTask(void *argument);
 void vWDtask(void *argument);
 
 /* USER CODE BEGIN PFP */
+/*
 static const TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
 {
   ( TaskHandle_t* )&lcdTaskHandle,
@@ -196,6 +197,7 @@ static const TaskHandle_t* notifyTrg[NOTIFY_TARGETS_NUMBER] =
   ( TaskHandle_t* )&controllerHandle,
   ( TaskHandle_t* )&electroHandle,
 };
+*/
 static const FPI_INIT fpiInitStruct = {
   .pinA   = FPI_A_Pin,
   .pinB   = FPI_B_Pin,
@@ -264,6 +266,32 @@ static const GPIO_TYPE chargGPIO = {
   .pin = CHARG_ON_Pin,
   .port = CHARG_ON_GPIO_Port,
 };
+static const EEPROM_TYPE storEE = {
+  .SRWD      = M95Mxx_SRWD,
+  .ID        = M95Mxx_ID,
+  .protect   = M95Mxx_PROTECTION,
+  .size      = M95M01_SIZE,
+  .page      = M95Mxx_PAGE_SIZE,
+  .frequensy = M95Mxx_CLOCK_FREQ,
+  .timeout   = M95Mxx_TIMEOUT,
+  .spi       = &hspi1,
+  .cs.pin    = EEPROM_NSS_Pin,
+  .cs.port   = EEPROM_NSS_GPIO_Port,
+};
+/*
+static const EEPROM_TYPE macEE = {
+  .SRWD      = AA02E48_SRWD,
+  .ID        = AA02E48_ID,
+  .protect   = AA02E48_PROTECTION,
+  .size      = AA02E48_SIZE,
+  .page      = AA02E48_PAGE_SIZE,
+  .frequensy = AA02E48_CLOCK_FREQ,
+  .timeout   = AA02E48_TIMEOUT,
+  .spi       = &hspi1,
+  .cs.pin    = EEPROM_NSS_Pin,
+  .cs.port   = EEPROM_NSS_GPIO_Port,
+};
+*/
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -322,8 +350,7 @@ int main(void)
   //MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
-  vSYSInitSerial( &huart3 );                                    /* Debug serial interface */
-  eEEPROMInit( &hspi1, EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin );  /* EEPROM initialization */
+  vSYSInitSerial( &huart3 ); /* Debug serial interface */
   /*--------------------------------------------------------------------------*/
   vSYSserial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */
@@ -380,7 +407,7 @@ int main(void)
   vLCDInit( xLCDDelaySemphHandle, &htim7, &hspi2 );
   vCHARTinitCharts();                               /* Charts data initialization */
   vRTCinit( &hi2c1 );                               /* RTC initialization         */
-  vDATAAPIinit();                                   /* Data API initialization    */
+  vDATAAPIinit( &storEE );                          /* Data API initialization    */
   vUSBinit( usbTaskHandle );
   /* USER CODE END RTOS_EVENTS */
 
@@ -1489,50 +1516,50 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  EEPROM_STATUS res    = EEPROM_OK;
   uint8_t       period = 100U;
   vSYSserial( ">>Start Default Task!\n\r" );
   HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   vSERVERinit();
-  res = eDATAAPIdataInit();                       /* Data from EEPROM initialization           */
-  if ( res == EEPROM_OK )
+  if ( eSTORAGEinit( &storEE ) == EEPROM_OK )  /* EEPROM initialization */
   {
-    res = eDATAAPIlogInit();                      /* Get log data from EEPROM                  */
-    if ( res == EEPROM_OK )
+    if ( eDATAAPIdataInit() == EEPROM_OK ) /* Data from EEPROM initialization           */
     {
-      HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port, DIN_OFFSET_Pin, GPIO_PIN_SET );
-      vCHARTupdateAtrib();                        /* Update charts attributes                  */
-      vDATAprintSerialNumber();                   /* Print device serial number to serial port */
-      vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
-      while ( uADCGetValidDataFlag() == 0U )
+      if ( eDATAAPIlogInit() == EEPROM_OK ) /* Get log data from EEPROM                  */
       {
-	      osDelay( 10U );
+        HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port, DIN_OFFSET_Pin, GPIO_PIN_SET );
+        vCHARTupdateAtrib();                        /* Update charts attributes                  */
+        vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+        vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
+        while ( uADCGetValidDataFlag() == 0U )
+        {
+	        osDelay( 10U );
+        }
+        osDelay( 1100U );
+        vVRinit( &htim6 );                          /* Speed sensor initialization        */
+        vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization  */
+        vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
+        vCHARGERinit( &chargGPIO );                 /**/
+        vALARMinit();                               /* Activ error list initialization    */
+        vENGINEinit();                              /**/
+        vELECTROinit( &htim12 );                    /**/
+        vLOGICinit( &htim5 );                       /**/
+        vCONTROLLERinit( &controllerInitStruct );   /**/
+        vOUTPUTinit();
+        vMBinit( mbInit );                          /* Start ModBus                              */
+        HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
+        vFATSDinit( &hsd );
+        vSDinit();
+        vMEASUREMENTinit();                         /**/
       }
-      osDelay( 1100U );
-      vVRinit( &htim6 );                          /* Speed sensor initialization        */
-      vFPIinit( &fpiInitStruct );                 /* Free Program Input initialization  */
-      vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
-      vCHARGERinit( &chargGPIO );                 /**/
-      vALARMinit();                               /* Activ error list initialization    */
-      vENGINEinit();                              /**/
-      vELECTROinit( &htim12 );                    /**/
-      vLOGICinit( &htim5 );                       /**/
-      vCONTROLLERinit( &controllerInitStruct );   /**/
-      vOUTPUTinit();
-      vMBinit( mbInit );                          /* Start ModBus                              */
-      HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
-      vFATSDinit( &hsd );
-      vSDinit();
-      vMEASUREMENTinit();                         /**/
+      else
+      {
+        period = 200U;
+      }
     }
     else
     {
       period = 200U;
     }
-  }
-  else
-  {
-    period = 200U;
   }
   /* Infinite loop */
   for(;;)

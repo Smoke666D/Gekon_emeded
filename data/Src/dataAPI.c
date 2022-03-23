@@ -22,8 +22,8 @@ volatile static uint8_t       initDone              = 0U;
 volatile static uint8_t       flTakeSource          = 0U;
 volatile static LOG_CASH_TYPE logCash               = { 0U };
 volatile static uint16_t      measurementNumberCash = 0U;
+static EEPROM_TYPE*           eeprom                = NULL;
 /*------------------------ Define -------------------------------------------------------------------*/
-
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -128,7 +128,7 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
     res = eSTORAGEreadMap( map );
     if ( res == EEPROM_OK )
     {
-      res = eEEPROMreadMemory( STORAGE_SR_ADR, &sr, 1U );
+      res   = eEEPROMreadMemory( eeprom, STORAGE_SR_ADR, &sr, 1U );
       valid = uSTORAGEcheckMap( map );
       if ( ( sr                 == STORAGE_SR_EMPTY ) ||
            ( REWRITE_ALL_EEPROM != 0U               ) ||
@@ -183,7 +183,7 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
               if ( res == EEPROM_OK )
               {
                 sr  = 0x00U;
-                res = eEEPROMwriteMemory( STORAGE_SR_ADR, &sr, 1U );
+                res = eEEPROMwriteMemory( eeprom, STORAGE_SR_ADR, &sr, 1U );
                 if ( res == EEPROM_OK )
                 {
                   res = eSTORAGEwriteMap();
@@ -324,20 +324,6 @@ void vDATAAPIprintMemoryMap ( void )
   sprintf( buf, "%d", STORAGE_SR_SIZE );
   vSYSserial( buf );
   vSYSserial( " bytes )\n\r" );
-  vSYSserial("EWA            : ");
-  sprintf( buf, "0x%06X", STORAGE_EWA_ADR );
-  vSYSserial( buf );
-  vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_WEB_SIZE );
-  vSYSserial( buf );
-  vSYSserial( " bytes )\n\r" );
-  vSYSserial("Reserve        : ");
-  sprintf( buf, "0x%06X", STORAGE_RESERVE_ADR );
-  vSYSserial( buf );
-  vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_RESERVE_SIZE );
-  vSYSserial( buf );
-  vSYSserial( " bytes )\n\r" );
   vSYSserial("Configurations : ");
   sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
   vSYSserial( buf );
@@ -381,11 +367,11 @@ void vDATAAPIprintMemoryMap ( void )
   vSYSserial( buf );
   vSYSserial( " bytes )\n\r" );
   vSYSserial("Free           : ");
-  sprintf( buf, "%d", ( ( EEPROM_SIZE * 1024U ) - STORAGE_REQUIRED_SIZE ) );
+  sprintf( buf, "%d", ( int )( uSTORAGEgetSize() - STORAGE_REQUIRED_SIZE ) );
   vSYSserial( buf );
   vSYSserial( " bytes \n\r" );
   vSYSserial("End            : ");
-  sprintf( buf, "0x%06X", ( EEPROM_SIZE * 1024U ) );
+  sprintf( buf, "0x%06X", ( int )( uSTORAGEgetSize() ) );
   vSYSserial( buf );
   vSYSserial( "\n\r" );
   vSYSserial("---------------------------------------\n\r");
@@ -400,8 +386,9 @@ void vDATAAPIprintMemoryMap ( void )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-void vDATAAPIinit ( void )
+void vDATAAPIinit ( const EEPROM_TYPE* storage )
 {
+  eeprom         = storage;
   xSemaphore     = xSemaphoreCreateMutex();
   xDataApiEvents = xEventGroupCreate();
   return;
@@ -550,103 +537,6 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
     else
     {
       res = DATA_API_STAT_INIT_ERROR;
-    }
-  }
-  else
-  {
-    res = DATA_API_STAT_ADR_ERROR;
-  }
-  return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
-/*
- * API for Embedded Web Application
- * input:  cmd    - command
- *         adr    - absolute address in the EEPROM
- *         data   - EWA data array
- *         length - length of the EWA data
- * output: dtstus of operation
- * available commands:
- * 1. DATA_API_CMD_READ  - none
- * 2. DATA_API_CMD_WRITE - none
- * 3. DATA_API_CMD_INC   - none
- * 4. DATA_API_CMD_DEC   - none
- * 5. DATA_API_CMD_SAVE  - save data to the EEPROM
- * 6. DATA_API_CMD_LOAD  - load data from the EEPROM
- * 7. DATA_API_CMD_ERASE - erase all EWA sector in EEPROM
- * 8. DATA_API_CMD_ADD   - none
- */
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-DATA_API_STATUS eDATAAPIewa ( DATA_API_COMMAND cmd, uint32_t adr, uint8_t* data, uint16_t length )
-{
-  DATA_API_STATUS res                 = DATA_API_STAT_OK;
-  uint32_t        i                   = 0U;
-  uint8_t         buf[EWA_ERASE_SIZE] = { 0U };
-  if ( ( adr + length ) < STORAGE_WEB_SIZE )
-  {
-    if ( xSemaphore != NULL )
-    {
-      switch ( cmd )
-      {
-        case DATA_API_CMD_SAVE:
-          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
-          {
-            flTakeSource = 4U;
-            if ( eEEPROMwriteMemory( adr, data, length )  != EEPROM_OK )
-            {
-              res = DATA_API_STAT_EEPROM_ERROR;
-            }
-            xSemaphoreGive( xSemaphore );
-          }
-          else
-          {
-            res = DATA_API_STAT_BUSY;
-          }
-          break;
-        case DATA_API_CMD_LOAD:
-          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
-          {
-            flTakeSource = 5U;
-            if ( eEEPROMreadMemory( adr, data, length )  != EEPROM_OK )
-            {
-              res = DATA_API_STAT_EEPROM_ERROR;
-            }
-            xSemaphoreGive( xSemaphore );
-          }
-          else
-          {
-            res = DATA_API_STAT_BUSY;
-          }
-          break;
-        case DATA_API_CMD_ERASE:
-          for ( i=0U; i<EWA_ERASE_SIZE; i++ )
-          {
-            buf[i] = 0xFF;
-          }
-          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
-          {
-            flTakeSource = 6U;
-            for ( i=0U; i<( STORAGE_WEB_SIZE / EWA_ERASE_SIZE ); i++ )
-            {
-              if ( eEEPROMwriteMemory( ( STORAGE_EWA_ADR + i * EWA_ERASE_SIZE ), buf, EWA_ERASE_SIZE )  != EEPROM_OK )
-              {
-                res = DATA_API_STAT_EEPROM_ERROR;
-                break;
-              }
-            }
-            xSemaphoreGive( xSemaphore );
-          }
-          else
-          {
-            res = DATA_API_STAT_BUSY;
-          }
-          break;
-        default:
-          res = DATA_API_STAT_CMD_ERROR;
-          break;
-      }
     }
   }
   else

@@ -9,74 +9,101 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #include "stm32f2xx_hal_spi.h"
-/*------------------------ Macros --------------------------------------*/
-
+#include "stm32f2xx_hal_gpio.h"
+#include "common.h"
 /*------------------------ Define --------------------------------------*/
-/*---------- Choose your chip ---------*/
-#define  M95M04
-/*---------- Software parameters ------*/
-#define  EEPROM_TIMEOUT           5U
-/*---------- Chip parameters ----------*/
-#define  EEPROM_LENGTH_SIZE       3U
-#define  EEPROM_PAGE_SIZE         0x100U    /* bytes */
-#ifdef M95M01
-  #define  EEPROM_MAX_ADR         0x1FFFFU
-  #define  EEPROM_SIZE            128U      /* Kb */
-#endif
-#ifdef M95M02
-  #define  EEPROM_MAX_ADR         0x3FFFFU
-  #define  EEPROM_SIZE            256U      /* Kb */
-#endif
-#ifdef M95M04
-  #define  EEPROM_MAX_ADR         0x7FFFFU
-  #define  EEPROM_SIZE            512U      /* Kb */
-#endif
+//#define  EEPROM_LENGTH_SIZE       3U
 /*---------- Commands -----------------*/
-#define  EEPROM_WREN              0x06U     /* Write Enable */
-#define  EEPROM_WRDI              0x04U     /* Write Disable */
-#define  EEPROM_RDSR              0x05U     /* Read Status Register */
-#define  EEPROM_WRSR              0x01U     /* Write Status Register */
-#define  EEPROM_READ              0x03U     /* Read from Memory Array */
-#define  EEPROM_WRITE             0x02U     /* Write to Memory Array */
-#define  EEPROM_RDID              0x83U     /* Read Identification Page */
-#define  EEPROM_WRID              0x82U     /* Write Identification Page */
-#define  EEPROM_RDLS              0x83U     /* Reads the Identification Page lock status (only for EEPROMM01-D) */
-#define  EEPROM_LIF               0x82U     /* Locks the Identification Page in read-only mode (only for EEPROMM01-D) */
+#define  EEPROM_CMD_WRSR          0x01U     /* Write Status Register  */
+#define  EEPROM_CMD_WRITE         0x02U     /* Write to Memory Array  */
+#define  EEPROM_CMD_READ          0x03U     /* Read from Memory Array */
+#define  EEPROM_CMD_WRDI          0x04U     /* Write Disable          */
+#define  EEPROM_CMD_RDSR          0x05U     /* Read Status Register   */
+#define  EEPROM_CMD_WREN          0x06U     /* Write Enable           */
+/*---------- Addition commands --------*/
+#define  EEPROM_CMD_RDID          0x83U     /* Read Identification Page                                               */
+#define  EEPROM_CMD_WRID          0x82U     /* Write Identification Page                                              */
+#define  EEPROM_CMD_RDLS          0x83U     /* Reads the Identification Page lock status (only for EEPROMM01-D)       */
+#define  EEPROM_CMD_LIF           0x82U     /* Locks the Identification Page in read-only mode (only for EEPROMM01-D) */
 /*---------- Status register ----------*/
-#define  EEPROM_SR_WIP            0x01U     /* Write In Progress */
-#define  EEPROM_SR_WEL            0x02U     /* Write Enable Latch */
-#define  EEPROM_SR_BP0            0x04U     /* Block Protect 0 */
-#define  EEPROM_SR_BP1            0x08U     /* Block Protect 1 */
-#define  EEPROM_SR_SRWD           0x80U     /* Status Register Write Disable */
-#define  EEPROM_SR_WPNO           0x00U     /* Write-protected none */
-#define  EEPROM_SR_WPUQ           0x04U     /* Write-protected Upper quarter: 0x18000 - 0x1FFFF */
-#define  EEPROM_SR_WPUH           0x08U     /* Write-protected Upper half: 0x10000 - 0x1FFFF */
-#define  EEPROM_SR_WPWM           0x0CU     /* Write-protected Whole memory: 0x00000 - 0x1FFFF */
+#define  EEPROM_SR_WIP            0x01U     /* Write In Progress                                */
+#define  EEPROM_SR_WEL            0x02U     /* Write Enable Latch                               */
+#define  EEPROM_SR_BP0            0x04U     /* Block Protect 0                                  */
+#define  EEPROM_SR_BP1            0x08U     /* Block Protect 1                                  */
+#define  EEPROM_SR_SRWD           0x80U     /* Status Register Write Disable                    */
+#define  EEPROM_SR_BP_SHIFT       2U        /* Shift of BP0 bit                                 */
+#define  EEPROM_SR_BP_WPNO        0x00U     /* Write-protected none                             */
+#define  EEPROM_SR_BP_WPUQ        0x04U     /* Write-protected Upper quarter: 0x18000 - 0x1FFFF */
+#define  EEPROM_SR_BP_WPUH        0x08U     /* Write-protected Upper half: 0x10000 - 0x1FFFF    */
+#define  EEPROM_SR_BP_WPWM        0x0CU     /* Write-protected Whole memory: 0x00000 - 0x1FFFF  */
+/*------------------------ Macros --------------------------------------*/
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
-  EEPROM_OK,            /* Command done and bus is free for new one */
-  EEPROM_BUSY,          /* Some process in progress */
-  EEPROM_WRITE_DISABLE, /* Write disable by W pin */
-  EEPROM_OVER_PAGE,	/* Try to write over one page */
-  EEPROM_OVER_ROLL,     /* Try to read over end of memory */
-  EEPROM_ADR_ERROR,     /* Try to get access over address */
-  EEPROM_INIT_ERROR,    /* No SPI structure*/
-  EEPROM_SIZE_ERROR,    /* Size control error */
-  EEPROM_ERROR,         /* Other errors */
+  EEPROM_OK,              /* Command done and bus is free for new one */
+  EEPROM_BUSY,            /* Some process in progress                 */
+  EEPROM_WRITE_DISABLE,   /* Write disable by W pin                   */
+  EEPROM_OVER_PAGE,    	  /* Try to write over one page               */
+  EEPROM_OVER_ROLL,       /* Try to read over end of memory           */
+  EEPROM_ADR_ERROR,       /* Try to get access over address           */
+  EEPROM_INIT_ERROR,      /* No SPI structure                         */
+  EEPROM_SIZE_ERROR,      /* Size control error                       */
+  EEPROM_ERROR,           /* Other errors                             */
 } EEPROM_STATUS;
 
 typedef enum
 {
-  EEPROM_SR_IDLE,        /* Idle state */
-  EEPROM_SR_BUSY,        /* Write process in progress */
-  EEPROM_SR_WRITE_READY, /* Memory is enabled for writing */
-  EEPROM_SR_UNBLOCK,     /* All memory is unprotected for writing BP0 = 0, BP1 = 0 */
-  EEPROM_SR_BLOCK,       /* All memory is protected for writing BP0 = 1, BP1 = 1 */
+  EEPROM_PROTECT_NONE,    /* Write-protected none          */
+  EEPROM_PROTECT_QUARTER, /* Write-protected Upper quarter */
+  EEPROM_PROTECT_HALF,    /* Write-protected Upper half    */
+  EEPROM_PROTECT_WHOLE    /* Write-protected Whole memory  */
+} EEPROM_PROTECT_TYPE;
+
+typedef enum
+{
+  EEPROM_SR_IDLE,         /* Idle state                                             */
+  EEPROM_SR_BUSY,         /* Write process in progress                              */
+  EEPROM_SR_WRITE_READY,  /* Memory is enabled for writing                          */
+  EEPROM_SR_UNBLOCK,      /* All memory is unprotected for writing BP0 = 0, BP1 = 0 */
+  EEPROM_SR_BLOCK,        /* All memory is protected for writing BP0 = 1, BP1 = 1   */
 } EEPROM_SR_STATE;
+/*----------------------- Structures -----------------------------------*/
+typedef struct __packed
+{
+  /* EEPROM */
+  FunctionalState     SRWD    : 1U; /* Is EEPROM have Status Register Write Disable bit */
+  FunctionalState     ID      : 1U; /* Is EEPROM have identification page               */
+  EEPROM_PROTECT_TYPE protect : 2U; /* Define protect level                             */
+  uint32_t            size;         /* Size of EEPROM in bytes                          */
+  uint32_t            page;         /* Page size                                        */
+  uint8_t             frequensy;    /* Frequency of SPI                                 */
+  uint32_t            timeout;      /* Timeout for SPI transactions                     */
+  /* Hardware */
+  SPI_HandleTypeDef*  spi;
+  GPIO_TYPE           cs;
+} EEPROM_TYPE;
+
+/*----------------------- Chips ----------------------------------------*/
+#define  M95Mxx_SRWD            1U
+#define  M95Mxx_ID              0U
+#define  M95Mxx_PROTECTION      EEPROM_PROTECT_NONE
+#define  M95M01_SIZE            0x20000 /* bytes (128Kb) */
+#define  M95M02_SIZE            0x40000 /* bytes (256Kb) */
+#define  M95M04_SIZE            0x80000 /* bytes (512Kb) */
+#define  M95Mxx_PAGE_SIZE       256U    /* bytes         */
+#define  M95Mxx_CLOCK_FREQ      16U     /* MHz           */
+#define  M95Mxx_TIMEOUT         10U     /* Ticks         */
+
+#define  AA02E48_SRWD           0U
+#define  AA02E48_ID             0U
+#define  AA02E48_PROTECTION     EEPROM_PROTECT_QUARTER
+#define  AA02E48_SIZE           256U    /* bytes */
+#define  AA02E48_PAGE_SIZE      16U     /* bytes */
+#define  AA02E48_CLOCK_FREQ     5U      /* MHz   */
+#define  AA02E48_TIMEOUT        10U     /* Ticks */
 /*----------------------- Functions ------------------------------------*/
-EEPROM_STATUS eEEPROMInit ( SPI_HandleTypeDef* hspi, GPIO_TypeDef* nssGPIO, uint32_t nssPIN ); /* Installation of EEPROM */
-EEPROM_STATUS eEEPROMreadMemory ( uint32_t adr, uint8_t* data, uint16_t len );                 /* Read memory of EEPROM */
-EEPROM_STATUS eEEPROMwriteMemory ( uint32_t adr, uint8_t* data, uint16_t len );                /* Write data to memory of EEPROM */
+EEPROM_STATUS eEEPROMInit ( const EEPROM_TYPE* eeprom ); /* Installation of EEPROM */
+EEPROM_STATUS eEEPROMreadMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len );        /* Read memory of EEPROM */
+EEPROM_STATUS eEEPROMwriteMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len ); /* Write data to memory of EEPROM */
 /*----------------------------------------------------------------------*/
 #endif /* INC_EEPROM_H_ */

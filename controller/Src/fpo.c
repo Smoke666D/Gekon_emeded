@@ -170,8 +170,8 @@ void vFPOdisSetup ( void )
   uint8_t i = 0U;
   for ( i=0U; i<FPO_DIS_NUMBER; i++ )
   {
-    if ( ( fpos[2U * i].function      == FPO_FUN_NONE ) &&
-         ( fpos[2U * i + 1U].function == FPO_FUN_NONE ) )
+    if ( ( fpos[2U * i].function          == FPO_FUN_NONE ) &&
+         ( fpos[( 2U * i ) + 1U].function == FPO_FUN_NONE ) )
     {
       HAL_GPIO_WritePin( fpos_dis[i].port, fpos_dis[i].pin, GPIO_PIN_RESET );
     }

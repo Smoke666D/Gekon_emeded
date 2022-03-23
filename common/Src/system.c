@@ -39,7 +39,7 @@ void vSYSprintLoadBar ( uint8_t procents )
   {
     vLOGICprintDebug( "▒" );
   }
-  sprintf( buf, " %u", procents );
+  ( void )sprintf( buf, " %u", procents );
   vLOGICprintDebug( buf );
   vLOGICprintDebug( "% " );
   return;
@@ -48,10 +48,10 @@ void vSYSprintLoadBar ( uint8_t procents )
 void vSYSprintUsedData ( uint16_t usage, uint16_t total )
 {
   char buf[10U] = { " " };
-  sprintf( buf, " %u", usage );
+  ( void )sprintf( buf, " %u", usage );
   vLOGICprintDebug( buf );
   vLOGICprintDebug( "/" );
-  sprintf( buf, " %u", configTOTAL_HEAP_SIZE );
+  ( void )sprintf( buf, " %u", total );
   vLOGICprintDebug( " bytes\r\n" );
   return;
 }

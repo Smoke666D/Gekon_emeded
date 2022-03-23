@@ -29,7 +29,7 @@ void vSYSInitSerial ( UART_HandleTypeDef* uart )
  */
 void vSYSserial ( const char* msg )
 {
-  HAL_UART_Transmit(debug_huart, ( uint8_t* )msg, strlen(msg), 0xFFFF);
+  HAL_UART_Transmit( debug_huart, ( const uint8_t* )msg, strlen(msg), 0xFFFFU );
   return;
 }
 
@@ -70,14 +70,14 @@ uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output )
   {
     if ( input[i] > 0x00FFU )
     {
-      sprintf( &output[shift], " %02X %02X", ( uint8_t )( ( input[i] & 0xFF00 ) >> 8U ), ( uint8_t )( input[i] & 0x00FF ) );
+      ( void )sprintf( &output[shift], " %02X %02X", ( uint8_t )( ( input[i] & 0xFF00U ) >> 8U ), ( uint8_t )( input[i] & 0x00FFU ) );
       output[shift]      = '%';
       output[shift + 3U] = '%';
       shift += 6U;
     }
     else
     {
-      sprintf( &output[shift], " %02X", ( uint8_t )( input[i] & 0x00FF ) );
+      ( void )sprintf( &output[shift], " %02X", ( uint8_t )( input[i] & 0x00FFU ) );
       output[shift] = '%';
       shift += 3U;
     }
@@ -110,7 +110,7 @@ void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
   j = 0U;
   for( i=0; i<length; i++ )
   {
-    if ( hexBuf[j] & 0x80U )
+    if ( ( hexBuf[j] & 0x80U ) > 0U )
     {
       output[i] = ( ( ( uint16_t )hexBuf[j] ) << 8U ) | ( uint16_t )hexBuf[j + 1U];
       j += 2U;

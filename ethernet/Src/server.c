@@ -17,9 +17,9 @@
 #include "ethernetif.h"
 #include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static struct netconn* nc    = NULL;   // Connection to the port 80
-static struct netconn* in_nc = NULL;   // New user connection
-static osThreadId_t netTaskHandle = NULL;
+static struct netconn* nc            = NULL;   // Connection to the port 80
+static struct netconn* in_nc         = NULL;   // New user connection
+static osThreadId_t    netTaskHandle = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char defaultIp[IP4ADDR_STRLEN_MAX] = { '0', '0', '.', '0', '0', '.', '0', '0', '.', '0', '0', 0U, 0U, 0U, 0U, 0U };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -50,7 +50,7 @@ SERVER_ERROR eSERVERstart ( void )
   nc = netconn_new( NETCONN_TCP );                   // Create new network connection TCP TYPE
   if ( nc != NULL )
   {
-    netconRes = netconn_bind ( nc, IP_ADDR_ANY, 80 ); // Bind connection to well known port number 80
+    netconRes = netconn_bind ( nc, IP_ADDR_ANY, 80U ); // Bind connection to well known port number 80
     if ( netconRes == ERR_OK )
     {
       netconRes = netconn_listen( nc );	             // Tell connection to go into listening mode
@@ -114,7 +114,7 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
       if ( pchEn != NULL )
       {
         pchEn -= 1U;
-        strncpy( buffer, pchSt, ( pchEn - pchSt ) );
+        ( void )strncpy( buffer, pchSt, ( pchEn - pchSt ) );
         contentLengthHeader = atoi( buffer );
         if ( contentLengthHeader > 0U )
         {
@@ -135,6 +135,10 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
         else if ( message[length - 1U] == CR_HEX )
         {
           res = RECEIVE_MESSAGE_COMPLETE;
+        }
+        else
+        {
+
         }
       }
     }
@@ -406,7 +410,10 @@ void vSERVERinitConnection ( void )
   if ( eSERVERstart() != SERVER_OK )
   {
     vSYSserial( "fail!\n\r" );
-    while( 1U ) osDelay( 1U );
+    while( 1U )
+    {
+      osDelay( 1U );
+    }
   }
   vSYSserial( "done!\n\r" );
   vSYSserial( ">>Server ready and listen port 80!\n\r" );
@@ -429,24 +436,24 @@ void vSERVERcheckPlug ( void )
     case SERVER_STATE_PLUG:
       if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
       {
-	if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
-	{
-	  netif_set_default( &gnetif );
-	  netif_set_up( &gnetif );
-	  dhcp_start( &gnetif );
-	  vSERVERinitConnection();
-	  serverState = SERVER_STATE_UP;
-	}
+	      if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
+	      {
+	        netif_set_default( &gnetif );
+	        netif_set_up( &gnetif );
+	        dhcp_start( &gnetif );
+	        vSERVERinitConnection();
+	        serverState = SERVER_STATE_UP;
+	      }
       }
       break;
     case SERVER_STATE_DOWN:
       if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
       {
-	if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
-	{
-	  netif_set_up( &gnetif );
-	  serverState = SERVER_STATE_UP;
-	}
+	      if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
+	      {
+	        netif_set_up( &gnetif );
+	        serverState = SERVER_STATE_UP;
+	      }
       }
       break;
     case SERVER_STATE_UP:
@@ -496,7 +503,7 @@ void vSERVERinit ( void )
     const osThreadAttr_t netTask_attributes = {
       .name = "netTask",
       .stack_size = NET_TASK_STACK_SIZE,
-      .priority = (osPriority_t) NET_TASK_PRIORITY,
+      .priority = (osPriority_t) NET_TASK_PRIORITY
     };
     netTaskHandle = osThreadNew( vStartNetTask, NULL, &netTask_attributes );
   #endif

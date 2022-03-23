@@ -8,6 +8,7 @@
 #include "storage.h"
 #include "chart.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
+static const EEPROM_TYPE* storageEEPROM = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 uint8_t configBuffer[CONFIG_MAX_SIZE + 1U] = { 0U };
@@ -101,7 +102,7 @@ EEPROM_STATUS eSTORAGEwriteUint32 ( uint32_t data, uint32_t* adr )
   uint8_t       len        = 0U;
   uint8_t       buffer[4U] = { 0U };
   len  = uUint32ToBlob( data, buffer );
-  res  = eEEPROMwriteMemory( *adr, buffer, len );
+  res  = eEEPROMwriteMemory( storageEEPROM, *adr, buffer, len );
   if ( res == EEPROM_OK )
   {
     *adr += len;
@@ -113,7 +114,7 @@ EEPROM_STATUS eSTORAGEreadUint32 ( uint32_t* data, uint32_t* adr )
 {
   EEPROM_STATUS res        = EEPROM_OK;
   uint8_t       buffer[4U] = { 0U };
-  res  = eEEPROMreadMemory( *adr, buffer, 4U );
+  res  = eEEPROMreadMemory( storageEEPROM, *adr, buffer, 4U );
   if ( res == EEPROM_OK )
   {
     *adr += uBlobToUint32( data, buffer );
@@ -123,40 +124,53 @@ EEPROM_STATUS eSTORAGEreadUint32 ( uint32_t* data, uint32_t* adr )
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLICK -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEinit ( const EEPROM_TYPE* eeprom )
+{
+  storageEEPROM = eeprom;
+  return eEEPROMInit( eeprom );
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint32_t uSTORAGEgetSize ( void )
+{
+  return storageEEPROM->size;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEreadSR ( uint8_t* sr )
+{
+  return eEEPROMreadMemory( storageEEPROM, STORAGE_SR_ADR, sr, 1U );;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEwriteSR ( const uint8_t* sr )
+{
+  return eEEPROMwriteMemory( storageEEPROM, STORAGE_SR_ADR, ( uint8_t* )sr, 1U );
+}
+/*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteMap ( void )
 {
   EEPROM_STATUS res = EEPROM_OK;
   uint32_t      adr = STORAGE_MAP_ADR;
-  res = eSTORAGEwriteUint32( (uint32_t)STORAGE_WEB_SIZE, &adr );
+  res = eSTORAGEwriteUint32( (uint32_t)STORAGE_CONFIG_SIZE, &adr );
   if ( res == EEPROM_OK )
   {
-    res = eSTORAGEwriteUint32( (uint32_t)STORAGE_RESERVE_SIZE, &adr );
+    res = eSTORAGEwriteUint32( (uint32_t)STORAGE_CHART_SIZE, &adr );
     if ( res == EEPROM_OK )
     {
-      res = eSTORAGEwriteUint32( (uint32_t)STORAGE_CONFIG_SIZE, &adr );
+      res = eSTORAGEwriteUint32( (uint32_t)STORAGE_FREE_DATA_SIZE, &adr );
       if ( res == EEPROM_OK )
       {
-        res = eSTORAGEwriteUint32( (uint32_t)STORAGE_CHART_SIZE, &adr );
+        res = eSTORAGEwriteUint32( (uint32_t)STORAGE_PASSWORD_SIZE, &adr );
         if ( res == EEPROM_OK )
         {
-          res = eSTORAGEwriteUint32( (uint32_t)STORAGE_FREE_DATA_SIZE, &adr );
+          res = eSTORAGEwriteUint32( (uint32_t)STORAGE_LOG_POINTER_SIZE, &adr );
           if ( res == EEPROM_OK )
           {
-            res = eSTORAGEwriteUint32( (uint32_t)STORAGE_PASSWORD_SIZE, &adr );
+            res = eSTORAGEwriteUint32( (uint32_t)STORAGE_LOG_SIZE, &adr );
             if ( res == EEPROM_OK )
             {
-              res = eSTORAGEwriteUint32( (uint32_t)STORAGE_LOG_POINTER_SIZE, &adr );
+              res = eSTORAGEwriteUint32( (uint32_t)STORAGE_JOURNAL_SIZE, &adr );
               if ( res == EEPROM_OK )
               {
-                res = eSTORAGEwriteUint32( (uint32_t)STORAGE_LOG_SIZE, &adr );
-                if ( res == EEPROM_OK )
-                {
-                  res = eSTORAGEwriteUint32( (uint32_t)STORAGE_JOURNAL_SIZE, &adr );
-                  if ( res == EEPROM_OK )
-                  {
-                    res = eSTORAGEwriteUint32( (uint32_t)STORAGE_MEASUREMENT_SR_SIZE, &adr );
-                  }
-                }
+                res = eSTORAGEwriteUint32( (uint32_t)STORAGE_MEASUREMENT_SR_SIZE, &adr );
               }
             }
           }
@@ -186,16 +200,14 @@ EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output )
 uint8_t uSTORAGEcheckMap ( const uint32_t* map )
 {
   uint8_t res = 0U;
-  if ( ( map[0U] == ( uint32_t )( STORAGE_WEB_SIZE            ) ) &&
-       ( map[1U] == ( uint32_t )( STORAGE_RESERVE_SIZE        ) ) &&
-       ( map[2U] == ( uint32_t )( STORAGE_CONFIG_SIZE         ) ) &&
-       ( map[3U] == ( uint32_t )( STORAGE_CHART_SIZE          ) ) &&
-       ( map[4U] == ( uint32_t )( STORAGE_FREE_DATA_SIZE      ) ) &&
-       ( map[5U] == ( uint32_t )( STORAGE_PASSWORD_SIZE       ) ) &&
-       ( map[6U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE    ) ) &&
-       ( map[7U] == ( uint32_t )( STORAGE_LOG_SIZE            ) ) &&
-       ( map[8U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) &&
-       ( map[9U] == ( uint32_t )( STORAGE_MEASUREMENT_SR_SIZE ) ) )
+  if ( ( map[0U] == ( uint32_t )( STORAGE_CONFIG_SIZE         ) ) &&
+       ( map[1U] == ( uint32_t )( STORAGE_CHART_SIZE          ) ) &&
+       ( map[2U] == ( uint32_t )( STORAGE_FREE_DATA_SIZE      ) ) &&
+       ( map[3U] == ( uint32_t )( STORAGE_PASSWORD_SIZE       ) ) &&
+       ( map[4U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE    ) ) &&
+       ( map[5U] == ( uint32_t )( STORAGE_LOG_SIZE            ) ) &&
+       ( map[6U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) &&
+       ( map[7U] == ( uint32_t )( STORAGE_MEASUREMENT_SR_SIZE ) ) )
   {
     res = 1U;
   }
@@ -212,21 +224,21 @@ EEPROM_STATUS eSTORAGEwriteCharts ( void )
   uint8_t       buffer[4U] = { 0U };
   for ( i=0U; i<CHART_NUMBER; i++ )
   {
-    adr  = STORAGE_CHART_ADR + CHART_CHART_SIZE * i;
+    adr  = STORAGE_CHART_ADR + ( CHART_CHART_SIZE * i );
     len  = uUint16ToBlob( charts[i]->size, buffer );
-    res  = eEEPROMwriteMemory( adr, buffer, len );
+    res  = eEEPROMwriteMemory( storageEEPROM, adr, buffer, len );
     adr += len;
     if ( res == EEPROM_OK )
     {
       for ( j=0U; j<charts[i]->size; j++ )
       {
         len  = uFix16ToBlob( charts[i]->dots[j].x, buffer );
-        res  = eEEPROMwriteMemory( adr, buffer, len );
+        res  = eEEPROMwriteMemory( storageEEPROM, adr, buffer, len );
         adr += len;
         if ( res == EEPROM_OK )
         {
           len  = uFix16ToBlob( charts[i]->dots[j].y, buffer );
-          res  = eEEPROMwriteMemory( adr, buffer, len );
+          res  = eEEPROMwriteMemory( storageEEPROM, adr, buffer, len );
           adr += len;
           if ( res != EEPROM_OK )
           {
@@ -257,8 +269,8 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
   uint8_t       buffer[4U] = { 0U };
   for ( i=0U; i<CHART_NUMBER; i++ )
   {
-    adr  = STORAGE_CHART_ADR + CHART_CHART_SIZE * i;
-    res  = eEEPROMreadMemory( adr, buffer, 2U );
+    adr  = STORAGE_CHART_ADR + ( CHART_CHART_SIZE * i );
+    res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 2U );
     len  = uBlobToUint16( &charts[i]->size, buffer );
     adr += len;
     if ( charts[i]->size > CHART_DOTS_SIZE ) {
@@ -268,12 +280,12 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
     {
       for ( j=0U; j<charts[i]->size; j++ )
       {
-        res  = eEEPROMreadMemory( adr, buffer, 4U );
+        res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 4U );
 	len  = uBlobToFix16( &charts[i]->dots[j].x, buffer );
 	adr += len;
 	if ( res == EEPROM_OK )
 	{
-	  res  = eEEPROMreadMemory( adr, buffer, 4U );
+	  res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 4U );
 	  len  = uBlobToFix16( &charts[i]->dots[j].y, buffer );
 	  adr += len;
 	  if ( res != EEPROM_OK )
@@ -301,7 +313,7 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   uint8_t       i                            = 0U;
   uint32_t      adr                          = STORAGE_CONFIG_ADR;
   uint8_t       size                         = 0U;
-  for( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
+  for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
     size = uConfigToBlob( configReg[i], &configBuffer[1U] );
     if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )
@@ -310,7 +322,7 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
       break;
     }
     configBuffer[0U] = size;
-    res  = eEEPROMwriteMemory( adr, configBuffer, ( size + 1U ) );
+    res  = eEEPROMwriteMemory( storageEEPROM, adr, configBuffer, ( size + 1U ) );
     adr += size + 1U;
     if ( res != EEPROM_OK )
     {
@@ -328,7 +340,7 @@ EEPROM_STATUS eSTORAGEdeleteConfigs ( void )
   uint8_t       buffer[1U] = { 0U };
   for ( i=0U; i<CONFIG_TOTAL_SIZE; i++ )
   {
-    res = eEEPROMwriteMemory( adr, buffer, 1U );
+    res = eEEPROMwriteMemory( storageEEPROM, adr, buffer, 1U );
     adr++;
     if ( res != EEPROM_OK )
     {
@@ -347,11 +359,11 @@ EEPROM_STATUS eSTORAGEreadConfigs ( void )
   uint32_t      adr                     = STORAGE_CONFIG_ADR;
   for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
-    res = eEEPROMreadMemory( adr, &size, 1U );
+    res = eEEPROMreadMemory( storageEEPROM, adr, &size, 1U );
     if ( ( res == EEPROM_OK ) && ( size > 0U ) && ( size < CONFIG_MAX_SIZE ) )
     {
       adr++;
-      res = eEEPROMreadMemory( adr, configBuffer, size );
+      res = eEEPROMreadMemory( storageEEPROM, adr, configBuffer, size );
       if ( res == EEPROM_OK )
       {
         adr += size;
@@ -380,7 +392,7 @@ EEPROM_STATUS eSTORAGEreadLogPointer ( uint16_t* pointer )
 {
   EEPROM_STATUS res      = EEPROM_OK;
   uint8_t       data[2U] = { 0U };
-  res = eEEPROMreadMemory( STORAGE_LOG_POINTER_ADR, data, STORAGE_LOG_POINTER_SIZE );
+  res = eEEPROMreadMemory( storageEEPROM, STORAGE_LOG_POINTER_ADR, data, STORAGE_LOG_POINTER_SIZE );
   if ( res == EEPROM_OK )
   {
     *pointer = ( ( ( uint16_t )data[0U] ) << 8U ) | ( ( uint16_t )data[1U] );
@@ -393,7 +405,7 @@ EEPROM_STATUS eSTORAGEwriteLogPointer ( uint16_t pointer )
   uint8_t data[2U] = { 0U };
   data[0U] = ( uint8_t )( pointer >> 8U );
   data[1U] = ( uint8_t )( pointer       );
-  return eEEPROMwriteMemory( STORAGE_LOG_POINTER_ADR, data, STORAGE_LOG_POINTER_SIZE );
+  return eEEPROMwriteMemory( storageEEPROM, STORAGE_LOG_POINTER_ADR, data, STORAGE_LOG_POINTER_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, const LOG_RECORD_TYPE* record )
@@ -405,14 +417,14 @@ EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, const LOG_RECORD_TYPE* reco
   data[3U] = ( uint8_t )( record->time >> 16U );
   data[4U] = ( uint8_t )( record->time >> 8U  );
   data[5U] = ( uint8_t )( record->time        );
-  return eEEPROMwriteMemory( ( STORAGE_LOG_ADR + ( adr * LOG_RECORD_SIZE ) ), data, LOG_RECORD_SIZE );
+  return eEEPROMwriteMemory( storageEEPROM, ( STORAGE_LOG_ADR + ( adr * LOG_RECORD_SIZE ) ), data, LOG_RECORD_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record )
 {
   EEPROM_STATUS res                   = EEPROM_OK;
   uint8_t       data[LOG_RECORD_SIZE] = { 0x00U };
-  res = eEEPROMreadMemory( ( STORAGE_LOG_ADR + ( adr * LOG_RECORD_SIZE ) ), data, LOG_RECORD_SIZE );
+  res = eEEPROMreadMemory( storageEEPROM, ( STORAGE_LOG_ADR + ( adr * LOG_RECORD_SIZE ) ), data, LOG_RECORD_SIZE );
   if ( res == EEPROM_OK )
   {
     record->event.type   = data[0U];
@@ -431,14 +443,14 @@ EEPROM_STATUS eSTORAGEsavePassword ( void )
   buffer[0U] = ( uint8_t )( systemPassword.status       );
   buffer[1U] = ( uint8_t )( systemPassword.data   >> 8U );
   buffer[2U] = ( uint8_t )( systemPassword.data         );
-  return eEEPROMwriteMemory( STORAGE_PASSWORD_ADR, buffer, PASSWORD_SIZE );
+  return eEEPROMwriteMemory( storageEEPROM, STORAGE_PASSWORD_ADR, buffer, PASSWORD_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEloadPassword ( void )
 {
   uint8_t       buffer[PASSWORD_SIZE] = { 0U };
   EEPROM_STATUS res                   = EEPROM_OK;
-  res = eEEPROMreadMemory( STORAGE_PASSWORD_ADR, buffer, PASSWORD_SIZE );
+  res = eEEPROMreadMemory( storageEEPROM, STORAGE_PASSWORD_ADR, buffer, PASSWORD_SIZE );
   if ( res == EEPROM_OK )
   {
     systemPassword.status = buffer[0U];
@@ -451,7 +463,7 @@ EEPROM_STATUS eSTORAGEreadFreeData ( FREE_DATA_ADR n )
 {
   EEPROM_STATUS res      = EEPROM_OK;
   uint8_t       data[2U] = { 0U };
-  res = eEEPROMreadMemory( ( STORAGE_FREE_DATA_ADR + 2 * n ), data, 2U );
+  res = eEEPROMreadMemory( storageEEPROM, ( STORAGE_FREE_DATA_ADR + ( 2U * n ) ), data, 2U );
   if ( res == EEPROM_OK )
   {
     *freeDataArray[n] = ( ( ( uint16_t )data[1U] ) << 8U ) | ( ( uint16_t )data[0U] );
@@ -461,7 +473,7 @@ EEPROM_STATUS eSTORAGEreadFreeData ( FREE_DATA_ADR n )
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEsaveFreeData ( FREE_DATA_ADR n )
 {
-  return eEEPROMwriteMemory( ( STORAGE_FREE_DATA_ADR + 2 * n ), ( uint8_t* )freeDataArray[n], 2U );
+  return eEEPROMwriteMemory( storageEEPROM, ( STORAGE_FREE_DATA_ADR + ( 2U * n ) ), ( uint8_t* )freeDataArray[n], 2U );
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEsetFreeData ( FREE_DATA_ADR n, const uint16_t* data )
@@ -472,29 +484,23 @@ EEPROM_STATUS eSTORAGEsetFreeData ( FREE_DATA_ADR n, const uint16_t* data )
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* data )
 {
-  return eEEPROMreadMemory( ( STORAGE_MEASUREMENT_ADR + adr * 2U * length ), ( uint8_t* )data, ( uint16_t )( length * 2U ) );
+  return EEPROM_OK;
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEeraseMeasurement ( void )
 {
-  uint8_t data[STORAGE_MEASUREMENT_SR_SIZE] = { 0U };
-  return eEEPROMwriteMemory( STORAGE_MEASUREMENT_SR_ADR, data, STORAGE_MEASUREMENT_SR_SIZE );
+  return EEPROM_OK;
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint16_t* data )
 {
   EEPROM_STATUS res = EEPROM_OK;
-  res = eEEPROMwriteMemory( ( STORAGE_MEASUREMENT_ADR + adr * 2U * length ), ( uint8_t* )data, ( length * 2 ) );
-  if ( res == EEPROM_OK )
-  {
-    res = eEEPROMwriteMemory( STORAGE_MEASUREMENT_SR_ADR, ( uint8_t* )&adr, STORAGE_MEASUREMENT_SR_SIZE );
-  }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadMeasurementCounter ( uint16_t* adr )
 {
-  return eEEPROMreadMemory( STORAGE_MEASUREMENT_SR_ADR, ( uint8_t* )adr, 2U );
+  return EEPROM_OK;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

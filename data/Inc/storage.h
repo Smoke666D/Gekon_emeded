@@ -13,42 +13,32 @@
 #include "config.h"
 #include "controllerTypes.h"
 /*------------------------ Define --------------------------------------*/
-#define  STORAGE_SR_SIZE             1U                                 /* byte */
-#define  STORAGE_MAP_SIZE            40U                                /* byte */
-#define  STORAGE_WEB_SIZE            307200U                            /* byte */
-#define  STORAGE_RESERVE_SIZE        10240U                             /* byte */
-#define  STORAGE_CONFIG_SIZE         CONFIG_TOTAL_SIZE                  /* byte */
-#define  STORAGE_CHART_SIZE          ( CHART_CHART_SIZE * CHART_NUMBER) /* byte */
-#define  STORAGE_FREE_DATA_SIZE      ( FREE_DATA_SIZE * 2U )            /* byte */
-#define  STORAGE_PASSWORD_SIZE       PASSWORD_SIZE                      /* byte */
-#define  STORAGE_LOG_POINTER_SIZE    2U                                 /* byte */
-#define  STORAGE_LOG_SIZE            ( LOG_SIZE * LOG_RECORD_SIZE )     /* byte */
-#define  STORAGE_JOURNAL_SIZE        ( 1000U )                          /* byte */
-#define  STORAGE_MEASUREMENT_SR_SIZE 2U                                 /* byte */
-#define  STORAGE_REQUIRED_SIZE       ( STORAGE_SR_SIZE + STORAGE_MAP_SIZE + STORAGE_WEB_SIZE + STORAGE_RESERVE_SIZE + STORAGE_CONFIG_SIZE + STORAGE_CHART_SIZE + STORAGE_FREE_DATA_SIZE + STORAGE_PASSWORD_SIZE + STORAGE_LOG_POINTER_SIZE + STORAGE_LOG_SIZE + STORAGE_JOURNAL_SIZE + STORAGE_MEASUREMENT_SR_SIZE )
-#define  STORAGE_FREE_SIZE           ( EEPROM_SIZE * 1024U - STORAGE_REQUIRED_SIZE ) /* byte */
+#define  STORAGE_SR_SIZE             1U                                  /* byte */
+#define  STORAGE_MAP_SIZE            32U                                 /* byte */
+#define  STORAGE_CONFIG_SIZE         CONFIG_TOTAL_SIZE                   /* byte */
+#define  STORAGE_CHART_SIZE          ( CHART_CHART_SIZE * CHART_NUMBER ) /* byte */
+#define  STORAGE_FREE_DATA_SIZE      ( FREE_DATA_SIZE * 2U )             /* byte */
+#define  STORAGE_PASSWORD_SIZE       PASSWORD_SIZE                       /* byte */
+#define  STORAGE_LOG_POINTER_SIZE    2U                                  /* byte */
+#define  STORAGE_LOG_SIZE            ( LOG_SIZE * LOG_RECORD_SIZE )      /* byte */
+#define  STORAGE_JOURNAL_SIZE        ( 1000U )                           /* byte */
+#define  STORAGE_MEASUREMENT_SR_SIZE 2U                                  /* byte */
+#define  STORAGE_REQUIRED_SIZE       ( STORAGE_SR_SIZE + STORAGE_MAP_SIZE + STORAGE_CONFIG_SIZE + STORAGE_CHART_SIZE + STORAGE_FREE_DATA_SIZE + STORAGE_PASSWORD_SIZE + STORAGE_LOG_POINTER_SIZE + STORAGE_LOG_SIZE + STORAGE_JOURNAL_SIZE )
 
-#if ( ( EEPROM_SIZE * 1024U ) < STORAGE_REQUIRED_SIZE )
+#if ( M95M01_SIZE < STORAGE_REQUIRED_SIZE )
   #error EEPROM size is too small!
 #endif
 
 #define  STORAGE_START_ADR          0x0000U
 #define  STORAGE_SR_ADR             ( STORAGE_START_ADR )
 #define  STORAGE_MAP_ADR            ( STORAGE_SR_ADR             + STORAGE_SR_SIZE             )
-#define  STORAGE_CONFIG_ADR         ( STORAGE_RESERVE_ADR        + STORAGE_MAP_SIZE            )
+#define  STORAGE_CONFIG_ADR         ( STORAGE_MAP_ADR            + STORAGE_MAP_SIZE            )
 #define  STORAGE_CHART_ADR          ( STORAGE_CONFIG_ADR         + CONFIG_TOTAL_SIZE           )
 #define  STORAGE_FREE_DATA_ADR      ( STORAGE_CHART_ADR          + STORAGE_CHART_SIZE          )
 #define  STORAGE_PASSWORD_ADR       ( STORAGE_FREE_DATA_ADR      + STORAGE_FREE_DATA_SIZE      )
 #define  STORAGE_LOG_POINTER_ADR    ( STORAGE_PASSWORD_ADR       + STORAGE_PASSWORD_SIZE       )
 #define  STORAGE_LOG_ADR            ( STORAGE_LOG_POINTER_ADR    + STORAGE_LOG_POINTER_SIZE    )
 #define  STORAGE_JOURNAL_ADR        ( STORAGE_LOG_ADR            + STORAGE_LOG_SIZE            )
-
-#define  STORAGE_EWA_ADR            ( STORAGE_MAP_ADR            + STORAGE_JOURNAL_SIZE        )
-#define  STORAGE_EWA_DATA_ADR       ( STORAGE_EWA_ADR            + EEPROM_LENGTH_SIZE          )
-#define  STORAGE_RESERVE_ADR        ( STORAGE_EWA_ADR            + STORAGE_WEB_SIZE            )
-#define  STORAGE_MEASUREMENT_SR_ADR ( STORAGE_JOURNAL_ADR        + STORAGE_RESERVE_SIZE        )
-#define  STORAGE_MEASUREMENT_ADR    ( STORAGE_MEASUREMENT_SR_ADR + STORAGE_MEASUREMENT_SR_SIZE )
-
 
 #define  STORAGE_SR_EMPTY           0xFFU  /* The register as default is 0xFF */
 /*------------------------- Macros -------------------------------------*/
@@ -58,6 +48,10 @@
 /*----------------------- Structures -----------------------------------*/
 
 /*------------------------ Functions -----------------------------------*/
+EEPROM_STATUS eSTORAGEinit ( const EEPROM_TYPE* eeprom );
+uint32_t      uSTORAGEgetSize ( void );
+EEPROM_STATUS eSTORAGEreadSR ( uint8_t* sr );
+EEPROM_STATUS eSTORAGEwriteSR ( const uint8_t* sr );
 EEPROM_STATUS eSTORAGEwriteMap ( void );
 EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output );
 uint8_t       uSTORAGEcheckMap ( const uint32_t* map );

@@ -150,4 +150,8 @@ void vKeyboardTask( void * argument )
   return;
 }
 
+uint8_t uKEYgetState ( uint8_t adr )
+{
+  return STATUS[adr];
+}
 

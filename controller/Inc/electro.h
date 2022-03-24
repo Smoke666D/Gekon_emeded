@@ -199,5 +199,10 @@ void                   vELECTROsendCmd ( ELECTRO_COMMAND cmd );
 fix16_t                fELECTROgetMaxGenVoltage ( void );
 fix16_t                fELECTROgetPower ( void );
 TRIGGER_STATE          eELECTROgetMainsErrorFlag ( void );
+fix16_t                fELECTROgetMainsVoltage ( uint8_t channel );
+fix16_t                fELECTROgetGeneratorVoltage ( uint8_t channel );
+fix16_t                fELECTROgetCurrent ( uint8_t channel );
+fix16_t                fELECTROgetMainsFreq ( void );
+fix16_t                fELECTROgetGeneratorFreq ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_ELECTRO_H_ */

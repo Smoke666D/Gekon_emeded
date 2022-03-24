@@ -1,0 +1,96 @@
+/*
+ * test.h
+ *
+ *  Created on: 23 мар. 2022 г.
+ *      Author: 79110
+ */
+
+#ifndef INC_TEST_H_
+#define INC_TEST_H_
+/*----------------------- Includes -------------------------------------*/
+#include "stm32f2xx_hal.h"
+/*------------------------ Define --------------------------------------*/
+#define TEST_COMMANDS_NUMBER     2U
+#define TEST_TARGETS_NUMBER      15U
+#define TEST_MESSAGE_OUT_LENGTH  20U
+#define TEST_FIX_DECIMALS        2U
+#define TEST_SET_COMMAND_STR     "set"
+#define TEST_GET_COMMAND_STR     "get"
+#define TEST_TARGET_DIN_STR      "din"
+#define TEST_TARGET_DOUT_STR     "dout"
+#define TEST_TARGET_TIME_STR     "time"
+#define TEST_TARGET_OIL_STR      "oil"
+#define TEST_TARGET_COOLANT_STR  "cool"
+#define TEST_TARGET_FUEL_STR     "fuel"
+#define TEST_TARGET_BAT_STR      "bat"
+#define TEST_TARGET_CHARG_STR    "charg"
+#define TEST_TARGET_GEN_STR      "gen"
+#define TEST_TARGET_MAINS_STR    "mains"
+#define TEST_TARGET_CUR_STR      "cur"
+#define TEST_TARGET_FREQ_STR     "freq"
+#define TEST_TARGET_SPEED_STR    "speed"
+#define TEST_TARGET_SWITCH_STR   "sw"
+#define TEST_TARGET_LED_STR      "led"
+#define TEST_DIO_ON_STR          "on"
+#define TEST_DIO_OFF_STR         "off"
+#define TEST_ERROR_OK_STR        "Ok"
+#define TEST_ERROR_COMMAND_STR   "Wrong command"
+#define TEST_ERROR_TARGET_STR    "Wrong target"
+#define TEST_ERROR_DATA_STR      "Wrong data"
+#define TEST_ERROR_EXECUTING_STR "Executing error"
+#define TEST_ERROR_UNKNOWN       "Unknown error"
+/*------------------------- Macros -------------------------------------*/
+/*-------------------------- ENUM --------------------------------------*/
+typedef enum
+{
+  TEST_FREQ_CHANNELS_MAINS,
+  TEST_FREQ_CHANNELS_GENERATOR
+} TEST_FREQ_CHANNELS;
+
+typedef enum
+{
+  TEST_STATUS_OK,
+  TEST_STATUS_ERROR_COMMAND,
+  TEST_STATUS_ERROR_TARGET,
+  TEST_STATUS_ERROR_DATA,
+  TEST_STATUS_ERROR_EXECUTING
+} TEST_STATUS;
+
+typedef enum
+{
+  TEST_COMMAND_NO,
+  TEST_COMMAND_SET,
+  TEST_COMMAND_GET
+} TEST_COMMAND;
+
+typedef enum
+{
+  TEST_TARGET_NO,        /* 00 no */
+  TEST_TARGET_DIN,       /* 01 get */
+  TEST_TARGET_DOUT,      /* 02 set */
+  TEST_TARGET_TIME,      /* 03 get & set */
+  TEST_TARGET_OIL,       /* 04 get */
+  TEST_TARGET_COOL,      /* 05 get */
+  TEST_TARGET_FUEL,      /* 06 get */
+  TEST_TARGET_BAT,       /* 07 get */
+  TEST_TARGET_CHARG,     /* 08 get */
+  TEST_TARGET_GENERATOR, /* 09 get */
+  TEST_TARGET_MAINS,     /* 10 get */
+  TEST_TARGET_CURRENT,   /* 11 get */
+  TEST_TARGET_FREQ,      /* 12 get */
+  TEST_TARGET_SPEED,     /* 13 get */
+  TEST_TARGET_SW,        /* 14 get */
+  TEST_TARGET_LED        /* 15 set */
+} TEST_TARGET;
+/*----------------------- Structures -----------------------------------*/
+typedef struct __packed
+{
+  TEST_COMMAND cmd;
+  TEST_TARGET  target;
+  uint8_t      dataFlag : 1U;
+  uint32_t     data;
+  char         out[TEST_MESSAGE_OUT_LENGTH];
+} TEST_TYPE;
+/*------------------------ Functions -----------------------------------*/
+/*----------------------------------------------------------------------*/
+#endif /* INC_TEST_H_ */

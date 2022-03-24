@@ -63,5 +63,6 @@ void          vKeyboardTask( void  * argument );//  __attribute__((optimize("-O3
 void          vSetupKeyboard( void );
 void          vKeyboardInit( uint32_t Message );
 QueueHandle_t pGetKeyboardQueue( void );
+uint8_t       uKEYgetState ( uint8_t adr );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_KEYBOARD_H_ */

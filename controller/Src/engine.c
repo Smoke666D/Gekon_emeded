@@ -120,6 +120,8 @@ static fix16_t        currentSpeed                                     = 0U;
 static fix16_t        oilVal                                           = 0U;
 static fix16_t        coolantVal                                       = 0U;
 static fix16_t        fuelVal                                          = 0U;
+static fix16_t        batteryVal                                       = 0U;
+static fix16_t        chargerVal                                       = 0U;
 /*--------------------------------- Extern -----------------------------------*/
 osThreadId_t engineHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -1300,6 +1302,16 @@ fix16_t fENGINEgetFuelLevel ( void )
   return fuelVal;
 }
 /*----------------------------------------------------------------------------*/
+fix16_t fENGINEgetBatteryVoltage ( void )
+{
+  return batteryVal;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fENGINEgetChargerVoltage ( void )
+{
+  return chargerVal;
+}
+/*----------------------------------------------------------------------------*/
 TRIGGER_STATE eENGINEgetTurnout ( void )
 {
   return engine.firstTurnout;
@@ -1309,7 +1321,6 @@ TRIGGER_STATE eENGINEgetTurnout ( void )
 /*----------------------------------------------------------------------------*/
 void vENGINEtask ( void* argument )
 {
-  fix16_t         chargerVal  = 0U;
   fix16_t         genFreqVal  = 0U;
   SYSTEM_TIMER    commonTimer = { 0U };
   ENGINE_COMMAND  inputCmd    = ENGINE_CMD_NONE;
@@ -1404,7 +1415,7 @@ void vENGINEtask ( void* argument )
     coolantVal   = fCOOLANTprocess();
     fuelVal      = fFUELprocess();
     chargerVal   = fCHARGERprocess();
-    ( void )fBATTERYprocess();
+    batteryVal   = fBATTERYprocess();
     genFreqVal   = xADCGetGENLFreq();
 
     if ( speed.enb == PERMISSION_ENABLE )

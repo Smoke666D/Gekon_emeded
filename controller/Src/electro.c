@@ -36,6 +36,11 @@ static ELECTRO_COMMAND electroCommandBuffer[ELECTRO_COMMAND_QUEUE_LENGTH] = { 0U
 //static fix16_t         maxGeneratorVolage                                 = 0U;
 static fix16_t         shortCircuitDividend                               = 0U;
 static fix16_t         minTempCurrentRatio                                = 0U;
+static fix16_t         generatorVoltage[MAINS_LINE_NUMBER]                = { 0U };
+static fix16_t         mainsVoltage[MAINS_LINE_NUMBER]                    = { 0U };
+static fix16_t         current[MAINS_LINE_NUMBER]                         = { 0U };
+static fix16_t         generatorFreq                                      = 0U;
+static fix16_t         mainsFreq                                          = 0U;
 /*-------------------------------- External ----------------------------------*/
 osThreadId_t electroHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -206,16 +211,14 @@ fix16_t fELECTROcalcPhaseImbalance ( fix16_t* value )
 /*---------------------------------------------------------------------------------------------------*/
 void vMAINSprocess ( void )
 {
-  fix16_t         voltage[MAINS_LINE_NUMBER] = { 0U };
-  fix16_t         freq                       = 0U;
-  uint8_t         i                          = 0U;
-  uint8_t         mainsFlag                  = 0U;
+  uint8_t i                          = 0U;
+  uint8_t mainsFlag                  = 0U;
   /*--------------------------- Read inputs ---------------------------*/
   for ( i=0U; i<MAINS_LINE_NUMBER; i++ )
   {
-    voltage[i] = mains.line[i].getVoltage();
+    mainsVoltage[i] = mains.line[i].getVoltage();
   }
-  freq = mains.getFreq();
+  mainsFreq = mains.getFreq();
   /*------------------------- Alarm ignoring --------------------------*/
   if ( ( generator.state == ELECTRO_STATUS_LOAD ) && ( mains.alarmsIgnor == PERMISSION_DISABLE ) )
   {
@@ -238,11 +241,11 @@ void vMAINSprocess ( void )
     mains.alarmsIgnor                   = PERMISSION_DISABLE;
   }
   /*------------------------- Voltage alarms --------------------------*/
-  vELECTROalarmCheck( &mains.lowVoltageAlarm, voltage, MAINS_LINE_NUMBER );
-  vELECTROalarmCheck( &mains.hightVoltageAlarm, voltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &mains.lowVoltageAlarm,   mainsVoltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &mains.hightVoltageAlarm, mainsVoltage, MAINS_LINE_NUMBER );
   /*------------------------ Frequency alarms --------------------------*/
-  vALARMcheck( &mains.lowFreqAlarm, freq );
-  vALARMcheck( &mains.hightFreqAlarm, freq );
+  vALARMcheck( &mains.lowFreqAlarm,   mainsFreq );
+  vALARMcheck( &mains.hightFreqAlarm, mainsFreq );
   /*-------------------- Phase sequence control ------------------------*/
   if ( electro.scheme != ELECTRO_SCHEME_SINGLE_PHASE )
   {
@@ -282,33 +285,30 @@ float outLevel = 0;
  * Input:  None
  * Output: Maximum of voltage
  */
-void fGENERATORprocess ( void )
+void vGENERATORprocess ( void )
 {
-  fix16_t voltage[MAINS_LINE_NUMBER] = { 0U };
-  fix16_t freq                       = 0U;
-  fix16_t current[MAINS_LINE_NUMBER] = { 0U };
-  fix16_t power                      = 0U;
-  fix16_t maxCurrent                 = 0U;
-  uint8_t i                          = 0U;
+  fix16_t power      = 0U;
+  fix16_t maxCurrent = 0U;
+  uint8_t i          = 0U;
   /*-------------------------- Read inputs ----------------------------*/
   for ( i=0U; i<GENERATOR_LINE_NUMBER; i++ )
   {
-    voltage[i] = generator.line[i].getVoltage();
-    current[i] = generator.line[i].getCurrent();
+    generatorVoltage[i] = generator.line[i].getVoltage();
+    current[i]          = generator.line[i].getCurrent();
   }
-  power      = generator.getPower();
-  freq       = generator.getFreq();
-  maxCurrent = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
+  power         = generator.getPower();
+  generatorFreq = generator.getFreq();
+  maxCurrent    = fELECTROgetMax( current, GENERATOR_LINE_NUMBER );
   /*------------------------- Voltage alarms --------------------------*/
-  vELECTROalarmCheck( &generator.lowVoltageAlarm,      voltage, MAINS_LINE_NUMBER );
-  vELECTROalarmCheck( &generator.lowVoltagePreAlarm,   voltage, MAINS_LINE_NUMBER );
-  vELECTROalarmCheck( &generator.hightVoltageAlarm,    voltage, MAINS_LINE_NUMBER );
-  vELECTROalarmCheck( &generator.hightVoltagePreAlarm, voltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &generator.lowVoltageAlarm,      generatorVoltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &generator.lowVoltagePreAlarm,   generatorVoltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &generator.hightVoltageAlarm,    generatorVoltage, MAINS_LINE_NUMBER );
+  vELECTROalarmCheck( &generator.hightVoltagePreAlarm, generatorVoltage, MAINS_LINE_NUMBER );
   /*------------------------ Frequency alarms --------------------------*/
-  vALARMcheck( &generator.lowFreqAlarm,      freq );
-  vALARMcheck( &generator.lowFreqPreAlarm,   freq );
-  vALARMcheck( &generator.hightFreqAlarm,    freq );
-  vALARMcheck( &generator.hightFreqPreAlarm, freq );
+  vALARMcheck( &generator.lowFreqAlarm,      generatorFreq );
+  vALARMcheck( &generator.lowFreqPreAlarm,   generatorFreq );
+  vALARMcheck( &generator.hightFreqAlarm,    generatorFreq );
+  vALARMcheck( &generator.hightFreqPreAlarm, generatorFreq );
   /*--------------------- Phase sequence control ----------------------*/
   vERRORcheck( &generator.phaseSequenceError, ( xADCGetGenFaseRotation() == B_C_ROTATION ) ? 1U : 0U  );
   /*------------------------- Current alarms --------------------------*/
@@ -322,7 +322,7 @@ void fGENERATORprocess ( void )
   }
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );
   /*-------------------------------------------------------------------*/
-  generator.output.voltage = fELECTROgetMax( voltage, MAINS_LINE_NUMBER );
+  generator.output.voltage = fELECTROgetMax( generatorVoltage, MAINS_LINE_NUMBER );
   generator.output.power   = power;
   return;
 }
@@ -769,7 +769,7 @@ void vELECTROtask ( void* argument )
       xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT );
     }
     /*---------------------- Data input processing ---------------------*/
-    fGENERATORprocess();
+    vGENERATORprocess();
     vMAINSprocess();
     /*-------------------- Input commands processing -------------------*/
     if ( electro.state == ELECTRO_PROC_STATUS_IDLE )
@@ -1066,6 +1066,31 @@ void vELECTROtask ( void* argument )
     vRELAYdelayProcess( &generator.relayOn  );
     vRELAYdelayProcess( &mains.relayOff     );
   }
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fELECTROgetMainsVoltage ( uint8_t channel )
+{
+  return mainsVoltage[channel];
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fELECTROgetGeneratorVoltage ( uint8_t channel )
+{
+  return generatorVoltage[channel];
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fELECTROgetCurrent ( uint8_t channel )
+{
+  return current[channel];
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fELECTROgetMainsFreq ( void )
+{
+  return mainsFreq;
+}
+/*----------------------------------------------------------------------------*/
+fix16_t fELECTROgetGeneratorFreq ( void )
+{
+  return generatorFreq;
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

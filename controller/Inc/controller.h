@@ -85,5 +85,6 @@ void             vCONTRILLERsetStart ( void );
 void             vCONTROLLERsetStop ( void );
 void             vCONTROLLERsetACK ( void );
 void             vCONTROLLERsetSwitchLoad ( void );
+void             vCONTROLLERsetLed ( uint8_t led, uint8_t state );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONTROLLER_H_ */

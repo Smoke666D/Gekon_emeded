@@ -16,11 +16,13 @@
 #include "engine.h"
 #include "RTC.h"
 #include "keyboard.h"
+#include "controller.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* commandStrings[TEST_COMMANDS_NUMBER] = {
   TEST_SET_COMMAND_STR,
+  TEST_RESET_COMMAND_STR,
   TEST_GET_COMMAND_STR
 };
 static const char* targetStrings[TEST_TARGETS_NUMBER] = {
@@ -38,7 +40,8 @@ static const char* targetStrings[TEST_TARGETS_NUMBER] = {
   TEST_TARGET_FREQ_STR,
   TEST_TARGET_SPEED_STR,
   TEST_TARGET_SWITCH_STR,
-  TEST_TARGET_LED_STR
+  TEST_TARGET_LED_STR,
+  TEST_TARGET_STORAGE_STR
 };
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -48,9 +51,10 @@ static const char* targetStrings[TEST_TARGETS_NUMBER] = {
 /*---------------------------------------------------------------------------------------------------*/
 void eTESTparseString ( const char* str, TEST_TYPE* message )
 {
-  uint8_t i   = 0U;
-  char*   p   = NULL;
-  char*   sub = NULL;
+  uint8_t i      = 0U;
+  char*   p      = NULL;
+  char*   cmdEnd = NULL;
+  char*   trgEnd = NULL;
   message->cmd      = TEST_COMMAND_NO;
   message->target   = TEST_TARGET_NO;
   message->data     = 0U;
@@ -58,28 +62,42 @@ void eTESTparseString ( const char* str, TEST_TYPE* message )
   for ( i=0U; i<TEST_COMMANDS_NUMBER; i++ )
   {
     p = strstr( str, commandStrings[i] );
-    if ( ( p > 0U ) && ( ( ( p + 1U ) == ' ' ) || ( ( p + 1U ) == 0U ) ) )
+    if ( p > 0U )
     {
-      message->cmd = i + 1U;
-      break;
-    }
-  }
-  if ( ( message->cmd != TEST_COMMAND_NO ) && ( ( p + 1U ) == ' ' ) )
-  {
-    sub = p + 1U;
-    for ( i=0U; i<TEST_TARGETS_NUMBER; i++ )
-    {
-      p = strstr( sub, targetStrings[i] );
-      if ( ( p != NULL ) && ( ( ( p + 1U ) == ' ' ) || ( ( p + 1U ) == 0U ) ) )
+      cmdEnd = &p[strlen( commandStrings[i] ) + 1U];
+      if ( ( cmdEnd[0U] == ' ' ) || ( cmdEnd[0U] == 0U ) )
       {
-        message->target = i + 1U;
+        message->cmd = i + 1U;
         break;
       }
     }
-    if ( ( message->target != TEST_TARGET_NO ) && ( ( p + 1U ) == ' ' ) )
+  }
+  if ( ( message->cmd != TEST_COMMAND_NO ) && ( cmdEnd[0U] == ' ' ) )
+  {
+    for ( i=0U; i<TEST_TARGETS_NUMBER; i++ )
+    {
+      p = strstr( cmdEnd, targetStrings[i] );
+      if ( p > 0U )
+      {
+        trgEnd = &p[strlen( targetStrings[i] ) + 1U];
+        if  ( ( trgEnd[0U] == ' ' ) || ( trgEnd[0U] == 0U ) )
+        {
+          message->target = i + 1U;
+          break;
+        }
+      }
+    }
+    if ( ( message->target != TEST_TARGET_NO ) && ( trgEnd[0U] == ' ' ) )
     {
       message->dataFlag = 1U;
-      message->data     = atoi( p + 1U );
+      if ( ( message->cmd == TEST_COMMAND_SET ) && ( message->target == TEST_TARGET_TIME ) )
+      {
+        strcpy( message->out, &trgEnd[1U] );
+      }
+      else
+      {
+        message->data = atoi( &trgEnd[1U] );
+      }
     }
   }
   return;
@@ -96,24 +114,65 @@ void vTESTtimeToStr ( RTC_TIME* time, char* buf )
   ( void )strcat( buf, "." );
   ( void )itoa( time->year, sub, 10U );
   ( void )strcat( buf, sub );
-  ( void )strcat( buf, " " );
+  ( void )strcat( buf, "." );
   ( void )itoa( time->hour, sub, 10U );
   ( void )strcat( buf, sub );
-  ( void )strcat( buf, ":" );
+  ( void )strcat( buf, "." );
   ( void )itoa( time->min, sub, 10U );
   ( void )strcat( buf, sub );
-  ( void )strcat( buf, ":" );
+  ( void )strcat( buf, "." );
   ( void )itoa( time->sec, sub, 10U );
   ( void )strcat( buf, sub );
+  ( void )strcat( buf, "." );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vTESTstrToTime ( RTC_TIME* time, char* buf )
+uint8_t uTESTparseTimeFild ( char* pStr, uint8_t* output )
 {
-  return;
+  uint8_t res     = 1U;
+  char    sub[5U] = { 0U };
+  char*   pEnd = NULL;
+  pEnd = strchr( pStr, '.' );
+  if ( pEnd != NULL )
+  {
+    ( void )memcpy( sub, pStr, ( pEnd - pStr ) );
+    *output = ( uint8_t )atoi( sub );
+    pStr    = pEnd + 1U;
+  }
+  else
+  {
+    res = 0U;
+  }
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void status_to_string ( TEST_STATUS status, char* buf )
+TEST_STATUS vTESTstrToTime ( RTC_TIME* time, char* buf )
+{
+  TEST_STATUS res  = TEST_STATUS_ERROR_DATA;
+  char*       pStr = buf;
+  if ( uTESTparseTimeFild( pStr, &time->day ) > 0U )
+  {
+    if ( uTESTparseTimeFild( pStr, &time->month ) > 0U )
+    {
+      if ( uTESTparseTimeFild( pStr, &time->year ) > 0U )
+      {
+        if ( uTESTparseTimeFild( pStr, &time->hour ) > 0U )
+        {
+          if ( uTESTparseTimeFild( pStr, &time->min ) > 0U )
+          {
+            if ( uTESTparseTimeFild( pStr, &time->sec ) > 0U )
+            {
+              res = TEST_STATUS_OK;
+            }
+          }
+        }
+      }
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vTESTstatusToString ( TEST_STATUS status, char* buf )
 {
   switch ( status )
   {
@@ -139,7 +198,7 @@ void status_to_string ( TEST_STATUS status, char* buf )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void dio_to_str ( uint8_t state, char* buf )
+void vTESTdioToStr ( uint8_t state, char* buf )
 {
   if ( state > 0U )
   {
@@ -159,6 +218,7 @@ TEST_STATUS vTESTprocess ( const char* str )
   TEST_STATUS res     = TEST_STATUS_OK;
   TEST_TYPE   message = { 0U };
   RTC_TIME    time    = { 0U };
+  uint8_t     buf     = 0U;
   eTESTparseString( str, &message );
   switch ( message.cmd )
   {
@@ -166,9 +226,9 @@ TEST_STATUS vTESTprocess ( const char* str )
       switch ( message.target )
       {
         case TEST_TARGET_DOUT:
-          if ( ( message.data < FPO_NUMBER ) && ( message.dataFlag > 0U ) )
+          if ( ( message.dataFlag > 0U ) && ( message.data < FPO_NUMBER ) )
           {
-            status_to_string( res, message.out );
+            vFPOtest( message.data, 1U );
           }
           else
           {
@@ -176,19 +236,62 @@ TEST_STATUS vTESTprocess ( const char* str )
           }
           break;
         case TEST_TARGET_TIME:
-          // !!!!!!!!Encoding time
-          if ( eRTCsetTime( &time ) != RTC_OK )
+          if ( message.dataFlag > 0U )
           {
-            res = TEST_STATUS_ERROR_EXECUTING;
+            res = vTESTstrToTime( &time, message.out );
+            if ( res == TEST_STATUS_OK )
+            {
+              if ( eRTCsetTime( &time ) != RTC_OK )
+              {
+                res = TEST_STATUS_ERROR_EXECUTING;
+              }
+            }
           }
-          status_to_string( res, message.out );
           break;
         case TEST_TARGET_LED:
+          if ( message.dataFlag )
+          {
+            vCONTROLLERsetLed( message.data, 1U );
+          }
+          else
+          {
+            res = TEST_STATUS_ERROR_DATA;
+          }
           break;
         default:
           res = TEST_STATUS_ERROR_TARGET;
           break;
       }
+      vTESTstatusToString( res, message.out );
+      break;
+    case TEST_COMMAND_RESET:
+      switch ( message.target )
+      {
+        case TEST_TARGET_DOUT:
+          if ( ( message.dataFlag > 0U ) && ( message.data < FPO_NUMBER ) )
+          {
+            vFPOtest( message.data, 0U );
+          }
+          else
+          {
+            res = TEST_STATUS_ERROR_DATA;
+          }
+          break;
+        case TEST_TARGET_LED:
+          if ( message.dataFlag )
+          {
+            vCONTROLLERsetLed( message.data, 0U );
+          }
+          else
+          {
+            res = TEST_STATUS_ERROR_DATA;
+          }
+          break;
+        default:
+          res = TEST_STATUS_ERROR_TARGET;
+          break;
+      }
+      vTESTstatusToString( res, message.out );
       break;
     case TEST_COMMAND_GET:
       switch ( message.target )
@@ -196,7 +299,7 @@ TEST_STATUS vTESTprocess ( const char* str )
         case TEST_TARGET_DIN:
           if ( ( message.data < FPI_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            dio_to_str( ( ( uFPIgetData() >> message.data ) & 0x01U ), message.out );
+            vTESTdioToStr( ( ( uFPIgetData() >> message.data ) & 0x01U ), message.out );
           }
           else
           {
@@ -206,7 +309,7 @@ TEST_STATUS vTESTprocess ( const char* str )
         case TEST_TARGET_DOUT:
           if ( ( message.data < FPO_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            dio_to_str( ( ( uFPOgetData() >> message.data ) & 0x01U ), message.out );
+            vTESTdioToStr( ( ( uFPOgetData() >> message.data ) & 0x01U ), message.out );
           }
           else
           {
@@ -290,11 +393,17 @@ TEST_STATUS vTESTprocess ( const char* str )
         case TEST_TARGET_SW:
           if ( ( message.data < KEYBOARD_COUNT ) && ( message.dataFlag > 0U ) )
           {
-            dio_to_str( uKEYgetState( message.data ), message.out );
+            vTESTdioToStr( uKEYgetState( message.data ), message.out );
           }
           else
           {
             res = TEST_STATUS_ERROR_DATA;
+          }
+          break;
+        case TEST_TARGET_STORAGE:
+          if ( eSTORAGEreadSR( &buf ) != EEPROM_OK )
+          {
+            res = TEST_STATUS_ERROR_EXECUTING;
           }
           break;
         default:
@@ -303,12 +412,12 @@ TEST_STATUS vTESTprocess ( const char* str )
       }
       if ( res != TEST_STATUS_OK )
       {
-        status_to_string( res, message.out );
+        vTESTstatusToString( res, message.out );
       }
       break;
     default:
       res = TEST_STATUS_ERROR_COMMAND;
-      status_to_string( res, message.out );
+      vTESTstatusToString( res, message.out );
       break;
   }
   return res;

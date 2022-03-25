@@ -1013,6 +1013,25 @@ void vCONTROLLERtask ( void* argument )
   return;
 }
 /*----------------------------------------------------------------------------*/
+void vCONTROLLERsetLed ( uint8_t led, uint8_t state )
+{
+  switch ( led )
+  {
+    case 0:
+      vCONTROLLERsetLED( HMI_CMD_STOP, state );
+      break;
+    case 1:
+      vCONTROLLERsetLED( HMI_CMD_AUTO, state );
+      break;
+    case 2:
+      vCONTROLLERsetLED( HMI_CMD_START, state );
+      break;
+    default:
+      break;
+  }
+  return;
+}
+/*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 

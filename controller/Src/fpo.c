@@ -470,30 +470,18 @@ TRIGGER_STATE eFPOgetBuzzer ( void )
   return buzzerFPO->state;
 }
 /*----------------------------------------------------------------------------*/
-void vFPOtest ( void )
+void vFPOtest ( uint8_t adr, uint8_t state )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<FPO_DIS_NUMBER; i++ )
+  uint8_t dis = ( uint8_t )( adr / 2U );
+  if ( state > 0U )
   {
-    HAL_GPIO_WritePin( fpos_dis[i].port, fpos_dis[i].pin, GPIO_PIN_SET );
+    HAL_GPIO_WritePin( fpos_dis[dis].port, fpos_dis[dis].pin, GPIO_PIN_SET );
+    HAL_GPIO_WritePin( fpos[adr].port, fpos[adr].pin, GPIO_PIN_SET );
   }
-  for ( i=0U; i<FPO_NUMBER; i++ )
+  else
   {
-    HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_RESET );
+    HAL_GPIO_WritePin( fpos[adr].port, fpos[adr].pin, GPIO_PIN_RESET );
   }
-  HAL_GPIO_WritePin( fpos[0U].port, fpos[0U].pin, GPIO_PIN_SET );
-  osDelay( 1000U );
-  for ( i=1U; i<FPO_NUMBER; i++ )
-  {
-    HAL_GPIO_WritePin( fpos[i-1U].port, fpos[i-1U].pin, GPIO_PIN_RESET );
-    HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_SET );
-    osDelay( 1000U );
-  }
-  for ( i=0U; i<FPO_NUMBER; i++ )
-  {
-    HAL_GPIO_WritePin( fpos[i].port, fpos[i].pin, GPIO_PIN_RESET );
-  }
-  vFPOdataInit();
   return;
 }
 /*----------------------------------------------------------------------------*/

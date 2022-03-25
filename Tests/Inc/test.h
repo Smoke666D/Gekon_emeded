@@ -10,12 +10,15 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 /*------------------------ Define --------------------------------------*/
-#define TEST_COMMANDS_NUMBER     2U
-#define TEST_TARGETS_NUMBER      15U
+#define TEST_COMMANDS_NUMBER     3U
+#define TEST_TARGETS_NUMBER      16U
 #define TEST_MESSAGE_OUT_LENGTH  20U
 #define TEST_FIX_DECIMALS        2U
+
 #define TEST_SET_COMMAND_STR     "set"
+#define TEST_RESET_COMMAND_STR   "reset"
 #define TEST_GET_COMMAND_STR     "get"
+
 #define TEST_TARGET_DIN_STR      "din"
 #define TEST_TARGET_DOUT_STR     "dout"
 #define TEST_TARGET_TIME_STR     "time"
@@ -31,6 +34,8 @@
 #define TEST_TARGET_SPEED_STR    "speed"
 #define TEST_TARGET_SWITCH_STR   "sw"
 #define TEST_TARGET_LED_STR      "led"
+#define TEST_TARGET_STORAGE_STR  "storage"
+
 #define TEST_DIO_ON_STR          "on"
 #define TEST_DIO_OFF_STR         "off"
 #define TEST_ERROR_OK_STR        "Ok"
@@ -60,6 +65,7 @@ typedef enum
 {
   TEST_COMMAND_NO,
   TEST_COMMAND_SET,
+  TEST_COMMAND_RESET,
   TEST_COMMAND_GET
 } TEST_COMMAND;
 
@@ -80,7 +86,8 @@ typedef enum
   TEST_TARGET_FREQ,      /* 12 get */
   TEST_TARGET_SPEED,     /* 13 get */
   TEST_TARGET_SW,        /* 14 get */
-  TEST_TARGET_LED        /* 15 set */
+  TEST_TARGET_LED,       /* 15 set */
+  TEST_TARGET_STORAGE    /* 16 get */
 } TEST_TARGET;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed

@@ -350,7 +350,7 @@ int main(void)
   //MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   /*-------------- Put hardware structures to external modules ---------------*/
-  vSYSInitSerial( &huart3 ); /* Debug serial interface */
+  vSERIALinit( &huart3 ); /* Debug serial interface */
   /*--------------------------------------------------------------------------*/
   vSYSserial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */

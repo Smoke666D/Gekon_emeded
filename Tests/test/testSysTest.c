@@ -6,6 +6,8 @@
  */
 #include "test.h"
 #include "unity.h"
+#include "RTC.h"
+#include "journal.h"
 
 void setUp ( void )
 {
@@ -115,7 +117,7 @@ void test_vTESTtimeToStr ( void )
   char     buffer[21U] = { 0U };
   time.day   = 21;
   time.month = 10;
-  time.year  = 2022;
+  time.year  = 2022 - LOG_START_YEAR;
   time.hour  = 11;
   time.min   = 45;
   time.sec   = 54;
@@ -138,7 +140,7 @@ void test_uTESTparseTimeFild ( void )
   TEST_ASSERT_EQUAL( 10U, data );
   res = uTESTparseTimeFild( pStr, &data );
   TEST_ASSERT_GREATER_THAN_INT8( 0U, res );
-  TEST_ASSERT_EQUAL( 2022U, data );
+  TEST_ASSERT_EQUAL( ( 2022U - LOG_START_YEAR ), data );
   res = uTESTparseTimeFild( pStr, &data );
   TEST_ASSERT_GREATER_THAN_INT8( 0U, res );
   TEST_ASSERT_EQUAL( 11U, data );
@@ -160,7 +162,7 @@ void test_vTESTstrToTime ( void )
   TEST_ASSERT_EQUAL( TEST_STATUS_OK, res );
   TEST_ASSERT_EQUAL( 21U, time.day );
   TEST_ASSERT_EQUAL( 10U, time.month );
-  TEST_ASSERT_EQUAL( 2022U, time.year );
+  TEST_ASSERT_EQUAL( ( 2022U - LOG_START_YEAR ), time.year );
   TEST_ASSERT_EQUAL( 11U, time.hour );
   TEST_ASSERT_EQUAL( 45U, time.min );
   TEST_ASSERT_EQUAL( 54U, time.sec );

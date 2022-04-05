@@ -1441,7 +1441,7 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
      switch (ID)
      {
        case  IP_ADRESS:
-            cSERVERgetStrIP( Data );
+            vSERVERgetStrIP( Data );
              break;
        case HW_VER:
        case SW_VER:

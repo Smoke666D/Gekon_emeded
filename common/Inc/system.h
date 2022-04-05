@@ -14,6 +14,7 @@
 //#define  OPTIMIZ
 #define  OPTIMIZ_LEVEL   "-O2"
 
+#define  SERIAL_TASK_PRIORITY          osPriorityLow
 #define  FPI_TASK_PRIORITY             osPriorityLow
 #define  ENGINE_TASK_PRIORITY          osPriorityLow     /* Engine and Electro priority need to be equal */
 #define  ELECTRO_TASK_PRIORITY         osPriorityLow     /* Engine and Electro priority need to be equal */
@@ -25,6 +26,7 @@
 #define  ETHERNET_LINK_TASK_PRIORITY   osPriorityLow
 #define  PID_TASK_PRIORITY             osPriorityNormal
 #define  RTC_TASK_PRIORITY             osPriorityNormal
+#define  SERIAL_TSAK_STACK_SIZE        512U
 #define  FPI_TASK_STACK_SIZE           ( 1024U - 180U * 4U  ) /* HWM = 25*/
 #define  ENGINE_TASK_STACK_SIZE        1024U
 #define  ELECTRO_TASK_STACK_SIZE       1024U

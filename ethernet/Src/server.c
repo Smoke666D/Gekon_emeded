@@ -385,6 +385,7 @@ void vSERVERaddConnection ( void )
   ipaddr.addr  = 0U;
   netmask.addr = 0U;
   gw.addr      = 0U;
+  // Here we can write new MAC address!!!
   netif_add( &gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input );
   return;
 }
@@ -402,7 +403,7 @@ void vSERVERinitConnection ( void )
     osDelay( 1U );    // Wait the ip to reach the structure
   }
   vSYSserial( "done!\n\r");
-  cSERVERgetStrIP( ipaddrStr );
+  vSERVERgetStrIP( ipaddrStr );
   vSYSserial( ">>IP address: ");
   vSYSserial( ipaddrStr );
   vSYSserial("\n\r");
@@ -521,7 +522,7 @@ void vSERVERinit ( void )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-void cSERVERgetStrIP ( char* ipStr )
+void vSERVERgetStrIP ( char* ipStr )
 {
   uint8_t i       = 0U;
   char*   pointer = ip4addr_ntoa( &gnetif.ip_addr );
@@ -540,6 +541,11 @@ void cSERVERgetStrIP ( char* ipStr )
     }
   }
   return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t* pSERVERgetMAC ( void )
+{
+  return heth.Init.MACAddr;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

@@ -10,7 +10,7 @@
 /*------------------------ Define --------------------------------------*/
 #define SOFTWARE_VERSION	01750U
 #define HARDWARE_VERSION	00004U
-#define DEVICE_ID               00001U
+#define DEVICE_ID         00001U
 
 #define BOOTLOADER_VERSION_ADR  0x8007FFCU
 

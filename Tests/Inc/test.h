@@ -9,10 +9,13 @@
 #define INC_TEST_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
+#if defined ( UNIT_TEST )
+#include "RTC.h"
+#endif
 /*------------------------ Define --------------------------------------*/
 #define TEST_COMMANDS_NUMBER     3U
-#define TEST_TARGETS_NUMBER      16U
-#define TEST_MESSAGE_OUT_LENGTH  20U
+#define TEST_TARGETS_NUMBER      20U
+#define TEST_MESSAGE_OUT_LENGTH  40U
 #define TEST_FIX_DECIMALS        2U
 
 #define TEST_SET_COMMAND_STR     "set"
@@ -35,6 +38,10 @@
 #define TEST_TARGET_SWITCH_STR   "sw"
 #define TEST_TARGET_LED_STR      "led"
 #define TEST_TARGET_STORAGE_STR  "storage"
+#define TEST_TARGET_ID_STR       "id"
+#define TEST_TARGET_IP_STR       "ip"
+#define TEST_TARGET_MAC_STR      "mac"
+#define TEST_TARGET_VERSION_STR  "version"
 
 #define TEST_DIO_ON_STR          "on"
 #define TEST_DIO_OFF_STR         "off"
@@ -51,6 +58,13 @@ typedef enum
   TEST_FREQ_CHANNELS_MAINS,
   TEST_FREQ_CHANNELS_GENERATOR
 } TEST_FREQ_CHANNELS;
+
+typedef enum
+{
+  TEST_VERSION_BOOTLOADER,
+  TEST_VERSION_FIRMWARE,
+  TEST_VERSION_HARDWARE
+} TEST_VERSION;
 
 typedef enum
 {
@@ -87,7 +101,11 @@ typedef enum
   TEST_TARGET_SPEED,     /* 13 get */
   TEST_TARGET_SW,        /* 14 get */
   TEST_TARGET_LED,       /* 15 set */
-  TEST_TARGET_STORAGE    /* 16 get */
+  TEST_TARGET_STORAGE,   /* 16 get */
+  TEST_TARGET_ID,        /* 17 get */
+  TEST_TARGET_IP,        /* 18 get */
+  TEST_TARGET_MAC,       /* 19 get & set */
+  TEST_TARGET_VERSION    /* 20 get */
 } TEST_TARGET;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
@@ -99,5 +117,15 @@ typedef struct __packed
   char         out[TEST_MESSAGE_OUT_LENGTH];
 } TEST_TYPE;
 /*------------------------ Functions -----------------------------------*/
+#if defined ( UNIT_TEST )
+void        eTESTparseString ( const char* str, TEST_TYPE* message );
+void        vTESTtimeToStr ( RTC_TIME* time, char* buf );
+uint8_t     uTESTparseTimeFild ( char* pStr, uint8_t* output );
+TEST_STATUS vTESTstrToTime ( RTC_TIME* time, char* buf );
+void        vTESTstatusToString ( TEST_STATUS status, char* buf );
+void        vTESTdioToStr ( uint8_t state, char* buf );
+#endif
+TEST_STATUS vTESTprocess ( const char* str );
+char*       cTESTgetOutput ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_TEST_H_ */

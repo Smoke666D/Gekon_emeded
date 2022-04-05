@@ -12,7 +12,7 @@
 #include "http.h"
 #include "freeData.h"
 /*----------------------------- Define ---------------------------------------*/
-
+#define MAC_ADR_LENGTH 6U
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
@@ -48,7 +48,8 @@ typedef enum
 #define  HTTP_INPUT_BUFFER_SIZE     1024U
 #define  HTTP_OUTPUT_BUFFER_SIZE    256U
 /*----------------------------- Functions ------------------------------------*/
-void vSERVERinit ( void );               /* Waiting the end of server initialization */
-void cSERVERgetStrIP ( char* ipStr );    /* Read local IP address of device in char array format */
+void     vSERVERinit ( void );               /* Waiting the end of server initialization */
+void     vSERVERgetStrIP ( char* ipStr );    /* Read local IP address of device in char array format */
+uint8_t* pSERVERgetMAC ( void );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_SERVER_H_ */

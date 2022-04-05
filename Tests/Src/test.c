@@ -17,6 +17,8 @@
 #include "RTC.h"
 #include "keyboard.h"
 #include "controller.h"
+#include "server.h"
+#include "config.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -41,9 +43,14 @@ static const char* targetStrings[TEST_TARGETS_NUMBER] = {
   TEST_TARGET_SPEED_STR,
   TEST_TARGET_SWITCH_STR,
   TEST_TARGET_LED_STR,
-  TEST_TARGET_STORAGE_STR
+  TEST_TARGET_STORAGE_STR,
+  TEST_TARGET_ID_STR,
+  TEST_TARGET_IP_STR,
+  TEST_TARGET_MAC_STR,
+  TEST_TARGET_VERSION_STR
 };
 /*----------------------- Variables -----------------------------------------------------------------*/
+static TEST_TYPE message = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------------------------------*/
@@ -211,14 +218,38 @@ void vTESTdioToStr ( uint8_t state, char* buf )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vTESThexToStr ( uint8_t* data, uint8_t length, char* buf )
+{
+  uint8_t i = 0U;
+  for ( i=0U; i<length; i++ )
+  {
+    ( void )itoa( data[i], &buf[2U * i], 16U );
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vTESTversionToStr ( const uint16_t* version, char* buf )
+{
+  char sub[5U] = { 0U };
+  ( void )itoa( ( uint8_t )( version[0U] ), sub, 10U );
+  ( void )strcat( buf, sub );
+  ( void )strcat( buf, "." );
+  ( void )itoa( ( uint8_t )( version[1U] ), sub, 10U );
+  ( void )strcat( buf, sub );
+  ( void )strcat( buf, "." );
+  ( void )itoa( ( uint8_t )( version[2U] ), sub, 10U );
+  ( void )strcat( buf, sub );
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 TEST_STATUS vTESTprocess ( const char* str )
 {
-  TEST_STATUS res     = TEST_STATUS_OK;
-  TEST_TYPE   message = { 0U };
-  RTC_TIME    time    = { 0U };
-  uint8_t     buf     = 0U;
+  TEST_STATUS res  = TEST_STATUS_OK;
+  RTC_TIME    time = { 0U };
+  uint8_t     buf  = 0U;
+  uint16_t    id[UNIQUE_ID_LENGTH] = { 0U };
   eTESTparseString( str, &message );
   switch ( message.cmd )
   {
@@ -406,6 +437,36 @@ TEST_STATUS vTESTprocess ( const char* str )
             res = TEST_STATUS_ERROR_EXECUTING;
           }
           break;
+        case TEST_TARGET_ID:
+          vSYSgetUniqueID16( id );
+          vTESThexToStr( ( uint8_t* )id, UNIQUE_ID_LENGTH, message.out );
+          break;
+        case TEST_TARGET_IP:
+          vSERVERgetStrIP( message.out );
+          break;
+        case TEST_TARGET_MAC:
+          vTESThexToStr( pSERVERgetMAC(), MAC_ADR_LENGTH, message.out );
+          break;
+        case TEST_TARGET_VERSION:
+          if ( message.dataFlag > 0U )
+          {
+            switch ( message.data )
+            {
+              case TEST_VERSION_BOOTLOADER:
+                vTESTversionToStr( ( const uint16_t* )( versionController.value ), message.out );
+                break;
+              case TEST_VERSION_FIRMWARE:
+                vTESTversionToStr( ( const uint16_t* )( versionFirmware.value ),   message.out );
+                break;
+              case TEST_VERSION_HARDWARE:
+                vTESTversionToStr( ( const uint16_t* )( versionBootloader.value ), message.out );
+                break;
+              default:
+                res = TEST_STATUS_ERROR_DATA;
+                break;
+            }
+          }
+          break;
         default:
           res = TEST_STATUS_ERROR_TARGET;
           break;
@@ -421,6 +482,11 @@ TEST_STATUS vTESTprocess ( const char* str )
       break;
   }
   return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+char* cTESTgetOutput ( void )
+{
+  return message.out;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

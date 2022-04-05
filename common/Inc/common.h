@@ -13,6 +13,11 @@
 /*------------------------ Define --------------------------------------*/
 #define     UNIQUE_ID_ADR               0x1FFF7A10U
 #define     UNIQUE_ID_LENGTH            6U
+#define     SERIAL_QUEUE_SIZE           16U
+#define     SERIAL_BUFFER_SIZE          25U
+#define     SERIAL_END_CHAR             '\n'
+#define     SERIAL_OUTPUT_TIMEOUT       ( ( TickType_t )1000U  )
+#define     SERIAL_PROTECT_TIMEOUT      ( ( TickType_t )10000U )
 /*------------------------ Macros --------------------------------------*/
 #define     REVERSE_BYTE( b )           ( ( ( b << 7U ) & 0x80U ) | ( ( b << 5U ) & 0x40U ) | ( ( b << 3U ) & 0x20U ) | ( ( b << 1U ) & 0x10U ) | ( ( b >> 1U ) & 0x08U ) | ( ( b >> 3U ) & 0x04U ) | ( ( b >> 5U ) & 0x02U ) | ( ( b >> 7U ) & 0x01U ) )
 #define     GET_UNIQUE_ID0              ( *( uint32_t* )( UNIQUE_ID_ADR + 0x00U ) )
@@ -24,17 +29,35 @@ typedef enum
   INIT_OK,
   INIT_FAIL,
 } INIT_STATE;
+
+typedef enum
+{
+  SERIAL_STATE_IDLE,
+  SERIAL_STATE_READING,
+  SERIAL_STATE_WRITING
+} SERIAL_STATE;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
   GPIO_TypeDef* port;
   uint16_t      pin;
 } GPIO_TYPE;
+
+typedef struct __packed
+{
+  UART_HandleTypeDef* uart;
+  SERIAL_STATE        state : 2U;
+  uint8_t             error : 1U;
+  uint8_t             counter;
+  uint8_t             length;
+  uint8_t             input[SERIAL_BUFFER_SIZE];
+  char*               output;
+} SERIAL_TYPE;
 /*----------------------- Callbacks ------------------------------------*/
 typedef fix16_t  ( *getValueCallBack )( void );          /* Callback to get value */
 typedef void     ( *setValueCallBack )( fix16_t );       /* Callback to set value */
 /*----------------------- Functions ------------------------------------*/
-void     vSYSInitSerial ( UART_HandleTypeDef* uart );
+void     vSERIALinit ( UART_HandleTypeDef* uart );
 void     vSYSserial ( const char* msg );
 void     vSYSprintFix16 ( fix16_t value );
 void     vSYSgetUniqueID32 ( uint32_t* id );

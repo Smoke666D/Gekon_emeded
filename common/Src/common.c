@@ -25,18 +25,37 @@ static osThreadId_t        serialOutHandle     = NULL;
 static osThreadId_t        serialProtectHandle = NULL;
 static SERIAL_TYPE         serial              = { 0U };
 /*------------------------ Variables ----------------------------------------------------------------*/
-static char* outputBuffer[SERIAL_QUEUE_SIZE] = { 0U };
+static UART_MESSAGE outputBuffer[SERIAL_QUEUE_SIZE] = { 0U };
+/*---------------------------------------------------------------------------------------------------*/
+void vSERIALstartReading ( void )
+{
+  HAL_UART_Receive_IT( serial.uart, &serial.buffer, 1U );
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t iSERIALisEndChar ( uint8_t input )
+{
+  uint8_t res = 0U;
+  if ( ( input == SERIAL_END_CHAR_0 ) || ( input == SERIAL_END_CHAR_1 ) )
+  {
+    res = 1U;
+  }
+  return res;
+}
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Send debug message thru serial
  * input: msg - string with message
  * output:  none
  */
-void vSYSserial ( const char* msg )
+void vSYSserial ( const char* data, uint16_t length )
 {
-  if ( serial.uart != NULL )
+  if ( ( serial.uart != NULL ) && ( pSERIALqueue != NULL ) && ( length > 0U ) )
   {
-    xQueueSend( pSERIALqueue, msg, SERIAL_OUTPUT_TIMEOUT );
+    const UART_MESSAGE message = {
+      .data   = ( char* )data,
+      .length = length
+    };
+    xQueueSend( pSERIALqueue, &message, SERIAL_OUTPUT_TIMEOUT );
   }
   return;
 }
@@ -45,43 +64,17 @@ void vSERIALtask ( void* argument )
 {
   for (;;)
   {
-    /* End of operation from ISR */
     if ( ulTaskNotifyTake( pdTRUE, SERIAL_OUTPUT_TIMEOUT ) )
     {
-      switch ( serial.state )
+      if ( ( serial.state == SERIAL_STATE_READING ) && ( serial.error == 0U ) )
       {
-        case SERIAL_STATE_READING: /* End of input message */
-          if ( serial.error == 0U )
-          {
-            ( void )vTESTprocess( ( const char* )serial.input );
-          }
-          serial.counter = 0U;
-          serial.state   = SERIAL_STATE_IDLE;
-          __HAL_UART_ENABLE_IT( serial.uart,  UART_IT_RXNE ); /* Enable the UART Data Register not empty Interrupt */
-          if ( serial.error == 0U )
-          {
-            vSYSserial( ( const char* )cTESTgetOutput() );
-          }
-          else
-          {
-            serial.error = 0U;
-          }
-          break;
-        case SERIAL_STATE_WRITING: /* End of writing message */
-          serial.counter = 0U;
-          serial.length  = 0U;
-          serial.state   = SERIAL_STATE_IDLE;
-          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_TC   ); /* Disable the UART Transmit Complete Interrupt */
-          __HAL_UART_ENABLE_IT(  serial.uart, UART_IT_RXNE ); /* Enable the UART Data Register not empty Interrupt */
-          break;
-        default:
-          serial.counter = 0U;
-          serial.length  = 0U;
-          serial.state   = SERIAL_STATE_IDLE;
-          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_TC   ); /* Disable the UART Transmit Complete Interrupt */
-          __HAL_UART_ENABLE_IT(  serial.uart, UART_IT_RXNE ); /* Enable the UART Data Register not empty Interrupt */
-          break;
+        ( void )vTESTprocess( ( const char* )serial.input, serial.length );
+        vSYSserial( ( const char* )cTESTgetOutput(), uTESTgetOutLength() );
       }
+      serial.length = 0U;
+      serial.state  = SERIAL_STATE_IDLE;
+      serial.error  = 0U;
+      vSERIALstartReading();
     }
   }
   return;
@@ -91,23 +84,21 @@ void vSERIALoutputTask ( void* argument )
 {
   for (;;)
   {
-    if ( xQueueReceive( pSERIALqueue, serial.output, SERIAL_OUTPUT_TIMEOUT ) == pdPASS )
+    if ( xQueueReceive( pSERIALqueue, &serial.output, SERIAL_OUTPUT_TIMEOUT ) == pdPASS )
     {
-      serial.length = strlen( ( const char* )serial.output );
-      if ( serial.length > 0U )
+      if ( serial.output.length > 0U )
       {
         while ( serial.state != SERIAL_STATE_IDLE )
         {
           osDelay( SERIAL_OUTPUT_TIMEOUT );
         }
-        serial.state   = SERIAL_STATE_WRITING;
-        serial.counter = 1U;
-        __HAL_UART_ENABLE_IT(  serial.uart, UART_IT_TC   ); /* Enable the UART Transmit Complete Interrupt */
-        __HAL_UART_DISABLE_IT( serial.uart, UART_IT_RXNE ); /* Disable the UART Data Register not empty Interrupt */
-        serial.uart->Instance->DR = ( uint16_t )( serial.output[0U] );
+        serial.state = SERIAL_STATE_WRITING;
+        HAL_UART_AbortReceive_IT( serial.uart );
+        HAL_UART_Transmit_IT( serial.uart, ( uint8_t* )serial.output.data, serial.output.length );
       }
     }
   }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vSERIALprotectTask ( void* argument )
@@ -131,32 +122,13 @@ void vSERIALprotectTask ( void* argument )
 }
 /*---------------------------------------------------------------------------------------------------*/
 /* Tx Transfer completed callbacks */
-void HAL_UART_TxCpltCallback( UART_HandleTypeDef *huart )
+void HAL_UART_TxCpltCallback ( UART_HandleTypeDef *huart )
 {
-  BaseType_t   yield = pdFALSE;
-  TaskHandle_t hTask = (TaskHandle_t)serialHandle;
+  BaseType_t yield = pdFALSE;
   if ( huart == serial.uart )
   {
-    __HAL_UART_CLEAR_FLAG( debug_huart, UART_FLAG_TC );
-    switch ( serial.state )
-    {
-      case SERIAL_STATE_WRITING:
-        if ( serial.counter < serial.length )
-        {
-          serial.uart->Instance->DR = serial.output[serial.counter++];
-        }
-        else
-        {
-          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_TC   ); /* Disable the UART Transmit Complete Interrupt */
-          vTaskNotifyGiveFromISR( hTask, &yield );
-          portYIELD_FROM_ISR ( yield );
-        }
-        break;
-      default:
-        vTaskNotifyGiveFromISR( hTask, &yield );
-        portYIELD_FROM_ISR ( yield );
-        break;
-    }
+    vTaskNotifyGiveFromISR( (TaskHandle_t)serialHandle, &yield );
+    portYIELD_FROM_ISR ( yield );
   }
   return;
 }
@@ -164,97 +136,35 @@ void HAL_UART_TxCpltCallback( UART_HandleTypeDef *huart )
 /* Rx Transfer completed callbacks */
 void HAL_UART_RxCpltCallback( UART_HandleTypeDef *huart )
 {
-  BaseType_t   yield    = pdFALSE;
-  TaskHandle_t hTask    = (TaskHandle_t)serialHandle;
-  TaskHandle_t hProtect = (TaskHandle_t)serialProtectHandle;
+  BaseType_t yield = pdFALSE;
   if ( huart == serial.uart )
   {
-    __HAL_UART_CLEAR_FLAG( debug_huart, UART_FLAG_RXNE );
     switch ( serial.state )
     {
       case SERIAL_STATE_IDLE:
-        serial.counter   = 1U;
-        serial.input[0U] = ( uint8_t )__HAL_UART_FLUSH_DRREGISTER( serial.uart );
+        serial.length    = 1U;
+        serial.input[0U] = serial.buffer;
         serial.state     = SERIAL_STATE_READING;
-        vTaskNotifyGiveFromISR( hProtect, &yield );
-        portYIELD_FROM_ISR ( yield );
+        vSERIALstartReading();
+        //vTaskNotifyGiveFromISR( (TaskHandle_t)serialProtectHandle, &yield );
+        //portYIELD_FROM_ISR ( yield );
         break;
       case SERIAL_STATE_READING:
-        serial.input[serial.counter++] = ( uint8_t )__HAL_UART_FLUSH_DRREGISTER( serial.uart );
-        if ( serial.input[serial.counter - 1U] == SERIAL_END_CHAR )
+        serial.input[serial.length++] = serial.buffer;
+        if ( iSERIALisEndChar( serial.buffer ) > 0U )
         {
-          serial.input[serial.counter] = 0U;
-          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_RXNE ); /* Enable the UART Data Register not empty Interrupt */
-          vTaskNotifyGiveFromISR( hTask, &yield );
+          serial.input[serial.length] = 0U;
+          vTaskNotifyGiveFromISR( (TaskHandle_t)serialHandle, &yield );
           portYIELD_FROM_ISR ( yield );
-        }
-        break;
-      default:
-        vTaskNotifyGiveFromISR( hTask, &yield );
-        portYIELD_FROM_ISR ( yield );
-        break;
-    }
-  }
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vSERIALhandler ( void )
-{
-  uint32_t     isrflags = READ_REG( serial.uart->Instance->SR  );
-  uint32_t     cr1its   = READ_REG( serial.uart->Instance->CR1 );
-  BaseType_t   yield    = pdFALSE;
-  TaskHandle_t hTask    = (TaskHandle_t)serialHandle;
-  TaskHandle_t hProtect = (TaskHandle_t)serialProtectHandle;
-  /* Read mode */
-  if ( ( ( isrflags & USART_SR_RXNE ) != RESET ) && ( ( cr1its & USART_CR1_RXNEIE ) != RESET ) )
-  {
-    __HAL_UART_CLEAR_FLAG( debug_huart, UART_FLAG_RXNE );
-    switch ( serial.state )
-    {
-      case SERIAL_STATE_IDLE:
-        serial.counter   = 1U;
-        serial.input[0U] = ( uint8_t )__HAL_UART_FLUSH_DRREGISTER( serial.uart );
-        serial.state     = SERIAL_STATE_READING;
-        vTaskNotifyGiveFromISR( hProtect, &yield );
-        portYIELD_FROM_ISR ( yield );
-        break;
-      case SERIAL_STATE_READING:
-        serial.input[serial.counter++] = ( uint8_t )__HAL_UART_FLUSH_DRREGISTER( serial.uart );
-        if ( serial.input[serial.counter - 1U] == SERIAL_END_CHAR )
-        {
-          serial.input[serial.counter] = 0U;
-          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_RXNE ); /* Enable the UART Data Register not empty Interrupt */
-          vTaskNotifyGiveFromISR( hTask, &yield );
-          portYIELD_FROM_ISR ( yield );
-        }
-        break;
-      default:
-        vTaskNotifyGiveFromISR( hTask, &yield );
-        portYIELD_FROM_ISR ( yield );
-        break;
-    }
-  }
-  /* Write mode */
-  if ( ( ( isrflags & USART_SR_TC ) != RESET ) && ( ( cr1its & USART_CR1_TCIE ) != RESET ) )
-  {
-    __HAL_UART_CLEAR_FLAG( debug_huart, UART_FLAG_TC );
-    switch ( serial.state )
-    {
-      case SERIAL_STATE_WRITING:
-        if ( serial.counter < serial.length )
-        {
-          serial.uart->Instance->DR = serial.output[serial.counter++];
         }
         else
         {
-          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_TC   ); /* Disable the UART Transmit Complete Interrupt */
-          vTaskNotifyGiveFromISR( hTask, &yield );
-          portYIELD_FROM_ISR ( yield );
+          vSERIALstartReading();
         }
         break;
       default:
-        vTaskNotifyGiveFromISR( hTask, &yield );
-         portYIELD_FROM_ISR ( yield );
+        vTaskNotifyGiveFromISR( (TaskHandle_t)serialHandle, &yield );
+        portYIELD_FROM_ISR ( yield );
         break;
     }
   }
@@ -271,7 +181,8 @@ void vSERIALinit ( UART_HandleTypeDef* uart )
   osThreadAttr_t task_attributes = { 0U };
   serial.uart   = uart;
   serial.state  = SERIAL_STATE_IDLE;
-  pSERIALqueue  = xQueueCreateStatic( SERIAL_QUEUE_SIZE, sizeof( char* ), outputBuffer, &xSERIALqueue );
+
+  pSERIALqueue  = xQueueCreateStatic( SERIAL_QUEUE_SIZE, sizeof( UART_MESSAGE ), outputBuffer, &xSERIALqueue );
   task_attributes.name       = "serialTask";
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
   task_attributes.stack_size = SERIAL_TSAK_STACK_SIZE;
@@ -279,13 +190,14 @@ void vSERIALinit ( UART_HandleTypeDef* uart )
   task_attributes.name       = "serialOutTask";
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
   task_attributes.stack_size = SERIAL_TSAK_STACK_SIZE;
-  serialOutHandle = osThreadNew( vSERIALoutputTask, NULL, &task_attributes );
+  serialOutHandle            = osThreadNew( vSERIALoutputTask, NULL, &task_attributes );
+  /*
   task_attributes.name       = "serialProtectTask";
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
   task_attributes.stack_size = SERIAL_TSAK_STACK_SIZE;
   serialProtectHandle = osThreadNew( vSERIALprotectTask, NULL, &task_attributes );
-  __HAL_UART_DISABLE_IT( serial.uart, UART_IT_TC );  /* Disable the UART Transmit Complete Interrupt */
-  __HAL_UART_ENABLE_IT( serial.uart, UART_IT_RXNE ); /* Enable the UART Data Register not empty Interrupt */
+  */
+  //vSERIALstartReading();
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -293,9 +205,9 @@ void vSYSprintFix16 ( fix16_t value )
 {
   char buffer[10U] = { 0U };
   fix16_to_str( value, buffer, 2U );
-  vSYSserial( "$" );
-  vSYSserial( buffer );
-  vSYSserial( ";\r\n" );
+  //vSYSserial( "$" );
+  //vSYSserial( buffer );
+  //vSYSserial( ";\r\n" );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

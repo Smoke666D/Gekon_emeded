@@ -15,7 +15,8 @@
 #define     UNIQUE_ID_LENGTH            6U
 #define     SERIAL_QUEUE_SIZE           16U
 #define     SERIAL_BUFFER_SIZE          25U
-#define     SERIAL_END_CHAR             '\n'
+#define     SERIAL_END_CHAR_0           '\n'
+#define     SERIAL_END_CHAR_1           '\r'
 #define     SERIAL_OUTPUT_TIMEOUT       ( ( TickType_t )1000U  )
 #define     SERIAL_PROTECT_TIMEOUT      ( ( TickType_t )10000U )
 /*------------------------ Macros --------------------------------------*/
@@ -45,20 +46,26 @@ typedef struct __packed
 
 typedef struct __packed
 {
+  char*   data;
+  uint8_t length;
+} UART_MESSAGE;
+
+typedef struct __packed
+{
   UART_HandleTypeDef* uart;
   SERIAL_STATE        state : 2U;
   uint8_t             error : 1U;
-  uint8_t             counter;
+  uint8_t             buffer;
   uint8_t             length;
   uint8_t             input[SERIAL_BUFFER_SIZE];
-  char*               output;
+  UART_MESSAGE        output;
 } SERIAL_TYPE;
 /*----------------------- Callbacks ------------------------------------*/
 typedef fix16_t  ( *getValueCallBack )( void );          /* Callback to get value */
 typedef void     ( *setValueCallBack )( fix16_t );       /* Callback to set value */
 /*----------------------- Functions ------------------------------------*/
 void     vSERIALinit ( UART_HandleTypeDef* uart );
-void     vSYSserial ( const char* msg );
+void     vSYSserial ( const char* data, uint16_t length );
 void     vSYSprintFix16 ( fix16_t value );
 void     vSYSgetUniqueID32 ( uint32_t* id );
 void     vSYSgetUniqueID16 ( uint16_t* id );

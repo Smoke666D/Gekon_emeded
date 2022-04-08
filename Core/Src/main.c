@@ -1516,6 +1516,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+const char startupMessage[46U] = "***********************\nStart Default Task!\n";
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1534,8 +1535,6 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   uint8_t period = 100U;
   vSERIALinit( &huart3 ); /* Debug serial interface */
-  vSYSserial( "\n\r***********************\n\r" );
-  vSYSserial( ">>Start Default Task!\n\r" );
   HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   vSERVERinit();
   if ( eSTORAGEinit( &storEE ) == EEPROM_OK )  /* EEPROM initialization */
@@ -1546,8 +1545,8 @@ void StartDefaultTask(void *argument)
       {
         HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port, DIN_OFFSET_Pin, GPIO_PIN_SET );
         vCHARTupdateAtrib();                        /* Update charts attributes                  */
-        vDATAprintSerialNumber();                   /* Print device serial number to serial port */
-        vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
+        //vDATAprintSerialNumber();                   /* Print device serial number to serial port */
+        //vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
         while ( uADCGetValidDataFlag() == 0U )
         {
 	        osDelay( 10U );
@@ -1568,6 +1567,7 @@ void StartDefaultTask(void *argument)
         vFATSDinit( &hsd );
         vSDinit();
         vMEASUREMENTinit();                         /**/
+        vSYSserial( startupMessage, 44U );
       }
       else
       {

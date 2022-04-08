@@ -396,28 +396,28 @@ void vSERVERaddConnection ( void )
 void vSERVERinitConnection ( void )
 {
   char ipaddrStr[16U] = { 0U };
-  vSYSserial( ">>DHCP: ");
+  //vSYSserial( ">>DHCP: ");
   vHTTPinit();
   while ( gnetif.ip_addr.addr == 0U )
   {
     osDelay( 1U );    // Wait the ip to reach the structure
   }
-  vSYSserial( "done!\n\r");
-  vSERVERgetStrIP( ipaddrStr );
-  vSYSserial( ">>IP address: ");
-  vSYSserial( ipaddrStr );
-  vSYSserial("\n\r");
-  vSYSserial( ">>TCP: " );
+  //vSYSserial( "done!\n\r");
+  ( void )uSERVERgetStrIP( ipaddrStr );
+  //vSYSserial( ">>IP address: ");
+  //vSYSserial( ipaddrStr );
+  //vSYSserial("\n\r");
+  //vSYSserial( ">>TCP: " );
   if ( eSERVERstart() != SERVER_OK )
   {
-    vSYSserial( "fail!\n\r" );
+    //vSYSserial( "fail!\n\r" );
     while( 1U )
     {
       osDelay( 1U );
     }
   }
-  vSYSserial( "done!\n\r" );
-  vSYSserial( ">>Server ready and listen port 80!\n\r" );
+  //vSYSserial( "done!\n\r" );
+  //vSYSserial( ">>Server ready and listen port 80!\n\r" );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -522,7 +522,7 @@ void vSERVERinit ( void )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-void vSERVERgetStrIP ( char* ipStr )
+uint8_t uSERVERgetStrIP ( char* ipStr )
 {
   uint8_t i       = 0U;
   char*   pointer = ip4addr_ntoa( &gnetif.ip_addr );
@@ -540,7 +540,7 @@ void vSERVERgetStrIP ( char* ipStr )
       ipStr[i] = defaultIp[i];
     }
   }
-  return;
+  return strlen( ipStr );
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t* pSERVERgetMAC ( void )

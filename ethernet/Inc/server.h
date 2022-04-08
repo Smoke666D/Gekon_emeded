@@ -49,7 +49,7 @@ typedef enum
 #define  HTTP_OUTPUT_BUFFER_SIZE    256U
 /*----------------------------- Functions ------------------------------------*/
 void     vSERVERinit ( void );               /* Waiting the end of server initialization */
-void     vSERVERgetStrIP ( char* ipStr );    /* Read local IP address of device in char array format */
+uint8_t  uSERVERgetStrIP ( char* ipStr );    /* Read local IP address of device in char array format */
 uint8_t* pSERVERgetMAC ( void );
 /*----------------------------------------------------------------------------*/
 #endif /* INC_SERVER_H_ */

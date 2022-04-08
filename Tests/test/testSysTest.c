@@ -121,7 +121,7 @@ void test_vTESTtimeToStr ( void )
   time.hour  = 11;
   time.min   = 45;
   time.sec   = 54;
-  vTESTtimeToStr( &time, buffer );
+  uTESTtimeToStr( &time, buffer );
   TEST_ASSERT_EQUAL_STRING( "21.10.2022.11.45.54.", buffer );
   return;
 }
@@ -172,17 +172,17 @@ void test_vTESTstrToTime ( void )
 void test_vTESTstatusToString ( void )
 {
   char buffer[21U] = { 0U };
-  vTESTstatusToString( TEST_STATUS_OK, buffer );
+  uTESTstatusToString( TEST_STATUS_OK, buffer );
   TEST_ASSERT_EQUAL_STRING( "Ok", buffer );
-  vTESTstatusToString( TEST_STATUS_ERROR_COMMAND, buffer );
+  uTESTstatusToString( TEST_STATUS_ERROR_COMMAND, buffer );
   TEST_ASSERT_EQUAL_STRING( "Wrong command", buffer );
-  vTESTstatusToString( TEST_STATUS_ERROR_TARGET, buffer );
+  uTESTstatusToString( TEST_STATUS_ERROR_TARGET, buffer );
   TEST_ASSERT_EQUAL_STRING( "Wrong target", buffer );
-  vTESTstatusToString( TEST_STATUS_ERROR_DATA, buffer );
+  uTESTstatusToString( TEST_STATUS_ERROR_DATA, buffer );
   TEST_ASSERT_EQUAL_STRING( "Wrong data", buffer );
-  vTESTstatusToString( TEST_STATUS_ERROR_EXECUTING, buffer );
+  uTESTstatusToString( TEST_STATUS_ERROR_EXECUTING, buffer );
   TEST_ASSERT_EQUAL_STRING( "Executing error", buffer );
-  vTESTstatusToString( 0xFFU, buffer );
+  uTESTstatusToString( 0xFFU, buffer );
   TEST_ASSERT_EQUAL_STRING( "Unknown error", buffer );
   return;
 }
@@ -190,9 +190,9 @@ void test_vTESTstatusToString ( void )
 void test_vTESTdioToStr ( void )
 {
   char buffer[21U] = { 0U };
-  vTESTdioToStr( 0U, buffer );
+  uTESTdioToStr( 0U, buffer );
   TEST_ASSERT_EQUAL_STRING( "off", buffer );
-  vTESTdioToStr( 1U, buffer );
+  uTESTdioToStr( 1U, buffer );
   TEST_ASSERT_EQUAL_STRING( "on", buffer );
   return;
 }

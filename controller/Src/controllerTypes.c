@@ -230,24 +230,24 @@ void vLOGICprintTime ( uint32_t time )
 /*----------------------------------------------------------------------------*/
 void vLOGICprintLogRecord ( LOG_RECORD_TYPE record )
 {
-  vSYSserial( "Time: " );
+  //vSYSserial( "Time: " );
   vLOGICprintTime( record.time );
-  vSYSserial( "Event: " );
-  vSYSserial( eventTypesStr[record.event.type] );
-  vSYSserial( "; Action: " );
-  vSYSserial( alarmActionStr[record.event.action] );
-  vSYSserial( "\r\n" );
+  //vSYSserial( "Event: " );
+  //vSYSserial( eventTypesStr[record.event.type] );
+  //vSYSserial( "; Action: " );
+  //vSYSserial( alarmActionStr[record.event.action] );
+  //vSYSserial( "\r\n" );
   return;
 }
 /*----------------------------------------------------------------------------*/
 void vLOGICprintEvent ( SYSTEM_EVENT event )
 {
   #if ( DEBUG_SERIAL_ALARM > 0U )
-    vSYSserial( ">>Event           : " );
-    vSYSserial( eventTypesStr[event.type] );
-    vSYSserial( "; Action: " );
-    vSYSserial( alarmActionStr[event.action] );
-    vSYSserial( "\r\n" );
+    //vSYSserial( ">>Event           : " );
+    //vSYSserial( eventTypesStr[event.type] );
+    //vSYSserial( "; Action: " );
+    //vSYSserial( alarmActionStr[event.action] );
+    //vSYSserial( "\r\n" );
   #endif
   return;
 }
@@ -620,7 +620,7 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
 void vLOGICprintDebug ( const char* str )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
-    vSYSserial( str );
+    //vSYSserial( str );
   #endif
   return;
 }

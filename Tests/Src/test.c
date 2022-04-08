@@ -56,61 +56,96 @@ static TEST_TYPE message = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
+uint8_t uTESTparsingFilds ( const char* str, char** filds )
+{
+  uint8_t res = 0U;
+  uint8_t i   = 0U;
+  char*   p   = NULL;
+  if ( str[0U] != 0U )
+  {
+    filds[0U] = ( char* )str;
+    res++;
+    for ( i=1U; i<TEST_FILDS_NUMBER; i++ )
+    {
+      p = strstr( filds[i - 1U], TEST_FILD_SEPORATOR );
+      if ( p == 0U )
+      {
+        break;
+      }
+      else
+      {
+        filds[i] = p + 1U;
+        res++;
+      }
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+TEST_COMMAND eTESTparseCmd ( const char* str )
+{
+  TEST_COMMAND res = TEST_COMMAND_NO;
+  uint8_t      i   = 0U;
+  for ( i=0U; i<TEST_COMMANDS_NUMBER; i++ )
+  {
+    if ( strstr( str, commandStrings[i] ) > 0U )
+    {
+      res = i + 1U;
+      break;
+    }
+  }
+  return res;
+}
+TEST_TARGET eTESTparseTarget ( const char* str )
+{
+  TEST_TARGET res = TEST_TARGET_NO;
+  uint8_t     i   = 0U;
+
+  for ( i=0U; i<TEST_TARGETS_NUMBER; i++ )
+  {
+    if ( strstr( str, targetStrings[i] ) > 0U )
+    {
+      res = i + 1U;
+      break;
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void eTESTparseString ( const char* str, TEST_TYPE* message )
 {
-  uint8_t i      = 0U;
-  char*   p      = NULL;
-  char*   cmdEnd = NULL;
-  char*   trgEnd = NULL;
+  char*   filds[TEST_FILDS_NUMBER] = { 0U };
+  uint8_t counter = 0U;
   message->cmd      = TEST_COMMAND_NO;
   message->target   = TEST_TARGET_NO;
   message->data     = 0U;
   message->dataFlag = 0U;
-  for ( i=0U; i<TEST_COMMANDS_NUMBER; i++ )
+  message->out[0U]  = 0U;
+  counter = uTESTparsingFilds( str, filds );
+  if ( counter > 0U )
   {
-    p = strstr( str, commandStrings[i] );
-    if ( p > 0U )
+    message->cmd = eTESTparseCmd( ( const char* )filds[0U] );
+    if ( ( counter > 1U ) && ( message->cmd != TEST_COMMAND_NO ) )
     {
-      cmdEnd = &p[strlen( commandStrings[i] ) + 1U];
-      if ( ( cmdEnd[0U] == ' ' ) || ( cmdEnd[0U] == 0U ) )
+      message->target = eTESTparseTarget( ( const char* )filds[1U] );
+      if ( ( counter > 2U ) && ( message->target != TEST_TARGET_NO ) )
       {
-        message->cmd = i + 1U;
-        break;
-      }
-    }
-  }
-  if ( ( message->cmd != TEST_COMMAND_NO ) && ( cmdEnd[0U] == ' ' ) )
-  {
-    for ( i=0U; i<TEST_TARGETS_NUMBER; i++ )
-    {
-      p = strstr( cmdEnd, targetStrings[i] );
-      if ( p > 0U )
-      {
-        trgEnd = &p[strlen( targetStrings[i] ) + 1U];
-        if  ( ( trgEnd[0U] == ' ' ) || ( trgEnd[0U] == 0U ) )
+        message->dataFlag = 1U;
+        if ( ( message->cmd == TEST_COMMAND_SET ) && ( message->target == TEST_TARGET_TIME ) )
         {
-          message->target = i + 1U;
-          break;
+          strcpy( message->out, filds[2U] );
         }
-      }
-    }
-    if ( ( message->target != TEST_TARGET_NO ) && ( trgEnd[0U] == ' ' ) )
-    {
-      message->dataFlag = 1U;
-      if ( ( message->cmd == TEST_COMMAND_SET ) && ( message->target == TEST_TARGET_TIME ) )
-      {
-        strcpy( message->out, &trgEnd[1U] );
-      }
-      else
-      {
-        message->data = atoi( &trgEnd[1U] );
+        else
+        {
+          message->data = atoi( filds[2U] );
+        }
       }
     }
   }
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vTESTtimeToStr ( RTC_TIME* time, char* buf )
+uint8_t uTESTtimeToStr ( RTC_TIME* time, char* buf )
 {
   char sub[5U] = { 0U };
   ( void )itoa( time->day, sub, 10U );
@@ -130,8 +165,8 @@ void vTESTtimeToStr ( RTC_TIME* time, char* buf )
   ( void )strcat( buf, "." );
   ( void )itoa( time->sec, sub, 10U );
   ( void )strcat( buf, sub );
-  ( void )strcat( buf, "." );
-  return;
+  ( void )strcat( buf, ".\n" );
+  return strlen( buf );
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t uTESTparseTimeFild ( char* pStr, uint8_t* output )
@@ -179,58 +214,77 @@ TEST_STATUS vTESTstrToTime ( RTC_TIME* time, char* buf )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vTESTstatusToString ( TEST_STATUS status, char* buf )
+uint8_t uTESTstatusToString ( TEST_STATUS status, char* buf )
 {
+  uint8_t res = 0U;
   switch ( status )
   {
     case TEST_STATUS_OK:
-      buf = TEST_ERROR_OK_STR;
+      ( void )strcpy( buf, TEST_ERROR_OK_STR );
+      ( void )strcat( buf, "\n" );
+      res = strlen( TEST_ERROR_OK_STR );
       break;
     case TEST_STATUS_ERROR_COMMAND:
-      buf = TEST_ERROR_COMMAND_STR;
+      ( void )strcpy( buf, TEST_ERROR_COMMAND_STR );
+      ( void )strcat( buf, "\n" );
+      res = strlen( TEST_ERROR_COMMAND_STR );
       break;
     case TEST_STATUS_ERROR_TARGET:
-      buf = TEST_ERROR_TARGET_STR;
+      ( void )strcpy( buf, TEST_ERROR_TARGET_STR );
+      ( void )strcat( buf, "\n" );
+      res = strlen( TEST_ERROR_TARGET_STR );
       break;
     case TEST_STATUS_ERROR_DATA:
-      buf = TEST_ERROR_DATA_STR;
+      ( void )strcpy( buf, TEST_ERROR_DATA_STR );
+      ( void )strcat( buf, "\n" );
+      res = strlen( TEST_ERROR_DATA_STR );
       break;
     case TEST_STATUS_ERROR_EXECUTING:
-      buf = TEST_ERROR_EXECUTING_STR;
+      ( void )strcpy( buf, TEST_ERROR_EXECUTING_STR );
+      ( void )strcat( buf, "\n" );
+      res = strlen( TEST_ERROR_EXECUTING_STR );
       break;
     default:
-      buf = TEST_ERROR_UNKNOWN;
+      ( void )strcpy( buf, TEST_ERROR_UNKNOWN );
+      ( void )strcat( buf, "\n" );
+      res = strlen( TEST_ERROR_UNKNOWN );
       break;
   }
-  return;
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vTESTdioToStr ( uint8_t state, char* buf )
+uint8_t uTESTdioToStr ( uint8_t state, char* buf )
 {
+  uint8_t res = 0U;
   if ( state > 0U )
   {
     buf = TEST_DIO_ON_STR;
+    ( void )strcat( buf, "\n" );
+    res = strlen( TEST_DIO_ON_STR ) + 1U;
   }
   else
   {
     buf = TEST_DIO_OFF_STR;
+    ( void )strcat( buf, "\n" );
+    res = strlen( TEST_DIO_OFF_STR ) + 1U;
   }
-  return;
+  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vTESThexToStr ( uint8_t* data, uint8_t length, char* buf )
+uint8_t uTESThexToStr ( uint8_t* data, uint8_t length, char* buf )
 {
   uint8_t i = 0U;
   for ( i=0U; i<length; i++ )
   {
     ( void )itoa( data[i], &buf[2U * i], 16U );
   }
-  return;
+  ( void )strcat( buf, "\n" );
+  return ( length * 2U + 1U );
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vTESTversionToStr ( const uint16_t* version, char* buf )
+uint8_t uTESTversionToStr ( const uint16_t* version, char* buf )
 {
-  char sub[5U] = { 0U };
+  char    sub[5U] = { 0U };
   ( void )itoa( ( uint8_t )( version[0U] ), sub, 10U );
   ( void )strcat( buf, sub );
   ( void )strcat( buf, "." );
@@ -239,12 +293,13 @@ void vTESTversionToStr ( const uint16_t* version, char* buf )
   ( void )strcat( buf, "." );
   ( void )itoa( ( uint8_t )( version[2U] ), sub, 10U );
   ( void )strcat( buf, sub );
-  return;
+  ( void )strcat( buf, "\n" );
+  return strlen( buf );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-TEST_STATUS vTESTprocess ( const char* str )
+TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
 {
   TEST_STATUS res  = TEST_STATUS_OK;
   RTC_TIME    time = { 0U };
@@ -293,7 +348,7 @@ TEST_STATUS vTESTprocess ( const char* str )
           res = TEST_STATUS_ERROR_TARGET;
           break;
       }
-      vTESTstatusToString( res, message.out );
+      message.length = uTESTstatusToString( res, message.out );
       break;
     case TEST_COMMAND_RESET:
       switch ( message.target )
@@ -322,7 +377,7 @@ TEST_STATUS vTESTprocess ( const char* str )
           res = TEST_STATUS_ERROR_TARGET;
           break;
       }
-      vTESTstatusToString( res, message.out );
+      message.length = uTESTstatusToString( res, message.out );
       break;
     case TEST_COMMAND_GET:
       switch ( message.target )
@@ -330,7 +385,7 @@ TEST_STATUS vTESTprocess ( const char* str )
         case TEST_TARGET_DIN:
           if ( ( message.data < FPI_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            vTESTdioToStr( ( ( uFPIgetData() >> message.data ) & 0x01U ), message.out );
+            message.length = uTESTdioToStr( ( ( uFPIgetData() >> message.data ) & 0x01U ), message.out );
           }
           else
           {
@@ -340,7 +395,7 @@ TEST_STATUS vTESTprocess ( const char* str )
         case TEST_TARGET_DOUT:
           if ( ( message.data < FPO_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            vTESTdioToStr( ( ( uFPOgetData() >> message.data ) & 0x01U ), message.out );
+            message.length = uTESTdioToStr( ( ( uFPOgetData() >> message.data ) & 0x01U ), message.out );
           }
           else
           {
@@ -350,7 +405,7 @@ TEST_STATUS vTESTprocess ( const char* str )
         case TEST_TARGET_TIME:
           if ( eRTCgetTime( &time ) == RTC_OK )
           {
-            vTESTtimeToStr( &time, message.out );
+            message.length = uTESTtimeToStr( &time, message.out );
           }
           else
           {
@@ -359,23 +414,35 @@ TEST_STATUS vTESTprocess ( const char* str )
           break;
         case TEST_TARGET_OIL:
           fix16_to_str( fENGINEgetOilPressure(), message.out, TEST_FIX_DECIMALS );
+          ( void )strcat( message.out, "\n" );
+          message.length = strlen( message.out );
           break;
         case TEST_TARGET_COOL:
           fix16_to_str( fENGINEgetCoolantTemp(), message.out, TEST_FIX_DECIMALS );
+          ( void )strcat( message.out, "\n" );
+          message.length = strlen( message.out );
           break;
         case TEST_TARGET_FUEL:
           fix16_to_str( fENGINEgetFuelLevel(), message.out, TEST_FIX_DECIMALS );
+          ( void )strcat( message.out, "\n" );
+          message.length = strlen( message.out );
           break;
         case TEST_TARGET_BAT:
           fix16_to_str( fENGINEgetBatteryVoltage(), message.out, TEST_FIX_DECIMALS );
+          ( void )strcat( message.out, "\n" );
+          message.length = strlen( message.out );
           break;
         case TEST_TARGET_CHARG:
           fix16_to_str( fENGINEgetChargerVoltage(), message.out, TEST_FIX_DECIMALS );
+          ( void )strcat( message.out, "\n" );
+          message.length = strlen( message.out );
           break;
         case TEST_TARGET_GENERATOR:
           if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
             fix16_to_str( fELECTROgetGeneratorVoltage( ( uint8_t )message.data ), message.out, TEST_FIX_DECIMALS );
+            ( void )strcat( message.out, "\n" );
+            message.length = strlen( message.out );
           }
           else
           {
@@ -386,6 +453,8 @@ TEST_STATUS vTESTprocess ( const char* str )
           if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
             fix16_to_str( fELECTROgetMainsVoltage( ( uint8_t )message.data ), message.out, TEST_FIX_DECIMALS );
+            ( void )strcat( message.out, "\n" );
+            message.length = strlen( message.out );
           }
           else
           {
@@ -396,6 +465,8 @@ TEST_STATUS vTESTprocess ( const char* str )
           if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
             fix16_to_str( fELECTROgetCurrent( ( uint8_t )message.data ), message.out, TEST_FIX_DECIMALS );
+            ( void )strcat( message.out, "\n" );
+            message.length = strlen( message.out );
           }
           else
           {
@@ -409,9 +480,13 @@ TEST_STATUS vTESTprocess ( const char* str )
             {
               case TEST_FREQ_CHANNELS_MAINS:
                 fix16_to_str( fELECTROgetMainsFreq(), message.out, TEST_FIX_DECIMALS );
+                ( void )strcat( message.out, "\n" );
+                message.length = strlen( message.out );
                 break;
               case TEST_FREQ_CHANNELS_GENERATOR:
                 fix16_to_str( fELECTROgetGeneratorFreq(), message.out, TEST_FIX_DECIMALS );
+                ( void )strcat( message.out, "\n" );
+                message.length = strlen( message.out );
                 break;
               default:
                 res = TEST_STATUS_ERROR_DATA;
@@ -420,11 +495,13 @@ TEST_STATUS vTESTprocess ( const char* str )
           }
         case TEST_TARGET_SPEED:
           fix16_to_str( fENGINEgetSpeed(), message.out, TEST_FIX_DECIMALS );
+          ( void )strcat( message.out, "\n" );
+          message.length = strlen( message.out );
           break;
         case TEST_TARGET_SW:
           if ( ( message.data < KEYBOARD_COUNT ) && ( message.dataFlag > 0U ) )
           {
-            vTESTdioToStr( uKEYgetState( message.data ), message.out );
+            message.length = uTESTdioToStr( uKEYgetState( message.data ), message.out );
           }
           else
           {
@@ -439,13 +516,13 @@ TEST_STATUS vTESTprocess ( const char* str )
           break;
         case TEST_TARGET_ID:
           vSYSgetUniqueID16( id );
-          vTESThexToStr( ( uint8_t* )id, UNIQUE_ID_LENGTH, message.out );
+          message.length = uTESThexToStr( ( uint8_t* )id, UNIQUE_ID_LENGTH, message.out );
           break;
         case TEST_TARGET_IP:
-          vSERVERgetStrIP( message.out );
+          message.length = uSERVERgetStrIP( message.out );
           break;
         case TEST_TARGET_MAC:
-          vTESThexToStr( pSERVERgetMAC(), MAC_ADR_LENGTH, message.out );
+          message.length = uTESThexToStr( pSERVERgetMAC(), MAC_ADR_LENGTH, message.out );
           break;
         case TEST_TARGET_VERSION:
           if ( message.dataFlag > 0U )
@@ -453,18 +530,22 @@ TEST_STATUS vTESTprocess ( const char* str )
             switch ( message.data )
             {
               case TEST_VERSION_BOOTLOADER:
-                vTESTversionToStr( ( const uint16_t* )( versionController.value ), message.out );
+                message.length = uTESTversionToStr( ( const uint16_t* )( versionController.value ), message.out );
                 break;
               case TEST_VERSION_FIRMWARE:
-                vTESTversionToStr( ( const uint16_t* )( versionFirmware.value ),   message.out );
+                message.length = uTESTversionToStr( ( const uint16_t* )( versionFirmware.value ),   message.out );
                 break;
               case TEST_VERSION_HARDWARE:
-                vTESTversionToStr( ( const uint16_t* )( versionBootloader.value ), message.out );
+                message.length = uTESTversionToStr( ( const uint16_t* )( versionBootloader.value ), message.out );
                 break;
               default:
                 res = TEST_STATUS_ERROR_DATA;
                 break;
             }
+          }
+          else
+          {
+            res = TEST_STATUS_ERROR_DATA;
           }
           break;
         default:
@@ -473,12 +554,12 @@ TEST_STATUS vTESTprocess ( const char* str )
       }
       if ( res != TEST_STATUS_OK )
       {
-        vTESTstatusToString( res, message.out );
+        message.length = uTESTstatusToString( res, message.out );
       }
       break;
     default:
       res = TEST_STATUS_ERROR_COMMAND;
-      vTESTstatusToString( res, message.out );
+      message.length = uTESTstatusToString( res, message.out );
       break;
   }
   return res;
@@ -487,6 +568,11 @@ TEST_STATUS vTESTprocess ( const char* str )
 char* cTESTgetOutput ( void )
 {
   return message.out;
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uTESTgetOutLength ( void )
+{
+  return message.length;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

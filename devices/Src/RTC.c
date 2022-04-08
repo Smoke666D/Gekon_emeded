@@ -242,9 +242,9 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
  */
 void vRTCinit ( I2C_HandleTypeDef* hi2c )
 {
-  vSYSserial( ">>There is " );
-  vSYSserial( rtcNames[RTC_CODE] );
-  vSYSserial( " chip as RTC \n\r" );
+  //vSYSserial( ">>There is " );
+  //vSYSserial( rtcNames[RTC_CODE] );
+  //vSYSserial( " chip as RTC \n\r" );
   vRTCcleanTime( &cashTime );
   RTCi2c        = hi2c;
   xRTCSemaphore = xSemaphoreCreateMutex();

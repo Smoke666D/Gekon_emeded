@@ -518,14 +518,14 @@ void vCONTROLLERdataInit ( void )
 /*----------------------------------------------------------------------------*/
 void vCONTROLLERprintStatus ( void )
 {
-  vSYSserial( ">>Controller mode : " );
+  //vSYSserial( ">>Controller mode : " );
   if ( controller.mode == CONTROLLER_MODE_MANUAL )
   {
-    vSYSserial( "Manual\r\n" );
+    //vSYSserial( "Manual\r\n" );
   }
   else
   {
-    vSYSserial( "Auto\r\n" );
+    //vSYSserial( "Auto\r\n" );
   }
 
   return;

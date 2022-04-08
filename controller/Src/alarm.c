@@ -576,14 +576,14 @@ void vCONTROLLERprintActiveErrorList ( void )
   uint8_t         counter = 0U;
   LOG_RECORD_TYPE record  = { 0U };
 
-  vSYSserial( "------------------Active Error List------------------\r\n" );
+  //vSYSserial( "------------------Active Error List------------------\r\n" );
   eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, &record, &counter );
   for ( i=0U; i<counter; i++ )
   {
     eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
     vLOGICprintLogRecord( record );
   }
-  vSYSserial( "-----------------------------------------------------\r\n" );
+  //vSYSserial( "-----------------------------------------------------\r\n" );
   return;
 }
 /*-----------------------------------------------------------------------------------------*/

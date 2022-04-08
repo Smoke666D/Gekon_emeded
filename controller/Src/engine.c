@@ -408,17 +408,17 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
     {
       res = 1U;
       #if ( DEBUG_SERIAL_STATUS > 0U )
-        vSYSserial( ">>Engine          : Started by generator frequency: LOW\r\n" );
+        //vSYSserial( ">>Engine          : Started by generator frequency: LOW\r\n" );
       #endif
     }
     if ( ( freq >= starter.startCrit.critGenFreqLevel ) && ( res == 0U ) )
     {
       res = 1U;
       #if ( DEBUG_SERIAL_STATUS > 0U )
-        vSYSserial( ">>Engine          : Started by generator frequency: " );
+        //vSYSserial( ">>Engine          : Started by generator frequency: " );
         fix16_to_str( freq, buffer, 2U );
-        vSYSserial( buffer );
-        vSYSserial( "\r\n" );
+        //vSYSserial( buffer );
+        //vSYSserial( "\r\n" );
       #endif
     }
   }
@@ -426,30 +426,30 @@ uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSserial( ">>Engine          : Started by oil pressure: " );
+      //vSYSserial( ">>Engine          : Started by oil pressure: " );
       fix16_to_str( pressure, buffer, 2U );
-      vSYSserial( buffer );
-      vSYSserial( "\r\n" );
+      //vSYSserial( buffer );
+      //vSYSserial( "\r\n" );
     #endif
   }
   if ( ( starter.startCrit.critChargeEnb == PERMISSION_ENABLE ) && ( voltage >= starter.startCrit.critChargeLevel ) )
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSserial( ">>Engine          : Started by charger voltage: " );
+      //vSYSserial( ">>Engine          : Started by charger voltage: " );
       fix16_to_str( voltage, buffer, 2U );
-      vSYSserial( buffer );
-      vSYSserial( "\r\n" );
+      //vSYSserial( buffer );
+      //vSYSserial( "\r\n" );
     #endif
   }
   if ( ( starter.startCrit.critSpeedEnb == PERMISSION_ENABLE ) && ( speed >= starter.startCrit.critSpeedLevel ) )
   {
     res = 1U;
     #if ( DEBUG_SERIAL_STATUS > 0U )
-      vSYSserial( ">>Engine          : Started by engine speed: " );
+      //vSYSserial( ">>Engine          : Started by engine speed: " );
       fix16_to_str( speed, buffer, 2U );
-      vSYSserial( buffer );
-      vSYSserial( "\r\n" );
+      //vSYSserial( buffer );
+      //vSYSserial( "\r\n" );
     #endif
   }
   return res;
@@ -558,59 +558,59 @@ void vENGINEprintSetup ( void )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
     char buf[8U];
-    vSYSserial( ">>Oil pressure sensor \r\n" );
-    vSYSserial( "    Type           : ");
-    vSYSserial( cSensorTypes[oil.pressure.type] );
-    vSYSserial( "\n\r" );
-    vSYSserial( "    Alarm          : ");
+    //vSYSserial( ">>Oil pressure sensor \r\n" );
+    //vSYSserial( "    Type           : ");
+    //vSYSserial( cSensorTypes[oil.pressure.type] );
+    //vSYSserial( "\n\r" );
+    //vSYSserial( "    Alarm          : ");
     vENGINEenbToStr( oil.alarm.error.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
-    vSYSserial( "    Prealarm       : ");
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
+    //vSYSserial( "    Prealarm       : ");
     vENGINEenbToStr( oil.alarm.error.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
 
-    vSYSserial( ">>Fuel level sensor \r\n" );
-    vSYSserial( "    Type           : ");
-    vSYSserial( cSensorTypes[fuel.level.type] );
-    vSYSserial( "\n\r" );
-    vSYSserial( "    Low alarm      : ");
+    //vSYSserial( ">>Fuel level sensor \r\n" );
+    //vSYSserial( "    Type           : ");
+    //vSYSserial( cSensorTypes[fuel.level.type] );
+    //vSYSserial( "\n\r" );
+    //vSYSserial( "    Low alarm      : ");
     vENGINEenbToStr( fuel.lowAlarm.error.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
-    vSYSserial( "    Low prealarm   : ");
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
+    //vSYSserial( "    Low prealarm   : ");
     vENGINEenbToStr( fuel.lowPreAlarm.error.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
-    vSYSserial( "    Hight alarm    : ");
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
+    //vSYSserial( "    Hight alarm    : ");
     vENGINEenbToStr( fuel.hightPreAlarm.error.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
-    vSYSserial( "    Hight prealarm : ");
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
+    //vSYSserial( "    Hight prealarm : ");
     vENGINEenbToStr( fuel.hightPreAlarm.error.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
 
-    vSYSserial( ">>Coolant temperature \r\n" );
-    vSYSserial( "    Type           : ");
-    vSYSserial( cSensorTypes[coolant.temp.type] );
-    vSYSserial( "\r\n" );
+    //vSYSserial( ">>Coolant temperature \r\n" );
+    //vSYSserial( "    Type           : ");
+    //vSYSserial( cSensorTypes[coolant.temp.type] );
+    //vSYSserial( "\r\n" );
 
-    vSYSserial( ">>Speed sensor     : " );
+    //vSYSserial( ">>Speed sensor     : " );
     vENGINEenbToStr( speed.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
-    vSYSserial( "    Teeth number   : " );
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
+    //vSYSserial( "    Teeth number   : " );
     sprintf( buf, "%d", speedToothNumber.value[0U] );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
-    vSYSserial( "    Low alarm      : ");
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
+    //vSYSserial( "    Low alarm      : ");
     vENGINEenbToStr( speed.lowAlarm.error.enb, buf );
-    vSYSserial( buf );
-    vSYSserial( "\r\n" );
+    //vSYSserial( buf );
+    //vSYSserial( "\r\n" );
 
-    vSYSserial( "\r\n" );
+    //vSYSserial( "\r\n" );
   #endif
   return;
 }
@@ -618,9 +618,9 @@ void vENGINEprintSetup ( void )
 void vLOGICprintEngineStatus ( ENGINE_STATUS status )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
-    vSYSserial( ">>Engine status: " );
-    vSYSserial( engineStatusStr[status] );
-    vSYSserial( "\r\n" );
+    //vSYSserial( ">>Engine status: " );
+    //vSYSserial( engineStatusStr[status] );
+    //vSYSserial( "\r\n" );
   #endif
   return;
 }
@@ -628,9 +628,9 @@ void vLOGICprintEngineStatus ( ENGINE_STATUS status )
 void vLOGICprintEngineCmd ( ENGINE_COMMAND cmd )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
-    vSYSserial( ">>Engine command  : " );
-    vSYSserial( engineCmdStr[cmd] );
-    vSYSserial( "\r\n" );
+    //vSYSserial( ">>Engine command  : " );
+    //vSYSserial( engineCmdStr[cmd] );
+    //vSYSserial( "\r\n" );
   #endif
   return;
 }
@@ -638,9 +638,9 @@ void vLOGICprintEngineCmd ( ENGINE_COMMAND cmd )
 void vLOGICprintStarterStatus ( STARTER_STATUS status )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
-    vSYSserial( ">>Starter status  : " );
-    vSYSserial( starterStatusStr[status] );
-    vSYSserial( "\r\n" );
+    //vSYSserial( ">>Starter status  : " );
+    //vSYSserial( starterStatusStr[status] );
+    //vSYSserial( "\r\n" );
   #endif
   return;
 }
@@ -648,9 +648,9 @@ void vLOGICprintStarterStatus ( STARTER_STATUS status )
 void vLOGICprintPlanStopStatus ( STOP_STATUS status )
 {
   #if ( DEBUG_SERIAL_STATUS > 0U )
-    vSYSserial( ">>Plan stop status: " );
-    vSYSserial( planStopStatusStr[status] );
-    vSYSserial( "\r\n" );
+    //vSYSserial( ">>Plan stop status: " );
+    //vSYSserial( planStopStatusStr[status] );
+    //vSYSserial( "\r\n" );
   #endif
   return;
 }
@@ -658,9 +658,9 @@ void vLOGICprintPlanStopStatus ( STOP_STATUS status )
 void vLOGICprintEmergencyStopStatus ( EMERGENCY_STATUS status )
 {
   #ifdef DEBUG
-    vSYSserial( ">>Emergency status: " );
-    vSYSserial( emergencyStopStatusStr[status] );
-    vSYSserial( "\r\n" );
+    //vSYSserial( ">>Emergency status: " );
+    //vSYSserial( emergencyStopStatusStr[status] );
+    //vSYSserial( "\r\n" );
   #endif
   return;
 }
@@ -960,7 +960,6 @@ void vENGINEdataInit ( void )
   planStop.coolingDelay     = getValue( &timerCooling );
   planStop.coolingIdleDelay = getValue( &timerCoolingIdle );
   planStop.processDelay     = getValue( &timerFailStopDelay );
-  vSYSprintFix16(planStop.processDelay);
   /*--------------------------------------------------------------*/
   engine.startCheckOil                  = getBitMap( &starterStopSetup, STARTER_OIL_PRESSURE_CHECK_ON_START_ENB_ADR );
   engine.status                         = ENGINE_STATUS_IDLE;

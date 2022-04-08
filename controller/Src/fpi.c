@@ -168,13 +168,13 @@ void vFPIprintSetup ( void )
   uint8_t i = 0U;
   for ( i=0U; i<FPI_NUMBER; i++ )
   {
-    vSYSserial( ">>FPI " );
-    vSYSserial( cFPInames[i] );
-    vSYSserial( "        : " );
-    vSYSserial( cFPIfunctionNames[ ( uint8_t )( fpis[i].function ) ] );
-    vSYSserial( "\n\r" );
+    //vSYSserial( ">>FPI " );
+    //vSYSserial( cFPInames[i] );
+    //vSYSserial( "        : " );
+    //vSYSserial( cFPIfunctionNames[ ( uint8_t )( fpis[i].function ) ] );
+    //vSYSserial( "\n\r" );
   }
-  vSYSserial( "\n\r" );
+  //vSYSserial( "\n\r" );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -332,11 +332,11 @@ void vFPIreset ( void )
 /*----------------------------------------------------------------------------*/
 void vFPIprint ( FPI_FUNCTION function, const char* str )
 {
-  vSYSserial( ">>" );
-  vSYSserial( cFPIfunctionNames[ ( uint8_t )( function ) ] );
-  vSYSserial( ": " );
-  vSYSserial( str );
-  vSYSserial( "\r\n" );
+  //vSYSserial( ">>" );
+  //vSYSserial( cFPIfunctionNames[ ( uint8_t )( function ) ] );
+  //vSYSserial( ": " );
+  //vSYSserial( str );
+  //vSYSserial( "\r\n" );
   return;
 }
 /*----------------------------------------------------------------------------*/

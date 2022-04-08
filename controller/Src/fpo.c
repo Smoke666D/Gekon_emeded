@@ -155,13 +155,13 @@ void vFPOprintSetup ( void )
   uint8_t i = 0U;
   for ( i=0U; i<FPO_NUMBER; i++ )
   {
-    vSYSserial( ">>FPO " );
-    vSYSserial( cFPOnames[i] );
-    vSYSserial( "        : " );
-    vSYSserial( cFPOfunctionNames[ ( uint8_t )( fpos[i].function ) ] );
-    vSYSserial( "\n\r" );
+    //vSYSserial( ">>FPO " );
+    //vSYSserial( cFPOnames[i] );
+    //vSYSserial( "        : " );
+    //vSYSserial( cFPOfunctionNames[ ( uint8_t )( fpos[i].function ) ] );
+    //vSYSserial( "\n\r" );
   }
-  vSYSserial( "\n\r" );
+  //vSYSserial( "\n\r" );
   return;
 }
 /*----------------------------------------------------------------------------*/

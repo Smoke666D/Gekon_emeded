@@ -130,6 +130,74 @@ void vSERIALprotectTask ( void* argument )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/* Tx Transfer completed callbacks */
+void HAL_UART_TxCpltCallback( UART_HandleTypeDef *huart )
+{
+  BaseType_t   yield = pdFALSE;
+  TaskHandle_t hTask = (TaskHandle_t)serialHandle;
+  if ( huart == serial.uart )
+  {
+    __HAL_UART_CLEAR_FLAG( debug_huart, UART_FLAG_TC );
+    switch ( serial.state )
+    {
+      case SERIAL_STATE_WRITING:
+        if ( serial.counter < serial.length )
+        {
+          serial.uart->Instance->DR = serial.output[serial.counter++];
+        }
+        else
+        {
+          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_TC   ); /* Disable the UART Transmit Complete Interrupt */
+          vTaskNotifyGiveFromISR( hTask, &yield );
+          portYIELD_FROM_ISR ( yield );
+        }
+        break;
+      default:
+        vTaskNotifyGiveFromISR( hTask, &yield );
+        portYIELD_FROM_ISR ( yield );
+        break;
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/* Rx Transfer completed callbacks */
+void HAL_UART_RxCpltCallback( UART_HandleTypeDef *huart )
+{
+  BaseType_t   yield    = pdFALSE;
+  TaskHandle_t hTask    = (TaskHandle_t)serialHandle;
+  TaskHandle_t hProtect = (TaskHandle_t)serialProtectHandle;
+  if ( huart == serial.uart )
+  {
+    __HAL_UART_CLEAR_FLAG( debug_huart, UART_FLAG_RXNE );
+    switch ( serial.state )
+    {
+      case SERIAL_STATE_IDLE:
+        serial.counter   = 1U;
+        serial.input[0U] = ( uint8_t )__HAL_UART_FLUSH_DRREGISTER( serial.uart );
+        serial.state     = SERIAL_STATE_READING;
+        vTaskNotifyGiveFromISR( hProtect, &yield );
+        portYIELD_FROM_ISR ( yield );
+        break;
+      case SERIAL_STATE_READING:
+        serial.input[serial.counter++] = ( uint8_t )__HAL_UART_FLUSH_DRREGISTER( serial.uart );
+        if ( serial.input[serial.counter - 1U] == SERIAL_END_CHAR )
+        {
+          serial.input[serial.counter] = 0U;
+          __HAL_UART_DISABLE_IT( serial.uart, UART_IT_RXNE ); /* Enable the UART Data Register not empty Interrupt */
+          vTaskNotifyGiveFromISR( hTask, &yield );
+          portYIELD_FROM_ISR ( yield );
+        }
+        break;
+      default:
+        vTaskNotifyGiveFromISR( hTask, &yield );
+        portYIELD_FROM_ISR ( yield );
+        break;
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vSERIALhandler ( void )
 {
   uint32_t     isrflags = READ_REG( serial.uart->Instance->SR  );

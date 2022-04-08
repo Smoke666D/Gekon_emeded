@@ -159,6 +159,10 @@ typedef enum
 #define LCD_MISO_GPIO_Port GPIOB
 #define LCD_MOSI_Pin GPIO_PIN_15
 #define LCD_MOSI_GPIO_Port GPIOB
+#define DEBUG_TX_Pin GPIO_PIN_8
+#define DEBUG_TX_GPIO_Port GPIOD
+#define DEBUG_RX_Pin GPIO_PIN_9
+#define DEBUG_RX_GPIO_Port GPIOD
 #define KL_UP_Pin GPIO_PIN_11
 #define KL_UP_GPIO_Port GPIOD
 #define KL_DOWN_Pin GPIO_PIN_12

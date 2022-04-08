@@ -349,10 +349,6 @@ int main(void)
   MX_SDIO_SD_Init();
   //MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  /*-------------- Put hardware structures to external modules ---------------*/
-  vSERIALinit( &huart3 ); /* Debug serial interface */
-  /*--------------------------------------------------------------------------*/
-  vSYSserial( "\n\r***********************\n\r" );
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -1516,7 +1512,9 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  uint8_t       period = 100U;
+  uint8_t period = 100U;
+  vSERIALinit( &huart3 ); /* Debug serial interface */
+  vSYSserial( "\n\r***********************\n\r" );
   vSYSserial( ">>Start Default Task!\n\r" );
   HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   vSERVERinit();

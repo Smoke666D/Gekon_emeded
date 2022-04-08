@@ -222,32 +222,32 @@ uint8_t uTESTstatusToString ( TEST_STATUS status, char* buf )
     case TEST_STATUS_OK:
       ( void )strcpy( buf, TEST_ERROR_OK_STR );
       ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_OK_STR );
+      res = strlen( TEST_ERROR_OK_STR ) + 1U;
       break;
     case TEST_STATUS_ERROR_COMMAND:
       ( void )strcpy( buf, TEST_ERROR_COMMAND_STR );
       ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_COMMAND_STR );
+      res = strlen( TEST_ERROR_COMMAND_STR ) + 1U;
       break;
     case TEST_STATUS_ERROR_TARGET:
       ( void )strcpy( buf, TEST_ERROR_TARGET_STR );
       ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_TARGET_STR );
+      res = strlen( TEST_ERROR_TARGET_STR ) + 1U;
       break;
     case TEST_STATUS_ERROR_DATA:
       ( void )strcpy( buf, TEST_ERROR_DATA_STR );
       ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_DATA_STR );
+      res = strlen( TEST_ERROR_DATA_STR ) + 1U;
       break;
     case TEST_STATUS_ERROR_EXECUTING:
       ( void )strcpy( buf, TEST_ERROR_EXECUTING_STR );
       ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_EXECUTING_STR );
+      res = strlen( TEST_ERROR_EXECUTING_STR ) + 1U;
       break;
     default:
       ( void )strcpy( buf, TEST_ERROR_UNKNOWN );
       ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_UNKNOWN );
+      res = strlen( TEST_ERROR_UNKNOWN ) + 1U;
       break;
   }
   return res;
@@ -258,13 +258,13 @@ uint8_t uTESTdioToStr ( uint8_t state, char* buf )
   uint8_t res = 0U;
   if ( state > 0U )
   {
-    buf = TEST_DIO_ON_STR;
+    ( void )strcpy( buf, TEST_DIO_ON_STR );
     ( void )strcat( buf, "\n" );
     res = strlen( TEST_DIO_ON_STR ) + 1U;
   }
   else
   {
-    buf = TEST_DIO_OFF_STR;
+    ( void )strcpy( buf, TEST_DIO_OFF_STR);
     ( void )strcat( buf, "\n" );
     res = strlen( TEST_DIO_OFF_STR ) + 1U;
   }
@@ -273,10 +273,16 @@ uint8_t uTESTdioToStr ( uint8_t state, char* buf )
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t uTESThexToStr ( uint8_t* data, uint8_t length, char* buf )
 {
-  uint8_t i = 0U;
+  uint8_t i       = 0U;
+  char    sub[3U] = { 0U };
   for ( i=0U; i<length; i++ )
   {
-    ( void )itoa( data[i], &buf[2U * i], 16U );
+    ( void )itoa( data[i], sub, 16U );
+   if ( sub[1U] == 0U )
+   {
+     sub[1U] = '0';
+   }
+   ( void )strcat( buf, sub );
   }
   ( void )strcat( buf, "\n" );
   return ( length * 2U + 1U );
@@ -493,6 +499,11 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
                 break;
             }
           }
+          else
+          {
+            res = TEST_STATUS_ERROR_DATA;
+          }
+          break;
         case TEST_TARGET_SPEED:
           fix16_to_str( fENGINEgetSpeed(), message.out, TEST_FIX_DECIMALS );
           ( void )strcat( message.out, "\n" );
@@ -513,6 +524,7 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
           {
             res = TEST_STATUS_ERROR_EXECUTING;
           }
+          message.length = uTESTstatusToString( res, message.out );
           break;
         case TEST_TARGET_ID:
           vSYSgetUniqueID16( id );
@@ -520,6 +532,7 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
           break;
         case TEST_TARGET_IP:
           message.length = uSERVERgetStrIP( message.out );
+          message.out[message.length++] = '\n';
           break;
         case TEST_TARGET_MAC:
           message.length = uTESThexToStr( pSERVERgetMAC(), MAC_ADR_LENGTH, message.out );

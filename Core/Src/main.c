@@ -57,6 +57,10 @@
 #include "fatsd.h"
 
 #include "dataSD.h"
+
+#if defined ( UNIT_TEST )
+  //#include "test_sysTest.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -312,6 +316,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -1533,7 +1538,7 @@ void StartDefaultTask(void *argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
-  uint8_t period = 100U;
+  uint8_t period = 200U;
   vSERIALinit( &huart3 ); /* Debug serial interface */
   HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   vSERVERinit();
@@ -1545,8 +1550,6 @@ void StartDefaultTask(void *argument)
       {
         HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port, DIN_OFFSET_Pin, GPIO_PIN_SET );
         vCHARTupdateAtrib();                        /* Update charts attributes                  */
-        //vDATAprintSerialNumber();                   /* Print device serial number to serial port */
-        //vDATAAPIprintMemoryMap();                   /* Print EEPROM map to serial port           */
         while ( uADCGetValidDataFlag() == 0U )
         {
 	        osDelay( 10U );
@@ -1567,16 +1570,12 @@ void StartDefaultTask(void *argument)
         vFATSDinit( &hsd );
         vSDinit();
         vMEASUREMENTinit();                         /**/
+        period = 100U;
         vSYSserial( startupMessage, 44U );
+        #if defined ( UNIT_TEST )
+          //runTest_SysTest();
+        #endif
       }
-      else
-      {
-        period = 200U;
-      }
-    }
-    else
-    {
-      period = 200U;
     }
   }
   /* Infinite loop */

@@ -4,7 +4,8 @@
  *  Created on: 24 мар. 2022 г.
  *      Author: 79110
  */
-#include "test.h"
+#include "test_sysTest.h"
+#include "sysTest.h"
 #include "unity.h"
 #include "RTC.h"
 #include "journal.h"
@@ -197,7 +198,15 @@ void test_vTESTdioToStr ( void )
   return;
 }
 
-void test_vTESTprocess ( void )
+void runTest_SysTest ( void )
 {
+  UnityBegin( "../Tests/test/testSysTest.c" );
+  //test_eTESTparseString();
+  //test_vTESTtimeToStr();
+  //test_uTESTparseTimeFild();
+  //test_vTESTstrToTime();
+  //test_vTESTstatusToString();
+  test_vTESTdioToStr();
   return;
 }
+

@@ -18,7 +18,7 @@
 #define     SERIAL_END_CHAR_0           '\n'
 #define     SERIAL_END_CHAR_1           '\r'
 #define     SERIAL_OUTPUT_TIMEOUT       ( ( TickType_t )1000U  )
-#define     SERIAL_PROTECT_TIMEOUT      ( ( TickType_t )10000U )
+#define     SERIAL_PROTECT_TIMEOUT      ( ( TickType_t )100U )
 /*------------------------ Macros --------------------------------------*/
 #define     REVERSE_BYTE( b )           ( ( ( b << 7U ) & 0x80U ) | ( ( b << 5U ) & 0x40U ) | ( ( b << 3U ) & 0x20U ) | ( ( b << 1U ) & 0x10U ) | ( ( b >> 1U ) & 0x08U ) | ( ( b >> 3U ) & 0x04U ) | ( ( b >> 5U ) & 0x02U ) | ( ( b >> 7U ) & 0x01U ) )
 #define     GET_UNIQUE_ID0              ( *( uint32_t* )( UNIQUE_ID_ADR + 0x00U ) )

@@ -5,6 +5,7 @@
  *      Author: photo_Mickey
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
+#include "sysTest.h"
 #include "common.h"
 #include "string.h"
 #include "stdio.h"
@@ -15,7 +16,6 @@
 #include "queue.h"
 #include "semphr.h"
 #include "event_groups.h"
-#include "test.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static UART_HandleTypeDef* debug_huart         = NULL;
 static QueueHandle_t       pSERIALqueue        = NULL;
@@ -146,8 +146,8 @@ void HAL_UART_RxCpltCallback( UART_HandleTypeDef *huart )
         serial.input[0U] = serial.buffer;
         serial.state     = SERIAL_STATE_READING;
         vSERIALstartReading();
-        //vTaskNotifyGiveFromISR( (TaskHandle_t)serialProtectHandle, &yield );
-        //portYIELD_FROM_ISR ( yield );
+        vTaskNotifyGiveFromISR( (TaskHandle_t)serialProtectHandle, &yield );
+        portYIELD_FROM_ISR ( yield );
         break;
       case SERIAL_STATE_READING:
         serial.input[serial.length++] = serial.buffer;
@@ -191,12 +191,10 @@ void vSERIALinit ( UART_HandleTypeDef* uart )
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
   task_attributes.stack_size = SERIAL_TSAK_STACK_SIZE;
   serialOutHandle            = osThreadNew( vSERIALoutputTask, NULL, &task_attributes );
-  /*
   task_attributes.name       = "serialProtectTask";
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
   task_attributes.stack_size = SERIAL_TSAK_STACK_SIZE;
   serialProtectHandle = osThreadNew( vSERIALprotectTask, NULL, &task_attributes );
-  */
   //vSERIALstartReading();
   return;
 }

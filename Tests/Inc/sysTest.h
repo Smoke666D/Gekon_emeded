@@ -5,8 +5,8 @@
  *      Author: 79110
  */
 
-#ifndef INC_TEST_H_
-#define INC_TEST_H_
+#ifndef INC_SYSTEST_H_
+#define INC_SYSTEST_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #if defined ( UNIT_TEST )
@@ -122,15 +122,15 @@ typedef struct __packed
 } TEST_TYPE;
 /*------------------------ Functions -----------------------------------*/
 #if defined ( UNIT_TEST )
-void        eTESTparseString ( const char* str, TEST_TYPE* message );
-uint8_t     uTESTtimeToStr ( RTC_TIME* time, char* buf );
-uint8_t     uTESTparseTimeFild ( char* pStr, uint8_t* output );
-TEST_STATUS vTESTstrToTime ( RTC_TIME* time, char* buf );
-uint8_t     uTESTstatusToString ( TEST_STATUS status, char* buf );
-uint8_t     uTESTdioToStr ( uint8_t state, char* buf );
+  void        eTESTparseString ( const char* str, TEST_TYPE* message );
+  uint8_t     uTESTtimeToStr ( RTC_TIME* time, char* buf );
+  uint8_t     uTESTparseTimeFild ( char* pStr, uint8_t* output );
+  TEST_STATUS vTESTstrToTime ( RTC_TIME* time, char* buf );
+  uint8_t     uTESTstatusToString ( TEST_STATUS status, char* buf );
+  uint8_t     uTESTdioToStr ( uint8_t state, char* buf );
 #endif
 TEST_STATUS vTESTprocess ( const char* str, uint8_t length );
 char*       cTESTgetOutput ( void );
 uint8_t     uTESTgetOutLength ( void );
 /*----------------------------------------------------------------------*/
-#endif /* INC_TEST_H_ */
+#endif /* INC_SYSTEST_H_ */

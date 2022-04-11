@@ -283,9 +283,13 @@ uint8_t uTESThexToStr ( uint8_t* data, uint8_t length, char* buf )
      sub[1U] = '0';
    }
    ( void )strcat( buf, sub );
+   if ( i != ( length - 1U ) )
+   {
+     ( void )strcat( buf, "-" );
+   }
   }
   ( void )strcat( buf, "\n" );
-  return ( length * 2U + 1U );
+  return ( length * 2U + length );
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t uTESTversionToStr ( const uint16_t* version, char* buf )
@@ -528,7 +532,7 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
           break;
         case TEST_TARGET_ID:
           vSYSgetUniqueID16( id );
-          message.length = uTESThexToStr( ( uint8_t* )id, UNIQUE_ID_LENGTH, message.out );
+          message.length = uTESThexToStr( ( uint8_t* )id, ( UNIQUE_ID_LENGTH * 2U ), message.out );
           break;
         case TEST_TARGET_IP:
           message.length = uSERVERgetStrIP( message.out );

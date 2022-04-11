@@ -82,13 +82,13 @@ uint8_t uTESTparsingFilds ( const char* str, char** filds )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-TEST_COMMAND eTESTparseCmd ( const char* str )
+uint8_t uTESTparse ( const char* str, const char** data, uint8_t length )
 {
-  TEST_COMMAND res = TEST_COMMAND_NO;
-  uint8_t      i   = 0U;
-  for ( i=0U; i<TEST_COMMANDS_NUMBER; i++ )
+  uint8_t res = 0U;
+  uint8_t i   = 0U;
+  for ( i=0U; i<length; i++ )
   {
-    if ( strstr( str, commandStrings[i] ) > 0U )
+    if ( strstr( str, data[i] ) == str )
     {
       res = i + 1U;
       break;
@@ -96,20 +96,15 @@ TEST_COMMAND eTESTparseCmd ( const char* str )
   }
   return res;
 }
+/*---------------------------------------------------------------------------------------------------*/
+TEST_COMMAND eTESTparseCmd ( const char* str )
+{
+  return ( TEST_COMMAND )( uTESTparse( str, commandStrings, TEST_COMMANDS_NUMBER ) );
+}
+/*---------------------------------------------------------------------------------------------------*/
 TEST_TARGET eTESTparseTarget ( const char* str )
 {
-  TEST_TARGET res = TEST_TARGET_NO;
-  uint8_t     i   = 0U;
-
-  for ( i=0U; i<TEST_TARGETS_NUMBER; i++ )
-  {
-    if ( strstr( str, targetStrings[i] ) > 0U )
-    {
-      res = i + 1U;
-      break;
-    }
-  }
-  return res;
+  return ( TEST_TARGET )( uTESTparse( str, targetStrings, TEST_TARGETS_NUMBER ) );
 }
 /*---------------------------------------------------------------------------------------------------*/
 void eTESTparseString ( const char* str, TEST_TYPE* message )

@@ -5,7 +5,7 @@
  *      Author: 79110
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
-#include "sysTest.h"
+#include <cli.h>
 #include "string.h"
 #include "stdlib.h"
 #include "fix16.h"
@@ -56,25 +56,25 @@ static TEST_TYPE message = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTparsingFilds ( const char* str, char** filds )
+uint8_t uTESTparsingFields ( const char* str, char** fields )
 {
   uint8_t res = 0U;
   uint8_t i   = 0U;
   char*   p   = NULL;
   if ( str[0U] != 0U )
   {
-    filds[0U] = ( char* )str;
+    fields[0U] = ( char* )str;
     res++;
     for ( i=1U; i<TEST_FILDS_NUMBER; i++ )
     {
-      p = strstr( filds[i - 1U], TEST_FILD_SEPORATOR );
+      p = strstr( fields[i - 1U], TEST_FILD_SEPORATOR );
       if ( p == 0U )
       {
         break;
       }
       else
       {
-        filds[i] = p + 1U;
+        fields[i] = p + 1U;
         res++;
       }
     }
@@ -82,13 +82,13 @@ uint8_t uTESTparsingFilds ( const char* str, char** filds )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTparse ( const char* str, const char** data, uint8_t length )
+uint8_t uTESTparse ( const char* str, const char** dictionary, uint8_t length )
 {
   uint8_t res = 0U;
   uint8_t i   = 0U;
   for ( i=0U; i<length; i++ )
   {
-    if ( strstr( str, data[i] ) == str )
+    if ( strstr( str, dictionary[i] ) == str )
     {
       res = i + 1U;
       break;
@@ -97,17 +97,7 @@ uint8_t uTESTparse ( const char* str, const char** data, uint8_t length )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-TEST_COMMAND eTESTparseCmd ( const char* str )
-{
-  return ( TEST_COMMAND )( uTESTparse( str, commandStrings, TEST_COMMANDS_NUMBER ) );
-}
-/*---------------------------------------------------------------------------------------------------*/
-TEST_TARGET eTESTparseTarget ( const char* str )
-{
-  return ( TEST_TARGET )( uTESTparse( str, targetStrings, TEST_TARGETS_NUMBER ) );
-}
-/*---------------------------------------------------------------------------------------------------*/
-void eTESTparseString ( const char* str, TEST_TYPE* message )
+void vTESTparseString ( const char* str, TEST_TYPE* message )
 {
   char*   filds[TEST_FILDS_NUMBER] = { 0U };
   uint8_t counter = 0U;
@@ -116,13 +106,13 @@ void eTESTparseString ( const char* str, TEST_TYPE* message )
   message->data     = 0U;
   message->dataFlag = 0U;
   message->out[0U]  = 0U;
-  counter = uTESTparsingFilds( str, filds );
+  counter = uTESTparsingFields( str, filds );
   if ( counter > 0U )
   {
-    message->cmd = eTESTparseCmd( ( const char* )filds[0U] );
+    message->cmd = ( TEST_COMMAND )( uTESTparse( ( const char* )filds[0U], commandStrings, TEST_COMMANDS_NUMBER ) );
     if ( ( counter > 1U ) && ( message->cmd != TEST_COMMAND_NO ) )
     {
-      message->target = eTESTparseTarget( ( const char* )filds[1U] );
+      message->target = ( TEST_TARGET )( uTESTparse( ( const char* )filds[1U], targetStrings, TEST_TARGETS_NUMBER ) );
       if ( ( counter > 2U ) && ( message->target != TEST_TARGET_NO ) )
       {
         message->dataFlag = 1U;
@@ -164,40 +154,40 @@ uint8_t uTESTtimeToStr ( RTC_TIME* time, char* buf )
   return strlen( buf );
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTparseTimeFild ( char* pStr, uint8_t* output )
+char* cTESTparseTimeFild ( char* pStr, uint8_t* output )
 {
-  uint8_t res     = 1U;
   char    sub[5U] = { 0U };
-  char*   pEnd = NULL;
-  pEnd = strchr( pStr, '.' );
+  char*   pEnd    = strchr( pStr, '.' );
   if ( pEnd != NULL )
   {
     ( void )memcpy( sub, pStr, ( pEnd - pStr ) );
     *output = ( uint8_t )atoi( sub );
     pStr    = pEnd + 1U;
   }
-  else
-  {
-    res = 0U;
-  }
-  return res;
+  return pStr;
 }
 /*---------------------------------------------------------------------------------------------------*/
-TEST_STATUS vTESTstrToTime ( RTC_TIME* time, char* buf )
+TEST_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf )
 {
   TEST_STATUS res  = TEST_STATUS_ERROR_DATA;
   char*       pStr = buf;
-  if ( uTESTparseTimeFild( pStr, &time->day ) > 0U )
+  pStr = cTESTparseTimeFild( pStr, &time->day );
+  if ( pStr > 0U )
   {
-    if ( uTESTparseTimeFild( pStr, &time->month ) > 0U )
+    pStr = cTESTparseTimeFild( pStr, &time->month );
+    if ( pStr > 0U )
     {
-      if ( uTESTparseTimeFild( pStr, &time->year ) > 0U )
+      pStr = cTESTparseTimeFild( pStr, &time->year );
+      if ( pStr > 0U )
       {
-        if ( uTESTparseTimeFild( pStr, &time->hour ) > 0U )
+        pStr = cTESTparseTimeFild( pStr, &time->hour );
+        if ( pStr > 0U )
         {
-          if ( uTESTparseTimeFild( pStr, &time->min ) > 0U )
+          pStr = cTESTparseTimeFild( pStr, &time->min );
+          if ( pStr > 0U )
           {
-            if ( uTESTparseTimeFild( pStr, &time->sec ) > 0U )
+            pStr = cTESTparseTimeFild( pStr, &time->sec );
+            if ( pStr > 0U )
             {
               res = TEST_STATUS_OK;
             }
@@ -310,7 +300,7 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
   RTC_TIME    time = { 0U };
   uint8_t     buf  = 0U;
   uint16_t    id[UNIQUE_ID_LENGTH] = { 0U };
-  eTESTparseString( str, &message );
+  vTESTparseString( str, &message );
   switch ( message.cmd )
   {
     case TEST_COMMAND_SET:
@@ -329,7 +319,7 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
         case TEST_TARGET_TIME:
           if ( message.dataFlag > 0U )
           {
-            res = vTESTstrToTime( &time, message.out );
+            res = eTESTstrToTime( &time, message.out );
             if ( res == TEST_STATUS_OK )
             {
               if ( eRTCsetTime( &time ) != RTC_OK )

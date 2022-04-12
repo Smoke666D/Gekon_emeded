@@ -161,6 +161,14 @@ void       vRTCgetCashTime ( RTC_TIME* time );               /* Ok */
 void       vRTCcleanTime ( RTC_TIME* time );                 /* Ok */
 RTC_STATUS eRTCgetTime ( RTC_TIME* time );                   /* Ok */
 RTC_STATUS eRTCsetTime ( RTC_TIME* time );                   /* Ok */
+#if defined ( UNIT_TEST )
+  RTC_STATUS eRTCwrite ( uint8_t adr, uint8_t* data, uint8_t size );
+  RTC_STATUS eRTCread ( uint8_t adr, uint8_t* data, uint8_t size );
+  uint8_t    bcdToDec ( uint8_t num );
+  uint8_t    decToBcd ( uint8_t num );
+  RTC_STATUS uRTCpoolSRUntil ( uint8_t target );
+  RTC_STATUS eVerifiTime ( RTC_TIME* time );
+#endif
 #if defined( RTC_ADDITIONAL )
   RTC_STATUS eRTCsetOscillator ( uint8_t enb, RTC_FREQ freq ); /**/
   RTC_STATUS eRTCreadFreq ( RTC_FREQ* freq );                  /**/

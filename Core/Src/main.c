@@ -59,7 +59,9 @@
 #include "dataSD.h"
 
 #if defined ( UNIT_TEST )
-  //#include "test_sysTest.h"
+  #include "unity.h"
+  #include "test_cli.h"
+  #include "test_rtc.h"
 #endif
 /* USER CODE END Includes */
 
@@ -78,7 +80,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
- ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
 ADC_HandleTypeDef hadc3;
 DMA_HandleTypeDef hdma_adc1;
@@ -1521,7 +1523,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-const char startupMessage[46U] = "***********************\nStart Default Task!\n";
+const char startupMessage[25U] = "***********************\n";
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1571,9 +1573,12 @@ void StartDefaultTask(void *argument)
         vSDinit();
         vMEASUREMENTinit();                         /**/
         period = 100U;
-        vSYSserial( startupMessage, 44U );
+        vSYSserial( startupMessage, 24U );
         #if defined ( UNIT_TEST )
-          //runTest_SysTest();
+          UnityBegin( "" );
+          runTest_cli();
+          runTest_rtc();
+          UnityEnd();
         #endif
       }
     }

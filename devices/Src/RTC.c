@@ -18,14 +18,6 @@ static RTC_TIME           cashTime      = { 0U };
 static const char* rtcNames[3U] = { "DS3231", "MAX31329", "M41T62" };
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
-RTC_STATUS eRTCsend ( uint8_t* data, uint8_t size );
-RTC_STATUS eRTCget ( uint8_t* data, uint8_t size );
-RTC_STATUS eRTCwrite ( uint8_t adr, uint8_t* data, uint8_t size );
-RTC_STATUS eRTCread ( uint8_t adr, uint8_t* data, uint8_t size );
-uint8_t    bcdToDec ( uint8_t num );
-uint8_t    decToBcd ( uint8_t num );
-RTC_STATUS uRTCpoolSRUntil ( uint8_t target );
-RTC_STATUS eVarifyTime ( RTC_TIME* time );
 void       vRTCTask ( void *argument );
 #if defined( RTC_ADDITIONAL )
   RTC_STATUS eVerifyAlarm ( RTC_ALARM* alarm );
@@ -173,7 +165,7 @@ uint8_t decToBcd ( uint8_t num )
  * Input:  time structure
  * Output: result of checking
  */
-RTC_STATUS eVarifyTime ( RTC_TIME* time )
+RTC_STATUS eVerifiTime ( RTC_TIME* time )
 {
   RTC_STATUS res = RTC_OK;
   if ( ( time->sec   > RTC_SEC_MAX )     ||
@@ -242,9 +234,6 @@ RTC_STATUS uRTCpoolSRUntil ( uint8_t target )
  */
 void vRTCinit ( I2C_HandleTypeDef* hi2c )
 {
-  //vSYSserial( ">>There is " );
-  //vSYSserial( rtcNames[RTC_CODE] );
-  //vSYSserial( " chip as RTC \n\r" );
   vRTCcleanTime( &cashTime );
   RTCi2c        = hi2c;
   xRTCSemaphore = xSemaphoreCreateMutex();
@@ -319,7 +308,7 @@ RTC_STATUS eRTCgetTime ( RTC_TIME* time )
  */
 RTC_STATUS eRTCsetTime ( RTC_TIME* time )
 {
-  RTC_STATUS res                   = eVarifyTime( time );
+  RTC_STATUS res                   = eVerifiTime( time );
   uint8_t    buffer[RTC_TIME_SIZE] = { 0U };
   if ( xRTCSemaphore != NULL )
   {

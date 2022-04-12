@@ -5,8 +5,8 @@
  *      Author: 79110
  */
 
-#ifndef INC_SYSTEST_H_
-#define INC_SYSTEST_H_
+#ifndef INC_CLI_H_
+#define INC_CLI_H_
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #if defined ( UNIT_TEST )
@@ -49,11 +49,11 @@
 #define TEST_DIO_ON_STR          "on"
 #define TEST_DIO_OFF_STR         "off"
 #define TEST_ERROR_OK_STR        "Ok"
-#define TEST_ERROR_COMMAND_STR   "Wrong command\n"
-#define TEST_ERROR_TARGET_STR    "Wrong target\n"
-#define TEST_ERROR_DATA_STR      "Wrong data\n"
-#define TEST_ERROR_EXECUTING_STR "Executing error\n"
-#define TEST_ERROR_UNKNOWN       "Unknown error\n"
+#define TEST_ERROR_COMMAND_STR   "Wrong command"
+#define TEST_ERROR_TARGET_STR    "Wrong target"
+#define TEST_ERROR_DATA_STR      "Wrong data"
+#define TEST_ERROR_EXECUTING_STR "Executing error"
+#define TEST_ERROR_UNKNOWN       "Unknown error"
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
@@ -122,15 +122,19 @@ typedef struct __packed
 } TEST_TYPE;
 /*------------------------ Functions -----------------------------------*/
 #if defined ( UNIT_TEST )
-  void        eTESTparseString ( const char* str, TEST_TYPE* message );
+  uint8_t     uTESTparsingFields ( const char* str, char** filds );
+  uint8_t     uTESTparse ( const char* str, const char** dictionary, uint8_t length );
+  void        vTESTparseString ( const char* str, TEST_TYPE* message );
   uint8_t     uTESTtimeToStr ( RTC_TIME* time, char* buf );
-  uint8_t     uTESTparseTimeFild ( char* pStr, uint8_t* output );
-  TEST_STATUS vTESTstrToTime ( RTC_TIME* time, char* buf );
+  char*       cTESTparseTimeFild ( char* pStr, uint8_t* output );
+  TEST_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf );
   uint8_t     uTESTstatusToString ( TEST_STATUS status, char* buf );
   uint8_t     uTESTdioToStr ( uint8_t state, char* buf );
+  uint8_t     uTESThexToStr ( uint8_t* data, uint8_t length, char* buf );
+  uint8_t     uTESTversionToStr ( const uint16_t* version, char* buf );
 #endif
 TEST_STATUS vTESTprocess ( const char* str, uint8_t length );
 char*       cTESTgetOutput ( void );
 uint8_t     uTESTgetOutLength ( void );
 /*----------------------------------------------------------------------*/
-#endif /* INC_SYSTEST_H_ */
+#endif /* INC_CLI_H_ */

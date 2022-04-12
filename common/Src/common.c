@@ -5,7 +5,7 @@
  *      Author: photo_Mickey
  */
 /*----------------------- Includes ------------------------------------------------------------------*/
-#include "sysTest.h"
+#include "cli.h"
 #include "common.h"
 #include "string.h"
 #include "stdio.h"
@@ -17,15 +17,19 @@
 #include "semphr.h"
 #include "event_groups.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static UART_HandleTypeDef* debug_huart         = NULL;
-static QueueHandle_t       pSERIALqueue        = NULL;
-static StaticQueue_t       xSERIALqueue        = { 0U };
-static osThreadId_t        serialHandle        = NULL;
-static osThreadId_t        serialOutHandle     = NULL;
-static osThreadId_t        serialProtectHandle = NULL;
-static SERIAL_TYPE         serial              = { 0U };
+static QueueHandle_t pSERIALqueue        = NULL;
+static StaticQueue_t xSERIALqueue        = { 0U };
+static osThreadId_t  serialHandle        = NULL;
+static osThreadId_t  serialOutHandle     = NULL;
+static osThreadId_t  serialProtectHandle = NULL;
+static SERIAL_TYPE   serial              = { 0U };
 /*------------------------ Variables ----------------------------------------------------------------*/
 static UART_MESSAGE outputBuffer[SERIAL_QUEUE_SIZE] = { 0U };
+
+#if defined ( UNIT_TEST )
+  static char     unitOutput[UNIT_TEST_BUFFER_SIZE] = { 0U };
+  static uint16_t unitCounter                       = 0U;
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 void vSERIALstartReading ( void )
 {
@@ -59,6 +63,27 @@ void vSYSserial ( const char* data, uint16_t length )
   }
   return;
 }
+#if defined ( UNIT_TEST )
+void vUNITputChar ( int data )
+{
+  if ( unitCounter < UNIT_TEST_BUFFER_SIZE )
+  {
+    unitOutput[unitCounter++] = ( char )( data );
+  }
+  return;
+}
+void vUNITresetOutput ( void )
+{
+  unitCounter = 0U;
+  return;
+}
+void vUNITwriteOutput ( void )
+{
+  vSYSserial( unitOutput, unitCounter );
+  unitCounter = 0U;
+  return;
+}
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 void vSERIALtask ( void* argument )
 {

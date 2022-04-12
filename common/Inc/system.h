@@ -26,7 +26,7 @@
 #define  ETHERNET_LINK_TASK_PRIORITY   osPriorityLow
 #define  PID_TASK_PRIORITY             osPriorityNormal
 #define  RTC_TASK_PRIORITY             osPriorityNormal
-#define  SERIAL_TSAK_STACK_SIZE        512U
+#define  SERIAL_TSAK_STACK_SIZE        256U
 #define  FPI_TASK_STACK_SIZE           ( 1024U - 180U * 4U  ) /* HWM = 25*/
 #define  ENGINE_TASK_STACK_SIZE        1024U
 #define  ELECTRO_TASK_STACK_SIZE       1024U

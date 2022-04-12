@@ -19,6 +19,9 @@
 #define     SERIAL_END_CHAR_1           '\r'
 #define     SERIAL_OUTPUT_TIMEOUT       ( ( TickType_t )1000U  )
 #define     SERIAL_PROTECT_TIMEOUT      ( ( TickType_t )100U )
+#if defined ( UNIT_TEST )
+  #define UNIT_TEST_BUFFER_SIZE   1024U
+#endif
 /*------------------------ Macros --------------------------------------*/
 #define     REVERSE_BYTE( b )           ( ( ( b << 7U ) & 0x80U ) | ( ( b << 5U ) & 0x40U ) | ( ( b << 3U ) & 0x20U ) | ( ( b << 1U ) & 0x10U ) | ( ( b >> 1U ) & 0x08U ) | ( ( b >> 3U ) & 0x04U ) | ( ( b >> 5U ) & 0x02U ) | ( ( b >> 7U ) & 0x01U ) )
 #define     GET_UNIQUE_ID0              ( *( uint32_t* )( UNIQUE_ID_ADR + 0x00U ) )
@@ -46,8 +49,8 @@ typedef struct __packed
 
 typedef struct __packed
 {
-  char*   data;
-  uint8_t length;
+  char*    data;
+  uint16_t length;
 } UART_MESSAGE;
 
 typedef struct __packed
@@ -56,7 +59,7 @@ typedef struct __packed
   SERIAL_STATE        state : 2U;
   uint8_t             error : 1U;
   uint8_t             buffer;
-  uint8_t             length;
+  uint16_t            length;
   uint8_t             input[SERIAL_BUFFER_SIZE];
   UART_MESSAGE        output;
 } SERIAL_TYPE;
@@ -75,5 +78,10 @@ uint8_t  uSYSisConst ( void* ptr );
 uint32_t uSYSputChar ( char* str, uint32_t length, char ch );
 uint32_t uSYSendString ( char* str, uint32_t length );
 fix16_t  fSYSconstrain ( fix16_t in, fix16_t min, fix16_t max );
+#if defined ( UNIT_TEST )
+  void vUNITputChar ( int data );
+  void vUNITwriteOutput ( void );
+  void vUNITresetOutput ( void );
+#endif
 /*----------------------------------------------------------------------*/
 #endif /* INC_COMMON_H_ */

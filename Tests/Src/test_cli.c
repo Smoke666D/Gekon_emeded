@@ -4,7 +4,7 @@
  *  Created on: 24 мар. 2022 г.
  *      Author: 79110
  */
-#include "test_cli.h"
+#include "tests.h"
 #include "cli.h"
 #include "unity.h"
 #include "RTC.h"

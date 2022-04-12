@@ -30,6 +30,7 @@ typedef enum
   USB_STATUS_CONT,               /* Message is not end. Wait for new package */
   USB_STATUS_ERROR_LENGTH,       /* Error in declared and received length of data*/
   USB_STATUS_ERROR_ADR,          /* Wrong address */
+  USB_STATUS_ERROR_DATA,         /* Wrong data fiel*/
   USB_STATUS_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
   USB_STATUS_UNAUTHORIZED_ERROR, /* Non unauthorized request */
   USB_STATUS_ENGINE_NON_STOP,    /* Access forbidden - engine is non stop */

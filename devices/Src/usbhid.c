@@ -135,7 +135,7 @@ void vUSBtimeToReport ( USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBfreeDataToReport ( USB_REPORT* report )
 {
-  uint32_t size = 0U;
+  uint32_t size  = 0U;
   report->stat   = USB_REPORT_STATE_OK;
   report->length = 2U;
   if ( ( report->adr == SD_FREE_LOW_ADR ) && ( eFATSDgetStatus() == SD_STATUS_MOUNTED ) )
@@ -181,7 +181,7 @@ void vUSBlogToReport ( USB_REPORT* report )
  */
 void vUSBconfigToReport ( USB_REPORT* report )
 {
-  uint8_t i     = 0U;
+  uint8_t i = 0U;
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {
     for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
@@ -246,7 +246,7 @@ void vUSBchartToReport ( USB_REPORT* report )
 USB_STATUS eUSBreportToTime ( const USB_REPORT* report )
 {
   USB_STATUS res  = USB_STATUS_DONE;
-  RTC_TIME   time;
+  RTC_TIME   time = { 0U };
   /*------------- Length control --------------*/
   if ( report->length == sizeof( RTC_TIME ) )
   {
@@ -624,7 +624,7 @@ USB_STATUS eUSBeraseLOG ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-USB_STATUS eUSBerasePassword( const USB_REPORT* report )
+USB_STATUS eUSBerasePassword ( const USB_REPORT* report )
 {
   USB_STATUS      res    = USB_STATUS_DONE;
   DATA_API_STATUS status = DATA_API_STAT_BUSY;

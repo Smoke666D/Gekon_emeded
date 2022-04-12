@@ -60,8 +60,7 @@
 
 #if defined ( UNIT_TEST )
   #include "unity.h"
-  #include "test_cli.h"
-  #include "test_rtc.h"
+  #include "tests.h"
 #endif
 /* USER CODE END Includes */
 

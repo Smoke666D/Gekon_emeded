@@ -4,9 +4,9 @@
  *  Created on: 11 апр. 2022 г.
  *      Author: 79110
  */
-#include "test_rtc.h"
-#include "RTC.h"
+#include "tests.h"
 #include "unity.h"
+#include "RTC.h"
 
 void test_eRTCwrite ( void )
 {

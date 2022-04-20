@@ -10,5 +10,6 @@
 
 void runTest_rtc ( void );
 void runTest_cli ( void );
+void runTest_usbhid ( void );
 
 #endif /* INC_TESTS_H_ */

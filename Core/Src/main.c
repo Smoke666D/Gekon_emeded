@@ -1577,6 +1577,7 @@ void StartDefaultTask(void *argument)
           UnityBegin( "" );
           runTest_cli();
           runTest_rtc();
+          runTest_usbhid();
           UnityEnd();
         #endif
       }

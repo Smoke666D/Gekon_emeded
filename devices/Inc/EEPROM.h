@@ -102,6 +102,20 @@ typedef struct __packed
 #define  AA02E48_CLOCK_FREQ     5U      /* MHz   */
 #define  AA02E48_TIMEOUT        10U     /* Ticks */
 /*----------------------- Functions ------------------------------------*/
+#if defined ( UNIT_TEST )
+  void          vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer );
+  EEPROM_STATUS eEEPROMwrite ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size );
+  EEPROM_STATUS eEEPROMread ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size );
+  EEPROM_STATUS eEEPROMwriteEnable ( const EEPROM_TYPE* eeprom );
+  EEPROM_STATUS eEEPROMwriteDisable ( const EEPROM_TYPE* eeprom );
+  EEPROM_STATUS eEEPROMreadSR ( const EEPROM_TYPE* eeprom, EEPROM_SR_STATE* status );
+  EEPROM_STATUS eEEPROMwriteSR ( const EEPROM_TYPE* eeprom, uint8_t data );
+  EEPROM_STATUS eEEPROMunblock ( const EEPROM_TYPE* eeprom );
+  EEPROM_STATUS eEEPROMsetProtect ( const EEPROM_TYPE* eeprom, EEPROM_PROTECT_TYPE level );
+  EEPROM_STATUS eEEPROMgetProtect ( const EEPROM_TYPE* eeprom, EEPROM_PROTECT_TYPE* level );
+  EEPROM_STATUS eEEPROMpoolUntil ( const EEPROM_TYPE* eeprom, EEPROM_SR_STATE target );
+  EEPROM_STATUS eEEPROMWriteData ( const EEPROM_TYPE* eeprom, const uint32_t* adr, uint8_t* data, uint8_t len );
+#endif
 EEPROM_STATUS eEEPROMInit ( const EEPROM_TYPE* eeprom ); /* Installation of EEPROM */
 EEPROM_STATUS eEEPROMreadMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len );        /* Read memory of EEPROM */
 EEPROM_STATUS eEEPROMwriteMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len ); /* Write data to memory of EEPROM */

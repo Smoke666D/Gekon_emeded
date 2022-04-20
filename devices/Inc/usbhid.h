@@ -30,7 +30,8 @@ typedef enum
   USB_STATUS_CONT,               /* Message is not end. Wait for new package */
   USB_STATUS_ERROR_LENGTH,       /* Error in declared and received length of data*/
   USB_STATUS_ERROR_ADR,          /* Wrong address */
-  USB_STATUS_ERROR_DATA,         /* Wrong data fiel*/
+  USB_STATUS_ERROR_DATA,         /* Wrong data field */
+  USB_STATUS_ERROR_COMMAND,      /* Wrong command */
   USB_STATUS_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
   USB_STATUS_UNAUTHORIZED_ERROR, /* Non unauthorized request */
   USB_STATUS_ENGINE_NON_STOP,    /* Access forbidden - engine is non stop */
@@ -134,6 +135,35 @@ typedef USB_STATUS ( *dataCallBack )( USB_REPORT* report );  /* callback for dat
 /*------------------------------ Extern --------------------------------------*/
 
 /*----------------------------- Functions ------------------------------------*/
+#if defined( UNIT_TEST )
+  void       vUint32ToBytes ( uint32_t input, uint8_t* output );
+  void       vUint24ToBytes ( uint32_t input, uint8_t* output );
+  void       vUint16ToBytes ( uint16_t input, uint8_t* output );
+  uint16_t   uByteToUnit16 ( const uint8_t* data );
+  uint32_t   uByteToUint24 ( const uint8_t* data );
+  uint32_t   uByteToUint32 ( const uint8_t* data );
+  void       vUSBtimeToReport ( USB_REPORT* report );
+  void       vUSBfreeDataToReport ( USB_REPORT* report );
+  void       vUSBlogToReport ( USB_REPORT* report );
+  void       vUSBconfigToReport ( USB_REPORT* report );
+  void       vUSBchartToReport ( USB_REPORT* report );
+  USB_STATUS eUSBreportToTime ( const USB_REPORT* report );
+  USB_STATUS eUSBreportToPassword ( const USB_REPORT* report );
+  USB_STATUS eUSBcheckupPassword ( const USB_REPORT* report );
+  USB_STATUS eUSBreportToFreeData ( const USB_REPORT* report );
+  USB_STATUS eUSBreportToConfig ( const USB_REPORT* report );
+  USB_STATUS eUSBreportToChart ( const USB_REPORT* report );
+  void       vUSBmakeReport ( USB_REPORT* report );
+  void       vUSBparseReport ( USB_REPORT* report );
+  USB_STATUS eUSBsaveConfigs ( const USB_REPORT* report );
+  USB_STATUS eUSBsaveCharts ( const USB_REPORT* report );
+  USB_STATUS eUSBeraseLOG ( const USB_REPORT* report );
+  USB_STATUS eUSBerasePassword ( const USB_REPORT* report );
+  void       vUSBmeasurementToReport ( USB_REPORT* report );
+  void       vUSBmeasurementLengthToReport ( USB_REPORT* report );
+  void       vUSBoutputToReport ( USB_REPORT* report );
+  USB_STATUS eUSBreportToOutput ( const USB_REPORT* report );
+#endif
 void            vUSBinit ( osThreadId_t taskHandle );  /* Initialization device and control USB size of report descriptor */
 void            vStartUsbTask ( void *argument );      /* Processing USB input task */
 USB_CONN_STATUS eUSBgetStatus ( void );                /* Get connection status of USB device */

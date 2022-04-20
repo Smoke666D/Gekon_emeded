@@ -9,8 +9,6 @@
 #define EEPROM_SET_CS( eeprom, state )    HAL_GPIO_WritePin( eeprom->cs.port, eeprom->cs.pin, state )
 /*-------------------------------- Functions ---------------------------------*/
 
-
-
 /*----------------------------------------------------------------------------*/
 /*----------------------- PRIVATE --------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -373,7 +371,7 @@ EEPROM_STATUS eEEPROMWriteData ( const EEPROM_TYPE* eeprom, const uint32_t* adr,
 #if defined( OPTIMIZ )
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-EEPROM_STATUS eEEPROMInit( const EEPROM_TYPE* eeprom )
+EEPROM_STATUS eEEPROMInit ( const EEPROM_TYPE* eeprom )
 {
   EEPROM_STATUS       res   = EEPROM_OK;
   EEPROM_PROTECT_TYPE level = EEPROM_PROTECT_NONE;

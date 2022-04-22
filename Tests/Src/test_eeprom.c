@@ -18,6 +18,7 @@ void test_vEEPROMmakeAdr ( void )
   TEST_ASSERT_EQUAL( 0x56U, buf[0U] );
   return;
 }
+/*
 void test_eEEPROMwrite ( void )
 {
   EEPROM_STATUS status = EEPROM_OK;
@@ -116,12 +117,14 @@ void test_eEEPROMwriteMemory ( void )
   TEST_ASSERT_EQUAL( EEPROM_OK, status );
   return;
 }
+*/
 void runTest_eeprom ( void )
 {
+  UnitySetTestFile( "../Tests/test/test_eeprom.c" );
+  UnityDefaultTestRun( test_vEEPROMmakeAdr, "EEPROM address", 0U );
+  /*
   if ( eEEPROMInit() == EEPROM_OK )
   {
-    UnitySetTestFile( "../Tests/test/test_eeprom.c" );
-    UnityDefaultTestRun( test_vEEPROMmakeAdr, "", 0U );
     UnityDefaultTestRun( test_eEEPROMwrite, "", 0U );
     UnityDefaultTestRun( test_eEEPROMread, "", 0U );
     UnityDefaultTestRun( test_eEEPROMwriteEnable, "", 0U );
@@ -141,5 +144,6 @@ void runTest_eeprom ( void )
   {
 
   }
+  */
   return;
 }

@@ -20,7 +20,7 @@
 #define     SERIAL_OUTPUT_TIMEOUT       ( ( TickType_t )1000U  )
 #define     SERIAL_PROTECT_TIMEOUT      ( ( TickType_t )100U )
 #if defined ( UNIT_TEST )
-  #define UNIT_TEST_BUFFER_SIZE   1024U
+  #define UNIT_TEST_BUFFER_SIZE   4096U
 #endif
 /*------------------------ Macros --------------------------------------*/
 #define     REVERSE_BYTE( b )           ( ( ( b << 7U ) & 0x80U ) | ( ( b << 5U ) & 0x40U ) | ( ( b << 3U ) & 0x20U ) | ( ( b << 1U ) & 0x10U ) | ( ( b >> 1U ) & 0x08U ) | ( ( b >> 3U ) & 0x04U ) | ( ( b >> 5U ) & 0x02U ) | ( ( b >> 7U ) & 0x01U ) )

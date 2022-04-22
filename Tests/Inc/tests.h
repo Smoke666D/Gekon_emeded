@@ -11,5 +11,6 @@
 void runTest_rtc ( void );
 void runTest_cli ( void );
 void runTest_usbhid ( void );
+void runTest_eeprom ( void );
 
 #endif /* INC_TESTS_H_ */

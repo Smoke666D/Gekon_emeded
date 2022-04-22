@@ -1575,8 +1575,8 @@ void StartDefaultTask(void *argument)
         vSYSserial( startupMessage, 24U );
         #if defined ( UNIT_TEST )
           UnityBegin( "" );
-          runTest_cli();
-          runTest_rtc();
+          //runTest_cli();
+          //runTest_rtc();
           runTest_usbhid();
           UnityEnd();
         #endif

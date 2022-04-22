@@ -26,16 +26,16 @@ typedef enum
 
 typedef enum
 {
-  USB_STATUS_DONE,               /* Operation done */
-  USB_STATUS_CONT,               /* Message is not end. Wait for new package */
-  USB_STATUS_ERROR_LENGTH,       /* Error in declared and received length of data*/
-  USB_STATUS_ERROR_ADR,          /* Wrong address */
-  USB_STATUS_ERROR_DATA,         /* Wrong data field */
-  USB_STATUS_ERROR_COMMAND,      /* Wrong command */
-  USB_STATUS_STORAGE_ERROR,      /* Error in storage process ( EEPROM or RTC )  */
-  USB_STATUS_UNAUTHORIZED_ERROR, /* Non unauthorized request */
-  USB_STATUS_ENGINE_NON_STOP,    /* Access forbidden - engine is non stop */
-  USB_STATUS_FORBIDDEN,          /* Access forbidden */
+  USB_STATUS_DONE,               /* 0 Operation done */
+  USB_STATUS_CONT,               /* 1 Message is not end. Wait for new package */
+  USB_STATUS_ERROR_LENGTH,       /* 2 Error in declared and received length of data*/
+  USB_STATUS_ERROR_ADR,          /* 3 Wrong address */
+  USB_STATUS_ERROR_DATA,         /* 4 Wrong data field */
+  USB_STATUS_ERROR_COMMAND,      /* 5 Wrong command */
+  USB_STATUS_STORAGE_ERROR,      /* 6 Error in storage process ( EEPROM or RTC )  */
+  USB_STATUS_UNAUTHORIZED_ERROR, /* 7 Non unauthorized request */
+  USB_STATUS_ENGINE_NON_STOP,    /* 8 Access forbidden - engine is non stop */
+  USB_STATUS_FORBIDDEN,          /* 9 Access forbidden */
 } USB_STATUS;
 
 typedef enum

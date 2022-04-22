@@ -207,8 +207,8 @@ void vUSBconfigToReport ( USB_REPORT* report )
 void vUSBchartToReport ( USB_REPORT* report )
 {
   uint8_t chartAdr = 0U;
-  report->dir      = USB_REPORT_DIR_OUTPUT;
-  report->stat     = USB_REPORT_STATE_OK;
+  report->dir  = USB_REPORT_DIR_OUTPUT;
+  report->stat = USB_REPORT_STATE_OK;
   switch ( report->cmd )
   {
     case USB_REPORT_CMD_GET_CHART_OIL:
@@ -221,22 +221,28 @@ void vUSBchartToReport ( USB_REPORT* report )
       chartAdr = FUEL_CHART_ADR;
       break;
     default:
+      report->length = 0U;
+      report->stat   = USB_REPORT_STATE_BAD_REQ;
       break;
   }
-  if ( report->adr == 0U )
+  if ( report->stat == USB_REPORT_STATE_OK )
   {
-    report->length   = 2U;
-    vUint16ToBytes( charts[chartAdr]->size, &report->data[0U] );
-  }
-  else if ( ( report->adr - 1U ) <= CHART_DOTS_SIZE )
-  {
-    report->length = 8U;
-    vUint32ToBytes( ( uint32_t )( charts[chartAdr]->dots[report->adr - 1U].x ), &report->data[0U] );
-    vUint32ToBytes( ( uint32_t )( charts[chartAdr]->dots[report->adr - 1U].y ), &report->data[4U] );
+    if ( report->adr == 0U )
+    {
+      report->length = 2U;
+      vUint16ToBytes( charts[chartAdr]->size, &report->data[0U] );
+    }
+    else if ( ( report->adr - 1U ) <= CHART_DOTS_SIZE )
+    {
+      report->length = 8U;
+      vUint32ToBytes( ( uint32_t )( charts[chartAdr]->dots[report->adr - 1U].x ), &report->data[0U] );
+      vUint32ToBytes( ( uint32_t )( charts[chartAdr]->dots[report->adr - 1U].y ), &report->data[4U] );
+    }
   }
   else
   {
-    report->stat = USB_STATUS_ERROR_ADR;
+    report->length = 0U;
+    report->stat   = USB_REPORT_STATE_BAD_REQ;
   }
   return;
 }
@@ -244,6 +250,7 @@ void vUSBchartToReport ( USB_REPORT* report )
 USB_STATUS eUSBreportToTime ( const USB_REPORT* report )
 {
   USB_STATUS res  = USB_STATUS_DONE;
+  RTC_STATUS stat = RTC_OK;
   RTC_TIME   time = { 0U };
   /*------------- Length control --------------*/
   if ( report->length == sizeof( RTC_TIME ) )
@@ -255,9 +262,17 @@ USB_STATUS eUSBreportToTime ( const USB_REPORT* report )
     time.month = report->data[4U];
     time.day   = report->data[5U];
     time.wday  = report->data[6U];
-    if ( eRTCsetTime( &time ) != RTC_OK )
+    stat = eRTCsetTime( &time );
+    if ( stat != RTC_OK )
     {
-      res = USB_STATUS_STORAGE_ERROR;
+      if ( stat == RTC_FORMAT_ERROR )
+      {
+        res = USB_STATUS_ERROR_DATA;
+      }
+      else
+      {
+        res = USB_STATUS_STORAGE_ERROR;
+      }
     }
   }
   else
@@ -478,44 +493,42 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
       chartAdr = FUEL_CHART_ADR;
       break;
     default:
+      res = USB_STATUS_ERROR_COMMAND;
       break;
   }
-  if ( report->adr == 0U )
+  if ( res == USB_STATUS_DONE )
   {
-    if ( report->length == 2U )
+    if ( report->adr == 0U )
     {
-      while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
+      if ( report->length == 2U )
       {
-
+        while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE ) {}
+        charts[chartAdr]->size  = uByteToUnit16( &report->data[0U] );
+        xSemaphoreGive( xCHARTgetSemophore() );
       }
-      charts[chartAdr]->size  = uByteToUnit16( &report->data[0U] );
-      xSemaphoreGive( xCHARTgetSemophore() );
+      else
+      {
+        res = USB_STATUS_ERROR_LENGTH;
+      }
+    }
+    else if ( ( report->adr ) <= CHART_DOTS_SIZE )
+    {
+      if ( report->length == 8U )
+      {
+        while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE ) {}
+        charts[chartAdr]->dots[report->adr - 1U].x = *( fix16_t* )( &report->data[0U] );
+        charts[chartAdr]->dots[report->adr - 1U].y = *( fix16_t* )( &report->data[4U] );
+        xSemaphoreGive( xCHARTgetSemophore() );
+      }
+      else
+      {
+        res = USB_STATUS_ERROR_LENGTH;
+      }
     }
     else
     {
-      res = USB_STATUS_ERROR_LENGTH;
+      res = USB_STATUS_ERROR_ADR;
     }
-  }
-  else if ( ( report->adr ) <= CHART_DOTS_SIZE )
-  {
-    if ( report->length == 8U )
-    {
-      while ( xSemaphoreTake( xCHARTgetSemophore(), SEMAPHORE_TAKE_DELAY ) != pdTRUE )
-      {
-
-      }
-      charts[chartAdr]->dots[report->adr - 1U].x = *( fix16_t* )( &report->data[0U] );
-      charts[chartAdr]->dots[report->adr - 1U].y = *( fix16_t* )( &report->data[4U] );
-      xSemaphoreGive( xCHARTgetSemophore() );
-    }
-    else
-    {
-      res = USB_STATUS_ERROR_LENGTH;
-    }
-  }
-  else
-  {
-    res = USB_STATUS_ERROR_ADR;
   }
   return res;
 }
@@ -661,7 +674,7 @@ void vUSBoutputToReport ( USB_REPORT* report )
   else
   {
     report->length = 0U;
-    report->stat   = USB_REPORT_STATE_NON_CON;
+    report->stat   = USB_REPORT_STATE_BAD_REQ;
   }
   return;
 }

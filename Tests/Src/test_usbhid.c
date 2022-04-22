@@ -100,13 +100,14 @@ void test_vUSBlogToReport ( void )
   TEST_ASSERT_GREATER_OR_EQUAL( 0U, report.data[5U] );
   report.adr = 0xFFFFU;
   vUSBlogToReport( &report );
-  TEST_ASSERT_EQUAL( USB_STATUS_ERROR_ADR, report.stat );
+  TEST_ASSERT_EQUAL( USB_REPORT_STATE_INTERNAL, report.stat );
   TEST_ASSERT_EQUAL( 0U, report.length );
   return;
 }
 void test_vUSBconfigToReport ( void )
 {
   uint8_t i = 0U;
+  report.adr = 0U;
   vUSBconfigToReport( &report );
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, report.stat );
   TEST_ASSERT_EQUAL( ( configReg[report.adr]->atrib->len * 2U ), report.length );
@@ -124,6 +125,8 @@ void test_vUSBchartToReport ( void )
 {
   uint8_t i = 0U;
   /* Read chart data */
+  report.cmd = USB_REPORT_CMD_GET_CHART_OIL;
+  report.adr = 0U;
   vUSBchartToReport( &report );
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, report.stat );
   TEST_ASSERT_EQUAL( 2U, report.length );
@@ -164,7 +167,7 @@ void test_eUSBreportToTime ( void )
   report.data[6U] = ( uint8_t )THURSDAY;
   status = eUSBreportToTime( &report );
   TEST_ASSERT_EQUAL( RTC_OK, eRTCgetTime( &time ) );
-  TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, status );
+  TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
   TEST_ASSERT_EQUAL( 11U, time.hour );
   TEST_ASSERT_EQUAL( 22U, time.min );
   TEST_ASSERT_GREATER_OR_EQUAL( 33U, time.sec );
@@ -259,7 +262,7 @@ void test_eUSBreportToFreeData ( void )
   report.data[1U] = 0x12U;
   status = eUSBreportToFreeData( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
-  TEST_ASSERT_EQUAL( 0x1234U, freeDataArray[report.adr] );
+  TEST_ASSERT_EQUAL( 0x1234U, *freeDataArray[report.adr] );
   /* Address errors */
   report.adr    = 0xFFFFU;
   status = eUSBreportToFreeData( ( const USB_REPORT* )&report );
@@ -279,7 +282,7 @@ void test_eUSBreportToFreeData ( void )
   report.data[1U] = 0x00U;
   status = eUSBreportToFreeData( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
-  TEST_ASSERT_EQUAL( 0x0000U, freeDataArray[report.adr] );
+  TEST_ASSERT_EQUAL( 0x0000U, *freeDataArray[report.adr] );
   return;
 }
 void test_eUSBreportToConfig ( void )
@@ -287,18 +290,23 @@ void test_eUSBreportToConfig ( void )
   USB_STATUS status = USB_STATUS_DONE;
   uint8_t    i      = 0U;
   uint16_t   buf[MAX_VALUE_LENGTH] = { 0U };
-  report.adr    = 0U;
+  uint16_t   value = 0U;
+  report.adr    = RECORD_INTERVAL_ADR;
   report.length = configReg[report.adr]->atrib->len * 2U;
+  for ( i=0U; i<configReg[report.adr]->atrib->len; i++ )
+  {
+    buf[i] = configReg[report.adr]->value[i];
+  }
   for ( i=0U; i<report.length; i++ )
   {
-    buf[i] = report.data[i];
-    report.data[i] = 0x1111U * i;
+    report.data[i] = 0x11U * i;
   }
   status = eUSBreportToConfig( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
-  for ( i=0U; i<report.length; i++ )
+  for ( i=0U; i<configReg[report.adr]->atrib->len; i++ )
   {
-    TEST_ASSERT_EQUAL( ( 0x1111U * i ), configReg[report.adr]->value[i] );
+    value = uByteToUnit16( report.data );
+    TEST_ASSERT_EQUAL( value, configReg[report.adr]->value[i] );
   }
   /* Length errors  */
   report.length = 0xFFFFU;
@@ -310,6 +318,7 @@ void test_eUSBreportToConfig ( void )
   status        = eUSBreportToConfig( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_ADR, status );
   /* Clean */
+  report.adr = RECORD_INTERVAL_ADR;
   for ( i=0U; i<configReg[report.adr]->atrib->len; i++ )
   {
     configReg[report.adr]->value[i] = buf[i];
@@ -334,18 +343,18 @@ void test_eUSBreportToChart ( void )
   /* Dot data */
   report.adr      = 1U;
   report.length   = 8U;
-  report.data[0U] = 0xF0U;
-  report.data[1U] = 0xDEU;
-  report.data[2U] = 0xBCU;
-  report.data[3U] = 0x9AU;
-  report.data[4U] = 0x78U;
-  report.data[5U] = 0x56U;
-  report.data[6U] = 0x34U;
-  report.data[7U] = 0x12U;
+  report.data[0U] = 0x78U;
+  report.data[1U] = 0x56U;
+  report.data[2U] = 0x34U;
+  report.data[3U] = 0x12U;
+  report.data[4U] = 0xF0U;
+  report.data[5U] = 0xDEU;
+  report.data[6U] = 0xBCU;
+  report.data[7U] = 0x9AU;
   status          = eUSBreportToChart( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
-  TEST_ASSERT_EQUAL( 0x12345678, ( uint32_t )charts[OIL_CHART_ADR]->dots[0U].x );
-  TEST_ASSERT_EQUAL( 0x9ABCDEF0, ( uint32_t )charts[OIL_CHART_ADR]->dots[0U].y );
+  TEST_ASSERT_EQUAL( 0x12345678, ( uint32_t )charts[OIL_CHART_ADR]->dots[report.adr - 1U].x );
+  TEST_ASSERT_EQUAL( 0x9ABCDEF0, ( uint32_t )charts[OIL_CHART_ADR]->dots[report.adr - 1U].y );
   /* Address error*/
   report.adr = 0xFFFFU;
   status     = eUSBreportToChart( ( const USB_REPORT* )&report );
@@ -382,9 +391,9 @@ void test_vUSBmakeReport ( void )
   uint8_t i = 0U;
   report.dir    = 0x01;
   report.cmd    = 0x10;
-  report.stat   = 0x02;
+  report.stat   = 0x01;
   report.adr    = 0x1234U;
-  report.length = 10U;
+  report.length = 9U;
   for ( i=0U; i<report.length; i++ )
   {
     report.data[i] = i;
@@ -393,12 +402,12 @@ void test_vUSBmakeReport ( void )
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, report.stat );
   TEST_ASSERT_EQUAL( 0x01U, report.buf[0U] );
   TEST_ASSERT_EQUAL( 0x10U, report.buf[1U] );
-  TEST_ASSERT_EQUAL( 0x02U, report.buf[2U] );
+  TEST_ASSERT_EQUAL( 0x01U, report.buf[2U] );
   TEST_ASSERT_EQUAL( 0x12U, report.buf[3U] );
   TEST_ASSERT_EQUAL( 0x34U, report.buf[4U] );
-  TEST_ASSERT_EQUAL( 10U,   report.buf[5U] );
+  TEST_ASSERT_EQUAL( 0U,    report.buf[5U] );
   TEST_ASSERT_EQUAL( 0U,    report.buf[6U] );
-  TEST_ASSERT_EQUAL( 0U,    report.buf[7U] );
+  TEST_ASSERT_EQUAL( 9U,   report.buf[7U] );
   for ( i=0U; i<report.length; i++ )
   {
     TEST_ASSERT_EQUAL( i, report.buf[8U + i] );
@@ -414,14 +423,14 @@ void test_vUSBmakeReport ( void )
 void test_vUSBparseReport ( void )
 {
   uint8_t i = 0U;
-  report.buf[0U] = 0x01U;
-  report.buf[1U] = 0x10U;
-  report.buf[2U] = 0x02U;
-  report.buf[3U] = 0x12U;
-  report.buf[4U] = 0x34U;
-  report.buf[5U] = 10U;
-  report.buf[6U] = 0U;
-  report.buf[7U] = 0U;
+  report.buf[0U] = 0x01U; /* DIR  */
+  report.buf[1U] = 0x10U; /* CMD  */
+  report.buf[2U] = 0x01U; /* STAT */
+  report.buf[3U] = 0x12U; /* ADR1 */
+  report.buf[4U] = 0x34U; /* ADR0 */
+  report.buf[5U] = 0U;    /* LEN2 */
+  report.buf[6U] = 0U;    /* LEN1 */
+  report.buf[7U] = 10U;   /* LEN0 */
   for ( i=0U; i<10U; i++ )
   {
     report.buf[8U + i] = i;
@@ -430,7 +439,7 @@ void test_vUSBparseReport ( void )
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, report.stat );
   TEST_ASSERT_EQUAL( 0x01U,   report.dir    );
   TEST_ASSERT_EQUAL( 0x10U,   report.cmd    );
-  TEST_ASSERT_EQUAL( 0x02U,   report.stat   );
+  TEST_ASSERT_EQUAL( 0x01U,   report.stat   );
   TEST_ASSERT_EQUAL( 0x1234U, report.adr    );
   TEST_ASSERT_EQUAL( 10U,     report.length );
   for ( i=0U; i<10U; i++ )
@@ -458,11 +467,11 @@ void test_vUSBmeasurementLengthToReport ( void )
 }
 void test_vUSBoutputToReport ( void )
 {
-  report.adr = 25U;
+  report.adr = BATTERY_VOLTAGE_ADR;
   vUSBoutputToReport( &report );
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, report.stat );
   TEST_ASSERT_EQUAL( 2U, report.length );
-  TEST_ASSERT_EQUAL( outputDataReg[report.adr], uByteToUint24( report.data ) );
+  TEST_ASSERT_EQUAL( outputDataReg[report.adr]->value[0U], uByteToUnit16( report.data ) );
   /* Address error */
   report.adr = 0xFFFFU;
   vUSBoutputToReport( &report );
@@ -473,8 +482,17 @@ void test_vUSBoutputToReport ( void )
 void test_eUSBreportToOutput ( void )
 {
   USB_STATUS status = USB_STATUS_DONE;
+  uint16_t   buf    = outputDataReg[0U]->value[0U];
+  report.adr      = CONTROLL_ADR;
+  report.data[0U] = 0x00U;
+  report.data[1U] = 0x01U;
   status = eUSBreportToOutput( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
+  TEST_ASSERT_EQUAL( 0x0001U, outputDataReg[CONTROLL_ADR]->value[0U] );
+  outputDataReg[CONTROLL_ADR]->value[0U] = buf;
+  report.adr = 0U;
+  status = eUSBreportToOutput( ( const USB_REPORT* )&report );
+  TEST_ASSERT_EQUAL( USB_STATUS_ERROR_ADR, status );
   return;
 }
 void test_eUSBsaveConfigs ( void )
@@ -511,7 +529,7 @@ void runTest_usbhid ( void )
 {
   report.data = input;
   report.buf  = output;
-  UnitySetTestFile( "../Tests/test/test_usbhid_rtc.c" );
+  UnitySetTestFile( "../Tests/test/test_usbhid.c" );
   UnityDefaultTestRun( test_vUint16ToBytes, "Uint 16 to bytes", 0U );
   UnityDefaultTestRun( test_vUint24ToBytes, "Uint 24 to bytes", 0U );
   UnityDefaultTestRun( test_vUint32ToBytes, "Uint 32 to bytes", 0U );
@@ -526,18 +544,18 @@ void runTest_usbhid ( void )
   UnityDefaultTestRun( test_vUSBoutputToReport, "Output data to report", 0U );
   UnityDefaultTestRun( test_vUSBmeasurementLengthToReport, "Measurement", 0U );
   UnityDefaultTestRun( test_eUSBreportToTime, "Parsing report to time", 0U );
-  UnityDefaultTestRun( test_eUSBreportToPassword, "Parsing report to password", 0U );
-  UnityDefaultTestRun( test_eUSBcheckupPassword, "Checkup password", 0U );
+  //UnityDefaultTestRun( test_eUSBreportToPassword, "Parsing report to password", 0U );
+  //UnityDefaultTestRun( test_eUSBcheckupPassword, "Checkup password", 0U );
   UnityDefaultTestRun( test_eUSBreportToFreeData, "Parsing report to free data", 0U );
   UnityDefaultTestRun( test_eUSBreportToConfig, "Parsing report to config data", 0U );
   UnityDefaultTestRun( test_eUSBreportToChart, "Parsing report to chart data", 0U );
   UnityDefaultTestRun( test_eUSBreportToOutput, "Parsing report to output data", 0U );
   UnityDefaultTestRun( test_vUSBmakeReport, "Make USB report", 0U );
   UnityDefaultTestRun( test_vUSBparseReport, "Parsing USB report", 0U );
-  UnityDefaultTestRun( test_eUSBsaveConfigs, "Save config data USB command", 0U );
-  UnityDefaultTestRun( test_eUSBsaveCharts, "Save chart data USB command", 0U );
-  UnityDefaultTestRun( test_eUSBeraseLOG, "Erase log USB command", 0U );
-  UnityDefaultTestRun( test_eUSBerasePassword, "Erase password USB command", 0U );
+  //UnityDefaultTestRun( test_eUSBsaveConfigs, "Save config data USB command", 0U );
+  //UnityDefaultTestRun( test_eUSBsaveCharts, "Save chart data USB command", 0U );
+  //UnityDefaultTestRun( test_eUSBeraseLOG, "Erase log USB command", 0U );
+  //UnityDefaultTestRun( test_eUSBerasePassword, "Erase password USB command", 0U );
   return;
 }
 

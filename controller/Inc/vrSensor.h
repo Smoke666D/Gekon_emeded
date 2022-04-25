@@ -17,6 +17,11 @@
 /*----------------------- Callbacks ------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
 /*----------------------- Extern ---------------------------------------*/
+#if defined ( UNIT_TEST )
+  extern volatile uint16_t vrCounter;
+  extern volatile fix16_t  vrSpeed;
+  extern uint16_t vrTeethNumber;
+#endif
 /*----------------------- Functions ------------------------------------*/
 void    vVRinit ( TIM_HandleTypeDef* tim );
 void    vVRextiCallback ( void );

@@ -1561,13 +1561,13 @@ void StartDefaultTask(void *argument)
         vFPOinit( &fpoInitStruct );                 /* Free Program Output initialization */
         vCHARGERinit( &chargGPIO );                 /**/
         vALARMinit();                               /* Activ error list initialization    */
+        HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
         vENGINEinit();                              /**/
         vELECTROinit( &htim12 );                    /**/
         vLOGICinit( &htim5 );                       /**/
         vCONTROLLERinit( &controllerInitStruct );   /**/
         vOUTPUTinit();
         vMBinit( mbInit );                          /* Start ModBus                              */
-        HAL_GPIO_WritePin( USB_ENB_GPIO_Port, USB_ENB_Pin, GPIO_PIN_SET ); /* Enable USB, by pull-up to USB PD*/
         vFATSDinit( &hsd );
         vSDinit();
         vMEASUREMENTinit();                         /**/
@@ -1577,7 +1577,10 @@ void StartDefaultTask(void *argument)
           UnityBegin( "" );
           //runTest_cli();
           //runTest_rtc();
-          runTest_usbhid();
+          //runTest_usbhid();
+          //runTest_eeprom();
+          //runTest_vr();
+          //runTets_storage();
           UnityEnd();
         #endif
       }

@@ -8,7 +8,11 @@
 #include "storage.h"
 #include "chart.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
-static const EEPROM_TYPE* storageEEPROM = NULL;
+#if defined ( UNIT_TEST )
+  const EEPROM_TYPE* storageEEPROM = NULL;
+#else
+  static const EEPROM_TYPE* storageEEPROM = NULL;
+#endif
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
 uint8_t configBuffer[CONFIG_MAX_SIZE + 1U] = { 0U };
@@ -206,8 +210,7 @@ uint8_t uSTORAGEcheckMap ( const uint32_t* map )
        ( map[3U] == ( uint32_t )( STORAGE_PASSWORD_SIZE       ) ) &&
        ( map[4U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE    ) ) &&
        ( map[5U] == ( uint32_t )( STORAGE_LOG_SIZE            ) ) &&
-       ( map[6U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) &&
-       ( map[7U] == ( uint32_t )( STORAGE_MEASUREMENT_SR_SIZE ) ) )
+       ( map[6U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) )
   {
     res = 1U;
   }
@@ -263,7 +266,7 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
 {
   EEPROM_STATUS res        = EEPROM_OK;
   uint8_t       i          = 0U;
-  uint8_t       j          = 0U;
+  uint16_t      j          = 0U;
   uint8_t       len        = 0U;
   uint32_t      adr        = 0U;
   uint8_t       buffer[4U] = { 0U };
@@ -273,7 +276,8 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
     res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 2U );
     len  = uBlobToUint16( &charts[i]->size, buffer );
     adr += len;
-    if ( charts[i]->size > CHART_DOTS_SIZE ) {
+    if ( charts[i]->size > CHART_DOTS_SIZE )
+    {
       charts[i]->size = CHART_DOTS_SIZE;
     }
     if ( res == EEPROM_OK )
@@ -281,22 +285,22 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
       for ( j=0U; j<charts[i]->size; j++ )
       {
         res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 4U );
-	len  = uBlobToFix16( &charts[i]->dots[j].x, buffer );
-	adr += len;
-	if ( res == EEPROM_OK )
-	{
-	  res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 4U );
-	  len  = uBlobToFix16( &charts[i]->dots[j].y, buffer );
-	  adr += len;
-	  if ( res != EEPROM_OK )
-	  {
-	    break;
-	  }
-	}
-	else
-	{
-	  break;
-	}
+        len  = uBlobToFix16( &charts[i]->dots[j].x, buffer );
+        adr += len;
+        if ( res == EEPROM_OK )
+        {
+          res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 4U );
+          len  = uBlobToFix16( &charts[i]->dots[j].y, buffer );
+          adr += len;
+          if ( res != EEPROM_OK )
+          {
+            break;
+          }
+        }
+        else
+        {
+          break;
+        }
       }
     }
     else
@@ -332,6 +336,7 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
 EEPROM_STATUS eSTORAGEdeleteConfigs ( void )
 {
   EEPROM_STATUS res        = EEPROM_OK;
@@ -349,14 +354,15 @@ EEPROM_STATUS eSTORAGEdeleteConfigs ( void )
   }
   return res;
 }
+*/
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadConfigs ( void )
 {
-  EEPROM_STATUS res                     = EEPROM_OK;
-  uint8_t       i                       = 0U;
-  uint8_t       size                    = 0U;
-  uint8_t       calc                    = 0U;
-  uint32_t      adr                     = STORAGE_CONFIG_ADR;
+  EEPROM_STATUS res  = EEPROM_OK;
+  uint8_t       i    = 0U;
+  uint8_t       size = 0U;
+  uint8_t       calc = 0U;
+  uint32_t      adr  = STORAGE_CONFIG_ADR;
   for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
     res = eEEPROMreadMemory( storageEEPROM, adr, &size, 1U );

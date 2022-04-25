@@ -33,7 +33,7 @@
 #define  STORAGE_SR_ADR             ( STORAGE_START_ADR )
 #define  STORAGE_MAP_ADR            ( STORAGE_SR_ADR             + STORAGE_SR_SIZE             )
 #define  STORAGE_CONFIG_ADR         ( STORAGE_MAP_ADR            + STORAGE_MAP_SIZE            )
-#define  STORAGE_CHART_ADR          ( STORAGE_CONFIG_ADR         + CONFIG_TOTAL_SIZE           )
+#define  STORAGE_CHART_ADR          ( STORAGE_CONFIG_ADR         + STORAGE_CONFIG_SIZE         )
 #define  STORAGE_FREE_DATA_ADR      ( STORAGE_CHART_ADR          + STORAGE_CHART_SIZE          )
 #define  STORAGE_PASSWORD_ADR       ( STORAGE_FREE_DATA_ADR      + STORAGE_FREE_DATA_SIZE      )
 #define  STORAGE_LOG_POINTER_ADR    ( STORAGE_PASSWORD_ADR       + STORAGE_PASSWORD_SIZE       )
@@ -46,8 +46,23 @@
 /*-------------------------- ENUM --------------------------------------*/
 
 /*----------------------- Structures -----------------------------------*/
-
+/*------------------------- Externs ------------------------------------*/
+#if defined ( UNIT_TEST )
+  extern const EEPROM_TYPE* storageEEPROM;
+#endif
 /*------------------------ Functions -----------------------------------*/
+#if defined ( UNIT_TEST )
+  uint8_t       uUint16ToBlob ( uint16_t val, uint8_t* blob );
+  uint8_t       uBlobToUint16 ( uint16_t* val, const uint8_t* blob );
+  uint8_t       uBlobToUint32 ( uint32_t* val, const uint8_t* blob );
+  uint8_t       uUint32ToBlob ( uint32_t val, uint8_t* blob );
+  uint8_t       uFix16ToBlob ( fix16_t val, uint8_t* blob );
+  uint8_t       uBlobToFix16 ( fix16_t* val, const uint8_t* blob );
+  uint8_t       uConfigToBlob ( const eConfigReg* reg, uint8_t* blob );
+  uint8_t       uBlobToConfig ( eConfigReg* reg, const uint8_t* blob );
+  EEPROM_STATUS eSTORAGEwriteUint32 ( uint32_t data, uint32_t* adr );
+  EEPROM_STATUS eSTORAGEreadUint32 ( uint32_t* data, uint32_t* adr );
+#endif
 EEPROM_STATUS eSTORAGEinit ( const EEPROM_TYPE* eeprom );
 uint32_t      uSTORAGEgetSize ( void );
 EEPROM_STATUS eSTORAGEreadSR ( uint8_t* sr );
@@ -57,7 +72,7 @@ EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output );
 uint8_t       uSTORAGEcheckMap ( const uint32_t* map );
 EEPROM_STATUS eSTORAGEwriteConfigs ( void );
 EEPROM_STATUS eSTORAGEreadConfigs ( void );
-EEPROM_STATUS eSTORAGEdeleteConfigs ( void );
+//EEPROM_STATUS eSTORAGEdeleteConfigs ( void );
 EEPROM_STATUS eSTORAGEwriteCharts ( void );
 EEPROM_STATUS eSTORAGEreadCharts ( void );
 EEPROM_STATUS eSTORAGEreadFreeData ( FREE_DATA_ADR n );

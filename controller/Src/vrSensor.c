@@ -14,9 +14,16 @@ static TIM_HandleTypeDef* vrTIM = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 const  fix16_t  vrCoef        = F16( VR_MIN_SEC );
 /*-------------------------------- Variables ---------------------------------*/
-volatile static uint16_t vrCounter     = 1U;
-volatile static fix16_t  vrSpeed       = 0U;
-static uint16_t vrTeethNumber = 0U;
+#if defined ( UNIT_TEST )
+  volatile uint16_t vrCounter = 1U;
+  volatile fix16_t  vrSpeed   = 0U;
+  uint16_t vrTeethNumber      = 0U;
+#else
+  volatile static uint16_t vrCounter     = 1U;
+  volatile static fix16_t  vrSpeed       = 0U;
+  static uint16_t vrTeethNumber = 0U;
+#endif
+
 /*-------------------------------- Functions ---------------------------------*/
 
 /*----------------------------------------------------------------------------*/

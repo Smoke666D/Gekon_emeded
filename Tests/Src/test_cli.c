@@ -236,7 +236,7 @@ void test_uTESTparse ( void )
 
 void runTest_cli ( void )
 {
-  UnitySetTestFile( "../Tests/test/test_cli.c" );
+  UnitySetTestFile( "test_cli.c" );
   UnityDefaultTestRun( test_uTESTparsingFields, "Fields parsing", 240U );
   UnityDefaultTestRun( test_uTESTparse, "Field parsing", 241U );
   UnityDefaultTestRun( test_vTESTparseString, "String parsing", 242U );

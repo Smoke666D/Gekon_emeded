@@ -79,9 +79,10 @@ uint32_t uSYSputChar ( char* str, uint32_t length, char ch );
 uint32_t uSYSendString ( char* str, uint32_t length );
 fix16_t  fSYSconstrain ( fix16_t in, fix16_t min, fix16_t max );
 #if defined ( UNIT_TEST )
-  void vUNITputChar ( int data );
-  void vUNITwriteOutput ( void );
-  void vUNITresetOutput ( void );
+  void    vUNITputChar ( int data );
+  void    vUNITwriteOutput ( void );
+  void    vUNITresetOutput ( void );
+  uint8_t eSERIALgetSerialState ( void );
 #endif
 /*----------------------------------------------------------------------*/
 #endif /* INC_COMMON_H_ */

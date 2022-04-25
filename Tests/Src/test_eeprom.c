@@ -20,7 +20,7 @@ void test_vEEPROMmakeAdr ( void )
 }
 void runTest_eeprom ( void )
 {
-  UnitySetTestFile( "../Tests/test/test_eeprom.c" );
+  UnitySetTestFile( "test_eeprom.c" );
   UnityDefaultTestRun( test_vEEPROMmakeAdr, "EEPROM address", 0U );
   return;
 }

@@ -1572,16 +1572,10 @@ void StartDefaultTask(void *argument)
         vSDinit();
         vMEASUREMENTinit();                         /**/
         period = 100U;
-        vSYSserial( startupMessage, 24U );
         #if defined ( UNIT_TEST )
-          UnityBegin( "" );
-          //runTest_cli();
-          //runTest_rtc();
-          //runTest_usbhid();
-          //runTest_eeprom();
-          //runTest_vr();
-          //runTets_storage();
-          UnityEnd();
+          vTESTInit();
+        #else
+          vSYSserial( startupMessage, 24U );
         #endif
       }
     }

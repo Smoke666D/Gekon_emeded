@@ -347,7 +347,7 @@ void test_eSTORAGEreadMeasurementCounter ( void )
 
 void runTets_storage ( void )
 {
-  UnitySetTestFile( "../Tests/test/test_storage.c" );
+  UnitySetTestFile( "test_storage.c" );
   UnityDefaultTestRun( test_uUint16ToBlob, "Uint16 to blob", 0U );
   UnityDefaultTestRun( test_uBlobToUint16, "Blob to Uint16", 0U );
   UnityDefaultTestRun( test_uUint32ToBlob, "Uint32 to blob", 0U );

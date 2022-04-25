@@ -20,9 +20,13 @@ static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Variables -----------------------------------------------------------------*/
 volatile static uint8_t       initDone              = 0U;
 volatile static uint8_t       flTakeSource          = 0U;
-volatile static LOG_CASH_TYPE logCash               = { 0U };
 volatile static uint16_t      measurementNumberCash = 0U;
 static EEPROM_TYPE*           eeprom                = NULL;
+#if defined ( UNIT_TEST )
+volatile LOG_CASH_TYPE logCash               = { 0U };
+#else
+volatile static LOG_CASH_TYPE logCash               = { 0U };
+#endif
 /*------------------------ Define -------------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 
@@ -233,6 +237,7 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+  /*
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
@@ -256,11 +261,11 @@ void vDATAprintSerialNumber ( void )
     }
   }
   buf[35U] = 0U;
-  //vSYSserial( buf );
-  //vSYSserial( "\n\r" );
   return;
 }
+*/
 /*---------------------------------------------------------------------------------------------------*/
+  /*
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
@@ -329,6 +334,7 @@ void vDATAAPIprintMemoryMap ( void )
   //vSYSserial("---------------------------------------\n\r");
   return;
 }
+*/
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Structures initialization
@@ -407,14 +413,16 @@ DATA_API_STATUS eDATAAPIisInit ( void )
  *         chart - chart structure
  * output: dtstus of operation
  * available commands:
- * 1. DATA_API_CMD_READ  - return chart with address from local storage
- * 2. DATA_API_CMD_WRITE - write chart with address to local storage
- * 3. DATA_API_CMD_INC   - none
- * 4. DATA_API_CMD_DEC   - none
- * 5. DATA_API_CMD_SAVE  - save all charts from locale storage to the EEPROM
- * 6. DATA_API_CMD_LOAD  - load all charts from the EEPROM to local storage
- * 7. DATA_API_CMD_ERASE - none
- * 8. DATA_API_CMD_ADD   - none
+ * 1.  DATA_API_CMD_READ  - return chart with address from local storage
+ * 2.  DATA_API_CMD_WRITE - write chart with address to local storage
+ * 3.  DATA_API_CMD_INC   - none
+ * 4.  DATA_API_CMD_DEC   - none
+ * 5.  DATA_API_CMD_SAVE  - save all charts from locale storage to the EEPROM
+ * 6.  DATA_API_CMD_LOAD  - load all charts from the EEPROM to local storage
+ * 7.  DATA_API_CMD_ERASE - none
+ * 8.  DATA_API_CMD_ADD   - none
+ * 9.  DATA_API_CMD_COUNTER - none
+ * 10. DATA_API_CMD_READ_CASH - none
  */
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
@@ -508,14 +516,16 @@ DATA_API_STATUS eDATAAPIchart ( DATA_API_COMMAND cmd, uint16_t adr, eChartData* 
  *         bitMap - bit map structure of configuration
  * output: dtstus of operation
  * available commands:
- * 1. DATA_API_CMD_READ  - read configuration from the locale storage
- * 2. DATA_API_CMD_WRITE - write configuration to the locale storage
- * 3. DATA_API_CMD_INC   - none
- * 4. DATA_API_CMD_DEC   - none
- * 5. DATA_API_CMD_SAVE  - save all configurations from the locale storage to the EEPROM
- * 6. DATA_API_CMD_LOAD  - save all configurations from the EEPROM to the locale storage
- * 7. DATA_API_CMD_ERASE - none
- * 8. DATA_API_CMD_ADD   - none
+ * 1.  DATA_API_CMD_READ  - read configuration from the locale storage
+ * 2.  DATA_API_CMD_WRITE - write configuration to the locale storage
+ * 3.  DATA_API_CMD_INC   - none
+ * 4.  DATA_API_CMD_DEC   - none
+ * 5.  DATA_API_CMD_SAVE  - save all configurations from the locale storage to the EEPROM
+ * 6.  DATA_API_CMD_LOAD  - save all configurations from the EEPROM to the locale storage
+ * 7.  DATA_API_CMD_ERASE - none
+ * 8.  DATA_API_CMD_ADD   - none
+ * 9.  DATA_API_CMD_COUNTER - none
+ * 10. DATA_API_CMD_READ_CASH - none
  */
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
@@ -614,14 +624,16 @@ DATA_API_STATUS eDATAAPIconfig ( DATA_API_COMMAND cmd, uint16_t adr, uint16_t* v
  *         atrib  - configuration attributes
  * output: dtstus of operation
  * available commands:
- * 1. DATA_API_CMD_READ  - read configuration from the locale storage
- * 2. DATA_API_CMD_WRITE - none
- * 3. DATA_API_CMD_INC   - none
- * 4. DATA_API_CMD_DEC   - none
- * 5. DATA_API_CMD_SAVE  - none
- * 6. DATA_API_CMD_LOAD  - none
- * 7. DATA_API_CMD_ERASE - none
- * 8. DATA_API_CMD_ADD   - none
+ * 1.  DATA_API_CMD_READ  - read configuration from the locale storage
+ * 2.  DATA_API_CMD_WRITE - none
+ * 3.  DATA_API_CMD_INC   - none
+ * 4.  DATA_API_CMD_DEC   - none
+ * 5.  DATA_API_CMD_SAVE  - none
+ * 6.  DATA_API_CMD_LOAD  - none
+ * 7.  DATA_API_CMD_ERASE - none
+ * 8.  DATA_API_CMD_ADD   - none
+ * 9.  DATA_API_CMD_COUNTER - none
+ * 10. DATA_API_CMD_READ_CASH - none
  */
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
@@ -655,14 +667,16 @@ DATA_API_STATUS eDATAAPIconfigAtrib ( DATA_API_COMMAND cmd, uint16_t adr, eConfi
  *         data - free data value
  * output: dtstus of operation
  * available commands:
- * 1. DATA_API_CMD_READ  - read free data value from the locale storage
- * 2. DATA_API_CMD_WRITE - write free data value to the locale storage
- * 3. DATA_API_CMD_INC   - Increment value and read result to data
- * 4. DATA_API_CMD_DEC   - none
- * 5. DATA_API_CMD_SAVE  - save all free data to the EEPROM from the locale storage
- * 6. DATA_API_CMD_LOAD  - load all free data to the local storage from the EEPROM
- * 7. DATA_API_CMD_ERASE - set 0 to free data by address in local storage
- * 8. DATA_API_CMD_ADD   - none
+ * 1.  DATA_API_CMD_READ  - read free data value from the locale storage
+ * 2.  DATA_API_CMD_WRITE - write free data value to the locale storage
+ * 3.  DATA_API_CMD_INC   - Increment value and read result to data
+ * 4.  DATA_API_CMD_DEC   - none
+ * 5.  DATA_API_CMD_SAVE  - save all free data to the EEPROM from the locale storage
+ * 6.  DATA_API_CMD_LOAD  - load all free data to the local storage from the EEPROM
+ * 7.  DATA_API_CMD_ERASE - set 0 to free data by address in local storage
+ * 8.  DATA_API_CMD_ADD   - none
+ * 9.  DATA_API_CMD_COUNTER - none
+ * 10. DATA_API_CMD_READ_CASH - none
  */
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
@@ -772,14 +786,16 @@ DATA_API_STATUS eDATAAPIfreeData ( DATA_API_COMMAND cmd, FREE_DATA_ADR adr, uint
  *         pas - password structure
  * output: status of operation
  * available commands:
- * 1. DATA_API_CMD_READ  - read password from the locale storage
- * 2. DATA_API_CMD_WRITE - write password to the locale storage
- * 3. DATA_API_CMD_INC   - none
- * 4. DATA_API_CMD_DEC   - none
- * 5. DATA_API_CMD_SAVE  - save password to the EEPROM from the locale storage
- * 6. DATA_API_CMD_LOAD  - load password to the local storage from the EEPROM
- * 7. DATA_API_CMD_ERASE - reset password from the local storage and the EEPROM
- * 8. DATA_API_CMD_ADD   - none
+ * 1.  DATA_API_CMD_READ  - read password from the locale storage
+ * 2.  DATA_API_CMD_WRITE - write password to the locale storage
+ * 3.  DATA_API_CMD_INC   - none
+ * 4.  DATA_API_CMD_DEC   - none
+ * 5.  DATA_API_CMD_SAVE  - save password to the EEPROM from the locale storage
+ * 6.  DATA_API_CMD_LOAD  - load password to the local storage from the EEPROM
+ * 7.  DATA_API_CMD_ERASE - reset password from the local storage and the EEPROM
+ * 8.  DATA_API_CMD_ADD   - none
+ * 9.  DATA_API_CMD_COUNTER - none
+ * 10. DATA_API_CMD_READ_CASH - none
  */
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
@@ -1085,14 +1101,16 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
  *         data - pointer to the external buffer. The length of buffer is in attribute of configuration
  * output: status of operation
  * available commands:
- * 1. DATA_API_CMD_READ  - read addressed configuration value from the local storage tj th buffer
- * 2. DATA_API_CMD_WRITE - write addressed configuration value to the locale storage
- * 3. DATA_API_CMD_INC   - increment addressed configuration value in locale storage
- * 4. DATA_API_CMD_DEC   - decrement addressed configuration value in locale storage
- * 5. DATA_API_CMD_SAVE  - save all configurations to the EEPROM from the locale storage
- * 6. DATA_API_CMD_LOAD  - load all configurations from the EEPROM to the locale storage
- * 7. DATA_API_CMD_ERASE - none
- * 8. DATA_API_CMD_ADD   - none
+ * 1.  DATA_API_CMD_READ  - read addressed configuration value from the local storage tj th buffer
+ * 2.  DATA_API_CMD_WRITE - write addressed configuration value to the locale storage
+ * 3.  DATA_API_CMD_INC   - increment addressed configuration value in locale storage
+ * 4.  DATA_API_CMD_DEC   - decrement addressed configuration value in locale storage
+ * 5.  DATA_API_CMD_SAVE  - save all configurations to the EEPROM from the locale storage
+ * 6.  DATA_API_CMD_LOAD  - load all configurations from the EEPROM to the locale storage
+ * 7.  DATA_API_CMD_ERASE - none
+ * 8.  DATA_API_CMD_ADD   - none
+ * 9.  DATA_API_CMD_COUNTER - none
+ * 10. DATA_API_CMD_READ_CASH - none
  */
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
@@ -1207,7 +1225,7 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
             }
             else
             {
-              res = DATA_API_STAT_MAX_ERROR;
+              res = DATA_API_STAT_MIN_ERROR;
             }
             xSemaphoreGive( xSemaphore );
           }

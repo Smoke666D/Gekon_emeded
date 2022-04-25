@@ -150,7 +150,7 @@ void test_vRTCgetCashTime ( void )
 
 void runTest_rtc ( void )
 {
-  UnitySetTestFile( "../Tests/test/test_rtc.c" );
+  UnitySetTestFile( "test_rtc.c" );
   UnityDefaultTestRun( test_eRTCread, "Read I2C", 154U );
   UnityDefaultTestRun( test_eRTCwrite, "Write I2C", 155U );
   UnityDefaultTestRun( test_bcdToDec, "BCD to Dec", 156U );

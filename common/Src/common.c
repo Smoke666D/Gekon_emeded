@@ -29,6 +29,7 @@ static UART_MESSAGE outputBuffer[SERIAL_QUEUE_SIZE] = { 0U };
 #if defined ( UNIT_TEST )
   static char     unitOutput[UNIT_TEST_BUFFER_SIZE] = { 0U };
   static uint16_t unitCounter                       = 0U;
+  static uint8_t  unitSenderDone                    = 0U;
 #endif
 /*---------------------------------------------------------------------------------------------------*/
 void vSERIALstartReading ( void )
@@ -77,10 +78,15 @@ void vUNITresetOutput ( void )
   unitCounter = 0U;
   return;
 }
+uint8_t eSERIALgetSerialState ( void )
+{
+  return unitSenderDone;
+}
 void vUNITwriteOutput ( void )
 {
   vSYSserial( unitOutput, unitCounter );
-  unitCounter = 0U;
+  unitSenderDone = 0U;
+  unitCounter    = 0U;
   return;
 }
 #endif
@@ -96,9 +102,12 @@ void vSERIALtask ( void* argument )
         ( void )vTESTprocess( ( const char* )serial.input, serial.length );
         vSYSserial( ( const char* )cTESTgetOutput(), uTESTgetOutLength() );
       }
-      serial.length = 0U;
-      serial.state  = SERIAL_STATE_IDLE;
-      serial.error  = 0U;
+      #if defined ( UNIT_TEST )
+        unitSenderDone = 1U;
+      #endif
+      serial.length  = 0U;
+      serial.state   = SERIAL_STATE_IDLE;
+      serial.error   = 0U;
       vSERIALstartReading();
     }
   }

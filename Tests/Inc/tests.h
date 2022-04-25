@@ -14,5 +14,8 @@ void runTest_usbhid ( void );
 void runTest_eeprom ( void );
 void runTest_vr ( void );
 void runTets_storage ( void );
+void runTets_dataAPI ( void );
+
+void vTESTInit ( void );
 
 #endif /* INC_TESTS_H_ */

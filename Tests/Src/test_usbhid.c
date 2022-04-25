@@ -529,7 +529,7 @@ void runTest_usbhid ( void )
 {
   report.data = input;
   report.buf  = output;
-  UnitySetTestFile( "../Tests/test/test_usbhid.c" );
+  UnitySetTestFile( "test_usbhid.c" );
   UnityDefaultTestRun( test_vUint16ToBytes, "Uint 16 to bytes", 0U );
   UnityDefaultTestRun( test_vUint24ToBytes, "Uint 24 to bytes", 0U );
   UnityDefaultTestRun( test_vUint32ToBytes, "Uint 32 to bytes", 0U );

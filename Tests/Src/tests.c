@@ -48,6 +48,8 @@ void vTESTtask ( void *argument )
       runTest_chart();
       vTESTsendReport();
       runTest_outputProcessing();
+      vTESTsendReport();
+      runTest_rest();
       UnityEnd();
       done = 1U;
     }

@@ -12,7 +12,6 @@
 #include "fix16.h"
 #include "common.h"
 #include "dataAPI.h"
-#include "system.h"
 #include "measurement.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 
@@ -39,26 +38,28 @@ const char *restRequestStr[REST_REQUEST_NUMBER] =
 };
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
+#if !defined ( UNIT_TEST )
 uint8_t    uRESTmakeStartRecord ( const char* header, char* output );
-uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output );
-uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
-uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
-uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );
-uint16_t   uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output );
-uint32_t   uRESTmakeSystemRecord ( const SYSTEM_DATA* data, char* output );
-uint32_t   uRESTmakeBitMap ( const eConfigBitMap* bitMap, RESTrecordPos last, char* output );
-uint32_t   uRESTmakeBitMapArray ( uint8_t len, const eConfigBitMap* bitMap, char* output );
-uint32_t   uRESTmakeDotArray ( const eChartDot* dot, uint16_t len,char* output );
-uint32_t   uRESTmakeDot ( const eChartDot* dot, RESTrecordPos last, char* output );
-REST_ERROR eRESTparsingRecord (  const char* input, const char* header, char* data );
-REST_ERROR eRESTparsingValueRecord ( const char* input, const char* header, uint16_t type, uint16_t* data, uint16_t len );
-REST_ERROR eRESTparsingDig16Record ( const char* input, const char* header, uint16_t* data );
-REST_ERROR uRESTparsing16FixDigRecord ( const char* input, const char* header, fix16_t* data );
-REST_ERROR eRESTparsingDig8Record ( const char* input, const char* header, uint8_t* data );
-REST_ERROR eRESTparsingSignedRecord ( const char* input, const char* header, signed char* data );
-REST_ERROR eRESTparsingStrRecord ( const char* input, const char* header, uint16_t* data, uint8_t length );
-REST_ERROR eRESTparsingBitMapArray ( const char* input, const char* header, eConfigBitMap* bitMap, uint8_t size );
-REST_ERROR eRESTparsingDotArray ( const char* input, const char* header, eChartDot* dot, uint8_t size );
+  uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output );
+  uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
+  uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
+  uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );
+  uint16_t   uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output );
+  uint32_t   uRESTmakeSystemRecord ( const SYSTEM_DATA* data, char* output );
+  uint32_t   uRESTmakeBitMap ( const eConfigBitMap* bitMap, RESTrecordPos last, char* output );
+  uint32_t   uRESTmakeBitMapArray ( uint8_t len, const eConfigBitMap* bitMap, char* output );
+  uint32_t   uRESTmakeDotArray ( const eChartDot* dot, uint16_t len,char* output );
+  uint32_t   uRESTmakeDot ( const eChartDot* dot, RESTrecordPos last, char* output );
+  REST_ERROR eRESTparsingRecord (  const char* input, const char* header, char* data );
+  REST_ERROR eRESTparsingValueRecord ( const char* input, const char* header, uint16_t type, uint16_t* data, uint16_t len );
+  REST_ERROR eRESTparsingDig16Record ( const char* input, const char* header, uint16_t* data );
+  REST_ERROR uRESTparsing16FixDigRecord ( const char* input, const char* header, fix16_t* data );
+  REST_ERROR eRESTparsingDig8Record ( const char* input, const char* header, uint8_t* data );
+  REST_ERROR eRESTparsingSignedRecord ( const char* input, const char* header, signed char* data );
+  REST_ERROR eRESTparsingStrRecord ( const char* input, const char* header, uint16_t* data, uint8_t length );
+  REST_ERROR eRESTparsingBitMapArray ( const char* input, const char* header, eConfigBitMap* bitMap, uint8_t size );
+  REST_ERROR eRESTparsingDotArray ( const char* input, const char* header, eChartDot* dot, uint8_t size );
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )

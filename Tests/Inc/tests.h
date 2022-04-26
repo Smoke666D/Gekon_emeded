@@ -17,6 +17,7 @@ void runTets_storage ( void );
 void runTets_dataAPI ( void );
 void runTest_chart ( void );
 void runTest_outputProcessing ( void );
+void runTest_rest ( void );
 
 void vTESTInit ( void );
 

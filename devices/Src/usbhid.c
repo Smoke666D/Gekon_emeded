@@ -683,7 +683,7 @@ USB_STATUS eUSBreportToOutput ( const USB_REPORT* report )
 {
   USB_STATUS    res  = USB_STATUS_DONE;
   OUTPUT_STATUS stat = OUTPUT_STATUS_OK;
-  stat = vOUTPUTwrite( report->adr, *( uint16_t* )report->data );
+  stat = eOUTPUTwrite( report->adr, *( uint16_t* )report->data );
   switch ( stat )
   {
     case OUTPUT_STATUS_OK:

@@ -133,7 +133,7 @@ MB_DATA_STATUS eMBwriteData ( uint8_t adr, const uint16_t* data, uint16_t length
       stat = OUTPUT_STATUS_BUSY;
       while ( stat == OUTPUT_STATUS_BUSY )
       {
-        stat = vOUTPUTwrite( ( adr + i ), data[i] );
+        stat = eOUTPUTwrite( ( adr + i ), data[i] );
         vOUTPUTupdate( adr );
       }
       if ( stat != OUTPUT_STATUS_OK )

@@ -181,7 +181,7 @@ uint16_t uOUTPUTread ( uint8_t chanel )
   return outputDataReg[chanel]->value[0U];
 }
 /*----------------------------------------------------------------------------*/
-OUTPUT_STATUS vOUTPUTwrite ( uint8_t chanel, uint16_t data )
+OUTPUT_STATUS eOUTPUTwrite ( uint8_t chanel, uint16_t data )
 {
   OUTPUT_STATUS res = OUTPUT_STATUS_OK;
   if ( eOUTPUTgetType( chanel ) == OUTPUT_REGISTER_TYPE_READ_WRITE )

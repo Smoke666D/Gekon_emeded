@@ -16,6 +16,7 @@ void runTest_vr ( void );
 void runTets_storage ( void );
 void runTets_dataAPI ( void );
 void runTest_chart ( void );
+void runTest_outputProcessing ( void );
 
 void vTESTInit ( void );
 

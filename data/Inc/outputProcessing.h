@@ -40,10 +40,14 @@ typedef enum
 } OUTPUT_STATUS;
 /*----------------------- Structures -----------------------------------*/
 /*------------------------ Functions -----------------------------------*/
+#if defined ( UNIT_TEST )
+  uint16_t uOUTPUTcodeEvent ( SYSTEM_EVENT event );
+
+#endif
 void                 vOUTPUTinit ( void );
 OUTPUT_REGISTER_TYPE eOUTPUTgetType ( uint8_t number );
 void                 vOUTPUTupdate ( uint8_t chanel );
-OUTPUT_STATUS        vOUTPUTwrite ( uint8_t chanel, uint16_t data );
+OUTPUT_STATUS        eOUTPUTwrite ( uint8_t chanel, uint16_t data );
 uint16_t             uOUTPUTread ( uint8_t chanel );
 /*----------------------------------------------------------------------*/
 #endif /* INC_OUTPUTPROCESSING_H_ */

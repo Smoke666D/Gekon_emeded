@@ -44,6 +44,8 @@ void vTESTtask ( void *argument )
       runTets_storage();
       vTESTsendReport();
       runTets_dataAPI();
+      vTESTsendReport();
+      runTest_chart();
       UnityEnd();
       done = 1U;
     }

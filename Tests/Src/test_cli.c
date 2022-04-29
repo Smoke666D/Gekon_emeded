@@ -247,6 +247,7 @@ void runTest_cli ( void )
   UnityDefaultTestRun( test_uTESTdioToStr, "DIO to string", 247U );
   UnityDefaultTestRun( test_uTESThexToStr, "HEX to string", 248U );
   UnityDefaultTestRun( test_uTESTversionToStr, "Version to string", 249U );
+  vTESTsendReport();
   return;
 }
 

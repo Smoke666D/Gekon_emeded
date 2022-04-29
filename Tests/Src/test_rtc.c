@@ -160,6 +160,7 @@ void runTest_rtc ( void )
   UnityDefaultTestRun( test_eRTCgetTime, "Get time", 160U );
   UnityDefaultTestRun( test_eRTCsetTime, "Set time", 161U );
   UnityDefaultTestRun( test_vRTCgetCashTime, "Get cash time", 162U );
+  vTESTsendReport();
   return;
 }
 

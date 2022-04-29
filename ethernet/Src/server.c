@@ -396,28 +396,19 @@ void vSERVERaddConnection ( void )
 void vSERVERinitConnection ( void )
 {
   char ipaddrStr[16U] = { 0U };
-  //vSYSserial( ">>DHCP: ");
   vHTTPinit();
   while ( gnetif.ip_addr.addr == 0U )
   {
     osDelay( 1U );    // Wait the ip to reach the structure
   }
-  //vSYSserial( "done!\n\r");
   ( void )uSERVERgetStrIP( ipaddrStr );
-  //vSYSserial( ">>IP address: ");
-  //vSYSserial( ipaddrStr );
-  //vSYSserial("\n\r");
-  //vSYSserial( ">>TCP: " );
   if ( eSERVERstart() != SERVER_OK )
   {
-    //vSYSserial( "fail!\n\r" );
     while( 1U )
     {
       osDelay( 1U );
     }
   }
-  //vSYSserial( "done!\n\r" );
-  //vSYSserial( ">>Server ready and listen port 80!\n\r" );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

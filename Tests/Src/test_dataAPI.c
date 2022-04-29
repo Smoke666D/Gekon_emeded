@@ -349,5 +349,6 @@ void runTets_dataAPI ( void )
   UnityDefaultTestRun( test_eDATAAPIconfigValue, "Configs value API", 0U );
   UnityDefaultTestRun( test_eDATAAPIfreeData, "Free data API", 0U );
   UnityDefaultTestRun( test_eDATAAPIpassword, "Password API", 0U );
+  vTESTsendReport();
   return;
 }

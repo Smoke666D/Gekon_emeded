@@ -22,5 +22,6 @@ void runTest_eeprom ( void )
 {
   UnitySetTestFile( "test_eeprom.c" );
   UnityDefaultTestRun( test_vEEPROMmakeAdr, "EEPROM address", 0U );
+  vTESTsendReport();
   return;
 }

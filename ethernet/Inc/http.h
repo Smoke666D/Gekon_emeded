@@ -10,6 +10,7 @@
 /*----------------------- Includes -------------------------------------*/
 #include "stm32f2xx_hal.h"
 #include "freeData.h"
+#include "rest.h"
 /*------------------------ Define --------------------------------------*/
 #define   CR_HEX                 0x0D
 #define   LF_HEX                 0x0A
@@ -231,7 +232,27 @@ typedef struct __packed
 #define   HTTP_CONTENT_LINE           "Content-Type: "
 #define   HTTP_CACHE_CONTROL          "Cache-Control: "
 #define   HTTP_ENCODING_LINE          "Content-Encoding: "
+/*------------------------ Extern --------------------------------------*/
+#if defined ( UNIT_TEST )
+  extern char restBuffer[REST_BUFFER_SIZE];
+#endif
 /*----------------------- Functions ------------------------------------*/
+#if defined ( UNIT_TEST )
+  void vHTTPcleanRequest ( HTTP_REQUEST *request );
+  void vHTTPaddContentType ( char* httpStr, HTTP_CONTENT_TYPE type );
+  void vHTTPaddContentEncoding ( char* httpStr, HTTP_ENCODING encoding );
+  void vHTTPaddCache ( char* httpStr, HTTP_CACHE cache);
+  STREAM_STATUS cHTTPstreamConfigs ( HTTP_STREAM* stream );
+  STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream );
+  STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream );
+  STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream );
+  STREAM_STATUS cHTTPstreamString ( HTTP_STREAM* stream );
+  STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream );
+  void vHTTPCleanResponse ( HTTP_RESPONSE *response );
+  uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line );
+  void vHTTPbuildPutResponse ( char* path, HTTP_RESPONSE *response, char* content, uint32_t remoteIP );
+  void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remoteIP );
+#endif
 void        vHTTPinit ( void );
 HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request );                           /* Parsing data from request text */
 void        vHTTPbuildResponse ( HTTP_REQUEST* request, HTTP_RESPONSE* response, uint32_t remoteIP ); /* Build response in response structure */

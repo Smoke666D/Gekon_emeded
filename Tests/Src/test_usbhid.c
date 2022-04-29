@@ -556,6 +556,7 @@ void runTest_usbhid ( void )
   //UnityDefaultTestRun( test_eUSBsaveCharts, "Save chart data USB command", 0U );
   //UnityDefaultTestRun( test_eUSBeraseLOG, "Erase log USB command", 0U );
   //UnityDefaultTestRun( test_eUSBerasePassword, "Erase password USB command", 0U );
+  vTESTsendReport();
   return;
 }
 

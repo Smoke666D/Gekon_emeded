@@ -44,5 +44,6 @@ void runTest_vr ( void )
   UnityDefaultTestRun( test_vVRextiCallback, "VR EXTI callback", 0U );
   UnityDefaultTestRun( test_fVRgetSpeed, "VR get speed", 0U );
   UnityDefaultTestRun( tets_vVRtimCallback, "VR TIM callback", 0U );
+  vTESTsendReport();
   return;
 }

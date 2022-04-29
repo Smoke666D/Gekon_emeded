@@ -31,25 +31,19 @@ void vTESTtask ( void *argument )
     if ( done == 0U )
     {
       UnityBegin( "" );
+      /*
       runTest_cli();
-      vTESTsendReport();
       runTest_rtc();
-      vTESTsendReport();
       runTest_usbhid();
-      vTESTsendReport();
       runTest_eeprom();
-      vTESTsendReport();
       runTest_vr();
-      vTESTsendReport();
       runTets_storage();
-      vTESTsendReport();
       runTets_dataAPI();
-      vTESTsendReport();
       runTest_chart();
-      vTESTsendReport();
       runTest_outputProcessing();
-      vTESTsendReport();
+      */
       runTest_rest();
+      //runTest_http();
       UnityEnd();
       done = 1U;
     }

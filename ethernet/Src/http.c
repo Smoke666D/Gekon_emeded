@@ -12,7 +12,6 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "cmsis_os.h"
-#include "rest.h"
 #include "config.h"
 #include "chart.h"
 #include "EEPROM.h"
@@ -22,7 +21,11 @@
 #include "dataAPI.h"
 #include "system.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
+#if defined ( UNIT_TEST )
+char restBuffer[REST_BUFFER_SIZE] = { 0U };
+#else
 static char     restBuffer[REST_BUFFER_SIZE] = { 0U };
+#endif
 static RTC_TIME time;
 /*----------------------- Constant ------------------------------------------------------------------*/
 const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_PUT, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
@@ -111,7 +114,8 @@ void vHTTPcleanRequest ( HTTP_REQUEST *request )
   {
     request->path[i] = 0x00U;
   }
-  for ( i=0U; i<HTTP_PATH_LENGTH; i++)
+  for ( i=0U; i<HTTP_PATH_LENGTH
+  ; i++)
   {
     request->host[i] = 0x00U;
   }

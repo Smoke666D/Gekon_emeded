@@ -127,7 +127,7 @@ extern const char 	*restRequestStr[REST_REQUEST_NUMBER];
   REST_ERROR uRESTparsing16FixDigRecord ( const char* input, const char* header, fix16_t* data );
   REST_ERROR eRESTparsingDig8Record ( const char* input, const char* header, uint8_t* data );
   REST_ERROR eRESTparsingSignedRecord ( const char* input, const char* header, signed char* data );
-  REST_ERROR eRESTparsingStrRecord ( const char* input, const char* header, uint16_t* data, uint8_t length );
+  //REST_ERROR eRESTparsingStrRecord ( const char* input, const char* header, uint16_t* data, uint8_t length );
   REST_ERROR eRESTparsingBitMapArray ( const char* input, const char* header, eConfigBitMap* bitMap, uint8_t size );
   REST_ERROR eRESTparsingDotArray ( const char* input, const char* header, eChartDot* dot, uint8_t size );
 #endif

@@ -688,6 +688,7 @@ REST_ERROR eRESTparsingBitMapArray ( const char* input, const char* header, eCon
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+/*
 REST_ERROR eRESTparsingStrRecord ( const char* input, const char* header, uint16_t* data, uint8_t length )
 {
   REST_ERROR  res         = REST_OK;
@@ -731,6 +732,7 @@ REST_ERROR eRESTparsingStrRecord ( const char* input, const char* header, uint16
   }
   return res;
 }
+*/
 /*---------------------------------------------------------------------------------------------------*/
 REST_ERROR eRESTparsingValueRecord ( const char* input, const char* header, uint16_t type, uint16_t* data, uint16_t len )
 {

@@ -383,5 +383,6 @@ void runTets_storage ( void )
   UnityDefaultTestRun( test_eSTORAGEaddMeasurement, "Add measurement to storage", 0U );
   UnityDefaultTestRun( test_eSTORAGEreadMeasurementCounter, "Read measurement counter from storage", 0U );
   */
+  vTESTsendReport();
   return;
 }

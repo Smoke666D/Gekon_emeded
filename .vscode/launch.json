@@ -19,15 +19,17 @@
       ],
       "defines": [
         "DEBUG",
-        "ETHERNET",
-        "FATSD",
-        "MEASUREMENT",
-        "RTC_DEVICE_M41T62",
         "STM32F217xx",
-        "UNIT_TEST",
-        "UNITY_INCLUDE_CONFIG_H",
+        "OPTIMIZ",
         "USE_HAL_DRIVER",
-        "WRITE_LOG_TO_SD"
+        "RTC_DEVICE_M41T62",
+        "ETHERNET",
+        "EXTERNAL_MAC",
+        "FATSD",
+        "WRITE_LOG_TO_SD",
+        "MEASUREMENT",
+        "UNIT_TEST",
+        "UNITY_INCLUDE_CONFIG_H"
       ],
       "cStandart": "c11",
       "cppStandart": "c++17"

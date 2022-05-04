@@ -15,12 +15,19 @@
 #define  MAC_EUI64_ADD3    0xFF
 #define  MAC_EUI64_ADD4    0xFE
 #define  MAC_ADR           0xFA
+#define  MAC_DEFAULT_0     0x00U
+#define  MAC_DEFAULT_1     0x10U
+#define  MAC_DEFAULT_2     0xFAU
+#define  MAC_DEFAULT_3     0x6EU
+#define  MAC_DEFAULT_4     0x38U
+#define  MAC_DEFAULT_5     0x4AU
 /*------------------------ Macros --------------------------------------*/
 /*------------------------- Enum ---------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
 /*----------------------- Functions ------------------------------------*/
-void     vMACinit ( const EEPROM_TYPE* eeprom );
-uint8_t* vMACget48 ( void );
-uint8_t* vMACget64 ( void );
+EEPROM_STATUS eMACinit ( const EEPROM_TYPE* eeprom );
+void          vMACsetDefault ( void );
+uint8_t*      uMACget48 ( void );
+uint8_t*      uMACget64 ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_MAC_H_ */

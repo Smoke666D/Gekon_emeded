@@ -16,6 +16,7 @@
 #include "opt.h"
 #include "ethernetif.h"
 #include "system.h"
+#include "mac.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static struct netconn* nc            = NULL;   // Connection to the port 80
 static struct netconn* in_nc         = NULL;   // New user connection
@@ -385,7 +386,6 @@ void vSERVERaddConnection ( void )
   ipaddr.addr  = 0U;
   netmask.addr = 0U;
   gw.addr      = 0U;
-  // Here we can write new MAC address!!!
   netif_add( &gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &tcpip_input );
   return;
 }

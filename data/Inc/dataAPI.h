@@ -88,5 +88,6 @@ void               vDATAAPIincLogSize ( void );
 EventGroupHandle_t xDATAAPIgetEventGroup ( void );
 void               vDATAAPIsendEventAll ( DATA_API_REINIT message );
 uint8_t            uDATAAPIisInitDone ( void );
+void               vDATAAPIinitMac ( const EEPROM_TYPE* mac );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAAPI_H_ */

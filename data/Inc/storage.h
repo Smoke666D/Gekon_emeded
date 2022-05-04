@@ -12,6 +12,7 @@
 #include "EEPROM.h"
 #include "config.h"
 #include "controllerTypes.h"
+#include "mac.h"
 /*------------------------ Define --------------------------------------*/
 #define  STORAGE_SR_SIZE             1U                                  /* byte */
 #define  STORAGE_MAP_SIZE            32U                                 /* byte */
@@ -22,8 +23,18 @@
 #define  STORAGE_LOG_POINTER_SIZE    2U                                  /* byte */
 #define  STORAGE_LOG_SIZE            ( LOG_SIZE * LOG_RECORD_SIZE )      /* byte */
 #define  STORAGE_JOURNAL_SIZE        ( 1000U )                           /* byte */
+#define  STORAGE_MAC_SIZE            ( MAC_EUI64_LENGTH )                /* byte */ 
 #define  STORAGE_MEASUREMENT_SR_SIZE 2U                                  /* byte */
-#define  STORAGE_REQUIRED_SIZE       ( STORAGE_SR_SIZE + STORAGE_MAP_SIZE + STORAGE_CONFIG_SIZE + STORAGE_CHART_SIZE + STORAGE_FREE_DATA_SIZE + STORAGE_PASSWORD_SIZE + STORAGE_LOG_POINTER_SIZE + STORAGE_LOG_SIZE + STORAGE_JOURNAL_SIZE )
+#define  STORAGE_REQUIRED_SIZE       ( STORAGE_SR_SIZE + \
+                                       STORAGE_MAP_SIZE + \
+                                       STORAGE_CONFIG_SIZE + \
+                                       STORAGE_CHART_SIZE + \
+                                       STORAGE_FREE_DATA_SIZE + \
+                                       STORAGE_PASSWORD_SIZE + \
+                                       STORAGE_LOG_POINTER_SIZE + \
+                                       STORAGE_LOG_SIZE + \
+                                       STORAGE_JOURNAL_SIZE + \
+                                       STORAGE_MAC_SIZE )
 
 #if ( M95M01_SIZE < STORAGE_REQUIRED_SIZE )
   #error EEPROM size is too small!
@@ -39,6 +50,7 @@
 #define  STORAGE_LOG_POINTER_ADR    ( STORAGE_PASSWORD_ADR       + STORAGE_PASSWORD_SIZE       )
 #define  STORAGE_LOG_ADR            ( STORAGE_LOG_POINTER_ADR    + STORAGE_LOG_POINTER_SIZE    )
 #define  STORAGE_JOURNAL_ADR        ( STORAGE_LOG_ADR            + STORAGE_LOG_SIZE            )
+#define  STORAGE_MAC_ADR            ( STORAGE_JOURNAL_ADR        + STORAGE_JOURNAL_SIZE        )
 
 #define  STORAGE_SR_EMPTY           0xFFU  /* The register as default is 0xFF */
 /*------------------------- Macros -------------------------------------*/
@@ -88,5 +100,7 @@ EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* 
 EEPROM_STATUS eSTORAGEeraseMeasurement ( void );
 EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint16_t* data );
 EEPROM_STATUS eSTORAGEreadMeasurementCounter ( uint16_t* length );
+EEPROM_STATUS eSTORAGEwriteMac ( uint8_t* data );
+EEPROM_STATUS eSTORAGEreadMac ( uint8_t* data );
 /*----------------------------------------------------------------------*/
 #endif /* INC_STORAGE_H_ */

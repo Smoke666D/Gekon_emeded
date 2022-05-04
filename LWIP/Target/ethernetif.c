@@ -34,6 +34,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "task.h"
+#include "mac.h"
 /* USER CODE END 0 */
 
 /* Private define ------------------------------------------------------------*/
@@ -228,20 +229,12 @@ static void low_level_init(struct netif *netif)
 /* USER CODE END OS_THREAD_ATTR_CMSIS_RTOS_V2 */
 
 /* Init ETH */
-
-   uint8_t MACAddr[6] ;
   heth.Instance = ETH;
   heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
   heth.Init.Speed = ETH_SPEED_100M;
   heth.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
   heth.Init.PhyAddress = LAN8742A_PHY_ADDRESS;
-  MACAddr[0] = 0x00;
-  MACAddr[1] = 0x10;
-  MACAddr[2] = 0xFA;
-  MACAddr[3] = 0x6E;
-  MACAddr[4] = 0x38;
-  MACAddr[5] = 0x4A;
-  heth.Init.MACAddr = &MACAddr[0];
+  heth.Init.MACAddr = uMACget48();
   heth.Init.RxMode = ETH_RXINTERRUPT_MODE;
   heth.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
   heth.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;

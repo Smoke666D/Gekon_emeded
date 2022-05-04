@@ -174,7 +174,7 @@ EEPROM_STATUS eSTORAGEwriteMap ( void )
               res = eSTORAGEwriteUint32( (uint32_t)STORAGE_JOURNAL_SIZE, &adr );
               if ( res == EEPROM_OK )
               {
-                res = eSTORAGEwriteUint32( (uint32_t)STORAGE_MEASUREMENT_SR_SIZE, &adr );
+                res = eSTORAGEwriteUint32( (uint32_t)STORAGE_MAC_SIZE, &adr );
               }
             }
           }
@@ -204,13 +204,13 @@ EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output )
 uint8_t uSTORAGEcheckMap ( const uint32_t* map )
 {
   uint8_t res = 0U;
-  if ( ( map[0U] == ( uint32_t )( STORAGE_CONFIG_SIZE         ) ) &&
-       ( map[1U] == ( uint32_t )( STORAGE_CHART_SIZE          ) ) &&
-       ( map[2U] == ( uint32_t )( STORAGE_FREE_DATA_SIZE      ) ) &&
-       ( map[3U] == ( uint32_t )( STORAGE_PASSWORD_SIZE       ) ) &&
-       ( map[4U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE    ) ) &&
-       ( map[5U] == ( uint32_t )( STORAGE_LOG_SIZE            ) ) &&
-       ( map[6U] == ( uint32_t )( STORAGE_JOURNAL_SIZE        ) ) )
+  if ( ( map[0U] == ( uint32_t )( STORAGE_CONFIG_SIZE      ) ) &&
+       ( map[1U] == ( uint32_t )( STORAGE_CHART_SIZE       ) ) &&
+       ( map[2U] == ( uint32_t )( STORAGE_FREE_DATA_SIZE   ) ) &&
+       ( map[3U] == ( uint32_t )( STORAGE_PASSWORD_SIZE    ) ) &&
+       ( map[4U] == ( uint32_t )( STORAGE_LOG_POINTER_SIZE ) ) &&
+       ( map[5U] == ( uint32_t )( STORAGE_LOG_SIZE         ) ) &&
+       ( map[6U] == ( uint32_t )( STORAGE_MAC_SIZE         ) ) )
   {
     res = 1U;
   }
@@ -335,26 +335,6 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   }
   return res;
 }
-/*---------------------------------------------------------------------------------------------------*/
-/*
-EEPROM_STATUS eSTORAGEdeleteConfigs ( void )
-{
-  EEPROM_STATUS res        = EEPROM_OK;
-  uint32_t      i          = 0U;
-  uint32_t      adr        = STORAGE_CONFIG_ADR;
-  uint8_t       buffer[1U] = { 0U };
-  for ( i=0U; i<CONFIG_TOTAL_SIZE; i++ )
-  {
-    res = eEEPROMwriteMemory( storageEEPROM, adr, buffer, 1U );
-    adr++;
-    if ( res != EEPROM_OK )
-    {
-      break;
-    }
-  }
-  return res;
-}
-*/
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEreadConfigs ( void )
 {
@@ -507,6 +487,16 @@ EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint1
 EEPROM_STATUS eSTORAGEreadMeasurementCounter ( uint16_t* adr )
 {
   return EEPROM_OK;
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEwriteMac ( uint8_t* data )
+{
+  return eEEPROMwriteMemory( storageEEPROM, STORAGE_MAC_ADR, data, STORAGE_MAC_SIZE );
+}
+/*---------------------------------------------------------------------------------------------------*/
+EEPROM_STATUS eSTORAGEreadMac ( uint8_t* data )
+{
+  return eEEPROMreadMemory( storageEEPROM, STORAGE_MAC_ADR, data, STORAGE_MAC_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

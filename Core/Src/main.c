@@ -283,7 +283,6 @@ static const EEPROM_TYPE storEE = {
   .cs.pin    = EEPROM_NSS_Pin,
   .cs.port   = EEPROM_NSS_GPIO_Port,
 };
-/*
 static const EEPROM_TYPE macEE = {
   .SRWD      = AA02E48_SRWD,
   .ID        = AA02E48_ID,
@@ -296,7 +295,8 @@ static const EEPROM_TYPE macEE = {
   .cs.pin    = EEPROM_NSS_Pin,
   .cs.port   = EEPROM_NSS_GPIO_Port,
 };
-*/
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -1534,13 +1534,12 @@ const char startupMessage[25U] = "***********************\n";
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  /* init code for LWIP */
-  //MX_LWIP_Init();
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
   uint8_t period = 200U;
   vSERIALinit( &huart3 ); /* Debug serial interface */
+  vDATAAPIinitMac( &macEE );
   HAL_GPIO_WritePin( LED_SYS_GPIO_Port, LED_SYS_Pin, GPIO_PIN_SET );
   vSERVERinit();
   if ( eSTORAGEinit( &storEE ) == EEPROM_OK )  /* EEPROM initialization */

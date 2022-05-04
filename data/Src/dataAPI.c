@@ -13,6 +13,7 @@
 #include "version.h"
 #include "stdio.h"
 #include "system.h"
+#include "mac.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static SemaphoreHandle_t  xSemaphore     = NULL;
 static EventGroupHandle_t xDataApiEvents = NULL;
@@ -236,105 +237,6 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
   }
   return res;
 }
-/*---------------------------------------------------------------------------------------------------*/
-  /*
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-void vDATAprintSerialNumber ( void )
-{
-  char      buf[36U] = { 0U };
-  uint8_t   i        = 0U;
-  uint8_t   j        = 0U;
-  uint8_t   temp     = 0U;
-  for ( i=0U; i<3U; i++ )
-  {
-    for ( j=0U; j<2U; j++ )
-    {
-      temp = ( uint8_t )( serialNumber0.value[i] << ( j * 8U ) );
-      sprintf( &buf[6U * i + 3U * j], "%02X:", temp );
-    }
-    for ( j=0U; j<2U; j++ )
-    {
-      temp = ( uint8_t )( serialNumber1.value[i] << ( j * 8U ) );
-      sprintf( &buf[6U * i + 3U * j + 3U], "%02X:", temp );
-    }
-  }
-  buf[35U] = 0U;
-  return;
-}
-*/
-/*---------------------------------------------------------------------------------------------------*/
-  /*
-#ifdef OPTIMIZ
-  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
-#endif
-void vDATAAPIprintMemoryMap ( void )
-{
-  char buf[36U] = { 0U };
-  //vSYSserial( "\n\r" );
-  //vSYSserial("------------- EEPROM map: -------------\n\r");
-  //vSYSserial("System register: ");
-  sprintf( buf, "0x%06X", STORAGE_SR_ADR );
-  //vSYSserial( buf );
-  //vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_SR_SIZE );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes )\n\r" );
-  //vSYSserial("Configurations : ");
-  sprintf( buf, "0x%06X", STORAGE_CONFIG_ADR );
-  //vSYSserial( buf );
-  //vSYSserial( "( ");
-  sprintf( buf, "%d", CONFIG_TOTAL_SIZE );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes )\n\r" );
-  //vSYSserial("Charts         : ");
-  sprintf( buf, "0x%06X", STORAGE_CHART_ADR );
-  //vSYSserial( buf );
-  //vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_CHART_SIZE );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes )\n\r" );
-  //vSYSserial("Free data      : ");
-  sprintf( buf, "0x%06X", STORAGE_FREE_DATA_ADR );
-  //vSYSserial( buf );
-  //vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_FREE_DATA_SIZE );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes )\n\r" );
-  //vSYSserial("Password       : ");
-  sprintf( buf, "0x%06X", STORAGE_PASSWORD_ADR );
-  //vSYSserial( buf );
-  //vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_PASSWORD_SIZE );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes )\n\r" );
-  //vSYSserial("Log pointer    : ");
-  sprintf( buf, "0x%06X", STORAGE_LOG_POINTER_ADR );
-  //vSYSserial( buf );
-  //vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_LOG_POINTER_SIZE );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes )\n\r" );
-  //vSYSserial("Log            : ");
-  sprintf( buf, "0x%06X", STORAGE_LOG_ADR );
-  //vSYSserial( buf );
-  //vSYSserial( "( ");
-  sprintf( buf, "%d", STORAGE_LOG_SIZE );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes )\n\r" );
-  //vSYSserial("Free           : ");
-  sprintf( buf, "%d", ( int )( uSTORAGEgetSize() - STORAGE_REQUIRED_SIZE ) );
-  //vSYSserial( buf );
-  //vSYSserial( " bytes \n\r" );
-  //vSYSserial("End            : ");
-  sprintf( buf, "0x%06X", ( int )( uSTORAGEgetSize() ) );
-  //vSYSserial( buf );
-  //vSYSserial( "\n\r" );
-  //vSYSserial("---------------------------------------\n\r");
-  return;
-}
-*/
 /*---------------------------------------------------------------------------------------------------*/
 /*
  * Structures initialization
@@ -1250,7 +1152,31 @@ DATA_API_STATUS eDATAAPIconfigValue ( DATA_API_COMMAND cmd, uint16_t adr, uint16
   }
   return res;
 }
-
+/*---------------------------------------------------------------------------------------------------*/
+void vDATAAPIinitMac ( const EEPROM_TYPE* mac )
+{
+  EEPROM_STATUS res = EEPROM_ERROR;
+  #if defined ( EXTERNAL_MAC )
+    res = eMACinit( mac );
+    if ( res == EEPROM_OK )
+    {
+      eSTORAGEwriteMac( uMACget48() );
+    }
+  #endif
+  if ( res != EEPROM_OK )
+  {
+    if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+    {
+      if ( eSTORAGEreadMac( uMACget48() ) != EEPROM_OK )
+      {
+        vMACsetDefault();
+      }
+      xSemaphoreGive( xSemaphore );
+    }
+  }
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 uint8_t uDATAAPIisInitDone ( void )
 {
   return initDone;

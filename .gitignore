@@ -1,6 +1,8 @@
 settings/
 Debug/
 build/
+out/
+report/
 
 .settings/language.settings.xml
 

@@ -19,6 +19,7 @@
 #include "controller.h"
 #include "server.h"
 #include "config.h"
+#include "dataAPI.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -171,6 +172,7 @@ TEST_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf )
 {
   TEST_STATUS res  = TEST_STATUS_ERROR_DATA;
   char*       pStr = buf;
+  time->wday = TUESDAY;
   pStr = cTESTparseTimeFild( pStr, &time->day );
   if ( pStr > 0U )
   {
@@ -298,7 +300,6 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
 {
   TEST_STATUS res  = TEST_STATUS_OK;
   RTC_TIME    time = { 0U };
-  uint8_t     buf  = 0U;
   uint16_t    id[UNIQUE_ID_LENGTH] = { 0U };
   vTESTparseString( str, &message );
   switch ( message.cmd )
@@ -509,7 +510,7 @@ TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
           }
           break;
         case TEST_TARGET_STORAGE:
-          if ( eSTORAGEreadSR( &buf ) != EEPROM_OK )
+          if ( uDATAAPIisInitDone() == 0U )
           {
             res = TEST_STATUS_ERROR_EXECUTING;
           }

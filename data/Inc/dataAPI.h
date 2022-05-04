@@ -87,5 +87,6 @@ void               vDATAAPIincLogSize ( void );
 //void               vDATAprintSerialNumber ( void );
 EventGroupHandle_t xDATAAPIgetEventGroup ( void );
 void               vDATAAPIsendEventAll ( DATA_API_REINIT message );
+uint8_t            uDATAAPIisInitDone ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATAAPI_H_ */

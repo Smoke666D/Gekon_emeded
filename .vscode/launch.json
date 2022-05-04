@@ -1,0 +1,36 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "openocd",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${workspaceRoot}",
+			"servertype": "openocd",
+			"executable": "./build/energan-emb.elf",
+			"svdFile": "STM32F217.svd",
+			"configFiles": [
+				"stlink-v2.cfg",
+				"stm32f1x.cfg"
+			],
+			"preLaunchTask": "Build",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "DEBUG",
+        "ETHERNET",
+        "FATSD",
+        "MEASUREMENT",
+        "RTC_DEVICE_M41T62",
+        "STM32F217xx",
+        "UNIT_TEST",
+        "UNITY_INCLUDE_CONFIG_H",
+        "USE_HAL_DRIVER",
+        "WRITE_LOG_TO_SD"
+      ],
+      "cStandart": "c11",
+      "cppStandart": "c++17"
+		}
+	]
+}

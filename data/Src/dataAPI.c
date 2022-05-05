@@ -202,10 +202,10 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
           serialNumber1.value[2U]     = serialBuffer[5U];
           versionController.value[0U] = HARDWARE_VERSION_MAJOR;
           versionController.value[1U] = HARDWARE_VERSION_MINOR;
-          versionController.value[2U] = HARDWARE_VERSION_ASSEMB;
+          versionController.value[2U] = HARDWARE_VERSION_PATCH;
           versionFirmware.value[0U]   = FIRMWARE_VERSION_MAJOR;
           versionFirmware.value[1U]   = FIRMWARE_VERSION_MINOR;
-          versionFirmware.value[2U]   = FIRMWARE_VERSION_FIX;
+          versionFirmware.value[2U]   = FIRMWARE_VERSION_PATCH;
           versionBootloader.value[0U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 16U ) & 0xFF );
           versionBootloader.value[1U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 8U  ) & 0xFF );
           versionBootloader.value[2U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR )        ) & 0xFF );

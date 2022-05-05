@@ -1,13 +1,5 @@
-C_SOURCES =  \
+C_SOURCE_LIBS =\
 Core/Src/freertos.c \
-Core/Src/main.c \
-Core/Src/stm32f2xx_hal_msp.c \
-Core/Src/stm32f2xx_hal_timebase_tim.c \
-Core/Src/stm32f2xx_it.c \
-Core/Src/syscalls.c \
-Core/Src/sysmem.c \
-Core/Src/system_stm32f2xx.c \
-Core/Startup/startup_stm32f217zgtx.s \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc_ex.c \
@@ -34,9 +26,7 @@ Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim_ex.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_uart.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_sdmmc.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_usb.c \
-Core/Src/system_stm32f2xx.c  \
 Unity/unity.c \
-Unity/unity_config.c \
 u8g2/Src/u8g2_bitmap.c \
 u8g2/Src/u8g2_box.c \
 u8g2/Src/u8g2_buffer.c \
@@ -86,12 +76,6 @@ u8g2/Src/u8x8_setup.c \
 u8g2/Src/u8x8_string.c \
 u8g2/Src/u8x8_u16toa.c \
 u8g2/Src/u8x8_u8toa.c \
-ModBus/Src/mb.c \
-ModBus/Src/mbcrc.c \
-ModBus/Src/mbfunc.c \
-ModBus/Src/mbregister.c \
-ModBus/Src/mbrtu.c \
-ModBus/Src/mbuart.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
@@ -171,15 +155,45 @@ libfixmath/Src/fix16_str.c \
 libfixmath/Src/fix16_trig.c \
 libfixmath/Src/fract32.c \
 libfixmath/Src/uint32.c \
+FATFS/Target/bsp_driver_sd.c \
+FATFS/Target/fatfs_platform.c \
+FATFS/App/fatfs.c
+
+C_SOURCES_TEST =\
+Tests/Src/test_chart.c \
+Tests/Src/test_cli.c \
+Tests/Src/test_dataAPI.c \
+Tests/Src/test_eeprom.c \
+Tests/Src/test_http.c \
+Tests/Src/test_outputProcessing.c \
+Tests/Src/test_rest.c \
+Tests/Src/test_rtc.c \
+Tests/Src/test_storage.c \
+Tests/Src/test_usbhid.c \
+Tests/Src/test_vr.c \
+Tests/Src/tests.c
+
+C_SOURCE_PROJ =\
+Core/Src/main.c \
+Core/Src/stm32f2xx_hal_msp.c \
+Core/Src/stm32f2xx_hal_timebase_tim.c \
+Core/Src/stm32f2xx_it.c \
+Core/Src/syscalls.c \
+Core/Src/sysmem.c \
+Core/Src/system_stm32f2xx.c \
+Unity/unity_config.c \
+ModBus/Src/mb.c \
+ModBus/Src/mbcrc.c \
+ModBus/Src/mbfunc.c \
+ModBus/Src/mbregister.c \
+ModBus/Src/mbrtu.c \
+ModBus/Src/mbuart.c \
 hmi/Src/data_manager.c \
 hmi/Src/keyboard.c \
 hmi/Src/lcd.c \
 hmi/Src/menu.c \
 hmi/Src/menu_data.c \
 hmi/Src/utils.c \
-FATFS/Target/bsp_driver_sd.c \
-FATFS/Target/fatfs_platform.c \
-FATFS/App/fatfs.c \
 ethernet/Src/http.c \
 ethernet/Src/rest.c \
 ethernet/Src/server.c \
@@ -213,16 +227,7 @@ controller/Src/statistics.c \
 controller/Src/vrSensor.c \
 common/Src/cli.c \
 common/Src/common.c \
-common/Src/system.c \
-Tests/Src/test_chart.c \
-Tests/Src/test_cli.c \
-Tests/Src/test_dataAPI.c \
-Tests/Src/test_eeprom.c \
-Tests/Src/test_http.c \
-Tests/Src/test_outputProcessing.c \
-Tests/Src/test_rest.c \
-Tests/Src/test_rtc.c \
-Tests/Src/test_storage.c \
-Tests/Src/test_usbhid.c \
-Tests/Src/test_vr.c \
-Tests/Src/tests.c 
+common/Src/system.c
+
+C_SOURCES      = $(C_SOURCE_LIBS) $(C_SOURCE_PROJ)
+C_TEST_SOURCES = $(C_SOURCES) $(C_SOURCES_TEST)

@@ -34,102 +34,141 @@ OPT   = -O0
 #######################################
 BUILD_DIR   = build
 OUTPUT_DIR  = out
-ASM_SOURCES = startup_stm32f217xx.s
+ASM_SOURCES = Core/Startup/startup_stm32f217zgtx.s
+RELEASE_DIR = relese
+TEST_DIR    = test
 
 ######################################
 # names
 ######################################
-TARGET_BASENAME = $(addsuffix _$(VER), $(addprefix $(OUTPUT_DIR)/, $(TARGET) ) )
+TARGET_BASENAME = $(OUTPUT_DIR)/$(RELEASE_DIR)/$(TARGET)_$(RELEASE_DIR)_$(VER)
 TARGET_ELF      = $(addsuffix .elf, $(TARGET_BASENAME) )
 TARGET_BIN      = $(addsuffix .bin, $(TARGET_BASENAME) )
 TARGET_HEX      = $(addsuffix .hex, $(TARGET_BASENAME) )
 TARGET_ZIP      = $(addsuffix .zip, $(TARGET_BASENAME) )
-
+TEST_BASENAME   = $(OUTPUT_DIR)/$(TEST_DIR)/$(TARGET)_$(TEST_DIR)_$(VER)
+TEST_ELF        = $(addsuffix .elf, $(TEST_BASENAME) )
+TEST_HEX        = $(addsuffix .hex, $(TEST_BASENAME) )
 #######################################
 # binaris
 #######################################
-HEX = $(CP) -O ihex
-BIN = $(CP) -O binary -S
+HEX = $(OBJCOPY) -O ihex
+BIN = $(OBJCOPY) -O binary -S
 
 #######################################
 # CFLAGS
 #######################################
-CPU = -mcpu=cortex-m3
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
-STD = -std=gnu11
-AS_DEFS = 
-C_DEFS =  \
+CPU   = -mcpu=cortex-m3
+FLOAT = -mfloat-abi=soft
+SPEC  = --specs=nano.specs
+MCU   = $(CPU) -mthumb $(FLOAT)
+STD   = -std=gnu11
+
+TEST_DEFINES =\
+-DUNIT_TEST \
+-DUNITY_INCLUDE_CONFIG_H
+
+GLOBAL_DEFINES =\
 -DUSE_HAL_DRIVER \
 -DSTM32F217xx \
--DOPTIMIZ \
 -DDEBUG \
 -DETHERNET \
 -DFATSD \
 -DMEASUREMENT \
 -DRTC_DEVICE_M41T62 \
--DUNIT_TEST 
--DUNITY_INCLUDE_CONFIG_H \
 -DWRITE_LOG_TO_SD \
 -DEXTERNAL_MAC
 
-AS_INCLUDES = 
+#-DOPTIMIZ \
 
-ASFLAGS = $(MCU) $(STD) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
-
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
-
-ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
-endif
-
-# Generate dependency information
+ASFLAGS = $(MCU) $(STD) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS  = $(MCU) $(STD) $(GLOBAL_DEFINES) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS += -g3 -fstack-usage
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
 #######################################
 # LDFLAGS
 #######################################
 LDSCRIPT = STM32F217ZGTx_FLASH.ld
-LIBS = -lc -lm -lnosys 
-LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LIBS = -lc -lm -lnosys  
+LDFLAGS_RELEASE = $(MCU) $(SPEC) -T$(LDSCRIPT) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(RELEASE_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS_TEST    = $(MCU) $(SPEC) -T$(LDSCRIPT) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TEST_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
-all: $(TARGET_ELF) $(TARGET_HEX) $(TARGET_BIN)
+#######################################
+# Release
+#######################################
+OBJECTS = $(addprefix $(BUILD_DIR)/$(RELEASE_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_SOURCES)))
+OBJECTS += $(addprefix $(BUILD_DIR)/$(RELEASE_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_SOURCES)))
+
+#######################################
+# Test
+#######################################
+TEST_OBJECTS = $(addprefix $(BUILD_DIR)/$(TEST_DIR)/,$(notdir $(C_TEST_SOURCES:.c=.o)))
+vpath %.c $(sort $(dir $(C_TEST_SOURCES)))
+TEST_OBJECTS += $(addprefix $(BUILD_DIR)/$(TEST_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
+vpath %.s $(sort $(dir $(ASM_SOURCES)))
+
+#######################################
+#######################################
+#######################################
+
+all: release 
+
+release: $(TARGET_ELF) $(TARGET_HEX) $(TARGET_ZIP)
+
+test: $(TEST_ELF) $(TEST_HEX)
 
 #######################################
 # build the application
 #######################################
-# list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
-vpath %.c $(sort $(dir $(C_SOURCES)))
-# list of ASM program objects
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
-vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
+############### release ###############
+$(BUILD_DIR)/$(RELEASE_DIR)/%.o: %.c Makefile | $(BUILD_DIR) $(BUILD_DIR)/$(RELEASE_DIR)
 	@echo "%% $(notdir $<)" "$(STDOUT)"
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(V1) $(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
-$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
+$(BUILD_DIR)/$(RELEASE_DIR)/%.o: %.s Makefile | $(BUILD_DIR) $(BUILD_DIR)/$(RELEASE_DIR)
 	@echo "%% $(notdir $<)" "$(STDOUT)"
-	$(AS) -c $(CFLAGS) $< -o $@
+	$(V1) $(AS) -c $(CFLAGS) $< -o $@
 
 $(TARGET_ELF): $(OBJECTS) Makefile
 	@echo make elf files...
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
-	$(SZ) $@
+	$(V1) $(CC) $(OBJECTS) $(LDFLAGS_RELEASE) -o $@
+	$(V1) $(SIZE) $@
 
-$(TARGET_HEX): $(TARGET_ELF) | $(OUTPUT_DIR)
+$(TARGET_HEX): $(TARGET_ELF) | $(OUTPUT_DIR) $(OUTPUT_DIR)/$(RELEASE_DIR)
 	@echo make hex file...
-	$(HEX) $< $@
+	$(V1) $(HEX) $< $@
 	
-$(TARGET_BIN): $(TARGET_ELF) | $(OUTPUT_DIR)
+$(TARGET_BIN): $(TARGET_ELF) | $(OUTPUT_DIR) $(OUTPUT_DIR)/$(RELEASE_DIR)
 	@echo make bin file...
-	$(BIN) $< $@	
+	$(V1) $(BIN) $< $@	
 
-$(TARGET_ZIP): $(TARGET_HEX) | $(OUTPUT_DIR)
+$(TARGET_ZIP): $(TARGET_HEX) | $(OUTPUT_DIR) $(OUTPUT_DIR)/$(RELEASE_DIR)
 	@echo pack hex file to the zip...
 	$(V1) zip $(TARGET_ZIP) $(TARGET_HEX)
 
+############### Test #################
+$(BUILD_DIR)/$(TEST_DIR)/%.o: %.c Makefile | $(BUILD_DIR) $(BUILD_DIR)/$(TEST_DIR)
+	@echo "%% $(notdir $<)" "$(STDOUT)"
+	$(V1) $(CC) -c $(TEST_DEFINES) $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(TEST_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+
+$(BUILD_DIR)/$(TEST_DIR)/%.o: %.s Makefile | $(BUILD_DIR) $(BUILD_DIR)/$(TEST_DIR)
+	@echo "%% $(notdir $<)" "$(STDOUT)"
+	$(V1) $(AS) -c $(TEST_DEFINES) $(CFLAGS) $< -o $@
+
+$(TEST_ELF): $(TEST_OBJECTS) Makefile
+	@echo make test elf files...
+	$(V1) $(CC) $(TEST_OBJECTS) $(LDFLAGS_TEST) -o $@
+	$(V1) $(SIZE) $@
+
+$(TEST_HEX): $(TEST_ELF) | $(OUTPUT_DIR) $(OUTPUT_DIR)/$(TEST_DIR)
+	@echo make test hex file...
+	$(V1) $(HEX) $< $@
+
+############### folders ###############
 $(OUTPUT_DIR):
 	$(V1) mkdir $@		
 	
@@ -139,24 +178,45 @@ $(BUILD_DIR):
 $(REPORT_DIR):
 	$(V1) mkdir $@
 
+$(BUILD_DIR)/$(RELEASE_DIR):
+	$(V1) mkdir $@
+
+$(BUILD_DIR)/$(TEST_DIR):
+	$(V1) mkdir $@
+
+$(OUTPUT_DIR)/$(RELEASE_DIR):
+	$(V1) mkdir $@
+
+$(OUTPUT_DIR)/$(TEST_DIR):
+	$(V1) mkdir $@	
 #######################################
 # clean up
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR)
+	-rm -fR $(REPORT_DIR)
+	-rm -fR $(OUTPUT_DIR)
 
-flash: $(TARGET_ELF)
-    $(OPENOCD) -f stlink-v2.cfg -f stm32f2x.cfg -c "program $(TARGET_ELF) verify exit reset"	
+size:
+	$(SIZE) $(TARGET_ELF)
+
+#program: $(TARGET_ELF)
+  #$(OPENOCD) -f stlink-v2.cfg -f stm32f2x.cfg -c "program $(TARGET_ELF) verify exit reset"	
+
+flash: $(TARGET_HEX)
+	$(STFLASH) --reset --format ihex write $<
 
 zip:
 	zip $(TARGET_ZIP) $(TARGET_HEX)	
 
-cppcheck: $(SRCS) | $(REPORT_DIR)
-	$(CPPCHECK) $(CHKFLAGS) $(TARGET_INCLUDE) $(GLOBAL_DEFINES) $(DEFINE) --output-file=$(CHKREPORT) $^
+cppcheck: $(C_SOURCE_PROJ) | $(REPORT_DIR)
+	$(CPPCHECK) $(CHKFLAGS) $(C_INCLUDES) $(GLOBAL_DEFINES) --output-file=$(CHKREPORT) $^
 
-misra: $(SRCS) | $(REPORT_DIR)
-	$(CPPCHECK) $(CHKMISRAFLAGS) $(GLOBAL_DEFINES) $(DEFINE) --output-file=$(CHKMISRAREPORT) $^
+misra: $(C_SOURCE_PROJ) | $(REPORT_DIR)
+	$(CPPCHECK) $(CHKMISRAFLAGS) $(GLOBAL_DEFINES) --output-file=$(CHKMISRAREPORT) $^
 
+version:
+	@echo $(VER)
 #######################################
 # dependencies
 #######################################

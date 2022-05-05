@@ -14,9 +14,9 @@
 
 #define BOOTLOADER_VERSION_ADR  0x8007FFCU
 
-#define HARDWARE_VERSION_MAJOR  1U
-#define HARDWARE_VERSION_MINOR  0U
-#define HARDWARE_VERSION_ASSEMB 0U
+#define HARDWARE_VERSION_MAJOR  1
+#define HARDWARE_VERSION_MINOR  0
+#define HARDWARE_VERSION_PATCH  0
 
 #if ( HARDWARE_VERSION_MAJOR > 255U )
 #error( "Major version too big" )
@@ -28,9 +28,9 @@
 #error( "Fix version too big" )
 #endif
 
-#define FIRMWARE_VERSION_MAJOR  1U
-#define FIRMWARE_VERSION_MINOR  1U
-#define FIRMWARE_VERSION_FIX    0U
+#define FIRMWARE_VERSION_MAJOR  1
+#define FIRMWARE_VERSION_MINOR  1
+#define FIRMWARE_VERSION_PATCH  0
 
 #if ( FIRMWARE_VERSION_MAJOR > 255U )
 #error( "Major version too big" )

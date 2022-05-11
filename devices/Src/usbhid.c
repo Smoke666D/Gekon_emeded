@@ -882,8 +882,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
   {
     if ( eCONTROLLERgetMode() == CONTROLLER_MODE_MANUAL )
     {
-      if ( ( eCONTROLLERgetMode()   == CONTROLLER_MODE_MANUAL  ) ||
-           ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_IDLE  ) ||
+      if ( ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_IDLE  ) ||
            ( eCONTROLLERgetStatus() == CONTROLLER_STATUS_ERROR ) )
       {
         res = callback( report );

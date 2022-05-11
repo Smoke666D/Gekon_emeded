@@ -141,6 +141,10 @@ void vOUTPUTupdateStatus ( void )
   {
     res |= outputDataReg[STATUS_ADR]->atrib->bitMap[STATUS_GENERATOR_REDY_ADR].mask;
   }
+  if ( eCONTROLLERgetMode() == CONTROLLER_MODE_AUTO )
+  {
+    res |= outputDataReg[STATUS_ADR]->atrib->bitMap[STATUS_AUTO_MODE_ADR].mask;
+  }
   outputDataReg[STATUS_ADR]->value[0U] = res;
   return;
 }

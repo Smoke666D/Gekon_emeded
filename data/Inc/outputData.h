@@ -104,6 +104,7 @@
 #define   STATUS_D_P_SREADY_ADR                        3U
 #define   STATUS_READY_TO_START_ADR                    4U
 #define   STATUS_GENERATOR_REDY_ADR                    5U
+#define   STATUS_AUTO_MODE_ADR                         6U
 #define   ERROR_EXTERN_EMEGENCY_STOP_ADR               0U
 #define   ERROR_START_FAIL_ADR                         1U
 #define   ERROR_STOP_FAIL_ADR                          2U

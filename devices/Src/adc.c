@@ -149,7 +149,8 @@ fix16_t xADCGetVDD ( void )
   //Пересчитываем его в реальное напяжение.
   xVDD = fix16_mul( fix16_from_int( uVDD ),  xVDD_CF );
  //Вычитаем падение на диоде
-  xVDD = fix16_sub( xVDD, VT4 );
+  xVDD = fix16_add( xVDD,  fix16_from_float(VT4) );
+
   return (xVDD);
 }
 

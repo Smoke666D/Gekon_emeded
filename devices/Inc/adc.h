@@ -107,7 +107,7 @@
 #define R3             1416U
 #define R12            22.2
 #define R12_R11        122.2
-#define VT4            0U
+#define VT4            0.35
 #define MAX_RESISTANCE 5000U
 #define DELTA          ( 0.04 * 4095U / 3.3 )
 #define IN_VDD         2U
@@ -158,50 +158,50 @@ typedef enum
 /*
  * Функции API драйвера
  */
-SENSOR_TYPE xADCGetFLChType(void);
-SENSOR_TYPE xADCGetxOPChType(void);
-fix16_t xADCGetGENActivePower();
-fix16_t xADCGetGENReactivePower();
-fix16_t xADCGetGENRealPower();
-fix16_t xADCGetGENL1RealPower();
-fix16_t xADCGetGENL2RealPower();
-fix16_t xADCGetGENL3RealPower();
-fix16_t xADCGetGENL1ActivePower();
-fix16_t xADCGetGENL2ActivePower();
-fix16_t xADCGetGENL3ActivePower();
+SENSOR_TYPE xADCGetFLChType( void );
+SENSOR_TYPE xADCGetxOPChType( void );
+fix16_t xADCGetGENActivePower( void );
+fix16_t xADCGetGENReactivePower( void );
+fix16_t xADCGetGENRealPower( void );
+fix16_t xADCGetGENL1RealPower( void );
+fix16_t xADCGetGENL2RealPower( void );
+fix16_t xADCGetGENL3RealPower( void );
+fix16_t xADCGetGENL1ActivePower( void );
+fix16_t xADCGetGENL2ActivePower( void );
+fix16_t xADCGetGENL3ActivePower( void );
 
 
-fix16_t xADCGetCAC();
-fix16_t xADCGetVDD();              // Функция возращает наряжения АКБ.
-fix16_t xADCGetSOP();
-fix16_t xADCGetSCT();
-fix16_t xADCGetSFL();
+fix16_t xADCGetCAC( void );
+fix16_t xADCGetVDD( void );              // Функция возращает наряжения АКБ.
+fix16_t xADCGetSOP( void );
+fix16_t xADCGetSCT( void );
+fix16_t xADCGetSFL( void );
 fix16_t xADCGetNETL3();
-fix16_t xADCGetNETL2();
-fix16_t xADCGetNETL1();
-fix16_t xADCGetNETL1Lin();         //Линейное напряжене Uab сети
-fix16_t xADCGetNETL2Lin();        //Линейное напряжене Ubс сети
-fix16_t xADCGetNETL3Lin();         //Линейное напряжене Uсa сети
-fix16_t xADCGetGENL1();           //Фазное  напряжене Uan генератора
-fix16_t xADCGetGENL2();           //Фазное  напряжене Ubn генератора
-fix16_t xADCGetGENL3();           //Фазное  напряжене Ucn генератора
-fix16_t xADCGetGENL1Lin();        //Линейное напряжене Uab генератора
-fix16_t xADCGetGENL2Lin();        //Линейное напряжене Ubс генератора
-fix16_t xADCGetGENL3Lin();        //Линейное напряжене Uсa генератора
-fix16_t xADCGetGENL1Cur();        //Фазный ток Ian генератора
-fix16_t xADCGetGENL2Cur();        //Фазный ток Ibn генератора
-fix16_t xADCGetGENL3Cur();        //Фазный ток Icn генератора
-uint8_t uADCGetValidDataFlag();
-fix16_t xADCGetNETLFreq();
-fix16_t xADCGetGENLFreq();
-fix16_t xADCGetCOSFi();
-xADCRotatinType xADCGetGenFaseRotation();
-xADCRotatinType xADCGetNetFaseRotation();
+fix16_t xADCGetNETL2( void );
+fix16_t xADCGetNETL1( void );
+fix16_t xADCGetNETL1Lin( void );         //Линейное напряжене Uab сети
+fix16_t xADCGetNETL2Lin( void );        //Линейное напряжене Ubс сети
+fix16_t xADCGetNETL3Lin( void );         //Линейное напряжене Uсa сети
+fix16_t xADCGetGENL1( void );           //Фазное  напряжене Uan генератора
+fix16_t xADCGetGENL2( void );           //Фазное  напряжене Ubn генератора
+fix16_t xADCGetGENL3( void );           //Фазное  напряжене Ucn генератора
+fix16_t xADCGetGENL1Lin( void );        //Линейное напряжене Uab генератора
+fix16_t xADCGetGENL2Lin( void );        //Линейное напряжене Ubс генератора
+fix16_t xADCGetGENL3Lin( void );        //Линейное напряжене Uсa генератора
+fix16_t xADCGetGENL1Cur( void );        //Фазный ток Ian генератора
+fix16_t xADCGetGENL2Cur( void );        //Фазный ток Ibn генератора
+fix16_t xADCGetGENL3Cur( void );        //Фазный ток Icn генератора
+uint8_t uADCGetValidDataFlag( void );
+fix16_t xADCGetNETLFreq( void );
+fix16_t xADCGetGENLFreq ( void );
+fix16_t xADCGetCOSFi( void );
+xADCRotatinType xADCGetGenFaseRotation( void );
+xADCRotatinType xADCGetNetFaseRotation( void );
 fix16_t xADCGetREG(uint16_t reg);
 void    vADC_Ready(uint8_t adc_number);
 void    StartADCTask(void *argument);
 void    vGetADCDC( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID );
-uint8_t uADCGetDCChError();
+uint8_t uADCGetDCChError ( void );
 SENSOR_TYPE xADCGetxCTChType(void);
 xADCGenDetectType vADCGetGenFreqPres( void );
 ELECTRO_SCHEME xADCGetScheme(void);

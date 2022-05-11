@@ -248,7 +248,7 @@ EEPROM_STATUS eDATAAPIdataInit ( void )
 #endif
 void vDATAAPIinit ( const EEPROM_TYPE* storage )
 {
-  eeprom         = storage;
+  eeprom         = ( EEPROM_TYPE* ) storage;
   xSemaphore     = xSemaphoreCreateMutex();
   xDataApiEvents = xEventGroupCreate();
   return;

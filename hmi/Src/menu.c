@@ -19,7 +19,7 @@
 #define NO_SELECT_D   0U
 #define SELECT_D      1U
 #define CHANGE_D      2U
-#define VIEW_DELAY    10U
+#define VIEW_DELAY    25U
 
 /*----------------------- Variables -----------------------------------------------------------------*/
 static u8g2_t*           u8g2             = NULL;
@@ -322,8 +322,49 @@ uint8_t vSelectNewObject( xScreenSetObject* menu, uint8_t i)
 return ( 0U );
 }
 
+#define DIR_INC 0x01
+#define DIR_DEC 0x02
+
+void vSettingCheck(uint8_t direction)
+{
+  uint8_t dir =direction;
+  eConfigAttributes xAtrib                  = { 0U };
+  eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+  if (( xAtrib.type == 'C') || ( xAtrib.len > 1U))
+   for (;;)
+   {
+      switch (dir)
+      {
+	case DIR_INC:
+	  if  (uiSetting >= SETTING_REGISTER_NUMBER - 2U)
+	  {
+	   dir = DIR_DEC;
+	  }
+	  else
+	  {
+	      uiSetting++;
+	  }
+	  break;
+	case DIR_DEC:
+	  if (uiSetting <= FIRST_SETTING)
+	  {
+	    dir = DIR_INC;
+	  }
+	  else
+	  {
+	      uiSetting--;
+	  }
+	  break;
+      }
+      eDATAAPIconfigAtrib( DATA_API_CMD_READ, uiSetting, &xAtrib );
+       if (( xAtrib.type != 'C') && (xAtrib.len == 1U)) {
+	   return;
+       }
 
 
+   }
+
+}
 
 void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
 {
@@ -374,24 +415,25 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
               break;
         }
       }
+  /*Блок редактирования данных типа числа*/
   if ((uDataType ==  NUMBER) && ( ucActiveObject !=NO_SELECT_D))
   {
      switch (key)
     {
-         case KEY_STOP:
+         case KEY_STOP: /*Клавишами стоп и старт увеличиваем/уменьшаем значение уставки на 1*/
          case KEY_START:
               ucActiveObject = CHANGE_D;
               eDATAAPIconfigValue(key == KEY_STOP ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
               break;
-         case KEY_DOWN:
+         case KEY_DOWN: /*Клавишами вверх и вниз увеличиваем/уменьшаем значение уставки на 10*/
          case KEY_UP:
               ucActiveObject = CHANGE_D;
               for ( uint8_t i=0U; i<10U; i++ )
               {
-                 eDATAAPIconfigValue( key == KEY_STOP ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
+                 eDATAAPIconfigValue( key == KEY_DOWN ? DATA_API_CMD_DEC :DATA_API_CMD_INC , uiSetting, NULL );
               }
               break;
-         case KEY_AUTO:
+         case KEY_AUTO: /*Клавише авто подтверждаем измениея и переходим в окно подтвердить уставку*/
               pCurObject =  (xScreenObjet *)&menu->pHomeMenu[menu->pCurrIndex].pScreenCurObjets[uCurrentObject];
               vExitCurObject();
               return;
@@ -423,6 +465,10 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
                 break;
         }
      }
+
+
+
+
     //Обащя навигация по меню, есди не ничего для рекатирования не выбратно
     if ( ucActiveObject == NO_SELECT_D )
     {
@@ -431,18 +477,22 @@ void xSettingsScreenKeyCallBack( xScreenSetObject* menu, char key )
            case KEY_STOP:
             uiSetting       -= ( uiSetting > FIRST_VALID_SETTING   )  ? 1U : 0U;     //Уменьшаем номер текущей уставки
             menu->pCurrIndex = ( uiSetting < FIRST_SETTING )          ? 1U : 0U;     //Если перешли к окну времени
+            vSettingCheck(DIR_DEC);
             break;
           case KEY_START:
             uiSetting        += ( uiSetting <= ( SETTING_REGISTER_NUMBER - 2U ) ) ? 1U : 0U; //Увиличиваем номер текущей уставки
             menu->pCurrIndex  = ( uiSetting >= FIRST_SETTING )                    ? 0U : 1U; //Если перескакивам из окна ред. времени обранто
+            vSettingCheck(DIR_INC);
             break;
           case KEY_DOWN:
             uiSetting       -= ( uiSetting >= 10U )        ? 10U : 0U ;             //Уменьшаем номер текущей уставки на 10
             menu->pCurrIndex = (uiSetting < FIRST_SETTING) ? 1U : 0U;               //Если перешли к окну времени
+            vSettingCheck(DIR_DEC);
             break;
           case KEY_UP:
             uiSetting       += (  uiSetting <= ( SETTING_REGISTER_NUMBER - 12U )  ) ? 10U : 0U; //Увиличиваем номер текущей уставки на 10
             menu->pCurrIndex =  (uiSetting >=FIRST_SETTING) ? 0U : 1U;                          //Если перескакивам из окна ред. времени обранто
+            vSettingCheck(DIR_INC);
             break;
           case KEY_AUTO:
             if ((fPassowordCorrect == FLAG_SET) || (systemPassword.status == PASSWORD_RESET) )
@@ -781,7 +831,7 @@ void vMenuTask ( void )
                xKeyIgnore  = FLAG_RESET;
                xTimeOutFlag = FLAG_RESET;
 	   }
-           return 0;
+           return;
         }
         pCurrMenu->pFunc( pCurrMenu, key );
       }
@@ -852,7 +902,7 @@ uint8_t GetNumber(char temp)
 void vDrawObject( xScreenObjet * pScreenObjects)
 {
   char* TEXT      = NULL;
-  uint8_t sTEXT[2]={0,0,0};
+  uint8_t sTEXT[2]={0U};
   uint8_t  Insert    = 0U;
   char  Text[40U] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',' ',' ',' ',' '};
   uint8_t  i         = 0U;
@@ -976,7 +1026,7 @@ void vDrawObject( xScreenObjet * pScreenObjects)
 
               u8g2_SetFont( u8g2, FONT_TYPES );
               sTEXT[0] =GetNumber(TEXT[1])*100+GetNumber(TEXT[2])*10+GetNumber(TEXT[3]);
-              u8g2_DrawStr( u8g2, pScreenObjects[i].x, pScreenObjects[i]. y, sTEXT );
+              u8g2_DrawStr( u8g2, pScreenObjects[i].x, pScreenObjects[i].y, ( const char* )sTEXT );
             }
           }
           break;
@@ -1451,17 +1501,8 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
                 eDATAAPIconfigValue(DATA_API_CMD_READ, (ID == HW_VER ) ? VERSION_CONTROLLER_ADR : VERSION_FIRMWARE_ADR ,(uint16_t*)&tt);
                 vUToStr(TS,tt[0]/10,0);
                 vStrCopy(Data,TS);
-                vUToStr(TS,tt[0]%10,0);
-                 vStrAdd(Data,TS);
+                vUToStr(TS,tt[0]%1000,0);
                 vStrAdd(Data,".");
-                vUToStr(TS,tt[1]/10,0);
-                vStrAdd(Data,TS);
-                vUToStr(TS,tt[1]%10,0);
-                vStrAdd(Data,TS);
-                vStrAdd(Data,".");
-                vUToStr(TS,tt[2]/10,0);
-                vStrAdd(Data,TS);
-                vUToStr(TS,tt[2]%10,0);
                 vStrAdd(Data,TS);
             }
             break;
@@ -1477,11 +1518,11 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
            vPrintAinData(Data, ID);
            break;
       case  IN_VDD:
-           fix16_to_str( xADCGetVDD(), Data, 2U );
+           fix16_to_str( xADCGetVDD(), Data, 1U );
            vStrAdd(Data,"В");
            break;
       case IN_CAC:
-           fix16_to_str( xADCGetCAC(), Data, 2U );
+           fix16_to_str( xADCGetCAC(), Data, 1U );
            vStrAdd(Data,"В");
            break;
       case NET_L2_LINE_V:

@@ -78,7 +78,7 @@ static xScreenObjet const Engine1Screen[]=
   {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"ДВИГАТЕЛЬ",NULL,0U},
   {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
   {0U,LEFT_OFFSET,LINE2,0U,0U,TEXT_STRING,LeftText,"Напряжение АКБ",NULL,0U},
-  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Напряж.зар.ген.",NULL,0U},
+  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Напряж.зар.ген",NULL,0U},
   {0U,LEFT_OFFSET,LINE4,0U,0U,TEXT_STRING,LeftText,"Уровень топлива",NULL,0U},
   {0U,FONT_SIZE*16U,(LINE4_HIGTH+2U),30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,IN_VDD},
   {0U,FONT_SIZE*16U,LINE2+3U,30U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetDataForMenu,IN_CAC},
@@ -300,20 +300,34 @@ static xScreenObjet const SerialNumberScreen[]=
   {LO,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
-static xScreenObjet const LinkMainScreen[]=
+static xScreenObjet const LinkMainScreen1[]=
 {
-  {0U,LEFT_OFFSET,LINE1,0U,0U,TEXT_STRING,LeftText,"Выходы 1 2 3 4 5 6",NULL,0U},
-  {0U,FONT_SIZE*7U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 1U},
-  {0U,FONT_SIZE*9U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 2U},
-  {0U,FONT_SIZE*11U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 3U},
-  {0U,FONT_SIZE*13U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 4U},
-  {0U,FONT_SIZE*15U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 5U},
-  {0U,FONT_SIZE*17U,  LINE1+6U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 6U},
-  {0U,LEFT_OFFSET,LINE3,0U,0U,TEXT_STRING,LeftText,"Входы  1 2 3 4",NULL,0U},
-  {0U,FONT_SIZE*7U,  LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 1U},
-  {0U,FONT_SIZE*9U,  LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 2U},
-  {0U,FONT_SIZE*11U, LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 3U},
-  {0U,FONT_SIZE*13U, LINE3+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 4U},
+  {0U,FONT_SIZE*7U,LINE1,0U,0U,TEXT_STRING,Header,"Выxоды",NULL,0U},
+  {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
+  {0U,1,LINE2,0U,0U,TEXT_STRING,LeftText," 1 2 3 4 5 6 7 8 9 10",NULL,0U},
+  {0U,FONT_SIZE*1U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 1U},
+  {0U,FONT_SIZE*3U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 2U},
+  {0U,FONT_SIZE*5U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 3U},
+  {0U,FONT_SIZE*7U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 4U},
+  {0U,FONT_SIZE*9U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 5U},
+  {0U,FONT_SIZE*11U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 6U},
+  {0U,FONT_SIZE*13U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 7U},
+  {0U,FONT_SIZE*15U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 8U},
+  {0U,FONT_SIZE*17U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 9U},
+  {0U,FONT_SIZE*19U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPOForMenu, 10U},
+  {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
+};
+
+
+static xScreenObjet const LinkMainScreen2[]=
+{
+  {0U,FONT_SIZE*7U,LINE1,0U,0U,TEXT_STRING,Header,"Входы",NULL,0U},
+  {0U,0U,(LINE4_HIGTH+1U),128U,(LINE4_HIGTH+1U),H_LINE,Header,NULL,NULL,0U},
+  {0U,1,LINE2,0U,0U,TEXT_STRING,LeftText," 1 2 3 4 ",NULL,0U},
+  {0U,FONT_SIZE*1U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 1U},
+  {0U,FONT_SIZE*3U,  LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 2U},
+  {0U,FONT_SIZE*5U, LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 3U},
+  {0U,FONT_SIZE*7U, LINE2+3U,10U, LINE4_HIGTH, HW_DATA, InputParam,NULL,(void*)vGetFPIForMenu, 4U},
   {1U,FONT_SIZE*20U,LINE1-12U,5U,LINE4_HIGTH,HW_DATA,RigthText,NULL,(void*)vGetAlarmForMenu,ALARM_STATUS},
 };
 
@@ -456,7 +470,8 @@ xScreenType  xSettingsScreens[SETTINGS_MENU_COUNT]=
 
 xScreenType  xAboutScreens[ABOUT_MENU_COUNT]=
 {
-  {LinkMainScreen,      &xMainMenu, NULL, 0U, 0U},
+  {LinkMainScreen1,      &xMainMenu, NULL, 0U, 0U},
+  {LinkMainScreen2,      &xMainMenu, NULL, 0U, 0U},
   {SerialNumberScreen,  &xMainMenu, NULL, 0U, 0U},
   {InfoMainScreen,      &xMainMenu, NULL, 0U, 0U},
 };

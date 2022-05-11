@@ -830,7 +830,7 @@ const eConfigBitMap diaSetupBitMap[4U] =
    { 192U, 6U },     // diaAction
    { 768U, 8U },     // diaArming
 };
-uint16_t diaSetupValue[1U] = { 0U };
+uint16_t diaSetupValue[1U] = { 17U };
 const eConfigAttributes diaSetupAtrib =
 {
    .adr        = 41U,
@@ -951,7 +951,7 @@ const eConfigBitMap dibSetupBitMap[4U] =
    { 192U, 6U },     // dibAction
    { 768U, 8U },     // dibArming
 };
-uint16_t dibSetupValue[1U] = { 0U };
+uint16_t dibSetupValue[1U] = { 18U };
 const eConfigAttributes dibSetupAtrib =
 {
    .adr        = 47U,

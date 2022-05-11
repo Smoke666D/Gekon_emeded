@@ -52,6 +52,7 @@ typedef enum
   USB_REPORT_STATE_UNAUTHORIZED = 0x04U, /* 401 analog - unauthorized request               */
   USB_REPORT_STATE_FORBIDDEN    = 0x05U, /* 403 analog - machine not stop, access forbidden */
   USB_REPORT_STATE_INTERNAL     = 0x06U, /* 500 analog - internal server error */
+  USB_REPORT_STATE_AUTO_MODE    = 0x07U
 } USB_REPORT_STATE;
 
 typedef enum
@@ -81,7 +82,7 @@ typedef enum
   USB_REPORT_CMD_RESERED_2              = 0x17U,
   USB_REPORT_CMD_GET_MEASUREMENT_LENGTH = 0x18U,
   USB_REPORT_CMD_GET_OUTPUT             = 0x19U,
-  USB_REPORT_CMD_PUT_OUTPUT             = 0x1AU,
+  USB_REPORT_CMD_PUT_OUTPUT             = 0x1AU
 } USB_REPORT_CMD;
 /*------------------------------ Default -------------------------------------*/
 #define USB_REPORT_SIZE       ( REPORT_COUNT + 1U )

@@ -24,13 +24,11 @@
 #define  TIMER_NAME_LENGTH          20U
 #define  LOGIC_DEFAULT_TIMER_ID     ( LOGIC_COUNTERS_SIZE + 1U )
 #define  EVENT_QUEUE_LENGTH         16U
-#define  LOG_TYPES_SIZE             45U
+#define  LOG_TYPES_SIZE             46U
 #define  LOG_ACTION_SIZE            9U
 #define  HMI_CMD_MASK               0xFFU
 #define  TASK_NOTIFY_WAIT_DELAY     10U
 #define  SYS_TIMER_SEMAPHORE_DELAY  200U
-#define  DEBUG_SERIAL_ALARM         1U    /* Set 1 to print in serial all warnings and alarms */
-#define  DEBUG_SERIAL_STATUS        1U    /* Set 1 to print in serial all state transfer */
 #define  SEMAPHORE_AEL_TAKE_DELAY   10U
 #define  ERROR_NUMBER               27U
 #define  WARNING_NUMBER             16U

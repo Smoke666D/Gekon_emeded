@@ -60,6 +60,7 @@ static const eConfigReg* pFPIregDelay[FPI_NUMBER] =
   &dicDelay,
   &didDelay,
 };
+/*
 static const char* cFPIfunctionNames[FPI_FUNCTION_NUM] =
 {
   "NONE",
@@ -81,6 +82,7 @@ static const char* cFPInames[FPI_NUMBER] =
   "C",
   "D"
 };
+*/
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t  eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
 static FPI      fpis[FPI_NUMBER]                         = { 0U };

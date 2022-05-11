@@ -231,9 +231,9 @@ void tets_eRESTparsingValueRecord ( void )
   TEST_ASSERT_EQUAL( 123U, data[0U] );
   ( void )strcpy( input, "{\"data\":[\"%D0%BF\",\"%D1%80\",\"%D0%B8\"]}" );
   TEST_ASSERT_EQUAL( REST_OK, eRESTparsingValueRecord( input, "data", ( uint16_t )'C', data, 3U ) );
-  TEST_ASSERT_EQUAL( ( uint16_t )( 'п' ), data[0U] );
-  TEST_ASSERT_EQUAL( ( uint16_t )( 'р' ), data[1U] );
-  TEST_ASSERT_EQUAL( ( uint16_t )( 'и' ), data[2U] );
+  TEST_ASSERT_EQUAL( 0xD0BFU, data[0U] ); /* п */
+  TEST_ASSERT_EQUAL( 0xD180U, data[1U] ); /* р */
+  TEST_ASSERT_EQUAL( 0xD0B8U, data[2U] ); /* и */
   ( void )strcpy( input, "{\"data\":[123,44,67]}" );
   TEST_ASSERT_EQUAL( REST_OK, eRESTparsingValueRecord( input, "data", ( uint16_t )'U', data, 3U ) );
   TEST_ASSERT_EQUAL( 123U, data[0U] );

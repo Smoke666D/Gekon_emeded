@@ -196,7 +196,7 @@ MB_EXCEPTION eMBFuncReadHoldingRegister( uint8_t* pucFrame, uint8_t* len )
     {
       if ( ( regCount >= 1U ) && ( regCount <= MB_PDU_FUNC_READ_REGCNT_MAX ) )
       {
-        if ( eMBreadData( ( uint8_t )regAddress, ( uint16_t* )( &pucFrame[MB_PDU_DATA_OFF] ), regCount ) == MB_DATA_STATUS_OK )
+        if ( eMBreadData( ( uint8_t )regAddress, &pucFrame[MB_PDU_DATA_OFF], regCount ) == MB_DATA_STATUS_OK )
         {
           pucFrame[MB_PDU_FUNC_OFF]   = MB_FUNC_READ_HOLDING_REGISTER; /* First byte contains the function code. */
           pucFrame[MB_PDU_LENGTH_OFF] = ( uint8_t )( regCount * 2U );  /* Second byte in the response contain the number of bytes. */

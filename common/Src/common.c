@@ -16,6 +16,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "event_groups.h"
+#include "stdlib.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static QueueHandle_t pSERIALqueue        = NULL;
 static StaticQueue_t xSERIALqueue        = { 0U };
@@ -323,16 +324,6 @@ void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
   }
 
   return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-uint8_t uSYSisConst ( void* ptr )
-{
-  uint8_t res = 1U;
-  if ( ptr > 0x20000000U )
-  {
-    res = 0U;
-  }
-  return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uSYSputChar ( char* str, uint32_t length, char ch )

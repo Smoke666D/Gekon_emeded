@@ -495,7 +495,7 @@ uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, TRIGGER
     if ( uSENSORisAnalog( oil.pressure ) > 0U )
     {
       if ( ( pressure < oil.trashhold ) ||
-	   ( oil.pressure.cutout.trig != TRIGGER_IDLE ) ||
+	         ( oil.pressure.cutout.trig != TRIGGER_IDLE ) ||
            ( engine.sensorCommonError.trig != TRIGGER_IDLE ) )
       {
         oilRes = 1U;
@@ -989,7 +989,17 @@ void vENGINEdataInit ( void )
   engine.stopError.event.type           = EVENT_STOP_FAIL;
   engine.stopError.status               = ALARM_STATUS_IDLE;
   engine.stopError.trig                 = TRIGGER_IDLE;
-  engine.sensorCommonError.enb          = PERMISSION_ENABLE;
+  /*--------------------------------------------------------------*/
+  if ( ( oil.pressure.cutout.enb == PERMISSION_DISABLE ) &&
+       ( coolant.temp.cutout.enb == PERMISSION_DISABLE ) &&
+       ( fuel.level.cutout.enb   == PERMISSION_DISABLE ) )
+  {
+    engine.sensorCommonError.enb          = PERMISSION_DISABLE;
+  }
+  else
+  {
+    engine.sensorCommonError.enb          = PERMISSION_ENABLE;
+  }
   engine.sensorCommonError.active       = PERMISSION_ENABLE;
   engine.sensorCommonError.ack          = PERMISSION_DISABLE;
   engine.sensorCommonError.event.action = ACTION_EMERGENCY_STOP;

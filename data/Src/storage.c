@@ -171,11 +171,7 @@ EEPROM_STATUS eSTORAGEwriteMap ( void )
             res = eSTORAGEwriteUint32( (uint32_t)STORAGE_LOG_SIZE, &adr );
             if ( res == EEPROM_OK )
             {
-              res = eSTORAGEwriteUint32( (uint32_t)STORAGE_JOURNAL_SIZE, &adr );
-              if ( res == EEPROM_OK )
-              {
-                res = eSTORAGEwriteUint32( (uint32_t)STORAGE_MAC_SIZE, &adr );
-              }
+              res = eSTORAGEwriteUint32( (uint32_t)STORAGE_MAC_SIZE, &adr );
             }
           }
         }

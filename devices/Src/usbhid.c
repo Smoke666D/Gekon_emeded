@@ -117,7 +117,7 @@ USBD_StatusTypeDef eUSBwrite ( uint8_t* data, uint8_t length )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBtimeToReport ( USB_REPORT* report )
 {
-  RTC_TIME time;
+  RTC_TIME time = { 0U };
   eRTCgetTime( &time );
   report->stat     = USB_REPORT_STATE_OK;
   report->length   = sizeof( RTC_TIME );

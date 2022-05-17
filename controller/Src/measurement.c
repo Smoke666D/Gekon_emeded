@@ -286,7 +286,6 @@ void vMEASUREMENTtask ( void* argument )
       case MEASURMENT_CMD_NONE:
         break;
       case MEASURMENT_CMD_START:
-        vLOGICprintDebug( ">>Measurement     : Start command...\r\n" );
         if ( measurement.state == MEASURMENT_STATE_IDLE )
         {
           measurement.state = MEASURMENT_STATE_START;
@@ -294,14 +293,12 @@ void vMEASUREMENTtask ( void* argument )
         measurement.cmd = MEASURMENT_CMD_NONE;
         break;
       case MEASURMENT_CMD_STOP:
-        vLOGICprintDebug( ">>Measurement     : Stop command...\r\n" );
         switch ( measurement.state )
         {
           case MEASURMENT_STATE_WAIT:
             vLOGICresetTimer( &measurement.timer );
             measurement.state = MEASURMENT_STATE_IDLE;
             measurement.cmd   = MEASURMENT_CMD_NONE;
-            vLOGICprintDebug( ">>Measurement     : Stop!\r\n" );
             break;
           case MEASURMENT_STATE_IDLE:
             measurement.cmd   = MEASURMENT_CMD_NONE;
@@ -336,7 +333,6 @@ void vMEASUREMENTtask ( void* argument )
         case MEASURMENT_STATE_START:
           vMEASUREMENTmakeStartLine( &sdRoutine );
           vMEASUREMENTmakeLegendLine( &sdRoutine );
-          vLOGICprintDebug( ">>Measurement     : Status start\r\n" );
           vLOGICstartTimer( &measurement.timer, "Measurement timer   " );
           measurement.state   = MEASURMENT_STATE_WAIT;
           break;
@@ -344,7 +340,6 @@ void vMEASUREMENTtask ( void* argument )
         case MEASURMENT_STATE_WAIT:
           if ( uLOGICisTimer( &measurement.timer ) > 0U )
           {
-            vLOGICprintDebug( ">>Measurement     : Read data\r\n" );
             measurement.state = MEASURMENT_STATE_WRITE;
           }
           break;

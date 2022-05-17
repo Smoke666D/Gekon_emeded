@@ -35,8 +35,6 @@
 /*-------------------------------- Structures --------------------------------*/
 static CONTROLLER_INIT   controllerGPIO      = { 0U };
 static CONTROLLER_TYPE   controller          = { 0U };
-/*---------------------------------- MACROS ----------------------------------*/
-
 /*--------------------------------- Constant ---------------------------------*/
 static const uint32_t allReinitFlags = DATA_API_FLAG_LCD_TASK_CONFIG_REINIT        |
                                        DATA_API_FLAG_ENGINE_TASK_CONFIG_REINIT     |
@@ -231,10 +229,6 @@ void vCONTROLLERstartAutoStart ( PERMISSION delay )
       stopState        = CONTROLLER_TURNING_IDLE;
       startState       = CONTROLLER_TURNING_IDLE;
     }
-    else
-    {
-      vLOGICprintDebug( ">>Autostart       : Engine start ban\r\n" );
-    }
   }
   return;
 }
@@ -267,18 +261,15 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
   switch ( stopState )
   {
     case CONTROLLER_TURNING_IDLE:
-      vLOGICprintDebug( ">>Plan stop       : Start\r\n" );
       if ( delayOnStart == PERMISSION_ENABLE )
       {
         controller.timer.delay = controller.stopDelay;
         vLOGICstartTimer( &controller.timer, "Controller timer    " );
         stopState = CONTROLLER_TURNING_START_DELAY;
-        vLOGICprintDebug( ">>Plan stop       : Delay trigger\r\n" );
       }
       else
       {
         stopState = CONTROLLER_TURNING_RELOAD;
-        vLOGICprintDebug( ">>Plan stop       : Turn to mains\r\n" );
       }
       break;
 
@@ -286,14 +277,12 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
       if ( uLOGICisTimer( &controller.timer ) > 0U )
       {
         stopState = CONTROLLER_TURNING_RELOAD;
-        vLOGICprintDebug( ">>Plan stop       : Turn to mains\r\n" );
       }
       if ( eFPIcheckLevel( FPI_FUN_REMOTE_START ) == FPI_LEVEL_HIGH )
       {
         controller.state = CONTROLLER_STATUS_WORK;
         stopState        = CONTROLLER_TURNING_IDLE;
         vLOGICresetTimer( &controller.timer );
-        vLOGICprintDebug( ">>Plan stop       : Cancel\r\n" );
       }
       break;
 
@@ -304,13 +293,11 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
         xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
       }
       stopState = CONTROLLER_TURNING_ENGINE;
-      vLOGICprintDebug( ">>Plan stop       : Wait for mains connections\r\n" );
       break;
 
     case CONTROLLER_TURNING_ENGINE:
       if ( mainsState == ELECTRO_STATUS_LOAD )
       {
-        vLOGICprintDebug( ">>Plan stop       : Turn off engine\r\n" );
         vENGINEsendCmd( ENGINE_CMD_PLAN_STOP );
         stopState = CONTROLLER_TURNING_FINISH;
       }
@@ -331,7 +318,6 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
           controller.state = CONTROLLER_STATUS_IDLE;
         }
         stopState        = CONTROLLER_TURNING_IDLE;
-        vLOGICprintDebug( ">>Plan stop       : Finish\r\n" );
         if ( eSTATUSgetStatus() == DEVICE_STATUS_ERROR )
         {
           vSTATUSsetup( DEVICE_STATUS_ERROR, LOGIC_DEFAULT_TIMER_ID );
@@ -349,7 +335,6 @@ void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorSt
 
     default:
       stopState = ENGINE_STATUS_IDLE;
-      vLOGICprintDebug( ">>Plan stop       : Error" );
       break;
   }
   return;
@@ -369,16 +354,11 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
           vLOGICstartTimer( &controller.timer, "Controller timer    " );
           vSTATUSsetup( DEVICE_STATUS_START_DELAY, controller.timer.id );
           startState = CONTROLLER_TURNING_START_DELAY;
-          vLOGICprintDebug( ">>Autostart       : Delay trigger\r\n" );
         }
         else
         {
           startState = CONTROLLER_TURNING_READY;
         }
-      }
-      else
-      {
-        vLOGICprintDebug( ">>Autostart       : Engine start ban\r\n" );
       }
       break;
 
@@ -392,12 +372,10 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
         controller.state = CONTROLLER_STATUS_IDLE;
         startState       = CONTROLLER_TURNING_IDLE;
         vLOGICresetTimer( &controller.timer );
-        vLOGICprintDebug( ">>Autostart       : Cancel\r\n" );
       }
       break;
 
     case CONTROLLER_TURNING_READY:
-      vLOGICprintDebug( ">>Autostart       : Start\r\n" );
       vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
       vCONTROLLERsetLED( HMI_CMD_STOP,  RELAY_OFF );
       vFPIsetBlock();
@@ -406,7 +384,6 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
       {
         electroCmd = ELECTRO_CMD_UNLOAD;
         xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
-        vLOGICprintDebug( ">>Autostart       : Immediately turn off load\r\n" );
       }
       startState = CONTROLLER_TURNING_ENGINE;
       break;
@@ -414,7 +391,6 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
     case CONTROLLER_TURNING_ENGINE:
       vENGINEsendCmd( ENGINE_CMD_START );
       startState = CONTROLLER_TURNING_RELOAD;
-      vLOGICprintDebug( ">>Autostart       : Turn on engine\r\n" );
       break;
 
     case CONTROLLER_TURNING_RELOAD:
@@ -424,7 +400,6 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
         electroCmd = ELECTRO_CMD_LOAD_GENERATOR;
         xQueueSend( pELECTROgetCommandQueue(), &electroCmd, portMAX_DELAY );
         startState = CONTROLLER_TURNING_DELAY;
-        vLOGICprintDebug( ">>Autostart       : Turn to generator\r\n" );
       }
       break;
 
@@ -433,13 +408,11 @@ void vCONTROLLERstart ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState
       {
         controller.state = CONTROLLER_STATUS_WORK;
         startState       = CONTROLLER_TURNING_IDLE;
-        vLOGICprintDebug( ">>Autostart       : Finish\r\n" );
       }
       break;
 
     default:
       startState = CONTROLLER_TURNING_IDLE;
-      vLOGICprintDebug( ">>Autostart       : Error\r\n" );
       break;
   }
   return;
@@ -737,9 +710,8 @@ void vCONTROLLERtask ( void* argument )
               }
               else
               {
-                vLOGICprintDebug( ">>Start           : Engine start ban\r\n" );
                 vCONTROLLERsetLED( HMI_CMD_START, RELAY_ON  );
-                osDelay(10U);
+                osDelay( 10U );
                 vCONTROLLERsetLED( HMI_CMD_START, RELAY_OFF );
               }
             }
@@ -758,8 +730,8 @@ void vCONTROLLERtask ( void* argument )
           }
           break;
         case HMI_CMD_LOAD:
-          if ( ( controller.mode       == CONTROLLER_MODE_MANUAL )  &&
-               ( engineState           == ENGINE_STATUS_WORK     ) )
+          if ( ( controller.mode == CONTROLLER_MODE_MANUAL )  &&
+               ( engineState     == ENGINE_STATUS_WORK     ) )
           {
             if ( ( generatorState        == ELECTRO_STATUS_IDLE ) &&
                  ( controller.banGenLoad == 0U                  ) )
@@ -891,12 +863,10 @@ void vCONTROLLERtask ( void* argument )
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banAutoShutdown = 1U;
-            vFPIprint( FPI_FUN_BAN_AUTO_SHUTDOWN, "SET" );
           }
           else
           {
             controller.banAutoShutdown = 0U;
-            vFPIprint( FPI_FUN_BAN_AUTO_SHUTDOWN, "RESET" );
           }
           break;
         /*---------------------- Запрет автоматического запуска ----------------------*/
@@ -904,12 +874,10 @@ void vCONTROLLERtask ( void* argument )
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banAutoStart = 1U;
-            vFPIprint( FPI_FUN_BAN_AUTO_START, "SET" );
           }
           else
           {
             controller.banAutoStart = 0U;
-            vFPIprint( FPI_FUN_BAN_AUTO_START, "RESET" );
           }
           break;
         /*------------------------ Запрет нагрузки генератора ------------------------*/
@@ -917,12 +885,10 @@ void vCONTROLLERtask ( void* argument )
           if ( inputFpiEvent.level == FPI_LEVEL_HIGH )
           {
             controller.banGenLoad = 1U;
-            vFPIprint( FPI_FUN_BAN_GEN_LOAD, "SET" );
           }
           else
           {
             controller.banGenLoad = 0U;
-            vFPIprint( FPI_FUN_BAN_GEN_LOAD, "RESET" );
           }
           break;
         /*----------------------- Дистанционный запуск, останов ----------------------*/
@@ -975,6 +941,11 @@ void vCONTROLLERtask ( void* argument )
           {
             vENGINEsendCmd( ENGINE_CMD_GOTO_NORMAL );
           }
+          break;
+        case FPI_FUN_EMERGENCY_STOP:
+          interiorEvent.type   = EVENT_EXTERN_EMERGENCY_STOP;
+          interiorEvent.action = ACTION_EMERGENCY_STOP;
+          vEVENTtriggering( interiorEvent );
           break;
         default:
           break;

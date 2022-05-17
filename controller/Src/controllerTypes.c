@@ -475,7 +475,6 @@ void vLOGICtimerCallback ( void )
 void vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 {
   LOG_RECORD_TYPE buffer = { 0U };
-
   eLOGmakeRecord( event, &buffer );
   xQueueSend( pLOGICgetEventQueue(), &buffer, portMAX_DELAY );
   *record = buffer;
@@ -622,14 +621,6 @@ void vRELAYimpulseProcess ( RELAY_IMPULSE_DEVICE* device, fix16_t val )
   {
 
   }
-  return;
-}
-
-void vLOGICprintDebug ( const char* str )
-{
-  #if ( DEBUG_SERIAL_STATUS > 0U )
-    //vSYSserial( str );
-  #endif
   return;
 }
 /*----------------------------------------------------------------------------*/

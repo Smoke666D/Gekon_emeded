@@ -428,59 +428,29 @@ fix16_t fCHARGERprocess ( void )
 uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t speed )
 {
   uint8_t res = 0U;
-  #if ( DEBUG_SERIAL_STATUS > 0U )
-    char buffer[10U] = { 0U };
-  #endif
   if ( starter.startCrit.critGenFreqEnb == PERMISSION_ENABLE )
   {
     if ( vADCGetGenFreqPres() == FREQ_DETECTED )
     {
       res = 1U;
-      #if ( DEBUG_SERIAL_STATUS > 0U )
-        //vSYSserial( ">>Engine          : Started by generator frequency: LOW\r\n" );
-      #endif
     }
     if ( ( freq >= starter.startCrit.critGenFreqLevel ) && ( res == 0U ) )
     {
       res = 1U;
-      #if ( DEBUG_SERIAL_STATUS > 0U )
-        //vSYSserial( ">>Engine          : Started by generator frequency: " );
-        fix16_to_str( freq, buffer, 2U );
-        //vSYSserial( buffer );
-        //vSYSserial( "\r\n" );
-      #endif
     }
   }
   if ( ( starter.startCrit.critOilPressEnb == PERMISSION_ENABLE ) &&
        ( pressure >= starter.startCrit.critOilPressLevel ) )
   {
     res = 1U;
-    #if ( DEBUG_SERIAL_STATUS > 0U )
-      //vSYSserial( ">>Engine          : Started by oil pressure: " );
-      fix16_to_str( pressure, buffer, 2U );
-      //vSYSserial( buffer );
-      //vSYSserial( "\r\n" );
-    #endif
   }
   if ( ( starter.startCrit.critChargeEnb == PERMISSION_ENABLE ) && ( voltage >= starter.startCrit.critChargeLevel ) )
   {
     res = 1U;
-    #if ( DEBUG_SERIAL_STATUS > 0U )
-      //vSYSserial( ">>Engine          : Started by charger voltage: " );
-      fix16_to_str( voltage, buffer, 2U );
-      //vSYSserial( buffer );
-      //vSYSserial( "\r\n" );
-    #endif
   }
   if ( ( starter.startCrit.critSpeedEnb == PERMISSION_ENABLE ) && ( speed >= starter.startCrit.critSpeedLevel ) )
   {
     res = 1U;
-    #if ( DEBUG_SERIAL_STATUS > 0U )
-      //vSYSserial( ">>Engine          : Started by engine speed: " );
-      fix16_to_str( speed, buffer, 2U );
-      //vSYSserial( buffer );
-      //vSYSserial( "\r\n" );
-    #endif
   }
   return res;
 }
@@ -543,143 +513,6 @@ uint8_t uENGINEisUnban( void )
     }
   }
   return res;
-}
-/*----------------------------------------------------------------------------*/
-void vENGINEenbToStr ( uint8_t enb, char* str )
-{
-  if ( enb > 0U )
-  {
-    str[0U] = 'E';
-    str[1U] = 'n';
-    str[2U] = 'a';
-    str[3U] = 'b';
-    str[4U] = 'l';
-    str[5U] = 'e';
-    str[6U] = 0U;
-  }
-  else
-  {
-    str[0U] = 'D';
-    str[1U] = 'i';
-    str[2U] = 's';
-    str[3U] = 'a';
-    str[4U] = 'b';
-    str[5U] = 'l';
-    str[6U] = 'e';
-    str[7U] = 0U;
-  }
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vENGINEprintSetup ( void )
-{
-  #if ( DEBUG_SERIAL_STATUS > 0U )
-    char buf[8U];
-    //vSYSserial( ">>Oil pressure sensor \r\n" );
-    //vSYSserial( "    Type           : ");
-    //vSYSserial( cSensorTypes[oil.pressure.type] );
-    //vSYSserial( "\n\r" );
-    //vSYSserial( "    Alarm          : ");
-    vENGINEenbToStr( oil.alarm.error.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-    //vSYSserial( "    Prealarm       : ");
-    vENGINEenbToStr( oil.alarm.error.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-
-    //vSYSserial( ">>Fuel level sensor \r\n" );
-    //vSYSserial( "    Type           : ");
-    //vSYSserial( cSensorTypes[fuel.level.type] );
-    //vSYSserial( "\n\r" );
-    //vSYSserial( "    Low alarm      : ");
-    vENGINEenbToStr( fuel.lowAlarm.error.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-    //vSYSserial( "    Low prealarm   : ");
-    vENGINEenbToStr( fuel.lowPreAlarm.error.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-    //vSYSserial( "    Hight alarm    : ");
-    vENGINEenbToStr( fuel.hightPreAlarm.error.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-    //vSYSserial( "    Hight prealarm : ");
-    vENGINEenbToStr( fuel.hightPreAlarm.error.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-
-    //vSYSserial( ">>Coolant temperature \r\n" );
-    //vSYSserial( "    Type           : ");
-    //vSYSserial( cSensorTypes[coolant.temp.type] );
-    //vSYSserial( "\r\n" );
-
-    //vSYSserial( ">>Speed sensor     : " );
-    vENGINEenbToStr( speed.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-    //vSYSserial( "    Teeth number   : " );
-    sprintf( buf, "%d", speedToothNumber.value[0U] );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-    //vSYSserial( "    Low alarm      : ");
-    vENGINEenbToStr( speed.lowAlarm.error.enb, buf );
-    //vSYSserial( buf );
-    //vSYSserial( "\r\n" );
-
-    //vSYSserial( "\r\n" );
-  #endif
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vLOGICprintEngineStatus ( ENGINE_STATUS status )
-{
-  #if ( DEBUG_SERIAL_STATUS > 0U )
-    //vSYSserial( ">>Engine status: " );
-    //vSYSserial( engineStatusStr[status] );
-    //vSYSserial( "\r\n" );
-  #endif
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vLOGICprintEngineCmd ( ENGINE_COMMAND cmd )
-{
-  #if ( DEBUG_SERIAL_STATUS > 0U )
-    //vSYSserial( ">>Engine command  : " );
-    //vSYSserial( engineCmdStr[cmd] );
-    //vSYSserial( "\r\n" );
-  #endif
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vLOGICprintStarterStatus ( STARTER_STATUS status )
-{
-  #if ( DEBUG_SERIAL_STATUS > 0U )
-    //vSYSserial( ">>Starter status  : " );
-    //vSYSserial( starterStatusStr[status] );
-    //vSYSserial( "\r\n" );
-  #endif
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vLOGICprintPlanStopStatus ( STOP_STATUS status )
-{
-  #if ( DEBUG_SERIAL_STATUS > 0U )
-    //vSYSserial( ">>Plan stop status: " );
-    //vSYSserial( planStopStatusStr[status] );
-    //vSYSserial( "\r\n" );
-  #endif
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vLOGICprintEmergencyStopStatus ( EMERGENCY_STATUS status )
-{
-  #ifdef DEBUG
-    //vSYSserial( ">>Emergency status: " );
-    //vSYSserial( emergencyStopStatusStr[status] );
-    //vSYSserial( "\r\n" );
-  #endif
-  return;
 }
 /*----------------------------------------------------------------------------*/
 void vENGINEdataInit ( void )
@@ -1241,7 +1074,6 @@ void vENGINEinit ( void )
     .stack_size = ENGINE_TASK_STACK_SIZE
   };
   engineHandle = osThreadNew( vENGINEtask, NULL, &engineTask_attributes );
-  vENGINEprintSetup();
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -1390,48 +1222,40 @@ void vENGINEtask ( void* argument )
               if ( eSTATUSgetStatus() != DEVICE_STATUS_ERROR )
               {
                 engine.cmd = inputCmd;
-                vLOGICprintEngineCmd( engine.cmd );
               }
               break;
             case ENGINE_STATUS_ERROR:
               if ( inputCmd == ENGINE_CMD_RESET_TO_IDLE )
               {
                 engine.cmd = inputCmd;
-                vLOGICprintEngineCmd( engine.cmd );
               }
               break;
             case ENGINE_STATUS_BUSY_STARTING:
               if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
               {
                 engine.cmd = inputCmd;
-                vLOGICprintEngineCmd( engine.cmd );
               }
               break;
             case ENGINE_STATUS_BUSY_STOPPING:
               if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
               {
                 engine.cmd = inputCmd;
-                vLOGICprintEngineCmd( engine.cmd );
               }
               break;
             case ENGINE_STATUS_WORK:
               engine.cmd = inputCmd;
-              vLOGICprintEngineCmd( engine.cmd );
               break;
             case ENGINE_STATUS_WORK_ON_IDLE:
               engine.cmd = inputCmd;
-              vLOGICprintEngineCmd( engine.cmd );
               break;
             case ENGINE_STATUS_WORK_GOTO_NOMINAL:
               if ( inputCmd == ENGINE_CMD_EMEGENCY_STOP )
               {
                 engine.cmd = inputCmd;
-                vLOGICprintEngineCmd( engine.cmd );
               }
               break;
             default:
               engine.cmd = inputCmd;
-              vLOGICprintEngineCmd( engine.cmd );
               break;
           }
         }
@@ -1518,7 +1342,6 @@ void vENGINEtask ( void* argument )
                 vSTATUSsetup( DEVICE_STATUS_PREHEATING, commonTimer.id );
                 vRELAYset( &preHeater.relay, RELAY_ON );
                 starter.status = STARTER_STATUS_PREHEATING;
-                vLOGICprintStarterStatus( starter.status );
               }
               else
               {
@@ -1529,7 +1352,6 @@ void vENGINEtask ( void* argument )
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 vRELAYset( &preHeater.relay, RELAY_OFF );
-                vLOGICprintStarterStatus( starter.status );
                 starter.status = STARTER_STATUS_FUEL_PREPUMPING;
               }
               break;
@@ -1537,7 +1359,6 @@ void vENGINEtask ( void* argument )
               vRELAYset( &fuel.pump, RELAY_ON  );
               commonTimer.delay = fuelPrePumpingDelay;
               vLOGICstartTimer( &commonTimer, "Common engine timer " );
-              vLOGICprintStarterStatus( starter.status );
               starter.status = STARTER_STATUS_START_PREPARATION;
               break;
             case STARTER_STATUS_START_PREPARATION:
@@ -1545,7 +1366,6 @@ void vENGINEtask ( void* argument )
                    ( uLOGICisTimer( &commonTimer ) >  0U                         ) )
               {
                 starter.status = STARTER_STATUS_READY;
-                vLOGICprintStarterStatus( starter.status );
               }
               break;
             case STARTER_STATUS_READY:
@@ -1570,7 +1390,6 @@ void vENGINEtask ( void* argument )
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 vSTATUSsetup( DEVICE_STATUS_CRANKING, commonTimer.id );
               }
-              vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_STATUS_CRANKING:
               if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
@@ -1584,7 +1403,6 @@ void vENGINEtask ( void* argument )
                 vLOGICresetTimer( &commonTimer );
                 commonTimer.delay = starter.blockDelay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
-                vLOGICprintStarterStatus( starter.status );
                 vSTATUSsetup( DEVICE_STATUS_CONTROL_BLOCK, commonTimer.id );
               }
               if ( uLOGICisTimer( &commonTimer ) > 0U )
@@ -1596,7 +1414,6 @@ void vENGINEtask ( void* argument )
                   starter.status = STARTER_STATUS_CRANK_DELAY;
                   commonTimer.delay = starter.crankDelay;
                   vLOGICstartTimer( &commonTimer, "Common engine timer " );
-                  vLOGICprintStarterStatus( starter.status );
                   vSTATUSsetup( DEVICE_STATUS_CRANK_DELAY, commonTimer.id );
                 }
                 else
@@ -1604,7 +1421,6 @@ void vENGINEtask ( void* argument )
                   vRELAYset( &fuel.pump, RELAY_OFF );
                   vRELAYdelayTrig( &stopSolenoid );
                   starter.status   = STARTER_STATUS_FAIL;
-                  vLOGICprintStarterStatus( starter.status );
                 }
               }
               break;
@@ -1612,7 +1428,6 @@ void vENGINEtask ( void* argument )
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 starter.status = STARTER_STATUS_READY;
-                vLOGICprintStarterStatus( starter.status );
               }
               break;
             case STARTER_STATUS_CONTROL_BLOCK:
@@ -1628,7 +1443,6 @@ void vENGINEtask ( void* argument )
                 battery.hightAlarm.error.active    = PERMISSION_ENABLE;
                 battery.lowAlarm.error.active      = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS );
-                vLOGICprintStarterStatus( starter.status );
                 vSTATUSsetup( DEVICE_STATUS_IDLE_WORK, commonTimer.id );
               }
               break;
@@ -1639,7 +1453,6 @@ void vENGINEtask ( void* argument )
                 commonTimer.delay = starter.nominalDelay;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
                 starter.status = STARTER_STATUS_MOVE_TO_NOMINAL;
-                vLOGICprintStarterStatus( starter.status );
               }
               break;
             case STARTER_STATUS_MOVE_TO_NOMINAL:
@@ -1650,7 +1463,6 @@ void vENGINEtask ( void* argument )
                 starter.status              = STARTER_STATUS_WARMING;
                 speed.lowAlarm.error.active = PERMISSION_ENABLE;
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_IDLE_ALARMS );
-                vLOGICprintStarterStatus( starter.status );
                 vSTATUSsetup( DEVICE_STATUS_WARMING, commonTimer.id );
               }
               break;
@@ -1659,7 +1471,6 @@ void vENGINEtask ( void* argument )
               {
                 starter.status = STARTER_STATUS_OK;
                 vFPOsetGenReady( RELAY_ON );
-                vLOGICprintStarterStatus( starter.status );
               }
               break;
             case STARTER_STATUS_FAIL:
@@ -1672,7 +1483,6 @@ void vENGINEtask ( void* argument )
               starter.iteration        = 0U;
               blockTimerFinish         = TRIGGER_IDLE;
               starterFinish            = TRIGGER_IDLE;
-              vLOGICprintStarterStatus( starter.status );
               break;
             case STARTER_STATUS_OK:
               engine.status     = ENGINE_STATUS_WORK;
@@ -1681,7 +1491,6 @@ void vENGINEtask ( void* argument )
               starter.iteration = 0U;
               ( void )eDATAAPIfreeData( DATA_API_CMD_INC,  ENGINE_STARTS_NUMBER_ADR, NULL );
               ( void )eDATAAPIfreeData( DATA_API_CMD_SAVE, 0U, NULL );
-              vLOGICprintStarterStatus( starter.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_START;
               vEVENTtriggering( event );
@@ -1718,7 +1527,6 @@ void vENGINEtask ( void* argument )
               vFPOsetGenReady( RELAY_OFF );
               commonTimer.delay = planStop.coolingDelay;
               vLOGICstartTimer( &commonTimer, "Common engine timer " );
-              vLOGICprintPlanStopStatus( planStop.status );
               vSTATUSsetup( DEVICE_STATUS_COOLDOWN, commonTimer.id );
               break;
             case STOP_STATUS_COOLDOWN:
@@ -1726,7 +1534,6 @@ void vENGINEtask ( void* argument )
               {
                 planStop.status = STOP_STATUS_WAIT_ELECTRO;
                 vELECTROsendCmd( ELECTRO_CMD_DISABLE_IDLE_ALARMS );
-                vLOGICprintPlanStopStatus( planStop.status );
               }
               break;
             case STOP_STATUS_WAIT_ELECTRO:
@@ -1740,7 +1547,6 @@ void vENGINEtask ( void* argument )
                 speed.lowAlarm.error.active = PERMISSION_DISABLE;
                 planStop.status             = STOP_STATUS_IDLE_COOLDOWN;
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
-                vLOGICprintPlanStopStatus( planStop.status );
                 vSTATUSsetup( DEVICE_STATUS_IDLE_COOLDOWN, commonTimer.id );
               }
               break;
@@ -1756,7 +1562,6 @@ void vENGINEtask ( void* argument )
                 planStop.status   = STOP_STATUS_PROCESSING;
                 vELECTROsendCmd( ELECTRO_CMD_DISABLE_START_ALARMS );
                 vLOGICstartTimer( &commonTimer, "Common engine timer " );
-                vLOGICprintPlanStopStatus( planStop.status );
                 vSTATUSsetup( DEVICE_STATUS_STOP_PROCESSING, commonTimer.id );
               }
               break;
@@ -1764,7 +1569,6 @@ void vENGINEtask ( void* argument )
               if ( uLOGICisTimer( &commonTimer ) > 0U )
               {
                 planStop.status = STOP_STATUS_FAIL;
-                vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
                 engine.stopError.active = PERMISSION_ENABLE;
               }
@@ -1772,7 +1576,6 @@ void vENGINEtask ( void* argument )
               {
                 vLOGICresetTimer( &commonTimer );
                 planStop.status = STOP_STATUS_OK;
-                vLOGICprintPlanStopStatus( planStop.status );
                 vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
               }
               break;
@@ -1783,7 +1586,6 @@ void vENGINEtask ( void* argument )
               blockTimerFinish = TRIGGER_IDLE;
               starterFinish    = TRIGGER_IDLE;
               vMEASUREMENTsendCmd( MEASURMENT_CMD_STOP );
-              vLOGICprintPlanStopStatus( planStop.status );
               break;
             case STOP_STATUS_OK:
               engine.status    = ENGINE_STATUS_IDLE;
@@ -1792,7 +1594,6 @@ void vENGINEtask ( void* argument )
               blockTimerFinish = TRIGGER_IDLE;
               starterFinish    = TRIGGER_IDLE;
               vFPOsetReadyToStart( RELAY_ON );
-              vLOGICprintPlanStopStatus( planStop.status );
               event.action = ACTION_NONE;
               event.type   = EVENT_ENGINE_STOP;
               vMEASUREMENTsendCmd( MEASURMENT_CMD_STOP );
@@ -1801,7 +1602,6 @@ void vENGINEtask ( void* argument )
             default:
               vLOGICresetTimer( &commonTimer );
               planStop.status = STOP_STATUS_FAIL;
-              vLOGICprintPlanStopStatus( planStop.status );
               break;
           }
         }
@@ -1822,7 +1622,6 @@ void vENGINEtask ( void* argument )
               speed.lowAlarm.error.active = 0U;
               vRELAYset( &idleRelay, RELAY_ON );
               vFPOsetGenReady( RELAY_OFF );
-              vLOGICprintEngineStatus( engine.status );
               engine.cmd    = ENGINE_CMD_NONE;
               engine.status = ENGINE_STATUS_WORK_ON_IDLE;
             }
@@ -1840,7 +1639,6 @@ void vENGINEtask ( void* argument )
         {
           case ENGINE_STATUS_WORK_ON_IDLE:
             vRELAYset( &idleRelay, RELAY_OFF );
-            vLOGICprintEngineStatus( engine.status );
             commonTimer.delay = starter.nominalDelay;
             vLOGICstartTimer( &commonTimer, "Common engine timer " );
             engine.status = ENGINE_STATUS_WORK_GOTO_NOMINAL;
@@ -1849,7 +1647,6 @@ void vENGINEtask ( void* argument )
             if ( uLOGICisTimer( &commonTimer ) > 0U )
             {
               engine.status = ENGINE_STATUS_WORK;
-              vLOGICprintEngineStatus( engine.status );
               speed.lowAlarm.error.active = PERMISSION_ENABLE;
               vFPOsetGenReady( RELAY_ON );
               vELECTROsendCmd( ELECTRO_CMD_ENABLE_IDLE_ALARMS );
@@ -1858,7 +1655,6 @@ void vENGINEtask ( void* argument )
             break;
           default:
             engine.cmd = ENGINE_CMD_NONE;
-            vLOGICprintEngineStatus( engine.status );
             break;
         }
         break;
@@ -1869,7 +1665,6 @@ void vENGINEtask ( void* argument )
         switch ( emgencyStopStatus )
         {
           case EMERGENCY_STATUS_IDLE:
-            vLOGICprintEmergencyStopStatus( emgencyStopStatus );
             vELECTROsendCmd( ELECTRO_CMD_ENABLE_STOP_ALARMS );
             vLCD_BrigthOn();
             starter.set( RELAY_OFF );
@@ -1894,7 +1689,6 @@ void vENGINEtask ( void* argument )
             vLOGICresetTimer( &commonTimer );
             commonTimer.delay = planStop.processDelay;
             vLOGICstartTimer( &commonTimer, "Common engine timer " );
-            vLOGICprintEmergencyStopStatus( emgencyStopStatus );
             vSTATUSsetup( DEVICE_STATUS_STOP_PROCESSING, commonTimer.id );
             break;
           case EMERGENCY_STATUS_PROCESSING:
@@ -1910,7 +1704,6 @@ void vENGINEtask ( void* argument )
             break;
           case EMERGENCY_STATUS_END:
             vSTATUSsetup( DEVICE_STATUS_ERROR, LOGIC_DEFAULT_TIMER_ID );
-            vLOGICprintEmergencyStopStatus( emgencyStopStatus );
             emgencyStopStatus       = EMERGENCY_STATUS_IDLE;
             engine.cmd              = ENGINE_CMD_NONE;
             engine.stopError.active = PERMISSION_ENABLE;

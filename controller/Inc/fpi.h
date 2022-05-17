@@ -34,6 +34,7 @@ typedef enum
   FPI_FUN_BAN_AUTO_START,     /* 8  Запрет автоматического запуска    */
   FPI_FUN_BAN_GEN_LOAD,       /* 9  Запрет нагрузки генератора        */
   FPI_FUN_BAN_AUTO_SHUTDOWN,  /* 10 Запрет автоматического останова при восстановлении параметров сети */
+  FPI_FUN_EMERGENCY_STOP      /* 11 */
 } FPI_FUNCTION;
 
 typedef enum
@@ -74,8 +75,8 @@ typedef TRIGGER_STATE ( *armingCallBack )( void ); /* Stream call back type */
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  FPI_LEVEL    level    : 1U;
-  FPI_FUNCTION function : 4U;
+  FPI_LEVEL    level;
+  FPI_FUNCTION function;
   uint8_t      number;
 } FPI_EVENT;
 

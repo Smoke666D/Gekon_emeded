@@ -37,7 +37,8 @@ static const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
   FPI_FUN_IDLING,
   FPI_FUN_BAN_AUTO_START,
   FPI_FUN_BAN_GEN_LOAD,
-  FPI_FUN_BAN_AUTO_SHUTDOWN
+  FPI_FUN_BAN_AUTO_SHUTDOWN,
+  FPI_FUN_EMERGENCY_STOP
 };
 static const SYSTEM_EVENT_TYPE eFPIuserEventTypeList[FPI_NUMBER] =
 {
@@ -60,29 +61,6 @@ static const eConfigReg* pFPIregDelay[FPI_NUMBER] =
   &dicDelay,
   &didDelay,
 };
-/*
-static const char* cFPIfunctionNames[FPI_FUNCTION_NUM] =
-{
-  "NONE",
-  "USER",
-  "ALARM_RESET",
-  "OIL_LOW_PRESSURE",
-  "HIGHT_ENGINE_TEMP",
-  "LOW_FUEL",
-  "REMOTE_START",
-  "IDLING",
-  "BAN_AUTO_START",
-  "BAN_GEN_LOAD",
-  "BAN_AUTO_SHUTDOWN"
-};
-static const char* cFPInames[FPI_NUMBER] =
-{
-  "A",
-  "B",
-  "C",
-  "D"
-};
-*/
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t  eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
 static FPI      fpis[FPI_NUMBER]                         = { 0U };
@@ -162,21 +140,6 @@ void vFPIcheckReset ( FPI* fpi )
     vLOGICresetTimer( &fpi->timer );
     fpi->state = FPI_IDLE;
   }
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vFPIprintSetup ( void )
-{
-  uint8_t i = 0U;
-  for ( i=0U; i<FPI_NUMBER; i++ )
-  {
-    //vSYSserial( ">>FPI " );
-    //vSYSserial( cFPInames[i] );
-    //vSYSserial( "        : " );
-    //vSYSserial( cFPIfunctionNames[ ( uint8_t )( fpis[i].function ) ] );
-    //vSYSserial( "\n\r" );
-  }
-  //vSYSserial( "\n\r" );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -279,7 +242,6 @@ void vFPIinit ( const FPI_INIT* init )
     .stack_size = FPI_TASK_STACK_SIZE
   };
   fpiHandle = osThreadNew( vFPITask, NULL, &fpiTask_attributes );
-  vFPIprintSetup();
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -296,9 +258,7 @@ QueueHandle_t pFPIgetQueue ( void )
 FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
 {
   FPI_LEVEL level = FPI_LEVEL_LOW;
-  uint8_t   i     = 0U;
-
-  for ( i=0U; i<FPI_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
   {
     if ( fpis[i].function == function )
     {
@@ -311,10 +271,9 @@ FPI_LEVEL eFPIcheckLevel ( FPI_FUNCTION function )
 /*----------------------------------------------------------------------------*/
 void vFPIreset ( void )
 {
-  uint8_t i = 0U;
   if ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) == pdTRUE )
   {
-    for ( i=0U; i<FPI_NUMBER; i++ )
+    for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
     {
       if ( ( fpis[i].function == FPI_FUN_USER              ) ||
            ( fpis[i].function == FPI_FUN_OIL_LOW_PRESSURE  ) ||
@@ -332,24 +291,13 @@ void vFPIreset ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFPIprint ( FPI_FUNCTION function, const char* str )
-{
-  //vSYSserial( ">>" );
-  //vSYSserial( cFPIfunctionNames[ ( uint8_t )( function ) ] );
-  //vSYSserial( ": " );
-  //vSYSserial( str );
-  //vSYSserial( "\r\n" );
-  return;
-}
-/*----------------------------------------------------------------------------*/
 void vFPIsetBlock ( void )
 {
-  uint8_t i = 0U;
   while ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) != pdTRUE )
   {
     osDelay( 10U );
   }
-  for ( i=0U; i<FPI_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
   {
     fpis[i].state   = FPI_IDLE;
     fpis[i].trigger = TRIGGER_IDLE;
@@ -386,11 +334,10 @@ SYSTEM_EVENT_TYPE eFPIgetUserEventType ( uint8_t n )
 void vFPITask ( void* argument )
 {
   FPI_EVENT   event = { 0U };
-  uint8_t     i     = 0U;
   for (;;)
   {
     #ifdef DEBUG
-      for ( i=0U; i<FPI_NUMBER; i++ )
+      for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
       {
         testFPI[i] = HAL_GPIO_ReadPin( fpis[i].port, fpis[i].pin );
       }
@@ -403,7 +350,7 @@ void vFPITask ( void* argument )
     }
     if ( xSemaphoreTake( xFPIsemaphore, FPI_TASK_DELAY ) == pdTRUE )
     {
-      for ( i=0U; i<FPI_NUMBER; i++ )
+      for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
       {
         if ( fpis[i].function != FPI_FUN_NONE )
         {

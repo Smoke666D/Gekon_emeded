@@ -792,13 +792,11 @@ void vELECTROtask ( void* argument )
             {
               vRELAYset( &mains.relay, RELAY_OFF );
               vRELAYdelayTrig( &mains.relayOff );
-              vLOGICprintDebug( ">>Electro         : Disconnect mains\r\n" );
              }
              if ( generator.state == ELECTRO_STATUS_LOAD )
              {
                vRELAYset( &generator.relay, RELAY_OFF );
                vRELAYdelayTrig( &generator.relayOff );
-               vLOGICprintDebug( ">>Electro         : Disconnect generator\r\n" );
              }
              electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
             break;
@@ -810,7 +808,6 @@ void vELECTROtask ( void* argument )
               generator.state = ELECTRO_STATUS_IDLE;
               electro.state   = ELECTRO_PROC_STATUS_IDLE;
               electro.cmd     = ELECTRO_CMD_NONE;
-              vLOGICprintDebug( ">>Electro         : Unload done\r\n" );
             }
             break;
           default:
@@ -828,14 +825,12 @@ void vELECTROtask ( void* argument )
               vRELAYset( &generator.relay, RELAY_OFF );
               vRELAYdelayTrig( &generator.relayOff );
               electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
-              vLOGICprintDebug( ">>Electro         : Disconnect Generator\r\n" );
               break;
             case ELECTRO_PROC_STATUS_DISCONNECT:
               if ( generator.relayOff.status == RELAY_DELAY_IDLE )
               {
                 vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state   = ELECTRO_PROC_STATUS_CONNECT;
-                vLOGICprintDebug( ">>Electro         : Reconnect delay\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
@@ -845,7 +840,6 @@ void vELECTROtask ( void* argument )
                 vRELAYset( &mains.relay, RELAY_ON );
                 vRELAYdelayTrig( &mains.relayOn );
                 electro.state = ELECTRO_PROC_STATUS_DONE;
-                vLOGICprintDebug( ">>Electro         : Connect mains\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_DONE:
@@ -853,7 +847,6 @@ void vELECTROtask ( void* argument )
               {
                 mains.state   = ELECTRO_STATUS_LOAD;
                 vELECTROreset();
-                vLOGICprintDebug( ">>Electro         : Mains connection done\r\n" );
               }
               break;
             default:
@@ -875,14 +868,12 @@ void vELECTROtask ( void* argument )
               vRELAYset( &mains.relay, RELAY_OFF );
               vRELAYdelayTrig( &mains.relayOff );
               electro.state = ELECTRO_PROC_STATUS_DISCONNECT;
-              vLOGICprintDebug( ">>Electro         : Disconnect mains\r\n" );
               break;
             case ELECTRO_PROC_STATUS_DISCONNECT:
               if ( mains.relayOff.status == RELAY_DELAY_IDLE )
               {
                 vLOGICstartTimer( &electro.timer, "Electro timer       " );
                 electro.state = ELECTRO_PROC_STATUS_CONNECT;
-                vLOGICprintDebug( ">>Electro         : Reconnect delay\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_CONNECT:
@@ -892,7 +883,6 @@ void vELECTROtask ( void* argument )
                 vRELAYset( &generator.relay, RELAY_ON );
                 vRELAYdelayTrig( &generator.relayOn );
                 electro.state = ELECTRO_PROC_STATUS_DONE;
-                vLOGICprintDebug( ">>Electro         : Connect generator\r\n" );
               }
               break;
             case ELECTRO_PROC_STATUS_DONE:
@@ -901,7 +891,6 @@ void vELECTROtask ( void* argument )
                 generator.state = ELECTRO_STATUS_LOAD;
                 electro.state   = ELECTRO_STATUS_IDLE;
                 electro.cmd     = ELECTRO_CMD_NONE;
-                vLOGICprintDebug( ">>Electro         : Generator connection done\r\n" );
               }
               break;
             default:
@@ -937,7 +926,6 @@ void vELECTROtask ( void* argument )
         generator.phaseSequenceError.enb            = PERMISSION_DISABLE;
         electro.alarmState                          = ELECTRO_ALARM_STATUS_STOP;
         electro.cmd                                 = ELECTRO_CMD_NONE;
-        vLOGICprintDebug( ">>Electro         : Alarms set as stop state\r\n" );
         break;
       case ELECTRO_CMD_DISABLE_START_ALARMS:
         mains.lowVoltageAlarm.error.active          = PERMISSION_DISABLE;
@@ -958,7 +946,6 @@ void vELECTROtask ( void* argument )
         generator.phaseSequenceError.enb            = PERMISSION_DISABLE;
         electro.alarmState                          = ELECTRO_ALARM_STATUS_START;
         electro.cmd                                 = ELECTRO_CMD_NONE;
-        vLOGICprintDebug( ">>Electro         : Alarms set as start state\r\n" );
         break;
       case ELECTRO_CMD_ENABLE_START_TO_IDLE_ALARMS:
         mains.lowVoltageAlarm.error.active          = PERMISSION_ENABLE;
@@ -994,7 +981,6 @@ void vELECTROtask ( void* argument )
         vALARMreset( &generator.currentWarningAlarm  );
         electro.alarmState = ELECTRO_ALARM_STATUS_START_ON_IDLE;
         electro.cmd        = ELECTRO_CMD_NONE;
-        vLOGICprintDebug( ">>Electro         : Alarms set as start on idle\r\n" );
         break;
       case ELECTRO_CMD_DISABLE_IDLE_ALARMS:
         generator.lowFreqAlarm.error.active       = PERMISSION_DISABLE;
@@ -1003,7 +989,6 @@ void vELECTROtask ( void* argument )
         generator.lowVoltagePreAlarm.error.active = PERMISSION_DISABLE;
         electro.alarmState                        = ELECTRO_ALARM_STATUS_WORK_ON_IDLE;
         electro.cmd                               = ELECTRO_CMD_NONE;
-        vLOGICprintDebug( ">>Electro         : Alarms set as work on idle\r\n" );
         break;
       case ELECTRO_CMD_ENABLE_IDLE_ALARMS:
         generator.lowFreqAlarm.error.active       = PERMISSION_ENABLE;
@@ -1016,7 +1001,6 @@ void vELECTROtask ( void* argument )
         vALARMreset( &generator.lowVoltagePreAlarm );
         electro.alarmState = ELECTRO_ALARM_STATUS_WORK;
         electro.cmd        = ELECTRO_CMD_NONE;
-        vLOGICprintDebug( ">>Electro         : Alarms set as normal work\r\n" );
         break;
       case ELECTRO_CMD_RESET_TO_IDLE:
         mains.lowVoltageAlarm.error.active        = PERMISSION_ENABLE;
@@ -1052,12 +1036,10 @@ void vELECTROtask ( void* argument )
         vLOGICresetTimer( &mains.relayOn.timer       );
         vLOGICresetTimer( &mains.relayOff.timer      );
         generator.currentAlarm.state = ELECTRO_CURRENT_STATUS_IDLE;
-        vLOGICprintDebug( ">>Electro         : Set to idle \r\n" );
         electro.alarmState = ELECTRO_ALARM_STATUS_STOP;
         electro.cmd        = ELECTRO_CMD_NONE;
         break;
       default:
-        vLOGICprintDebug( ">>Electro         : Error command\r\n" );
         break;
     }
     /*----------------------- Output processing ------------------------*/

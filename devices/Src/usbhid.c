@@ -112,7 +112,7 @@ USB_CONN_STATUS eUSBgetStatus ( void )
  */
 USBD_StatusTypeDef eUSBwrite ( uint8_t* data, uint8_t length )
 {
-  return USBD_CUSTOM_HID_SendReport( &hUsbDeviceFS, data, USB_REPORT_SIZE ); //
+  return USBD_CUSTOM_HID_SendReport( &hUsbDeviceFS, data, USB_REPORT_SIZE );
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBtimeToReport ( USB_REPORT* report )
@@ -154,11 +154,12 @@ void vUSBlogToReport ( USB_REPORT* report )
   report->length = 6U;
   while ( status == DATA_API_STAT_BUSY )
   {
-    status = eDATAAPIlog( DATA_API_CMD_LOAD, &report->adr, &record );
+    uint16_t buf = report->adr;
+    status = eDATAAPIlog( DATA_API_CMD_LOAD, &buf, &record );
   }
   if ( status == DATA_API_STAT_OK )
   {
-    report->stat     = USB_REPORT_STATE_OK;
+    report->stat = USB_REPORT_STATE_OK;
     vUint32ToBytes( record.time, report->data );
     report->data[4U] = ( uint8_t )( record.event.type   );
     report->data[5U] = ( uint8_t )( record.event.action );
@@ -179,10 +180,9 @@ void vUSBlogToReport ( USB_REPORT* report )
  */
 void vUSBconfigToReport ( USB_REPORT* report )
 {
-  uint8_t i = 0U;
   if ( report->adr < SETTING_REGISTER_NUMBER )
   {
-    for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
+    for ( uint8_t i=0U; i<configReg[report->adr]->atrib->len; i++ )
     {
       vUint16ToBytes( configReg[report->adr]->value[i], &report->data[ 2U * i ] );
     }
@@ -439,7 +439,6 @@ USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
 {
   USB_STATUS      res                        = USB_STATUS_DONE;
   uint8_t         count                      = 0U;
-  uint8_t         i                          = 0U;
   uint8_t         length                     = 0U;
   uint16_t        valueBuf[MAX_VALUE_LENGTH] = { 0U };
   DATA_API_STATUS status                     = DATA_API_STAT_BUSY;
@@ -450,7 +449,7 @@ USB_STATUS eUSBreportToConfig ( const USB_REPORT* report )
     if ( length == report->length )
     {
       /*----------- Configuration value -----------*/
-      for ( i=0U; i<configReg[report->adr]->atrib->len; i++ )
+      for ( uint8_t i=0U; i<configReg[report->adr]->atrib->len; i++ )
       {
         valueBuf[i] = uByteToUnit16( &report->data[count + ( 2U * i )]  );
       }
@@ -540,22 +539,18 @@ USB_STATUS eUSBreportToChart ( const USB_REPORT* report )
  */
 void vUSBmakeReport ( USB_REPORT* report )
 {
-  uint8_t i   = 0U;
   uint8_t len = USB_DATA_SIZE;
   report->buf[USB_DIR_BYTE]  = USB_GET_DIR_VAL( report->dir );
   report->buf[USB_CMD_BYTE]  = report->cmd;
   report->buf[USB_STAT_BYTE] = report->stat;
-  report->buf[USB_ADR0_BYTE] = ( uint8_t )( report->adr );
-  report->buf[USB_ADR1_BYTE] = ( uint8_t )( report->adr >> 8U );
-  report->buf[USB_LEN0_BYTE] = ( uint8_t )( report->length );
-  report->buf[USB_LEN1_BYTE] = ( uint8_t )( report->length >> 8U );
-  report->buf[USB_LEN2_BYTE] = ( uint8_t )( report->length >> 16U );
+  report->buf[USB_ADR0_BYTE] = report->adr;
+  report->buf[USB_LEN0_BYTE] = report->length;
 
   if ( report->length < USB_DATA_SIZE )
   {
     len = report->length;
   }
-  for ( i=0U; i<len; i++ )
+  for ( uint8_t i=0U; i<len; i++ )
   {
     report->buf[USB_DATA_BYTE + i] = report->data[i];
   }
@@ -572,10 +567,8 @@ void vUSBparseReport ( USB_REPORT* report )
   report->dir    = USB_GET_DIR( report->buf[USB_DIR_BYTE] );
   report->cmd    = report->buf[USB_CMD_BYTE];
   report->stat   = report->buf[USB_STAT_BYTE];
-  report->adr    = uByteToUnit16( &report->buf[USB_ADR0_BYTE] );
-  report->length = ( ( ( uint32_t )( report->buf[USB_LEN2_BYTE] ) ) << 16U ) |
-                   ( ( ( uint32_t )( report->buf[USB_LEN1_BYTE] ) ) <<  8U ) |
-		               ( ( ( uint32_t )( report->buf[USB_LEN0_BYTE] ) )        );
+  report->adr    = report->buf[USB_ADR0_BYTE];
+  report->length = report->buf[USB_LEN0_BYTE];
   report->data   = &( report->buf[USB_DATA_BYTE] );
   return;
 }
@@ -707,7 +700,6 @@ USB_STATUS eUSBreportToOutput ( const USB_REPORT* report )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBsend ( USB_REPORT* request, void ( *callback )( USB_REPORT* ) )
 {
-  uint16_t   i      = 0U;
   USB_REPORT report =
   {
     .dir  = USB_REPORT_DIR_OUTPUT,
@@ -724,7 +716,7 @@ void vUSBsend ( USB_REPORT* request, void ( *callback )( USB_REPORT* ) )
   else
   {
     report.stat = USB_REPORT_STATE_UNAUTHORIZED;
-    for ( i=0U; i<USB_REPORT_SIZE; i++ )
+    for ( uint16_t i=0U; i<USB_REPORT_SIZE; i++ )
     {
       outputBuffer[i] = 0U;
     }
@@ -735,7 +727,6 @@ void vUSBsend ( USB_REPORT* request, void ( *callback )( USB_REPORT* ) )
 /*---------------------------------------------------------------------------------------------------*/
 void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* ) )
 {
-  uint16_t   i        = 0U;
   USB_STATUS res      = USB_STATUS_DONE;
   USB_REPORT response =
   {
@@ -746,7 +737,6 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
     .buf    = outputBuffer,
     .data   = &outputBuffer[USB_DATA_BYTE],
   };
-
   if ( ( usbAuthorization == AUTH_DONE ) || ( report->cmd == USB_REPORT_CMD_AUTHORIZATION ) )
   {
     if ( eCONTROLLERgetMode() == CONTROLLER_MODE_MANUAL )
@@ -797,7 +787,7 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
       response.stat = USB_REPORT_STATE_BAD_REQ;
       break;
   }
-  for ( i=0U; i<USB_REPORT_SIZE; i++ )
+  for ( uint16_t i=0U; i<USB_REPORT_SIZE; i++ )
   {
     outputBuffer[i] = 0U;
   }
@@ -815,11 +805,9 @@ void vUSBget ( USB_REPORT* report, USB_STATUS ( *callback )( const USB_REPORT* )
 void vUSBreceiveHandler ( void )
 {
   USBD_CUSTOM_HID_HandleTypeDef* hhid  = ( USBD_CUSTOM_HID_HandleTypeDef* )hUsbDeviceFS.pClassData;
-  uint8_t                        i     = 0U;
   BaseType_t                     yield = pdFALSE;
-
   /* Copy input buffer to local buffer */
-  for ( i=0U; i<USB_REPORT_SIZE; i++ )
+  for ( uint8_t i=0U; i<USB_REPORT_SIZE; i++ )
   {
     inputBuffer[i] = hhid->Report_buf[i];
   }
@@ -921,9 +909,6 @@ void vStartUsbTask ( void *argument )
         case USB_REPORT_CMD_PUT_OUTPUT:
           vUSBget( &report, eUSBreportToOutput );
           break;
-
-
-
         case USB_REPORT_CMD_GET_MEASUREMENT:
           vUSBsend( &report, vUSBmeasurementToReport );
           break;
@@ -935,6 +920,7 @@ void vStartUsbTask ( void *argument )
       }
     }
   }
+  return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

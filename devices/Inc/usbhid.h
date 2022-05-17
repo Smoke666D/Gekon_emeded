@@ -84,31 +84,30 @@ typedef enum
   USB_REPORT_CMD_GET_OUTPUT             = 0x19U,
   USB_REPORT_CMD_PUT_OUTPUT             = 0x1AU
 } USB_REPORT_CMD;
-/*------------------------------ Default -------------------------------------*/
-#define USB_REPORT_SIZE       ( REPORT_COUNT + 1U )
-#define USB_QUEUE_SIZE        10U
-/*------------------------------ Report --------------------------------------*/
 /*
- * |  0  |  1  |  2   |  3   |  4   |  5   |  6   |  7   |  ...  | ... |  64 |
- * | DIR | CMD | STAT | ADR1 | ADR0 | LEN2 | LEN1 | LEN0 | DATA  | ... | ... |
+ * |  0  |  1  |  2   |  3   |  4   |  ...  | ... |  64 |
+ * | DIR | CMD | STAT | ADR0 | LEN0 | DATA  | ... | ... |
  */
-#define USB_DIR_BYTE          0x00U
-#define USB_CMD_BYTE          0x01U
-#define USB_STAT_BYTE         0x02U
-#define USB_ADR1_BYTE         0x03U
-#define USB_ADR0_BYTE         0x04U
-#define USB_LEN2_BYTE         0x05U
-#define USB_LEN1_BYTE         0x06U
-#define USB_LEN0_BYTE         0x07U
-#define USB_DATA_BYTE         0x08U
-
-#define USB_DATA_SIZE         ( USB_REPORT_SIZE - USB_DATA_BYTE )
-
-#define USB_INPUT_REPORT_ID   0x01U    /* Direction - first byte in report */
-#define USB_OUTPUT_REPORT_ID  0x02U    /* Direction - first byte in report */
+typedef enum
+{
+  USB_DIR_BYTE,
+  USB_CMD_BYTE,
+  USB_STAT_BYTE,
+  USB_ADR0_BYTE,
+  USB_LEN0_BYTE,
+  USB_DATA_BYTE,
+} USB_BYTES;
+typedef enum
+{
+  USB_INPUT_REPORT_ID  = 0x01U,    /* Direction - first byte in report */
+  USB_OUTPUT_REPORT_ID = 0x02U     /* Direction - first byte in report */
+} USB_REPORT_ID;
+/*------------------------------ Default -------------------------------------*/
+#define USB_REPORT_SIZE ( REPORT_COUNT + 1U )
+#define USB_DATA_SIZE   ( USB_REPORT_SIZE - USB_DATA_BYTE )
 /*------------------------------ Macros --------------------------------------*/
-#define USB_GET_DIR_VAL(e)    ( e == USB_REPORT_DIR_INPUT ) ? ( USB_INPUT_REPORT_ID ) : ( USB_OUTPUT_REPORT_ID )
-#define USB_GET_DIR(e)        ( e == USB_INPUT_REPORT_ID ) ? ( USB_REPORT_DIR_INPUT ) : ( USB_REPORT_DIR_OUTPUT )
+#define USB_GET_DIR_VAL( e ) ( e == USB_REPORT_DIR_INPUT ) ? ( USB_INPUT_REPORT_ID ) : ( USB_OUTPUT_REPORT_ID )
+#define USB_GET_DIR( e )     ( e == USB_INPUT_REPORT_ID ) ? ( USB_REPORT_DIR_INPUT ) : ( USB_REPORT_DIR_OUTPUT )
 #if ( USBD_CUSTOMHID_OUTREPORT_BUF_SIZE < ( REPORT_COUNT + 1U ) )
   #error "Wrong USB buffer size"
 #endif
@@ -125,9 +124,9 @@ typedef struct __packed
   USB_REPORT_DIR   dir;     /* Direction of transaction */
   USB_REPORT_CMD   cmd;     /* Command */
   USB_REPORT_STATE stat;    /* Status of transaction */
-  uint16_t         adr;     /* Address of register */
+  uint8_t          adr;     /* Address of register */
   uint8_t*         data;    /* Data array */
-  uint32_t         length;  /* Length of data array */
+  uint8_t          length;  /* Length of data array */
   uint8_t*         buf;     /* Pointer to the IO buffer */
   uint8_t          multi;   /* Number of USB messages for one report*/
 } USB_REPORT;

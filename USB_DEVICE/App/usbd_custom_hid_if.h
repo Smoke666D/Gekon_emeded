@@ -50,7 +50,7 @@
   */
 
 /* USER CODE BEGIN EXPORTED_DEFINES */
-#define  REPORT_COUNT  16U
+#define  REPORT_COUNT  16U // may be -3 (There are 3 unused bytes)
 /* USER CODE END EXPORTED_DEFINES */
 
 /**

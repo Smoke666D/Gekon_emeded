@@ -95,10 +95,8 @@ fix16_t fix16_ln ( fix16_t x )
  */
 fix16_t fix16_pow ( fix16_t x, fix16_t y )
 {
-  uint8_t i      = 0U;
   fix16_t expPow = 0U;
   fix16_t res    = 0U;
-
   if ( x == 0U )
   {
     res = 0U;
@@ -110,7 +108,7 @@ fix16_t fix16_pow ( fix16_t x, fix16_t y )
   else
   {
     expPow = fix16_mul( fix16_ln( x ), y );
-    for ( i=0U; i<SERIES_SIZE; i++ )
+    for ( uint8_t i=0U; i<SERIES_SIZE; i++ )
     {
       res = fix16_add( res, fix16_div( fix16_naturalPow( expPow, i ), fix16_fact[i] ) );
     }

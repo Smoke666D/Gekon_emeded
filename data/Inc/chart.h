@@ -16,7 +16,8 @@
 /*------------------------ Define --------------------------------------*/
 #define CHART_UNIT_LENGTH       3U
 #define CHART_DOTS_SIZE         32U
-#define CHART_CHART_SIZE        ( CHART_DOTS_SIZE * 8U + CHART_UNIT_LENGTH )  //1027U  /* byte */
+#define CHART_DOT_SIZE          8U  /* bytes */
+#define CHART_CHART_SIZE        ( ( CHART_DOTS_SIZE ) * ( CHART_DOT_SIZE ) + ( CHART_UNIT_LENGTH ) )  //1027U  /* byte */
 #define CHART_NUMBER            3U
 #define CHART_DATA_XMIN_STR     "xmin"
 #define CHART_DATA_XMAX_STR     "xmax"

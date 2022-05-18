@@ -12,6 +12,7 @@
 #include "electro.h"
 #include "engine.h"
 #include "adc.h"
+#include "constants.h"
 /*-------------------------------- Structures --------------------------------*/
 static STATISTICS_TYPE     statistics = { 0U };
 static MAINTENCE_TYPE      maintence  = { 0U };
@@ -19,9 +20,7 @@ static FUEL_STATISTIC_TYPE fuel       = { 0U };
 /*---------------------------------- MACROS ----------------------------------*/
 
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t fix60       = F16( 60U );   /* --- */
-static const fix16_t fix100      = F16( 100U );  /* --- */
-static const fix16_t fuelDensity = F16( 850U );  /* gram/liter */
+
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t minCounter = 0U;
 static uint8_t startFl    = 0U;
@@ -286,11 +285,9 @@ void vSTATISTICSprocessing ( void )
   uint16_t      data   = 0U;
   ENGINE_STATUS status = eENGINEgetEngineStatus();
   uint8_t       update = 0U;
-
   vALARMcheck( &maintence.oil.alarm,  fix16_from_int( maintence.oil.data  ) );
   vALARMcheck( &maintence.air.alarm,  fix16_from_int( maintence.air.data  ) );
   vALARMcheck( &maintence.fuel.alarm, fix16_from_int( maintence.fuel.data ) );
-
   if ( ( status == ENGINE_STATUS_WORK ) && ( startFl == 0U ) )
   {
     fuel.stopLeakError.active       = PERMISSION_ENABLE;
@@ -309,7 +306,6 @@ void vSTATISTICSprocessing ( void )
   {
 
   }
-
   switch ( statistics.status )
   {
     case STATISTICS_STATUS_STOP:

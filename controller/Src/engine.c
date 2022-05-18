@@ -25,6 +25,7 @@
 #include "charger.h"
 #include "system.h"
 #include "measurement.h"
+#include "constants.h"
 /*-------------------------------- Structures --------------------------------*/
 static ENGINE_TYPE        engine              = { 0U };
 static OIL_TYPE           oil                 = { 0U };
@@ -42,7 +43,6 @@ static StaticQueue_t      xEngineCommandQueue = { 0U };
 static QueueHandle_t      pEngineCommandQueue = NULL;
 static EMERGENCY_STATUS   emgencyStopStatus   = EMERGENCY_STATUS_IDLE;
 /*--------------------------------- Constant ---------------------------------*/
-static const fix16_t fix60                  = F16( 60U );                      /* --- */
 static const fix16_t chargerImpulseDuration = F16( CHARGER_IMPULSE_DURATION ); /* sec */
 static const fix16_t oilTrashhold           = F16( 0.015 );                    /* Bar */
 static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );      /* Ohm */
@@ -425,32 +425,31 @@ fix16_t fCHARGERprocess ( void )
 }
 
 /*----------------------------------------------------------------------------*/
-uint8_t uENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t speed )
+ENGINE_START_SOURCE eENGINEisWork ( fix16_t freq, fix16_t pressure, fix16_t voltage, fix16_t speed )
 {
-  uint8_t res = 0U;
+  ENGINE_START_SOURCE res = ENGINE_START_NO;
   if ( starter.startCrit.critGenFreqEnb == PERMISSION_ENABLE )
   {
     if ( vADCGetGenFreqPres() == FREQ_DETECTED )
     {
-      res = 1U;
+      res = ENGINE_START_BY_GENERATOR_FREQ_DETECTION;
     }
     if ( ( freq >= starter.startCrit.critGenFreqLevel ) && ( res == 0U ) )
     {
-      res = 1U;
+      res = ENGINE_START_BY_GENERATOR_FREQ;
     }
   }
-  if ( ( starter.startCrit.critOilPressEnb == PERMISSION_ENABLE ) &&
-       ( pressure >= starter.startCrit.critOilPressLevel ) )
+  if ( ( starter.startCrit.critOilPressEnb == PERMISSION_ENABLE ) && ( pressure >= starter.startCrit.critOilPressLevel ) )
   {
-    res = 1U;
+    res = ENGINE_START_BY_OIL_PRESSURE;
   }
   if ( ( starter.startCrit.critChargeEnb == PERMISSION_ENABLE ) && ( voltage >= starter.startCrit.critChargeLevel ) )
   {
-    res = 1U;
+    res = ENGINE_START_BY_CHARGER_VOLTAGE;
   }
   if ( ( starter.startCrit.critSpeedEnb == PERMISSION_ENABLE ) && ( speed >= starter.startCrit.critSpeedLevel ) )
   {
-    res = 1U;
+    res = ENGINE_START_BY_VELOCITY;
   }
   return res;
 }
@@ -459,14 +458,11 @@ uint8_t uENGINEisStop ( fix16_t voltage, fix16_t freq, fix16_t pressure, TRIGGER
 {
   uint8_t oilRes = 0U;
   uint8_t res    = 0U;
-
   if ( engine.startCheckOil == PERMISSION_ENABLE )
   {
     if ( uSENSORisAnalog( oil.pressure ) > 0U )
     {
-      if ( ( pressure < oil.trashhold ) ||
-	         ( oil.pressure.cutout.trig != TRIGGER_IDLE ) ||
-           ( engine.sensorCommonError.trig != TRIGGER_IDLE ) )
+      if ( ( pressure < oil.trashhold ) || ( oil.pressure.cutout.trig != TRIGGER_IDLE ) || ( engine.sensorCommonError.trig != TRIGGER_IDLE ) )
       {
         oilRes = 1U;
       }
@@ -501,10 +497,9 @@ uint8_t uENGINEisUnban( void )
 {
   uint8_t         res    = 1U;
   uint8_t         size   = 0U;
-  uint8_t         i      = 0U;
   LOG_RECORD_TYPE record = { 0U };
   ( void )eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, NULL, &size );
-  for ( i=0U; i<size; i++ )
+  for ( uint8_t i=0U; i<size; i++ )
   {
     ( void )eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
     if ( record.event.action == ACTION_BAN_START )
@@ -1369,7 +1364,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_STATUS_READY:
-              if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
+              if ( eENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) != ENGINE_START_NO )
               {
                 vLCD_BrigthOn();
                 vDATAAPIsendEventAll( DATA_API_REDRAW_DISPLAY );
@@ -1392,7 +1387,7 @@ void vENGINEtask ( void* argument )
               }
               break;
             case STARTER_STATUS_CRANKING:
-              if ( uENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) > 0U )
+              if ( eENGINEisWork( genFreqVal, oilVal, chargerVal, currentSpeed ) != ENGINE_START_NO )
               {
                 starter.set( RELAY_OFF );
                 starterFinish  = 1U;

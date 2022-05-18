@@ -27,47 +27,44 @@ static SemaphoreHandle_t xFPIsemaphore = NULL;
 /*--------------------------------- Constant ---------------------------------*/
 static const FPI_FUNCTION eFPIfuncList[FPI_FUNCTION_NUM] =
 {
-  FPI_FUN_NONE,
-  FPI_FUN_USER,
-  FPI_FUN_ALARM_RESET,
-  FPI_FUN_OIL_LOW_PRESSURE,
-  FPI_FUN_HIGHT_ENGINE_TEMP,
-  FPI_FUN_LOW_FUEL,
-  FPI_FUN_REMOTE_START,
-  FPI_FUN_IDLING,
-  FPI_FUN_BAN_AUTO_START,
-  FPI_FUN_BAN_GEN_LOAD,
-  FPI_FUN_BAN_AUTO_SHUTDOWN,
-  FPI_FUN_EMERGENCY_STOP
+  FPI_FUN_NONE,              /* 00 */
+  FPI_FUN_USER,              /* 01 */
+  FPI_FUN_ALARM_RESET,       /* 02 */
+  FPI_FUN_OIL_LOW_PRESSURE,  /* 03 */
+  FPI_FUN_HIGHT_ENGINE_TEMP, /* 04 */
+  FPI_FUN_LOW_FUEL,          /* 05 */
+  FPI_FUN_REMOTE_START,      /* 06 */
+  FPI_FUN_IDLING,            /* 07 */
+  FPI_FUN_BAN_AUTO_START,    /* 08 */
+  FPI_FUN_BAN_GEN_LOAD,      /* 09 */
+  FPI_FUN_BAN_AUTO_SHUTDOWN, /* 10 */
+  FPI_FUN_EMERGENCY_STOP     /* 11 */
 };
 static const SYSTEM_EVENT_TYPE eFPIuserEventTypeList[FPI_NUMBER] =
 {
-  EVENT_USER_FUNCTION_A,
-  EVENT_USER_FUNCTION_B,
-  EVENT_USER_FUNCTION_C,
-  EVENT_USER_FUNCTION_D,
+  EVENT_USER_FUNCTION_A, /* 0 */
+  EVENT_USER_FUNCTION_B, /* 1 */
+  EVENT_USER_FUNCTION_C, /* 2 */
+  EVENT_USER_FUNCTION_D, /* 3 */
 };
 static const eConfigReg* pFPIregConfig[FPI_NUMBER] =
 {
-  &diaSetup,
-  &dibSetup,
-  &dicSetup,
-  &didSetup
+  &diaSetup, /* 0 */
+  &dibSetup, /* 1 */
+  &dicSetup, /* 2 */
+  &didSetup  /* 3 */
 };
 static const eConfigReg* pFPIregDelay[FPI_NUMBER] =
 {
-  &diaDelay,
-  &dibDelay,
-  &dicDelay,
-  &didDelay,
+  &diaDelay, /* 0 */
+  &dibDelay, /* 1 */
+  &dicDelay, /* 2 */
+  &didDelay, /* 3 */
 };
 /*-------------------------------- Variables ---------------------------------*/
 static uint8_t  eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
 static FPI      fpis[FPI_NUMBER]                         = { 0U };
 static uint16_t fpiDataReg                               = 0U;
-#ifdef DEBUG
-  static GPIO_PinState testFPI[FPI_NUMBER] = { GPIO_PIN_RESET };
-#endif
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -105,7 +102,7 @@ FPI_LEVEL eFPIgetLevel ( const FPI* fpi )
  */
 TRIGGER_STATE eFPIgetTrig ( FPI* fpi )
 {
-  TRIGGER_STATE res      = TRIGGER_IDLE;
+  TRIGGER_STATE res = TRIGGER_IDLE;
   if ( fpi->port != NULL )
   {
     if ( eFPIgetLevel( fpi ) == FPI_LEVEL_HIGH )
@@ -145,9 +142,8 @@ void vFPIcheckReset ( FPI* fpi )
 /*----------------------------------------------------------------------------*/
 void vFPIdataInit ( void )
 {
-  uint8_t    i     = 0U;
   FPI_ACTION input = FPI_ACT_NONE;
-  for ( i=0U; i<FPI_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
     {
       fpis[i].timer.delay = getValue( pFPIregDelay[i] );
       fpis[i].function    = eFPIfuncList[ getBitMap( pFPIregConfig[i], DIA_FUNCTION_ADR ) ];
@@ -333,15 +329,9 @@ SYSTEM_EVENT_TYPE eFPIgetUserEventType ( uint8_t n )
 /*----------------------------------------------------------------------------*/
 void vFPITask ( void* argument )
 {
-  FPI_EVENT   event = { 0U };
+  FPI_EVENT event = { 0U };
   for (;;)
   {
-    #ifdef DEBUG
-      for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
-      {
-        testFPI[i] = HAL_GPIO_ReadPin( fpis[i].port, fpis[i].pin );
-      }
-    #endif
     /*-------------------- Read system notification --------------------*/
     if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_FPI_TASK_CONFIG_REINIT ) > 0U )
     {

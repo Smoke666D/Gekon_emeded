@@ -41,13 +41,12 @@ AUTH_STATUS eHTTPisAuth ( uint32_t ip )
 {
   PASSWORD_TYPE password = { .data = 0U, .status = PASSWORD_RESET };
   AUTH_STATUS   res      = AUTH_VOID;
-  uint8_t       i        = 0U;
   uint8_t       new      = 1U;
   if ( eDATAAPIpassword( DATA_API_CMD_READ, &password ) == DATA_API_STAT_OK )
   {
     if ( password.status == PASSWORD_SET )
     {
-      for ( i=0U; i<CONNECT_STACK_SIZE; i++ )
+      for ( uint8_t i=0U; i<CONNECT_STACK_SIZE; i++ )
       {
         if ( ip == ethAuthList[i].ip )
         {
@@ -84,10 +83,9 @@ AUTH_STATUS eHTTPisAuth ( uint32_t ip )
 #endif
 void vHHTPsetAuth ( uint32_t ip, AUTH_STATUS status )
 {
-  uint8_t i = 0U;
   if ( eHTTPisAuth( ip ) != status )
   {
-    for ( i=0U; i<CONNECT_STACK_SIZE; i++ )
+    for ( uint8_t i=0U; i<CONNECT_STACK_SIZE; i++ )
     {
       if ( ip == ethAuthList[i].ip )
       {
@@ -108,15 +106,10 @@ void vHHTPsetAuth ( uint32_t ip, AUTH_STATUS status )
 #endif
 void vHTTPcleanRequest ( HTTP_REQUEST *request )
 {
-  uint8_t i = 0U;
   request->method = HTTP_METHOD_NO;
-  for ( i=0U; i<HTTP_PATH_LENGTH; i++)
+  for ( uint8_t i=0U; i<HTTP_PATH_LENGTH; i++)
   {
     request->path[i] = 0x00U;
-  }
-  for ( i=0U; i<HTTP_PATH_LENGTH
-  ; i++)
-  {
     request->host[i] = 0x00U;
   }
   request->content.type = HTTP_CONTENT_HTML;
@@ -461,11 +454,9 @@ STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream )
 #endif
 void vHTTPCleanResponse ( HTTP_RESPONSE *response )
 {
-  uint32_t i = 0U;
-
   response->status = HTTP_STATUS_BAD_REQUEST;
   response->method = HTTP_METHOD_NO;
-  for ( i=0U; i<HEADER_LENGTH; i++ )
+  for ( uint32_t i=0U; i<HEADER_LENGTH; i++ )
   {
     response->header[i] = 0U;
   }
@@ -492,10 +483,9 @@ void vHTTPCleanResponse ( HTTP_RESPONSE *response )
 uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line )
 {
   uint8_t     res   = 0U;
-  uint16_t    i     = 0U;
   const char* start = input;
   const char* end   = strchr( input, LF_HEX );
-  for ( i=0U; i<num; i++ )
+  for ( uint16_t i=0U; i<num; i++ )
   {
     start = strchr( end, LF_HEX ) + 1U;
     end   = strchr( start, LF_HEX );
@@ -516,8 +506,7 @@ uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line )
 #endif
 void vHTTPinit ( void )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<CONNECT_STACK_SIZE; i++ )
+  for ( uint8_t i=0U; i<CONNECT_STACK_SIZE; i++ )
   {
     ethAuthList[i].ip     = 0U;
     ethAuthList[i].status = AUTH_VOID;
@@ -538,17 +527,16 @@ void vHTTPinit ( void )
 HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
 {
   HTTP_STATUS  res       = HTTP_STATUS_BAD_REQUEST;
-  uint8_t      i         = 0U;
   char*        pchSt     = NULL;
   char*        pchEnd    = NULL;
   char         line[50U] = { 0U };
 
   if ( uHTTPgetLine( req, 0U, line ) > 0U )
   {
-    res        = HTTP_STATUS_OK;
+    res = HTTP_STATUS_OK;
     vHTTPcleanRequest( request );
     /*--------------------------- Parsing HTTP methods ---------------------------*/
-    for( i=0U; i<HTTP_METHOD_NUM; i++)
+    for ( uint8_t i=0U; i<HTTP_METHOD_NUM; i++)
     {
       pchSt = strstr( line, httpMethodsStr[i] );
       if ( pchSt != NULL)
@@ -606,8 +594,8 @@ HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE*
       response->status = strtol( pchSt, &pchEn, 10U );
       if ( response->status == HTTP_STATUS_OK )
       {
-        res = HTTP_STATUS_OK;
-        pchSt = strstr( input, "\r\n\r\n" );
+        res   = HTTP_STATUS_OK;
+        pchSt = strstr( input, HTTP_END_HEADER );
         pchSt = &pchSt[4U];
         if ( pchSt != NULL )
         {
@@ -1234,9 +1222,11 @@ HTTP_STATUS eHTTPbuildRequest ( HTTP_REQUEST* request )
  */
 void vHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
 {
-  ( void )strcpy( httpStr, "GET " );
+  ( void )strcpy( httpStr, HTTP_METHOD_STR_GET );
+  ( void )strcat( httpStr, " " );
   ( void )strcat( httpStr, request->path );
-  ( void )strcat( httpStr, " HTTP/1.1" );
+  ( void )strcat( httpStr, " " );
+  ( void )strcat( httpStr, HTTP_PROTOCOL_LINE );
   ( void )strcat( httpStr, HTTP_END_LINE );
   ( void )strcat( httpStr, HTTP_HOST_LINE );
   ( void )strcat( httpStr, request->host );
@@ -1259,7 +1249,7 @@ void vHTTPmakeRequest ( const HTTP_REQUEST* request, char* httpStr )
 #endif
 void vHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
 {
-  char         buffer[30U] = { 0U };
+  char lengthStr[HTTP_LENGTH_BUFFER_SIZE] = { 0U };
   // STATUS
   switch( response->status )
   {
@@ -1281,8 +1271,8 @@ void vHTTPmakeResponse ( char* httpStr, HTTP_RESPONSE* response )
   ( void )strcat( httpStr, response->header );
   ( void )strcat( httpStr, HTTP_END_LINE );
   ( void )strcat( httpStr, HTTP_LENGTH_LINE);
-  ( void )itoa( response->content.length, buffer, 10U );
-  ( void )strcat( httpStr, buffer );
+  ( void )itoa( response->content.length, lengthStr, 10U );
+  ( void )strcat( httpStr, lengthStr );
   ( void )strcat( httpStr, HTTP_END_LINE );
   vHTTPaddContentType( httpStr, response->content.type );
   vHTTPaddContentEncoding ( httpStr, response->encoding );

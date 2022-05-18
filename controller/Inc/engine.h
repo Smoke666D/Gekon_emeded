@@ -48,6 +48,16 @@ typedef enum
 
 typedef enum
 {
+  ENGINE_START_NO,
+  ENGINE_START_BY_GENERATOR_FREQ_DETECTION,
+  ENGINE_START_BY_GENERATOR_FREQ,
+  ENGINE_START_BY_OIL_PRESSURE,
+  ENGINE_START_BY_CHARGER_VOLTAGE,
+  ENGINE_START_BY_VELOCITY
+} ENGINE_START_SOURCE;
+
+typedef enum
+{
   STARTER_STATUS_IDLE,                /* 00 Starter don't active                                      */
   STARTER_STATUS_PREHEATING,          /* 01 Engine preheating process                                 */
   STARTER_STATUS_FUEL_PREPUMPING,     /* 02 Fuel pumping without cranking                             */

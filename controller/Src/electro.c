@@ -81,9 +81,7 @@ fix16_t fIDMTcalcCutout ( fix16_t input, fix16_t setting )
 fix16_t fELECTROgetMin ( fix16_t* value, uint8_t length )
 {
   fix16_t res = value[0U];
-  uint8_t i   = 0U;
-
-  for ( i=1U; i<length; i++ )
+  for ( uint8_t i=1U; i<length; i++ )
   {
     res = fix16_min( res, value[i] );
   }
@@ -93,9 +91,7 @@ fix16_t fELECTROgetMin ( fix16_t* value, uint8_t length )
 fix16_t fELECTROgetMax ( fix16_t* value, uint8_t length )
 {
   fix16_t res = value[0U];
-  uint8_t i   = 0U;
-
-  for ( i=1U; i<length; i++ )
+  for ( uint8_t i=1U; i<length; i++ )
   {
     res = fix16_max( res, value[i] );
   }
@@ -211,10 +207,9 @@ fix16_t fELECTROcalcPhaseImbalance ( fix16_t* value )
 /*---------------------------------------------------------------------------------------------------*/
 void vMAINSprocess ( void )
 {
-  uint8_t i                          = 0U;
   uint8_t mainsFlag                  = 0U;
   /*--------------------------- Read inputs ---------------------------*/
-  for ( i=0U; i<MAINS_LINE_NUMBER; i++ )
+  for ( uint8_t i=0U; i<MAINS_LINE_NUMBER; i++ )
   {
     mainsVoltage[i] = mains.line[i].getVoltage();
   }
@@ -272,15 +267,6 @@ void vMAINSprocess ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-#ifdef DEBUG
-fix16_t fGENERATORsynteticCurrent ( void )
-{
-  return fix16_mul( fix16_div( xADCGetSFL(), F16( 500U ) ), generator.rating.current );
-}
-#endif
-float outTest = 0;
-float outLevel = 0;
-/*---------------------------------------------------------------------------------------------------*/
 /* Check generator
  * Input:  None
  * Output: Maximum of voltage
@@ -316,8 +302,6 @@ void vGENERATORprocess ( void )
   vALARMcheck( &generator.currentWarningAlarm, maxCurrent );
   if ( electro.scheme != ELECTRO_SCHEME_SINGLE_PHASE )
   {
-    outTest = fix16_to_float( fELECTROcalcPhaseImbalance( current ) );
-    outLevel = fix16_to_float( generator.phaseImbalanceAlarm.level );
     vALARMcheck( &generator.phaseImbalanceAlarm, fELECTROcalcPhaseImbalance( current ) );
   }
   vELECTROcurrentAlarmProcess( maxCurrent, &generator.currentAlarm );

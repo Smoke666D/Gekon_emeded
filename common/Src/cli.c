@@ -23,32 +23,32 @@
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
-static const char* commandStrings[TEST_COMMANDS_NUMBER] = {
-  TEST_SET_COMMAND_STR,
-  TEST_RESET_COMMAND_STR,
-  TEST_GET_COMMAND_STR
+static const char* commandStrings[CLI_COMMANDS_NUMBER] = {
+  CLI_SET_COMMAND_STR,
+  CLI_RESET_COMMAND_STR,
+  CLI_GET_COMMAND_STR
 };
-static const char* targetStrings[TEST_TARGETS_NUMBER] = {
-  TEST_TARGET_DIN_STR,
-  TEST_TARGET_DOUT_STR,
-  TEST_TARGET_TIME_STR,
-  TEST_TARGET_OIL_STR,
-  TEST_TARGET_COOLANT_STR,
-  TEST_TARGET_FUEL_STR,
-  TEST_TARGET_BAT_STR,
-  TEST_TARGET_CHARG_STR,
-  TEST_TARGET_GEN_STR,
-  TEST_TARGET_MAINS_STR,
-  TEST_TARGET_CUR_STR,
-  TEST_TARGET_FREQ_STR,
-  TEST_TARGET_SPEED_STR,
-  TEST_TARGET_SWITCH_STR,
-  TEST_TARGET_LED_STR,
-  TEST_TARGET_STORAGE_STR,
-  TEST_TARGET_ID_STR,
-  TEST_TARGET_IP_STR,
-  TEST_TARGET_MAC_STR,
-  TEST_TARGET_VERSION_STR
+static const char* targetStrings[CLI_TARGETS_NUMBER] = {
+  CLI_TARGET_DIN_STR,
+  CLI_TARGET_DOUT_STR,
+  CLI_TARGET_TIME_STR,
+  CLI_TARGET_OIL_STR,
+  CLI_TARGET_COOLANT_STR,
+  CLI_TARGET_FUEL_STR,
+  CLI_TARGET_BAT_STR,
+  CLI_TARGET_CHARG_STR,
+  CLI_TARGET_GEN_STR,
+  CLI_TARGET_MAINS_STR,
+  CLI_TARGET_CUR_STR,
+  CLI_TARGET_FREQ_STR,
+  CLI_TARGET_SPEED_STR,
+  CLI_TARGET_SWITCH_STR,
+  CLI_TARGET_LED_STR,
+  CLI_TARGET_STORAGE_STR,
+  CLI_TARGET_ID_STR,
+  CLI_TARGET_IP_STR,
+  CLI_TARGET_MAC_STR,
+  CLI_TARGET_VERSION_STR
 };
 /*----------------------- Variables -----------------------------------------------------------------*/
 static TEST_TYPE message = { 0U };
@@ -57,18 +57,17 @@ static TEST_TYPE message = { 0U };
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTparsingFields ( const char* str, char** fields )
+uint8_t uCLIparsingFields ( const char* str, char** fields )
 {
   uint8_t res = 0U;
-  uint8_t i   = 0U;
   char*   p   = NULL;
   if ( str[0U] != 0U )
   {
     fields[0U] = ( char* )str;
     res++;
-    for ( i=1U; i<TEST_FILDS_NUMBER; i++ )
+    for ( uint8_t i=1U; i<CLI_FILDS_NUMBER; i++ )
     {
-      p = strstr( fields[i - 1U], TEST_FILD_SEPORATOR );
+      p = strstr( fields[i - 1U], CLI_FILD_SEPORATOR );
       if ( p == 0U )
       {
         break;
@@ -83,11 +82,10 @@ uint8_t uTESTparsingFields ( const char* str, char** fields )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTparse ( const char* str, const char** dictionary, uint8_t length )
+uint8_t uCLIparse ( const char* str, const char** dictionary, uint8_t length )
 {
   uint8_t res = 0U;
-  uint8_t i   = 0U;
-  for ( i=0U; i<length; i++ )
+  for ( uint8_t i=0U; i<length; i++ )
   {
     if ( strstr( str, dictionary[i] ) == str )
     {
@@ -98,26 +96,26 @@ uint8_t uTESTparse ( const char* str, const char** dictionary, uint8_t length )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vTESTparseString ( const char* str, TEST_TYPE* message )
+void vCLIparseString ( const char* str, TEST_TYPE* message )
 {
-  char*   filds[TEST_FILDS_NUMBER] = { 0U };
+  char*   filds[CLI_FILDS_NUMBER] = { 0U };
   uint8_t counter = 0U;
-  message->cmd      = TEST_COMMAND_NO;
-  message->target   = TEST_TARGET_NO;
+  message->cmd      = CLI_COMMAND_NO;
+  message->target   = CLI_TARGET_NO;
   message->data     = 0U;
   message->dataFlag = 0U;
   message->out[0U]  = 0U;
-  counter = uTESTparsingFields( str, filds );
+  counter = uCLIparsingFields( str, filds );
   if ( counter > 0U )
   {
-    message->cmd = ( TEST_COMMAND )( uTESTparse( ( const char* )filds[0U], commandStrings, TEST_COMMANDS_NUMBER ) );
-    if ( ( counter > 1U ) && ( message->cmd != TEST_COMMAND_NO ) )
+    message->cmd = ( CLI_COMMAND )( uCLIparse( ( const char* )filds[0U], commandStrings, CLI_COMMANDS_NUMBER ) );
+    if ( ( counter > 1U ) && ( message->cmd != CLI_COMMAND_NO ) )
     {
-      message->target = ( TEST_TARGET )( uTESTparse( ( const char* )filds[1U], targetStrings, TEST_TARGETS_NUMBER ) );
-      if ( ( counter > 2U ) && ( message->target != TEST_TARGET_NO ) )
+      message->target = ( CLI_TARGET )( uCLIparse( ( const char* )filds[1U], targetStrings, CLI_TARGETS_NUMBER ) );
+      if ( ( counter > 2U ) && ( message->target != CLI_TARGET_NO ) )
       {
         message->dataFlag = 1U;
-        if ( ( message->cmd == TEST_COMMAND_SET ) && ( message->target == TEST_TARGET_TIME ) )
+        if ( ( message->cmd == CLI_COMMAND_SET ) && ( message->target == CLI_TARGET_TIME ) )
         {
           strcpy( message->out, filds[2U] );
         }
@@ -131,7 +129,7 @@ void vTESTparseString ( const char* str, TEST_TYPE* message )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTtimeToStr ( RTC_TIME* time, char* buf )
+uint8_t uCLItimeToStr ( RTC_TIME* time, char* buf )
 {
   char sub[5U] = { 0U };
   ( void )itoa( time->day, sub, 10U );
@@ -151,11 +149,12 @@ uint8_t uTESTtimeToStr ( RTC_TIME* time, char* buf )
   ( void )strcat( buf, "." );
   ( void )itoa( time->sec, sub, 10U );
   ( void )strcat( buf, sub );
-  ( void )strcat( buf, ".\n" );
+  ( void )strcat( buf, "." );
+  ( void )strcat( buf, CLI_LINE_END );
   return strlen( buf );
 }
 /*---------------------------------------------------------------------------------------------------*/
-char* cTESTparseTimeFild ( char* pStr, uint8_t* output )
+char* cCLIparseTimeFild ( char* pStr, uint8_t* output )
 {
   char    sub[5U] = { 0U };
   char*   pEnd    = strchr( pStr, '.' );
@@ -168,30 +167,30 @@ char* cTESTparseTimeFild ( char* pStr, uint8_t* output )
   return pStr;
 }
 /*---------------------------------------------------------------------------------------------------*/
-TEST_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf )
+CLI_STATUS eCLIstrToTime ( RTC_TIME* time, char* buf )
 {
-  TEST_STATUS res  = TEST_STATUS_ERROR_DATA;
+  CLI_STATUS res  = CLI_STATUS_ERROR_DATA;
   char*       pStr = buf;
   time->wday = TUESDAY;
-  pStr = cTESTparseTimeFild( pStr, &time->day );
+  pStr = cCLIparseTimeFild( pStr, &time->day );
   if ( pStr > 0U )
   {
-    pStr = cTESTparseTimeFild( pStr, &time->month );
+    pStr = cCLIparseTimeFild( pStr, &time->month );
     if ( pStr > 0U )
     {
-      pStr = cTESTparseTimeFild( pStr, &time->year );
+      pStr = cCLIparseTimeFild( pStr, &time->year );
       if ( pStr > 0U )
       {
-        pStr = cTESTparseTimeFild( pStr, &time->hour );
+        pStr = cCLIparseTimeFild( pStr, &time->hour );
         if ( pStr > 0U )
         {
-          pStr = cTESTparseTimeFild( pStr, &time->min );
+          pStr = cCLIparseTimeFild( pStr, &time->min );
           if ( pStr > 0U )
           {
-            pStr = cTESTparseTimeFild( pStr, &time->sec );
+            pStr = cCLIparseTimeFild( pStr, &time->sec );
             if ( pStr > 0U )
             {
-              res = TEST_STATUS_OK;
+              res = CLI_STATUS_OK;
             }
           }
         }
@@ -201,64 +200,64 @@ TEST_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTstatusToString ( TEST_STATUS status, char* buf )
+uint8_t uCLIstatusToString ( CLI_STATUS status, char* buf )
 {
   uint8_t res = 0U;
   switch ( status )
   {
-    case TEST_STATUS_OK:
-      ( void )strcpy( buf, TEST_ERROR_OK_STR );
-      ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_OK_STR ) + 1U;
+    case CLI_STATUS_OK:
+      ( void )strcpy( buf, CLI_ERROR_OK_STR );
+      ( void )strcpy( buf, CLI_LINE_END );
+      res = strlen( CLI_ERROR_OK_STR ) + 1U;
       break;
-    case TEST_STATUS_ERROR_COMMAND:
-      ( void )strcpy( buf, TEST_ERROR_COMMAND_STR );
-      ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_COMMAND_STR ) + 1U;
+    case CLI_STATUS_ERROR_COMMAND:
+      ( void )strcpy( buf, CLI_ERROR_COMMAND_STR );
+      ( void )strcpy( buf, CLI_LINE_END );
+      res = strlen( CLI_ERROR_COMMAND_STR ) + 1U;
       break;
-    case TEST_STATUS_ERROR_TARGET:
-      ( void )strcpy( buf, TEST_ERROR_TARGET_STR );
-      ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_TARGET_STR ) + 1U;
+    case CLI_STATUS_ERROR_TARGET:
+      ( void )strcpy( buf, CLI_ERROR_TARGET_STR );
+      ( void )strcpy( buf, CLI_LINE_END );
+      res = strlen( CLI_ERROR_TARGET_STR ) + 1U;
       break;
-    case TEST_STATUS_ERROR_DATA:
-      ( void )strcpy( buf, TEST_ERROR_DATA_STR );
-      ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_DATA_STR ) + 1U;
+    case CLI_STATUS_ERROR_DATA:
+      ( void )strcpy( buf, CLI_ERROR_DATA_STR );
+      ( void )strcpy( buf, CLI_LINE_END );
+      res = strlen( CLI_ERROR_DATA_STR ) + 1U;
       break;
-    case TEST_STATUS_ERROR_EXECUTING:
-      ( void )strcpy( buf, TEST_ERROR_EXECUTING_STR );
-      ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_EXECUTING_STR ) + 1U;
+    case CLI_STATUS_ERROR_EXECUTING:
+      ( void )strcpy( buf, CLI_ERROR_EXECUTING_STR );
+      ( void )strcpy( buf, CLI_LINE_END );
+      res = strlen( CLI_ERROR_EXECUTING_STR ) + 1U;
       break;
     default:
-      ( void )strcpy( buf, TEST_ERROR_UNKNOWN );
-      ( void )strcat( buf, "\n" );
-      res = strlen( TEST_ERROR_UNKNOWN ) + 1U;
+      ( void )strcpy( buf, CLI_ERROR_UNKNOWN );
+      ( void )strcpy( buf, CLI_LINE_END );
+      res = strlen( CLI_ERROR_UNKNOWN ) + 1U;
       break;
   }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTdioToStr ( uint8_t state, char* buf )
+uint8_t uCLIdioToStr ( uint8_t state, char* buf )
 {
   uint8_t res = 0U;
   if ( state > 0U )
   {
-    ( void )strcpy( buf, TEST_DIO_ON_STR );
-    ( void )strcat( buf, "\n" );
-    res = strlen( TEST_DIO_ON_STR ) + 1U;
+    ( void )strcpy( buf, CLI_DIO_ON_STR );
+    ( void )strcat( buf, CLI_LINE_END );
+    res = strlen( CLI_DIO_ON_STR ) + 1U;
   }
   else
   {
-    ( void )strcpy( buf, TEST_DIO_OFF_STR);
-    ( void )strcat( buf, "\n" );
-    res = strlen( TEST_DIO_OFF_STR ) + 1U;
+    ( void )strcpy( buf, CLI_DIO_OFF_STR);
+    ( void )strcat( buf, CLI_LINE_END );
+    res = strlen( CLI_DIO_OFF_STR ) + 1U;
   }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESThexToStr ( uint8_t* data, uint8_t length, char* buf )
+uint8_t uCLIhexToStr ( uint8_t* data, uint8_t length, char* buf )
 {
   uint8_t i       = 0U;
   char    sub[3U] = { 0U };
@@ -275,11 +274,11 @@ uint8_t uTESThexToStr ( uint8_t* data, uint8_t length, char* buf )
      ( void )strcat( buf, "-" );
    }
   }
-  ( void )strcat( buf, "\n" );
+  ( void )strcat( buf, CLI_LINE_END );
   return ( length * 2U + length );
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTversionToStr ( const uint16_t* version, char* buf )
+uint8_t uCLIversionToStr ( const uint16_t* version, char* buf )
 {
   char    sub[5U] = { 0U };
   ( void )itoa( ( uint8_t )( version[0U] ), sub, 10U );
@@ -290,290 +289,291 @@ uint8_t uTESTversionToStr ( const uint16_t* version, char* buf )
   ( void )strcat( buf, "." );
   ( void )itoa( ( uint8_t )( version[2U] ), sub, 10U );
   ( void )strcat( buf, sub );
-  ( void )strcat( buf, "\n" );
+  ( void )strcat( buf, CLI_LINE_END );
   return strlen( buf );
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PABLIC --------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
-TEST_STATUS vTESTprocess ( const char* str, uint8_t length )
+CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
 {
-  TEST_STATUS res  = TEST_STATUS_OK;
+  CLI_STATUS res  = CLI_STATUS_OK;
   RTC_TIME    time = { 0U };
   uint16_t    id[UNIQUE_ID_LENGTH] = { 0U };
-  vTESTparseString( str, &message );
+  vCLIparseString( str, &message );
   switch ( message.cmd )
   {
-    case TEST_COMMAND_SET:
+    case CLI_COMMAND_SET:
       switch ( message.target )
       {
-        case TEST_TARGET_DOUT:
+        case CLI_TARGET_DOUT:
           if ( ( message.dataFlag > 0U ) && ( message.data < FPO_NUMBER ) )
           {
             vFPOtest( message.data, 1U );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_TIME:
+        case CLI_TARGET_TIME:
           if ( message.dataFlag > 0U )
           {
-            res = eTESTstrToTime( &time, message.out );
-            if ( res == TEST_STATUS_OK )
+            res = eCLIstrToTime( &time, message.out );
+            if ( res == CLI_STATUS_OK )
             {
               if ( eRTCsetTime( &time ) != RTC_OK )
               {
-                res = TEST_STATUS_ERROR_EXECUTING;
+                res = CLI_STATUS_ERROR_EXECUTING;
               }
             }
           }
           break;
-        case TEST_TARGET_LED:
+        case CLI_TARGET_LED:
           if ( message.dataFlag )
           {
             vCONTROLLERsetLed( message.data, 1U );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
         default:
-          res = TEST_STATUS_ERROR_TARGET;
+          res = CLI_STATUS_ERROR_TARGET;
           break;
       }
-      message.length = uTESTstatusToString( res, message.out );
+      message.length = uCLIstatusToString( res, message.out );
       break;
-    case TEST_COMMAND_RESET:
+    case CLI_COMMAND_RESET:
       switch ( message.target )
       {
-        case TEST_TARGET_DOUT:
+        case CLI_TARGET_DOUT:
           if ( ( message.dataFlag > 0U ) && ( message.data < FPO_NUMBER ) )
           {
             vFPOtest( message.data, 0U );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_LED:
+        case CLI_TARGET_LED:
           if ( message.dataFlag )
           {
             vCONTROLLERsetLed( message.data, 0U );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
         default:
-          res = TEST_STATUS_ERROR_TARGET;
+          res = CLI_STATUS_ERROR_TARGET;
           break;
       }
-      message.length = uTESTstatusToString( res, message.out );
+      message.length = uCLIstatusToString( res, message.out );
       break;
-    case TEST_COMMAND_GET:
+    case CLI_COMMAND_GET:
       switch ( message.target )
       {
-        case TEST_TARGET_DIN:
+        case CLI_TARGET_DIN:
           if ( ( message.data < FPI_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uTESTdioToStr( ( ( uFPIgetData() >> message.data ) & 0x01U ), message.out );
+            message.length = uCLIdioToStr( ( ( uFPIgetData() >> message.data ) & 0x01U ), message.out );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_DOUT:
+        case CLI_TARGET_DOUT:
           if ( ( message.data < FPO_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uTESTdioToStr( ( ( uFPOgetData() >> message.data ) & 0x01U ), message.out );
+            message.length = uCLIdioToStr( ( ( uFPOgetData() >> message.data ) & 0x01U ), message.out );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_TIME:
+        case CLI_TARGET_TIME:
           if ( eRTCgetTime( &time ) == RTC_OK )
           {
-            message.length = uTESTtimeToStr( &time, message.out );
+            message.length = uCLItimeToStr( &time, message.out );
           }
           else
           {
-            res = TEST_STATUS_ERROR_EXECUTING;
+            res = CLI_STATUS_ERROR_EXECUTING;
           }
           break;
-        case TEST_TARGET_OIL:
-          fix16_to_str( fENGINEgetOilPressure(), message.out, TEST_FIX_DECIMALS );
-          ( void )strcat( message.out, "\n" );
+        case CLI_TARGET_OIL:
+          fix16_to_str( fENGINEgetOilPressure(), message.out, CLI_FIX_DECIMALS );
+          ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
           break;
-        case TEST_TARGET_COOL:
-          fix16_to_str( fENGINEgetCoolantTemp(), message.out, TEST_FIX_DECIMALS );
-          ( void )strcat( message.out, "\n" );
+        case CLI_TARGET_COOL:
+          fix16_to_str( fENGINEgetCoolantTemp(), message.out, CLI_FIX_DECIMALS );
+          ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
           break;
-        case TEST_TARGET_FUEL:
-          fix16_to_str( fENGINEgetFuelLevel(), message.out, TEST_FIX_DECIMALS );
-          ( void )strcat( message.out, "\n" );
+        case CLI_TARGET_FUEL:
+          fix16_to_str( fENGINEgetFuelLevel(), message.out, CLI_FIX_DECIMALS );
+          ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
           break;
-        case TEST_TARGET_BAT:
-          fix16_to_str( fENGINEgetBatteryVoltage(), message.out, TEST_FIX_DECIMALS );
-          ( void )strcat( message.out, "\n" );
+        case CLI_TARGET_BAT:
+          fix16_to_str( fENGINEgetBatteryVoltage(), message.out, CLI_FIX_DECIMALS );
+          ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
           break;
-        case TEST_TARGET_CHARG:
-          fix16_to_str( fENGINEgetChargerVoltage(), message.out, TEST_FIX_DECIMALS );
-          ( void )strcat( message.out, "\n" );
+        case CLI_TARGET_CHARG:
+          fix16_to_str( fENGINEgetChargerVoltage(), message.out, CLI_FIX_DECIMALS );
+          ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
           break;
-        case TEST_TARGET_GENERATOR:
+        case CLI_TARGET_GENERATOR:
           if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            fix16_to_str( fELECTROgetGeneratorVoltage( ( uint8_t )message.data ), message.out, TEST_FIX_DECIMALS );
-            ( void )strcat( message.out, "\n" );
+            fix16_to_str( fELECTROgetGeneratorVoltage( ( uint8_t )message.data ), message.out, CLI_FIX_DECIMALS );
+            ( void )strcat( message.out, CLI_LINE_END );
             message.length = strlen( message.out );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_MAINS:
+        case CLI_TARGET_MAINS:
           if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            fix16_to_str( fELECTROgetMainsVoltage( ( uint8_t )message.data ), message.out, TEST_FIX_DECIMALS );
-            ( void )strcat( message.out, "\n" );
+            fix16_to_str( fELECTROgetMainsVoltage( ( uint8_t )message.data ), message.out, CLI_FIX_DECIMALS );
+            ( void )strcat( message.out, CLI_LINE_END );
             message.length = strlen( message.out );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_CURRENT:
+        case CLI_TARGET_CURRENT:
           if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            fix16_to_str( fELECTROgetCurrent( ( uint8_t )message.data ), message.out, TEST_FIX_DECIMALS );
-            ( void )strcat( message.out, "\n" );
+            fix16_to_str( fELECTROgetCurrent( ( uint8_t )message.data ), message.out, CLI_FIX_DECIMALS );
+            ( void )strcat( message.out, CLI_LINE_END );
             message.length = strlen( message.out );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_FREQ:
+        case CLI_TARGET_FREQ:
           if ( message.dataFlag > 0U )
           {
             switch ( message.data )
             {
-              case TEST_FREQ_CHANNELS_MAINS:
-                fix16_to_str( fELECTROgetMainsFreq(), message.out, TEST_FIX_DECIMALS );
-                ( void )strcat( message.out, "\n" );
+              case CLI_FREQ_CHANNELS_MAINS:
+                fix16_to_str( fELECTROgetMainsFreq(), message.out, CLI_FIX_DECIMALS );
+                ( void )strcat( message.out, CLI_LINE_END );
                 message.length = strlen( message.out );
                 break;
-              case TEST_FREQ_CHANNELS_GENERATOR:
-                fix16_to_str( fELECTROgetGeneratorFreq(), message.out, TEST_FIX_DECIMALS );
-                ( void )strcat( message.out, "\n" );
+              case CLI_FREQ_CHANNELS_GENERATOR:
+                fix16_to_str( fELECTROgetGeneratorFreq(), message.out, CLI_FIX_DECIMALS );
+                ( void )strcat( message.out, CLI_LINE_END );
                 message.length = strlen( message.out );
                 break;
               default:
-                res = TEST_STATUS_ERROR_DATA;
+                res = CLI_STATUS_ERROR_DATA;
                 break;
             }
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_SPEED:
-          fix16_to_str( fENGINEgetSpeed(), message.out, TEST_FIX_DECIMALS );
-          ( void )strcat( message.out, "\n" );
+        case CLI_TARGET_SPEED:
+          fix16_to_str( fENGINEgetSpeed(), message.out, CLI_FIX_DECIMALS );
+          ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
           break;
-        case TEST_TARGET_SW:
+        case CLI_TARGET_SW:
           if ( ( message.data < KEYBOARD_COUNT ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uTESTdioToStr( uKEYgetState( message.data ), message.out );
+            message.length = uCLIdioToStr( uKEYgetState( message.data ), message.out );
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
-        case TEST_TARGET_STORAGE:
+        case CLI_TARGET_STORAGE:
           if ( uDATAAPIisInitDone() == 0U )
           {
-            res = TEST_STATUS_ERROR_EXECUTING;
+            res = CLI_STATUS_ERROR_EXECUTING;
           }
-          message.length = uTESTstatusToString( res, message.out );
+          message.length = uCLIstatusToString( res, message.out );
           break;
-        case TEST_TARGET_ID:
+        case CLI_TARGET_ID:
           vSYSgetUniqueID16( id );
-          message.length = uTESThexToStr( ( uint8_t* )id, ( UNIQUE_ID_LENGTH * 2U ), message.out );
+          message.length = uCLIhexToStr( ( uint8_t* )id, ( UNIQUE_ID_LENGTH * 2U ), message.out );
           break;
-        case TEST_TARGET_IP:
+        case CLI_TARGET_IP:
           message.length = uSERVERgetStrIP( message.out );
-          message.out[message.length++] = '\n';
+          ( void )strcat( message.out, CLI_LINE_END );
+          message.length++;
           break;
-        case TEST_TARGET_MAC:
-          message.length = uTESThexToStr( pSERVERgetMAC(), MAC_ADR_LENGTH, message.out );
+        case CLI_TARGET_MAC:
+          message.length = uCLIhexToStr( pSERVERgetMAC(), MAC_ADR_LENGTH, message.out );
           break;
-        case TEST_TARGET_VERSION:
+        case CLI_TARGET_VERSION:
           if ( message.dataFlag > 0U )
           {
             switch ( message.data )
             {
-              case TEST_VERSION_BOOTLOADER:
-                message.length = uTESTversionToStr( ( const uint16_t* )( versionController.value ), message.out );
+              case CLI_VERSION_BOOTLOADER:
+                message.length = uCLIversionToStr( ( const uint16_t* )( versionController.value ), message.out );
                 break;
-              case TEST_VERSION_FIRMWARE:
-                message.length = uTESTversionToStr( ( const uint16_t* )( versionFirmware.value ),   message.out );
+              case CLI_VERSION_FIRMWARE:
+                message.length = uCLIversionToStr( ( const uint16_t* )( versionFirmware.value ),   message.out );
                 break;
-              case TEST_VERSION_HARDWARE:
-                message.length = uTESTversionToStr( ( const uint16_t* )( versionBootloader.value ), message.out );
+              case CLI_VERSION_HARDWARE:
+                message.length = uCLIversionToStr( ( const uint16_t* )( versionBootloader.value ), message.out );
                 break;
               default:
-                res = TEST_STATUS_ERROR_DATA;
+                res = CLI_STATUS_ERROR_DATA;
                 break;
             }
           }
           else
           {
-            res = TEST_STATUS_ERROR_DATA;
+            res = CLI_STATUS_ERROR_DATA;
           }
           break;
         default:
-          res = TEST_STATUS_ERROR_TARGET;
+          res = CLI_STATUS_ERROR_TARGET;
           break;
       }
-      if ( res != TEST_STATUS_OK )
+      if ( res != CLI_STATUS_OK )
       {
-        message.length = uTESTstatusToString( res, message.out );
+        message.length = uCLIstatusToString( res, message.out );
       }
       break;
     default:
-      res = TEST_STATUS_ERROR_COMMAND;
-      message.length = uTESTstatusToString( res, message.out );
+      res = CLI_STATUS_ERROR_COMMAND;
+      message.length = uCLIstatusToString( res, message.out );
       break;
   }
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-char* cTESTgetOutput ( void )
+char* cCLIgetOutput ( void )
 {
   return message.out;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uTESTgetOutLength ( void )
+uint8_t uCLIgetOutLength ( void )
 {
   return message.length;
 }

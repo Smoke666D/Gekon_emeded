@@ -39,7 +39,6 @@ uint32_t uLOGgetTime ( void )
 LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 {
   LOG_STATUS res  = LOG_STATUS_ERROR;
-
   record->time = uLOGgetTime();
   if ( record->time > 0U )
   {
@@ -52,7 +51,6 @@ LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
 {
   LOG_STATUS res  = LOG_STATUS_ERROR;
-
   #if ( defined( WRITE_LOG_TO_SD ) && defined ( FATSD ) )
     SD_ROUTINE sdRoutine = { 0U };
     sdRoutine.buffer = cFATSDgetBuffer();

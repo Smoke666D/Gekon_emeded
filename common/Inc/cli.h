@@ -13,112 +13,113 @@
 #include "RTC.h"
 #endif
 /*------------------------ Define --------------------------------------*/
-#define TEST_COMMANDS_NUMBER     3U
-#define TEST_TARGETS_NUMBER      20U
-#define TEST_MESSAGE_OUT_LENGTH  40U
-#define TEST_FIX_DECIMALS        2U
-#define TEST_FILDS_NUMBER        5U
+#define CLI_COMMANDS_NUMBER     3U
+#define CLI_TARGETS_NUMBER      20U
+#define CLI_MESSAGE_OUT_LENGTH  40U
+#define CLI_FIX_DECIMALS        2U
+#define CLI_FILDS_NUMBER        5U
 
-#define TEST_FILD_SEPORATOR      " "
+#define CLI_FILD_SEPORATOR      " "
+#define CLI_LINE_END            "\n"
 
-#define TEST_SET_COMMAND_STR     "set"
-#define TEST_RESET_COMMAND_STR   "reset"
-#define TEST_GET_COMMAND_STR     "get"
+#define CLI_SET_COMMAND_STR     "set"
+#define CLI_RESET_COMMAND_STR   "reset"
+#define CLI_GET_COMMAND_STR     "get"
 
-#define TEST_TARGET_DIN_STR      "din"
-#define TEST_TARGET_DOUT_STR     "dout"
-#define TEST_TARGET_TIME_STR     "time"
-#define TEST_TARGET_OIL_STR      "oil"
-#define TEST_TARGET_COOLANT_STR  "cool"
-#define TEST_TARGET_FUEL_STR     "fuel"
-#define TEST_TARGET_BAT_STR      "bat"
-#define TEST_TARGET_CHARG_STR    "charg"
-#define TEST_TARGET_GEN_STR      "gen"
-#define TEST_TARGET_MAINS_STR    "mains"
-#define TEST_TARGET_CUR_STR      "cur"
-#define TEST_TARGET_FREQ_STR     "freq"
-#define TEST_TARGET_SPEED_STR    "speed"
-#define TEST_TARGET_SWITCH_STR   "sw"
-#define TEST_TARGET_LED_STR      "led"
-#define TEST_TARGET_STORAGE_STR  "storage"
-#define TEST_TARGET_ID_STR       "id"
-#define TEST_TARGET_IP_STR       "ip"
-#define TEST_TARGET_MAC_STR      "mac"
-#define TEST_TARGET_VERSION_STR  "version"
+#define CLI_TARGET_DIN_STR      "din"
+#define CLI_TARGET_DOUT_STR     "dout"
+#define CLI_TARGET_TIME_STR     "time"
+#define CLI_TARGET_OIL_STR      "oil"
+#define CLI_TARGET_COOLANT_STR  "cool"
+#define CLI_TARGET_FUEL_STR     "fuel"
+#define CLI_TARGET_BAT_STR      "bat"
+#define CLI_TARGET_CHARG_STR    "charg"
+#define CLI_TARGET_GEN_STR      "gen"
+#define CLI_TARGET_MAINS_STR    "mains"
+#define CLI_TARGET_CUR_STR      "cur"
+#define CLI_TARGET_FREQ_STR     "freq"
+#define CLI_TARGET_SPEED_STR    "speed"
+#define CLI_TARGET_SWITCH_STR   "sw"
+#define CLI_TARGET_LED_STR      "led"
+#define CLI_TARGET_STORAGE_STR  "storage"
+#define CLI_TARGET_ID_STR       "id"
+#define CLI_TARGET_IP_STR       "ip"
+#define CLI_TARGET_MAC_STR      "mac"
+#define CLI_TARGET_VERSION_STR  "version"
 
-#define TEST_DIO_ON_STR          "on"
-#define TEST_DIO_OFF_STR         "off"
-#define TEST_ERROR_OK_STR        "Ok"
-#define TEST_ERROR_COMMAND_STR   "Wrong command"
-#define TEST_ERROR_TARGET_STR    "Wrong target"
-#define TEST_ERROR_DATA_STR      "Wrong data"
-#define TEST_ERROR_EXECUTING_STR "Executing error"
-#define TEST_ERROR_UNKNOWN       "Unknown error"
+#define CLI_DIO_ON_STR          "on"
+#define CLI_DIO_OFF_STR         "off"
+#define CLI_ERROR_OK_STR        "Ok"
+#define CLI_ERROR_COMMAND_STR   "Wrong command"
+#define CLI_ERROR_TARGET_STR    "Wrong target"
+#define CLI_ERROR_DATA_STR      "Wrong data"
+#define CLI_ERROR_EXECUTING_STR "Executing error"
+#define CLI_ERROR_UNKNOWN       "Unknown error"
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
-  TEST_FREQ_CHANNELS_MAINS,
-  TEST_FREQ_CHANNELS_GENERATOR
-} TEST_FREQ_CHANNELS;
+  CLI_FREQ_CHANNELS_MAINS,
+  CLI_FREQ_CHANNELS_GENERATOR
+} CLI_FREQ_CHANNELS;
 
 typedef enum
 {
-  TEST_VERSION_BOOTLOADER,
-  TEST_VERSION_FIRMWARE,
-  TEST_VERSION_HARDWARE
-} TEST_VERSION;
+  CLI_VERSION_BOOTLOADER,
+  CLI_VERSION_FIRMWARE,
+  CLI_VERSION_HARDWARE
+} CLI_VERSION;
 
 typedef enum
 {
-  TEST_STATUS_OK,
-  TEST_STATUS_ERROR_COMMAND,
-  TEST_STATUS_ERROR_TARGET,
-  TEST_STATUS_ERROR_DATA,
-  TEST_STATUS_ERROR_EXECUTING
-} TEST_STATUS;
+  CLI_STATUS_OK,
+  CLI_STATUS_ERROR_COMMAND,
+  CLI_STATUS_ERROR_TARGET,
+  CLI_STATUS_ERROR_DATA,
+  CLI_STATUS_ERROR_EXECUTING
+} CLI_STATUS;
 
 typedef enum
 {
-  TEST_COMMAND_NO,
-  TEST_COMMAND_SET,
-  TEST_COMMAND_RESET,
-  TEST_COMMAND_GET
-} TEST_COMMAND;
+  CLI_COMMAND_NO,
+  CLI_COMMAND_SET,
+  CLI_COMMAND_RESET,
+  CLI_COMMAND_GET
+} CLI_COMMAND;
 
 typedef enum
 {
-  TEST_TARGET_NO,        /* 00 no */
-  TEST_TARGET_DIN,       /* 01 get */
-  TEST_TARGET_DOUT,      /* 02 set */
-  TEST_TARGET_TIME,      /* 03 get & set */
-  TEST_TARGET_OIL,       /* 04 get */
-  TEST_TARGET_COOL,      /* 05 get */
-  TEST_TARGET_FUEL,      /* 06 get */
-  TEST_TARGET_BAT,       /* 07 get */
-  TEST_TARGET_CHARG,     /* 08 get */
-  TEST_TARGET_GENERATOR, /* 09 get */
-  TEST_TARGET_MAINS,     /* 10 get */
-  TEST_TARGET_CURRENT,   /* 11 get */
-  TEST_TARGET_FREQ,      /* 12 get */
-  TEST_TARGET_SPEED,     /* 13 get */
-  TEST_TARGET_SW,        /* 14 get */
-  TEST_TARGET_LED,       /* 15 set */
-  TEST_TARGET_STORAGE,   /* 16 get */
-  TEST_TARGET_ID,        /* 17 get */
-  TEST_TARGET_IP,        /* 18 get */
-  TEST_TARGET_MAC,       /* 19 get & set */
-  TEST_TARGET_VERSION    /* 20 get */
-} TEST_TARGET;
+  CLI_TARGET_NO,        /* 00 no */
+  CLI_TARGET_DIN,       /* 01 get */
+  CLI_TARGET_DOUT,      /* 02 set */
+  CLI_TARGET_TIME,      /* 03 get & set */
+  CLI_TARGET_OIL,       /* 04 get */
+  CLI_TARGET_COOL,      /* 05 get */
+  CLI_TARGET_FUEL,      /* 06 get */
+  CLI_TARGET_BAT,       /* 07 get */
+  CLI_TARGET_CHARG,     /* 08 get */
+  CLI_TARGET_GENERATOR, /* 09 get */
+  CLI_TARGET_MAINS,     /* 10 get */
+  CLI_TARGET_CURRENT,   /* 11 get */
+  CLI_TARGET_FREQ,      /* 12 get */
+  CLI_TARGET_SPEED,     /* 13 get */
+  CLI_TARGET_SW,        /* 14 get */
+  CLI_TARGET_LED,       /* 15 set */
+  CLI_TARGET_STORAGE,   /* 16 get */
+  CLI_TARGET_ID,        /* 17 get */
+  CLI_TARGET_IP,        /* 18 get */
+  CLI_TARGET_MAC,       /* 19 get & set */
+  CLI_TARGET_VERSION    /* 20 get */
+} CLI_TARGET;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  TEST_COMMAND cmd;
-  TEST_TARGET  target;
-  uint8_t      dataFlag : 1U;
-  uint32_t     data;
-  uint8_t      length;
-  char         out[TEST_MESSAGE_OUT_LENGTH];
+  CLI_COMMAND cmd;
+  CLI_TARGET  target;
+  uint8_t     dataFlag : 1U;
+  uint32_t    data;
+  uint8_t     length;
+  char        out[CLI_MESSAGE_OUT_LENGTH];
 } TEST_TYPE;
 /*------------------------ Functions -----------------------------------*/
 #if defined ( UNIT_TEST )
@@ -127,14 +128,14 @@ typedef struct __packed
   void        vTESTparseString ( const char* str, TEST_TYPE* message );
   uint8_t     uTESTtimeToStr ( RTC_TIME* time, char* buf );
   char*       cTESTparseTimeFild ( char* pStr, uint8_t* output );
-  TEST_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf );
-  uint8_t     uTESTstatusToString ( TEST_STATUS status, char* buf );
+  CLI_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf );
+  uint8_t     uTESTstatusToString ( CLI_STATUS status, char* buf );
   uint8_t     uTESTdioToStr ( uint8_t state, char* buf );
   uint8_t     uTESThexToStr ( uint8_t* data, uint8_t length, char* buf );
   uint8_t     uTESTversionToStr ( const uint16_t* version, char* buf );
 #endif
-TEST_STATUS vTESTprocess ( const char* str, uint8_t length );
-char*       cTESTgetOutput ( void );
-uint8_t     uTESTgetOutLength ( void );
+CLI_STATUS vCLIprocess ( const char* str, uint8_t length );
+char*      cCLIgetOutput ( void );
+uint8_t    uCLIgetOutLength ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_CLI_H_ */

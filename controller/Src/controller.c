@@ -69,7 +69,6 @@ void vCONTROLLERsetErrorOutputs ( void )
 void vCONTROLLEReventProcess ( LOG_RECORD_TYPE record )
 {
   LOG_RECORD_TYPE buffer = record;
-  vLOGICprintEvent( record.event );
   switch ( record.event.action )
   {
 
@@ -257,7 +256,6 @@ void vCONTROLLERstartAutoStop ( PERMISSION delay )
 void vCONTROLLERplanStop ( ENGINE_STATUS engineState, ELECTRO_STATUS generatorState, ELECTRO_STATUS mainsState, PERMISSION delayOnStart )
 {
   ELECTRO_COMMAND electroCmd = ELECTRO_CMD_NONE;
-
   switch ( stopState )
   {
     case CONTROLLER_TURNING_IDLE:
@@ -489,21 +487,6 @@ void vCONTROLLERdataInit ( void )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vCONTROLLERprintStatus ( void )
-{
-  //vSYSserial( ">>Controller mode : " );
-  if ( controller.mode == CONTROLLER_MODE_MANUAL )
-  {
-    //vSYSserial( "Manual\r\n" );
-  }
-  else
-  {
-    //vSYSserial( "Auto\r\n" );
-  }
-
-  return;
-/*----------------------------------------------------------------------------*/
-}
 void vCONTROLLERcheckAutoOn ( ENGINE_STATUS engineState )
 {
   if ( controller.state != CONTROLLER_STATUS_ERROR )
@@ -560,7 +543,6 @@ void vCONTROLLERresetAlarm ( void )
     /* Setup log */
     eLOGICERactiveErrorList( ERROR_LIST_CMD_ERASE, NULL, NULL );
     /* Output status */
-    vCONTROLLERprintStatus();
     if ( eENGINEisStartBan() == PERMISSION_DISABLE )
     {
       vSTATUSsetup( DEVICE_STATUS_READY_TO_START, LOGIC_DEFAULT_TIMER_ID );
@@ -825,7 +807,6 @@ void vCONTROLLERtask ( void* argument )
           {
 
           }
-          vCONTROLLERprintStatus();
           break;
         case HMI_CMD_MANUAL:
           if ( controller.mode == CONTROLLER_MODE_AUTO )

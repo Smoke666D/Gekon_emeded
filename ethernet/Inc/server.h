@@ -12,7 +12,9 @@
 #include "http.h"
 #include "freeData.h"
 /*----------------------------- Define ---------------------------------------*/
-#define MAC_ADR_LENGTH 6U
+#define MAC_ADR_LENGTH            6U
+#define SERVER_PORT               80U
+#define SERVER_LENGTH_BUFFER_SIZE 5U
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {

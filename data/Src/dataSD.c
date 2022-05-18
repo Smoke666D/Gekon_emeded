@@ -126,7 +126,6 @@ void vSDsendRoutine ( SD_ROUTINE* routine )
 /*---------------------------------------------------------------------------------------------------*/
 FRESULT eSDsaveConfig ( void )
 {
-  uint32_t i      = 0U;
   uint32_t length = 0U;
   FRESULT  res    = FR_OK;
   res = eFILEerase( FATSD_FILE_CONFIG );
@@ -137,7 +136,7 @@ FRESULT eSDsaveConfig ( void )
     res    = eFILEaddLine( FATSD_FILE_CONFIG, cFATSDgetBuffer(), length );
     if ( res == FR_OK )
     {
-      for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
+      for ( uint32_t i=0U; i<SETTING_REGISTER_NUMBER; i++ )
       {
         length = uRESTmakeShortCongig( configReg[i], cFATSDgetBuffer() );
         if ( i < ( SETTING_REGISTER_NUMBER - 1U ) )

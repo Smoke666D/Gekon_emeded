@@ -100,8 +100,8 @@ void vSERIALtask ( void* argument )
     {
       if ( ( serial.state == SERIAL_STATE_READING ) && ( serial.error == 0U ) )
       {
-        ( void )vTESTprocess( ( const char* )serial.input, serial.length );
-        vSYSserial( ( const char* )cTESTgetOutput(), uTESTgetOutLength() );
+        ( void )vCLIprocess( ( const char* )serial.input, serial.length );
+        vSYSserial( ( const char* )cCLIgetOutput(), uCLIgetOutLength() );
       }
       #if defined ( UNIT_TEST )
         unitSenderDone = 1U;
@@ -216,7 +216,6 @@ void vSERIALinit ( UART_HandleTypeDef* uart )
   osThreadAttr_t task_attributes = { 0U };
   serial.uart   = uart;
   serial.state  = SERIAL_STATE_IDLE;
-
   pSERIALqueue  = xQueueCreateStatic( SERIAL_QUEUE_SIZE, sizeof( UART_MESSAGE ), outputBuffer, &xSERIALqueue );
   task_attributes.name       = "serialTask";
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
@@ -230,17 +229,6 @@ void vSERIALinit ( UART_HandleTypeDef* uart )
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
   task_attributes.stack_size = SERIAL_TSAK_STACK_SIZE;
   serialProtectHandle = osThreadNew( vSERIALprotectTask, NULL, &task_attributes );
-  //vSERIALstartReading();
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vSYSprintFix16 ( fix16_t value )
-{
-  char buffer[10U] = { 0U };
-  fix16_to_str( value, buffer, 2U );
-  //vSYSserial( "$" );
-  //vSYSserial( buffer );
-  //vSYSserial( ";\r\n" );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -266,8 +254,7 @@ void vSYSgetUniqueID16 ( uint16_t* id )
 uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output )
 {
   uint8_t shift = 0U;
-  uint8_t i     = 0U;
-  for ( i=0U; i<length; i++ )
+  for ( uint8_t i=0U; i<length; i++ )
   {
     if ( input[i] > 0x00FFU )
     {
@@ -288,12 +275,10 @@ uint8_t uEncodeURI ( const uint16_t* input, uint8_t length, char* output )
 /*---------------------------------------------------------------------------------------------------*/
 void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
 {
-  uint8_t i          = 0U;
   uint8_t j          = 0U;
   char    cBuf[2U]   = { 0U };
   uint8_t hexBuf[8U] = { 0U };
-
-  for( i=0; i<8U; i++ )
+  for ( uint8_t i=0; i<8U; i++ )
   {
     if ( input[j] == '%' )
     {
@@ -309,7 +294,7 @@ void vDecodeURI( const char* input, uint16_t* output, uint8_t length )
     }
   }
   j = 0U;
-  for( i=0; i<length; i++ )
+  for( uint8_t i=0; i<length; i++ )
   {
     if ( ( hexBuf[j] & 0x80U ) > 0U )
     {

@@ -9,10 +9,10 @@
 #include "config.h"
 #include "common.h"
 #include "system.h"
+#include "constants.h"
 /*-------------------------------- Structures --------------------------------*/
 static TIM_HandleTypeDef* vrTIM = NULL;
 /*--------------------------------- Constant ---------------------------------*/
-const  fix16_t  vrCoef        = F16( VR_MIN_SEC );
 /*-------------------------------- Variables ---------------------------------*/
 #if defined ( UNIT_TEST )
   volatile uint16_t vrCounter = 1U;
@@ -59,7 +59,7 @@ void vVRextiCallback ( void )
 #endif
 void vVRtimCallback ( void )
 {
-  vrSpeed   = fix16_mul( fix16_div( fix16_from_int( vrCounter ), fix16_from_int( vrTeethNumber ) ), vrCoef ); /* RPM */
+  vrSpeed   = fix16_mul( fix16_div( fix16_from_int( vrCounter ), fix16_from_int( vrTeethNumber ) ), fix60 ); /* RPM */
   vrCounter = 0U;
   return;
 }

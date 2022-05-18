@@ -151,7 +151,7 @@ void vUSBlogToReport ( USB_REPORT* report )
   LOG_RECORD_TYPE record = { 0U };
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
   report->stat   = USB_REPORT_STATE_BAD_REQ;
-  report->length = 6U;
+  report->length = LOG_RECORD_SIZE;
   while ( status == DATA_API_STAT_BUSY )
   {
     uint16_t buf = report->adr;
@@ -161,8 +161,8 @@ void vUSBlogToReport ( USB_REPORT* report )
   {
     report->stat = USB_REPORT_STATE_OK;
     vUint32ToBytes( record.time, report->data );
-    report->data[4U] = ( uint8_t )( record.event.type   );
-    report->data[5U] = ( uint8_t )( record.event.action );
+    report->data[LOG_RECORD_SIZE - 2U] = ( uint8_t )( record.event.type   );
+    report->data[LOG_RECORD_SIZE - 1U] = ( uint8_t )( record.event.action );
   }
   else
   {
@@ -234,7 +234,7 @@ void vUSBchartToReport ( USB_REPORT* report )
     }
     else if ( ( report->adr - 1U ) <= CHART_DOTS_SIZE )
     {
-      report->length = 8U;
+      report->length = CHART_DOT_SIZE;
       vUint32ToBytes( ( uint32_t )( charts[chartAdr]->dots[report->adr - 1U].x ), &report->data[0U] );
       vUint32ToBytes( ( uint32_t )( charts[chartAdr]->dots[report->adr - 1U].y ), &report->data[4U] );
     }

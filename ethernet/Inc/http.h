@@ -12,15 +12,16 @@
 #include "freeData.h"
 #include "rest.h"
 /*------------------------ Define --------------------------------------*/
-#define   CR_HEX                 0x0D
-#define   LF_HEX                 0x0A
-#define   HEADER_LENGTH          30U
-#define   SERVER_LENGTH          21U
-#define   CONTENT_TYPE_LENGTH    9U
-#define   HTTP_PATH_LENGTH       30U
-#define   HTTP_BUFER_SIZE        600U
-#define   HTTP_EWA_TRANSFER_SIZE ( REST_BUFFER_SIZE - 1U )
-#define   CONNECT_STACK_SIZE     3U
+#define   CR_HEX                  0x0D
+#define   LF_HEX                  0x0A
+#define   HEADER_LENGTH           30U
+#define   SERVER_LENGTH           21U
+#define   CONTENT_TYPE_LENGTH     9U
+#define   HTTP_PATH_LENGTH        30U
+#define   HTTP_BUFER_SIZE         600U
+#define   HTTP_EWA_TRANSFER_SIZE  ( REST_BUFFER_SIZE - 1U )
+#define   CONNECT_STACK_SIZE      3U
+#define   HTTP_LENGTH_BUFFER_SIZE 30U
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
 {
@@ -217,6 +218,7 @@ typedef struct __packed
 #define   HTTP_END_HEADER             "\r\n\r\n"
 #define   HTTP_SERVER_NAME            "EMBmss/0.0.1"
 
+#define   HTTP_PROTOCOL_LINE          "HTTP/1.1"
 #define   HTTP_OK_STATUS_LINE         "HTTP/1.1 200 OK"
 #define   HTTP_NOT_FOUND_STATUS_LINE  "HTTP/1.1 400 Not Found"
 #define   HTTP_UNAUTHORIZED_LINE      "HTTP/1.1 401 Unauthorized"

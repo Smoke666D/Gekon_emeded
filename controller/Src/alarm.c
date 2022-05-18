@@ -377,8 +377,6 @@ void vALARMreInit ( void )
  */
 ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE* record, uint8_t* adr )
 {
-  uint8_t i              = 0U;
-  uint8_t j              = 0U;
   uint8_t warningCounter = 0U;
   uint8_t number         = 0U;
   switch ( cmd )
@@ -387,7 +385,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
       if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
       {
         activeErrorList.stamp.counter = 0U;
-        for ( i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
+        for ( uint8_t i=0U; i<ACTIV_ERROR_LIST_SIZE; i++ )
         {
           if ( activeErrorList.array[i].time > 0U )
           {
@@ -415,7 +413,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
         if ( xSemaphoreTake( xAELsemaphore, SEMAPHORE_AEL_TAKE_DELAY ) == pdTRUE )
         {
           number = activeErrorList.counter;
-          for ( i=0U; i<activeErrorList.counter; i++ )
+          for ( uint8_t i=0U; i<activeErrorList.counter; i++ )
           {
             if ( ( activeErrorList.array[i].event.type   == record->event.type   ) &&
                  ( activeErrorList.array[i].event.action == record->event.action ) )
@@ -426,7 +424,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           }
           if ( number < activeErrorList.counter )
           {
-            for ( i=number; i<activeErrorList.counter; i++ )
+            for ( uint8_t i=number; i<activeErrorList.counter; i++ )
             {
               activeErrorList.array[i] = activeErrorList.array[i + 1U];
             }
@@ -436,7 +434,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
             }
             /* ---- */
             number = ACTIV_ERROR_LIST_SIZE;
-            for ( i=0U; i<activeErrorList.stamp.counter; i++ )
+            for ( uint8_t i=0U; i<activeErrorList.stamp.counter; i++ )
             {
               if ( ( activeErrorList.stamp.array[i].type   == record->event.type   ) &&
                    ( activeErrorList.stamp.array[i].action == record->event.action ) )
@@ -447,7 +445,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
             }
             if ( number <= activeErrorList.stamp.counter )
             {
-              for ( i=number; i<activeErrorList.stamp.counter; i++ )
+              for ( uint8_t i=number; i<activeErrorList.stamp.counter; i++ )
               {
                 activeErrorList.stamp.array[i] = activeErrorList.stamp.array[i + 1U];
               }
@@ -456,9 +454,9 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
             if ( activeErrorList.stamp.counter > 0U )
             {
               number = 0U;
-              for ( i=0U; i<activeErrorList.counter; i++ )
+              for ( uint8_t i=0U; i<activeErrorList.counter; i++ )
               {
-                for ( j=0U; j<activeErrorList.stamp.counter; j++ )
+                for ( uint8_t j=0U; j<activeErrorList.stamp.counter; j++ )
                 {
                   if ( ( activeErrorList.array[i].event.action == activeErrorList.stamp.array[j].action ) &&
                        ( activeErrorList.array[i].event.type   == activeErrorList.stamp.array[j].type   ) )
@@ -491,7 +489,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           }
           /*------------- Check warnings --------------*/
           warningCounter = 0U;
-          for ( i=0U; i<activeErrorList.counter; i++ )
+          for ( uint8_t i=0U; i<activeErrorList.counter; i++ )
           {
             if ( uALARMisWarning( activeErrorList.array[i] ) > 0U )
             {
@@ -532,7 +530,7 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
           activeErrorList.counter++;
           activeErrorList.status       = ERROR_LIST_STATUS_NOT_EMPTY;
           activeErrorList.stamp.status = STAMP_LIST_EVENT_NEW;
-          for ( i=0U; i<activeErrorList.counter; i++ )
+          for ( uint8_t i=0U; i<activeErrorList.counter; i++ )
           {
             if ( ( activeErrorList.stamp.array[i].action == record->event.action ) &&
                  ( activeErrorList.stamp.array[i].type   == record->event.type   ) )
@@ -568,23 +566,6 @@ ERROR_LIST_STATUS eLOGICERactiveErrorList ( ERROR_LIST_CMD cmd, LOG_RECORD_TYPE*
       break;
   }
   return activeErrorList.status;
-}
-/*----------------------------------------------------------------------------*/
-void vCONTROLLERprintActiveErrorList ( void )
-{
-  uint8_t         i       = 0;
-  uint8_t         counter = 0U;
-  LOG_RECORD_TYPE record  = { 0U };
-
-  //vSYSserial( "------------------Active Error List------------------\r\n" );
-  eLOGICERactiveErrorList( ERROR_LIST_CMD_COUNTER, &record, &counter );
-  for ( i=0U; i<counter; i++ )
-  {
-    eLOGICERactiveErrorList( ERROR_LIST_CMD_READ, &record, &i );
-    vLOGICprintLogRecord( record );
-  }
-  //vSYSserial( "-----------------------------------------------------\r\n" );
-  return;
 }
 /*-----------------------------------------------------------------------------------------*/
 uint8_t uALARMisForList ( SYSTEM_EVENT event )

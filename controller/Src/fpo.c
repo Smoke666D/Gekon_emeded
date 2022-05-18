@@ -44,28 +44,28 @@ const uint8_t eFPOfuctionList[FPO_FUNCTION_NUMBER] =
 };
 const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
 {
-  "NONE",
-  "DPS_READY",
-  "READY_TO_START",
-  "GEN_READY",
-  "ALARM",
-  "MAINS_FAIL",
-  "WARNING",
-  "TURN_ON_GEN",
-  "TURN_ON_GEN_IMPULSE",
-  "TURN_OFF_GEN_IMPULSE",
-  "TURN_ON_MAINS",
-  "TURN_ON_MAINS_IMPULSE",
-  "TURN_OFF_MAINS_IMPULSE",
-  "COOLANT_COOLER",
-  "COOLANT_HEATER",
-  "STOP_SOLENOID",
-  "FUEL_BOOST",
-  "FUEL_RELAY",
-  "STARTER_RELAY",
-  "PREHEAT",
-  "IDLING",
-  "BUZZER"
+  "NONE",                   /* 0 */
+  "DPS_READY",              /* 1 */
+  "READY_TO_START",         /* 2 */
+  "GEN_READY",              /* 3 */
+  "ALARM",                  /* 4 */
+  "MAINS_FAIL",             /* 5 */
+  "WARNING",                /* 6 */
+  "TURN_ON_GEN",            /* 7 */
+  "TURN_ON_GEN_IMPULSE",    /* 8 */
+  "TURN_OFF_GEN_IMPULSE",   /* 9 */
+  "TURN_ON_MAINS",          /* 10 */
+  "TURN_ON_MAINS_IMPULSE",  /* 11 */
+  "TURN_OFF_MAINS_IMPULSE", /* 12 */
+  "COOLANT_COOLER",         /* 13 */
+  "COOLANT_HEATER",         /* 14 */
+  "STOP_SOLENOID",          /* 15 */
+  "FUEL_BOOST",             /* 16 */
+  "FUEL_RELAY",             /* 17 */
+  "STARTER_RELAY",          /* 18 */
+  "PREHEAT",                /* 19 */
+  "IDLING",                 /* 20 */
+  "BUZZER"                  /* 21 */
 };
 const char* cFPOnames[FPO_NUMBER] =
 {
@@ -115,9 +115,8 @@ void vFPOsetupStartup ( void );
 /*----------------------------------------------------------------------------*/
 void vFPOanaliz ( FPO** fpo, FPO_FUNCTION fun )
 {
-  uint8_t i = 0U;
   *fpo = NULL;
-  for ( i=0U; i<FPO_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPO_NUMBER; i++ )
   {
     if ( fpos[i].function == fun )
     {
@@ -150,25 +149,9 @@ void vFPOsetRelay ( FPO* fpo, RELAY_STATUS stat )
   return;
 }
 /*----------------------------------------------------------------------------*/
-void vFPOprintSetup ( void )
-{
-  uint8_t i = 0U;
-  for ( i=0U; i<FPO_NUMBER; i++ )
-  {
-    //vSYSserial( ">>FPO " );
-    //vSYSserial( cFPOnames[i] );
-    //vSYSserial( "        : " );
-    //vSYSserial( cFPOfunctionNames[ ( uint8_t )( fpos[i].function ) ] );
-    //vSYSserial( "\n\r" );
-  }
-  //vSYSserial( "\n\r" );
-  return;
-}
-/*----------------------------------------------------------------------------*/
 void vFPOdisSetup ( void )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<FPO_DIS_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPO_DIS_NUMBER; i++ )
   {
     if ( ( fpos[2U * i].function          == FPO_FUN_NONE ) &&
          ( fpos[( 2U * i ) + 1U].function == FPO_FUN_NONE ) )
@@ -185,8 +168,7 @@ void vFPOdisSetup ( void )
 /*----------------------------------------------------------------------------*/
 void vFPOsetupStartup ( void )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<FPO_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPO_NUMBER; i++ )
   {
     if ( fpos[i].polarity == FPO_POL_NORMAL_OPEN )
     {
@@ -227,8 +209,7 @@ TRIGGER_STATE eFPOgetState ( uint8_t n )
 uint8_t uFPOisEnable ( FPO_FUNCTION fun )
 {
   uint8_t res = 0U;
-  uint8_t i   = 0U;
-  for ( i=0U; i<FPO_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPO_NUMBER; i++ )
   {
     if ( fpos[i].function == fun )
     {
@@ -487,7 +468,6 @@ void vFPOtest ( uint8_t adr, uint8_t state )
 /*----------------------------------------------------------------------------*/
 void vFPOdataInit ( void )
 {
-  uint8_t i = 0U;
   /* Read parameters form memory */
   fpos[FPO_A].polarity = getBitMap( &doSetup,  DOA_N_O_C_ADR );
   fpos[FPO_B].polarity = getBitMap( &doSetup,  DOB_N_O_C_ADR );
@@ -502,7 +482,7 @@ void vFPOdataInit ( void )
   fpos[FPO_E].function = getBitMap( &doefType, DOE_TYPE_ADR );
   fpos[FPO_F].function = getBitMap( &doefType, DOF_TYPE_ADR );
   /* Setup masks */
-  for ( i=0U; i<FPO_NUMBER; i++ )
+  for ( uint8_t i=0U; i<FPO_NUMBER; i++ )
   {
     fpos[i].mask = ( uint8_t )( 1U << i );
   }
@@ -534,8 +514,6 @@ void vFPOdataInit ( void )
   /* Default */
   vFPOsetMainsSw( RELAY_ON );
   vFPOsetGenSw( RELAY_OFF );
-  /* Debug data */
-  vFPOprintSetup();
   return;
 }
 /*----------------------------------------------------------------------------*/

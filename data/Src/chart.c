@@ -99,9 +99,8 @@ eChartData* const charts[CHART_NUMBER] = { &oilSensorChart, &coolantSensorChart,
 /*---------------------------------------------------------------------------------------------------*/
 void vCHARTinitCharts ( void )
 {
-  uint8_t i = 0U;
   xCHARTSemaphore = xSemaphoreCreateMutex();
-  for ( i=0U; i<CHART_NUMBER; i++ )
+  for ( uint8_t i=0U; i<CHART_NUMBER; i++ )
   {
     charts[i]->dots[1U].x = xAxisAtribs[charts[i]->xType]->max;
     charts[i]->dots[1U].y = yAxisAtribs[charts[i]->yType]->max;
@@ -111,12 +110,11 @@ void vCHARTinitCharts ( void )
 /*---------------------------------------------------------------------------------------------------*/
 void vCHARTupdateLimits ( eChartData* chart )
 {
-  uint16_t i = 0U;
   chart->x.min = chart->dots[0U].x;
   chart->x.max = chart->dots[0U].x;
   chart->y.min = chart->dots[0U].y;
   chart->y.max = chart->dots[0U].y;
-  for ( i=0U; i<chart->size; i++ )
+  for ( uint16_t i=0U; i<chart->size; i++ )
   {
     if ( chart->x.min > chart->dots[i].x )
     {
@@ -183,9 +181,8 @@ void vCHARTcalcFunction ( const eChartData* chart, uint16_t n, eChartFunction* f
 eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
 {
   eFunctionError res  = FUNC_OK;
-  uint16_t       i    = 0U;
   eChartFunction func = { 0U };
-
+  uint16_t       i    = 0U;
   if ( x <= xAxisAtribs[chart->xType]->max )
   {
     if ( x >= xAxisAtribs[chart->xType]->min )
@@ -238,14 +235,3 @@ SemaphoreHandle_t xCHARTgetSemophore ( void )
 {
   return xCHARTSemaphore;
 }
-
-
-
-
-
-
-
-
-
-
-

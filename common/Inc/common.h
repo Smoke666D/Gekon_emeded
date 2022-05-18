@@ -56,8 +56,8 @@ typedef struct __packed
 typedef struct __packed
 {
   UART_HandleTypeDef* uart;
-  SERIAL_STATE        state : 2U;
-  uint8_t             error : 1U;
+  SERIAL_STATE        state;
+  uint8_t             error;
   uint8_t             buffer;
   uint16_t            length;
   uint8_t             input[SERIAL_BUFFER_SIZE];

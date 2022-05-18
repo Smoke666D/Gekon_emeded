@@ -14,7 +14,7 @@
 /*------------------------ Define --------------------------------------*/
 #define  FPI_USER_MESSAGE_LENGTH  16U
 #define  FPI_NUMBER               4U
-#define  FPI_FUNCTION_NUM         11U
+#define  FPI_FUNCTION_NUM         12U
 #define  FPI_A                    0U
 #define  FPI_B                    1U
 #define  FPI_C                    2U

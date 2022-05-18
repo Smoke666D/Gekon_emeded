@@ -365,8 +365,5 @@ void          vLOGICresetAllTimers ( void );
 void          vLOGICprintActiveTimers ( void );
 void          vLOGICtimerCallback ( void );
 void          vSYSeventSend ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record );
-void          vLOGICprintEvent ( SYSTEM_EVENT event );
-void          vLOGICprintDebug ( const char* str );
-void          vLOGICprintLogRecord ( LOG_RECORD_TYPE record );
 /*----------------------------------------------------------------------*/
 #endif /* INC_LOGICTYPES_H_ */

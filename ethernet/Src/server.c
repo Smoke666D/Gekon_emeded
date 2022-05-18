@@ -45,13 +45,12 @@ void            vLINKTask ( void* argument );
 #endif
 SERVER_ERROR eSERVERstart ( void )
 {
-  SERVER_ERROR 	servRes   = SERVER_OK;
-  err_t         netconRes = ERR_OK;
-
+  SERVER_ERROR servRes   = SERVER_OK;
+  err_t        netconRes = ERR_OK;
   nc = netconn_new( NETCONN_TCP );                   // Create new network connection TCP TYPE
   if ( nc != NULL )
   {
-    netconRes = netconn_bind ( nc, IP_ADDR_ANY, 80U ); // Bind connection to well known port number 80
+    netconRes = netconn_bind ( nc, IP_ADDR_ANY, SERVER_PORT ); // Bind connection to well known port number 80
     if ( netconRes == ERR_OK )
     {
       netconRes = netconn_listen( nc );	             // Tell connection to go into listening mode
@@ -82,9 +81,8 @@ SERVER_ERROR eSERVERstart ( void )
 #endif
 SERVER_ERROR eSERVERstop ( void )
 {
-  SERVER_ERROR 	servRes   = SERVER_CLOSE_ERROR;
-  err_t         netconRes = ERR_OK;
-
+  SERVER_ERROR servRes   = SERVER_CLOSE_ERROR;
+  err_t        netconRes = ERR_OK;
   netconRes = netconn_close( nc );
   if ( netconRes == ERR_OK )
   {
@@ -101,10 +99,9 @@ RECEIVE_MESSAGE eSERVERanalizMessage ( const char* message, uint32_t length )
   RECEIVE_MESSAGE res                 = RECEIVE_MESSAGE_ERROR;
   char*           pchSt               = NULL;
   char*           pchEn               = NULL;
-  char            buffer[5U]          = { 0U };
   uint32_t        contentLengthHeader = 0U;
-
-  pchSt = strstr( message, "PUT" );
+  char            buffer[SERVER_LENGTH_BUFFER_SIZE] = { 0U };
+  pchSt = strstr( message, HTTP_METHOD_STR_PUT );
   if ( ( pchSt != NULL ) && ( pchSt[0U] < 0x7FU ) )
   {
     pchSt = strstr( message, HTTP_LENGTH_LINE );
@@ -214,16 +211,15 @@ HTTP_STATUS eHTTPrequest ( HTTP_REQUEST* request, HTTP_RESPONSE* response, char*
 #endif
 SERVER_ERROR eSERVERlistenRoutine ( void )
 {
-  SERVER_ERROR     servRes    = SERVER_OK;
-  struct netbuf*   nb         = NULL;
-  char*            endInput   = serverInput;
-  RECEIVE_MESSAGE  endMessage = RECEIVE_MESSAGE_CONTINUES;
-  HTTP_RESPONSE    response   = { 0U };
-  HTTP_REQUEST     request    = { 0U };
-  uint32_t         len        = 0U;
-  STREAM_STATUS    status     = STREAM_CONTINUES;
-  uint32_t         remoteIP   = 0U;
-
+  SERVER_ERROR    servRes    = SERVER_OK;
+  struct netbuf*  nb         = NULL;
+  char*           endInput   = serverInput;
+  RECEIVE_MESSAGE endMessage = RECEIVE_MESSAGE_CONTINUES;
+  HTTP_RESPONSE   response   = { 0U };
+  HTTP_REQUEST    request    = { 0U };
+  uint32_t        len        = 0U;
+  STREAM_STATUS   status     = STREAM_CONTINUES;
+  uint32_t        remoteIP   = 0U;
   if ( netconn_accept( nc, &in_nc ) != ERR_OK )                 // Grab new connection && Block until we get an incoming connection
   {
     servRes = SERVER_ACCEPT_ERROR;
@@ -333,7 +329,7 @@ SERVER_ERROR eHTTPsendRequest ( const char* hostName, char* httpStr )
     {
       if ( netconn_bind( ncr, &gnetif.ip_addr, 0U ) == ERR_OK )
       {
-        if ( netconn_connect( ncr, &remote_ip, 80U ) == ERR_OK )
+        if ( netconn_connect( ncr, &remote_ip, SERVER_PORT ) == ERR_OK )
         {
           if ( netconn_write( ncr, httpStr, strlen( httpStr ), NETCONN_COPY ) == ERR_OK )
           {
@@ -395,7 +391,7 @@ void vSERVERaddConnection ( void )
 #endif
 void vSERVERinitConnection ( void )
 {
-  char ipaddrStr[16U] = { 0U };
+  char ipaddrStr[IP4ADDR_STRLEN_MAX] = { 0U };
   vHTTPinit();
   while ( gnetif.ip_addr.addr == 0U )
   {
@@ -515,21 +511,14 @@ void vSERVERinit ( void )
 #endif
 uint8_t uSERVERgetStrIP ( char* ipStr )
 {
-  uint8_t i       = 0U;
-  char*   pointer = ip4addr_ntoa( &gnetif.ip_addr );
+  char* pointer = defaultIp;
   if ( serverState == SERVER_STATE_UP )
   {
-    for( i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
-    {
-      ipStr[i] = pointer[i];
-    }
+    pointer = ip4addr_ntoa( &gnetif.ip_addr );
   }
-  else
+  for ( uint8_t i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
   {
-    for ( i=0U; i<IP4ADDR_STRLEN_MAX; i++ )
-    {
-      ipStr[i] = defaultIp[i];
-    }
+    ipStr[i] = pointer[i];
   }
   return strlen( ipStr );
 }

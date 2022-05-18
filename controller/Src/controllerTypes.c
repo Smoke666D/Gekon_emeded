@@ -165,8 +165,8 @@ static uint16_t  targetArray[LOGIC_COUNTERS_SIZE]                            = {
 static uint16_t  counterArray[LOGIC_COUNTERS_SIZE]                           = { 0U };
 static timerID_t aciveCounters                                               = 0U;
 static timerID_t activeNumber                                                = 0U;
-#ifdef DEBUG
-static char timerNames[LOGIC_COUNTERS_SIZE][TIMER_NAME_LENGTH] = { 0U };
+#if defined( DEBUG )
+  static char timerNames[LOGIC_COUNTERS_SIZE][TIMER_NAME_LENGTH] = { 0U };
 #endif
 /*-------------------------------- Functions ---------------------------------*/
 
@@ -223,42 +223,6 @@ void vSTATUSsetup ( DEVICE_STATUS status, timerID_t id )
   vSTATUScalcTime();
   return;
 }
-/*----------------------------------------------------------------------------*/
-void vLOGICprintTime ( uint32_t time )
-{
-  char buffer[21] = { 0U };
-  ( void )sprintf( &buffer[0U],  "%02d.", (uint16_t)GET_LOG_DAY( time ) );
-  ( void )sprintf( &buffer[3U],  "%02d.", (uint16_t)GET_LOG_MONTH( time ) );
-  ( void )sprintf( &buffer[6U],  "%04d/", (uint16_t)GET_LOG_YEAR( time ) );
-  ( void )sprintf( &buffer[11U], "%02d:", (uint16_t)GET_LOG_HOUR( time ) );
-  ( void )sprintf( &buffer[14U], "%02d:", (uint16_t)GET_LOG_MIN( time ) );
-  ( void )sprintf( &buffer[17U], "%02d",  (uint16_t)GET_LOG_SEC( time ) );
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vLOGICprintLogRecord ( LOG_RECORD_TYPE record )
-{
-  //vSYSserial( "Time: " );
-  vLOGICprintTime( record.time );
-  //vSYSserial( "Event: " );
-  //vSYSserial( eventTypesStr[record.event.type] );
-  //vSYSserial( "; Action: " );
-  //vSYSserial( alarmActionStr[record.event.action] );
-  //vSYSserial( "\r\n" );
-  return;
-}
-/*----------------------------------------------------------------------------*/
-void vLOGICprintEvent ( SYSTEM_EVENT event )
-{
-  #if ( DEBUG_SERIAL_ALARM > 0U )
-    //vSYSserial( ">>Event           : " );
-    //vSYSserial( eventTypesStr[event.type] );
-    //vSYSserial( "; Action: " );
-    //vSYSserial( alarmActionStr[event.action] );
-    //vSYSserial( "\r\n" );
-  #endif
-  return;
-}
 /*-----------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------*/
 /*----------------------------------  ------------------------------------------*/
@@ -280,11 +244,9 @@ QueueHandle_t pLOGICgetEventQueue ( void )
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerHandler ( void )
 {
-  uint8_t i = 0U;
-
   if ( activeNumber > 0U )
   {
-    for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+    for ( uint8_t i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
     {
       if ( ( aciveCounters & ( 1U << i ) ) > 0U )
       {
@@ -393,10 +355,9 @@ TIMER_ERROR vLOGICresetTimer ( SYSTEM_TIMER* timer ) /* Проверить ст�
 /*-----------------------------------------------------------------------------------------*/
 void vLOGICresetAllTimers ( void )
 {
-  uint8_t i = 0U;
   aciveCounters = 0U;
   activeNumber  = 0U;
-  for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+  for ( uint8_t i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
   {
     targetArray[i]  = 0U;
     counterArray[i] = 0U;
@@ -424,43 +385,9 @@ uint8_t uLOGICisTimer ( SYSTEM_TIMER* timer )
   return res;
 }
 /*-----------------------------------------------------------------------------------------*/
-void vLOGICprintActiveTimers ( void )
-{
-  uint8_t i          = 0U;
-  char    buffer[3U] = { 0U };
-  #ifdef DEBUG
-  if ( ( activeNumber == 0U ) && ( aciveCounters == 0U ) )
-  {
-    vLOGICprintDebug( ">>************************\r\n" );
-    vLOGICprintDebug( ">>No active timers \r\n" );
-    vLOGICprintDebug( ">>************************\r\n" );
-  }
-  else
-  {
-    vLOGICprintDebug( ">>************************\r\n" );
-    ( void )sprintf( buffer,  "%d", activeNumber );
-    vLOGICprintDebug( ">>There are " );
-    vLOGICprintDebug( buffer );
-    vLOGICprintDebug( " active timers\r\n" );
-    for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
-    {
-      if ( ( aciveCounters & ( 1U << i ) ) > 0U )
-      {
-        vLOGICprintDebug( ">>" );
-        vLOGICprintDebug( timerNames[i] );
-        vLOGICprintDebug( "\r\n" );
-      }
-    }
-    vLOGICprintDebug( ">>************************\r\n" );
-  }
-  #endif
-  return;
-}
-/*-----------------------------------------------------------------------------------------*/
 void vLOGICtimerCallback ( void )
 {
-  uint8_t i = 0U;
-  for ( i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
+  for ( uint8_t i=0U; i<LOGIC_COUNTERS_SIZE; i++ )
   {
     if ( ( aciveCounters & ( 1U << i ) ) > 0U )
     {

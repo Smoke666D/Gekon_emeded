@@ -19,10 +19,10 @@ static SemaphoreHandle_t  xSemaphore     = NULL;
 static EventGroupHandle_t xDataApiEvents = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-volatile static uint8_t       initDone              = 0U;
-volatile static uint8_t       flTakeSource          = 0U;
-volatile static uint16_t      measurementNumberCash = 0U;
-static EEPROM_TYPE*           eeprom                = NULL;
+volatile static uint8_t  initDone              = 0U;
+volatile static uint8_t  flTakeSource          = 0U;
+volatile static uint16_t measurementNumberCash = 0U;
+static EEPROM_TYPE*      eeprom                = NULL;
 #if defined ( UNIT_TEST )
 volatile LOG_CASH_TYPE logCash               = { 0U };
 #else
@@ -109,6 +109,138 @@ EventGroupHandle_t xDATAAPIgetEventGroup ( void )
   return xDataApiEvents;
 }
 /*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
+uint8_t uDATAAPIisValid ( void )
+{
+  uint8_t  res    = 0U;
+  uint8_t  sysReg = 0xFFU;
+  uint32_t map[STORAGE_MAP_SIZE / 4U] = { 0U };
+  if ( eSTORAGEreadMap( map ) == EEPROM_OK )
+  {
+    if ( eEEPROMreadMemory( eeprom, STORAGE_SR_ADR, &sysReg, 1U ) == EEPROM_OK )
+    {
+      if ( ( sysReg                      != STORAGE_SR_EMPTY ) ||
+           ( REWRITE_ALL_EEPROM      == 0U               ) ||
+           ( uSTORAGEcheckMap( map ) >  0U               ) )
+      {
+        res = 1U;
+      }
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
+EEPROM_STATUS eDATAAPIresetStorage ( void )
+{
+  EEPROM_STATUS         res      = EEPROM_OK;
+  const uint8_t         sysReg   = 0x00U;
+  const SYSTEM_EVENT    eraseEv  = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
+  const LOG_RECORD_TYPE eraseRec = { .time = 0U, .event = eraseEv };
+  vFREEDATAerase();
+  res = eSTORAGEwriteConfigs();
+  if ( res == EEPROM_OK )
+  {
+    res = eSTORAGEwriteCharts();
+    if ( res == EEPROM_OK )
+    {
+      for ( uint8_t i=0U; i<FREE_DATA_SIZE; i++ )
+      {
+        res = eSTORAGEsaveFreeData( i );
+        if ( res != EEPROM_OK )
+        {
+          break;
+        }
+      }
+      if ( res == EEPROM_OK )
+      {
+        res = eSTORAGEsavePassword();
+        if ( res == EEPROM_OK )
+        {
+          res = eSTORAGEwriteLogPointer( 0U );
+          if ( res == EEPROM_OK )
+          {
+            for ( uint8_t i=0U; i<LOG_SIZE; i++ )
+            {
+              res = eSTORAGEwriteLogRecord( i, &eraseRec );
+              if ( res != EEPROM_OK )
+              {
+                break;
+              }
+            }
+          }
+        }
+        if ( res == EEPROM_OK )
+        {
+          res = eEEPROMwriteMemory( eeprom, STORAGE_SR_ADR, &sysReg, 1U );
+          if ( res == EEPROM_OK )
+          {
+            res = eSTORAGEwriteMap();
+            if ( res == EEPROM_OK )
+            {
+              initDone = 1U;
+            }
+          }
+        }
+      }
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+#ifdef OPTIMIZ
+  __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
+#endif
+EEPROM_STATUS eDATAAPIreadData ( void )
+{
+  EEPROM_STATUS res = eSTORAGEreadConfigs();
+  uint16_t      buf = 0U;
+  uint16_t      idBuffer[UNIQUE_ID_LENGTH] = { 0U };
+  if ( res == EEPROM_OK )
+  {
+    vSYSgetUniqueID16( idBuffer );
+    serialNumber0.value[0U]     = idBuffer[0U];
+    serialNumber0.value[1U]     = idBuffer[1U];
+    serialNumber0.value[2U]     = idBuffer[2U];
+    serialNumber1.value[0U]     = idBuffer[3U];
+    serialNumber1.value[1U]     = idBuffer[4U];
+    serialNumber1.value[2U]     = idBuffer[5U];
+    versionController.value[0U] = HARDWARE_VERSION_MAJOR;
+    versionController.value[1U] = HARDWARE_VERSION_MINOR;
+    versionController.value[2U] = HARDWARE_VERSION_PATCH;
+    versionFirmware.value[0U]   = FIRMWARE_VERSION_MAJOR;
+    versionFirmware.value[1U]   = FIRMWARE_VERSION_MINOR;
+    versionFirmware.value[2U]   = FIRMWARE_VERSION_PATCH;
+    versionBootloader.value[0U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 16U ) & 0xFF );
+    versionBootloader.value[1U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 8U  ) & 0xFF );
+    versionBootloader.value[2U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR )        ) & 0xFF );
+    deviceID.value[0U]          = DEVICE_ID;
+  }
+  for ( uint8_t i=0U; i<FREE_DATA_SIZE; i++ )
+  {
+    res = eSTORAGEreadFreeData( i );
+    if ( *freeDataArray[i] == 0xFFFFU )
+    {
+      res = eSTORAGEsetFreeData( i, &buf );
+    }
+    if ( res != EEPROM_OK )
+    {
+      break;
+    }
+  }
+  if ( ( res == EEPROM_OK ) && ( *freeDataArray[ENGINE_WORK_MINUTES_ADR] > 60U ) )
+  {
+    eSTORAGEsetFreeData( ENGINE_WORK_MINUTES_ADR, &buf );
+  }
+  res = eSTORAGEloadPassword();
+  initDone = 1U;
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 /*
  * All data initialization
  * input:  none
@@ -119,121 +251,18 @@ EventGroupHandle_t xDATAAPIgetEventGroup ( void )
 #endif
 EEPROM_STATUS eDATAAPIdataInit ( void )
 {
-  EEPROM_STATUS   res                        = EEPROM_OK;
-  uint8_t         sr                         = 0xFFU;     /* System register          */
-  uint8_t         valid                      = 0U;        /* Result of map validation */
-  uint16_t        i                          = 0U;
-  uint32_t        map[STORAGE_MAP_SIZE / 4U] = { 0U };
-  SYSTEM_EVENT    eraseEv                    = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
-  LOG_RECORD_TYPE eraseRec                   = { .time = 0U, .event = eraseEv };
-  uint16_t        serialBuffer[6U]           = { 0U };
-  uint16_t        buf                        = 0U;
+  EEPROM_STATUS res = EEPROM_OK;
   if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
   {
-    res = eSTORAGEreadMap( map );
-    if ( res == EEPROM_OK )
+    if ( uDATAAPIisValid() == 0U )
     {
-      res   = eEEPROMreadMemory( eeprom, STORAGE_SR_ADR, &sr, 1U );
-      valid = uSTORAGEcheckMap( map );
-      if ( ( sr                 == STORAGE_SR_EMPTY ) ||
-           ( REWRITE_ALL_EEPROM != 0U               ) ||
-           ( valid              == 0U               ) )
-      {
-	      vFREEDATAerase();
-        res = eSTORAGEwriteConfigs();
-        if ( res == EEPROM_OK )
-        {
-          res = eSTORAGEwriteCharts();
-          if ( res == EEPROM_OK )
-          {
-            for ( i=0U; i<FREE_DATA_SIZE; i++ )
-            {
-              res = eSTORAGEsaveFreeData( i );
-              if ( res == EEPROM_OK )
-              {
-                break;
-              }
-            }
-            if ( res == EEPROM_OK )
-            {
-              res = eSTORAGEsavePassword();
-              if ( res == EEPROM_OK )
-              {
-        	      res = eSTORAGEwriteLogPointer( 0U );
-        	      if ( res == EEPROM_OK )
-        	      {
-        	        for ( i=0U; i<LOG_SIZE; i++ )
-        	        {
-        	          if ( eSTORAGEwriteLogRecord( i, &eraseRec ) != EEPROM_OK )
-        	          {
-        	            res = DATA_API_STAT_EEPROM_ERROR;
-        	            break;
-        	          }
-        	        }
-        	      }
-              }
-              if ( res == EEPROM_OK )
-              {
-                sr  = 0x00U;
-                res = eEEPROMwriteMemory( eeprom, STORAGE_SR_ADR, &sr, 1U );
-                if ( res == EEPROM_OK )
-                {
-                  res = eSTORAGEwriteMap();
-                  if ( res == EEPROM_OK )
-                  {
-                    initDone = 1U;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      else
-      {
-        if ( eSTORAGEreadConfigs() == EEPROM_OK )
-        {
-          vSYSgetUniqueID16( serialBuffer );
-          serialNumber0.value[0U]     = serialBuffer[0U];
-          serialNumber0.value[1U]     = serialBuffer[1U];
-          serialNumber0.value[2U]     = serialBuffer[2U];
-          serialNumber1.value[0U]     = serialBuffer[3U];
-          serialNumber1.value[1U]     = serialBuffer[4U];
-          serialNumber1.value[2U]     = serialBuffer[5U];
-          versionController.value[0U] = HARDWARE_VERSION_MAJOR;
-          versionController.value[1U] = HARDWARE_VERSION_MINOR;
-          versionController.value[2U] = HARDWARE_VERSION_PATCH;
-          versionFirmware.value[0U]   = FIRMWARE_VERSION_MAJOR;
-          versionFirmware.value[1U]   = FIRMWARE_VERSION_MINOR;
-          versionFirmware.value[2U]   = FIRMWARE_VERSION_PATCH;
-          versionBootloader.value[0U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 16U ) & 0xFF );
-          versionBootloader.value[1U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 8U  ) & 0xFF );
-          versionBootloader.value[2U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR )        ) & 0xFF );
-          deviceID.value[0U]          = DEVICE_ID;
-        }
-        for ( i=0U; i<FREE_DATA_SIZE; i++ )
-        {
-          res = eSTORAGEreadFreeData( i );
-          if ( *freeDataArray[i] == 0xFFFF )
-          {
-            buf = 0U;
-            res = eSTORAGEsetFreeData( i, &buf );
-          }
-          if ( res != EEPROM_OK )
-          {
-            break;
-          }
-        }
-        if ( ( res == EEPROM_OK ) && ( *freeDataArray[ENGINE_WORK_MINUTES_ADR] > 60U ) )
-        {
-          buf = 0U;
-          eSTORAGEsetFreeData( ENGINE_WORK_MINUTES_ADR, &buf );
-        }
-        res = eSTORAGEloadPassword();
-        initDone = 1U;
-      }
-      xSemaphoreGive( xSemaphore );
+      res = eDATAAPIresetStorage();
     }
+    else
+    {
+      res = eDATAAPIreadData();
+    }
+    xSemaphoreGive( xSemaphore );
   }
   return res;
 }

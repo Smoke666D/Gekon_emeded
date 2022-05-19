@@ -26,7 +26,7 @@ static const char defaultIp[IP4ADDR_STRLEN_MAX] = { '0', '0', '.', '0', '0', '.'
 /*----------------------- Variables -----------------------------------------------------------------*/
 static char         serverInput[HTTP_INPUT_BUFFER_SIZE]   = { 0U };
 static char         serverOutput[HTTP_OUTPUT_BUFFER_SIZE] = { 0U };
-static SERVER_STATE serverState                           = SERVER_STATE_UNPLUG;
+static SERVER_STATE serverState                           = SERVER_STATE_INIT;
 static osThreadId_t linkHandle                            = NULL;
 /*----------------------- Functions -----------------------------------------------------------------*/
 SERVER_ERROR    eHTTPsendRequest ( const char* hostName, char* httpStr );
@@ -282,6 +282,7 @@ SERVER_ERROR eSERVERlistenRoutine ( void )
   }
   return servRes;
 }
+  SERVER_ERROR error;
 /*---------------------------------------------------------------------------------------------------*/
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
@@ -297,11 +298,12 @@ void vStartNetTask ( void *argument )
     };
     linkHandle = osThreadNew( vLINKTask, NULL, &linkTask_attributes );
   }
+
   for(;;)
   {
     if ( serverState == SERVER_STATE_UP )
     {
-      eSERVERlistenRoutine();
+      error = eSERVERlistenRoutine();
     }
     osDelay( 10U );
   }
@@ -408,50 +410,55 @@ void vSERVERinitConnection ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint8_t uSERVERisPlug ( void )
+{
+  uint8_t  res    = 0U;
+  uint32_t phyreg = 0U;
+  if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
+  {
+    if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
+    {
+      res = 1U;
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
 void vSERVERcheckPlug ( void )
 {
-  uint32_t phyreg = 0U;
   switch ( serverState )
   {
-    case SERVER_STATE_UNPLUG:
+    case SERVER_STATE_INIT:
       tcpip_init( NULL, NULL );
       vSERVERaddConnection();
-      serverState = SERVER_STATE_PLUG;
+      serverState = SERVER_STATE_WAIT_PLUG;
       break;
-    case SERVER_STATE_PLUG:
-      if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
-      {
-	      if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
-	      {
-	        netif_set_default( &gnetif );
-	        netif_set_up( &gnetif );
-	        dhcp_start( &gnetif );
-	        vSERVERinitConnection();
-	        serverState = SERVER_STATE_UP;
-	      }
-      }
+    case SERVER_STATE_WAIT_PLUG:
+	    if ( uSERVERisPlug() > 0U )
+	    {
+	      netif_set_link_up( &gnetif );
+	      netif_set_default( &gnetif );
+	      netif_set_up( &gnetif );
+	      dhcp_start( &gnetif );
+	      vSERVERinitConnection();
+	      serverState = SERVER_STATE_UP;
+	    }
       break;
     case SERVER_STATE_DOWN:
-      if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
-      {
-	      if ( ( phyreg & PHY_LINKED_STATUS ) > 0U )
-	      {
-	        netif_set_up( &gnetif );
-	        serverState = SERVER_STATE_UP;
-	      }
-      }
+	    if ( uSERVERisPlug() > 0U )
+	    {
+	      netif_set_up( &gnetif );
+	      serverState = SERVER_STATE_UP;
+	    }
       break;
     case SERVER_STATE_UP:
-      if ( HAL_ETH_ReadPHYRegister( &heth, PHY_BSR, &phyreg ) == HAL_OK )
+      if ( uSERVERisPlug() == 0U )
       {
-	if ( ( phyreg & PHY_LINKED_STATUS ) == 0U )
-	{
-	  netif_set_down( &gnetif );
-	  serverState = SERVER_STATE_DOWN;
-	}
+        netif_set_down( &gnetif );
+        serverState = SERVER_STATE_DOWN;
       }
       break;
     default:

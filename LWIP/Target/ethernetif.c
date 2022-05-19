@@ -84,6 +84,7 @@ ETH_HandleTypeDef heth;
 
 /* USER CODE BEGIN 3 */
 osThreadId_t ethernetifHandle;
+uint8_t      firstTransaction = 0U;
 /* USER CODE END 3 */
 
 /* Private functions ---------------------------------------------------------*/
@@ -200,6 +201,7 @@ void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
   TaskHandle_t hTask = (TaskHandle_t)ethernetifHandle;
   if ( ethernetifHandle != NULL )
   {
+    firstTransaction = 1U;
     vTaskNotifyGiveFromISR( hTask, &yield );
     portYIELD_FROM_ISR ( yield );
   }
@@ -207,7 +209,10 @@ void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
 }
 
 /* USER CODE BEGIN 4 */
-
+uint8_t uETHisFirstTransaction ( void )
+{
+  return firstTransaction;
+}
 /* USER CODE END 4 */
 
 /*******************************************************************************

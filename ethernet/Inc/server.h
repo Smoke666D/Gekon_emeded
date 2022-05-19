@@ -18,8 +18,8 @@
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
-  SERVER_STATE_UNPLUG,
-  SERVER_STATE_PLUG,
+  SERVER_STATE_INIT,
+  SERVER_STATE_WAIT_PLUG,
   SERVER_STATE_DOWN,
   SERVER_STATE_UP,
 } SERVER_STATE;

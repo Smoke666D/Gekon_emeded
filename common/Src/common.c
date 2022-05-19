@@ -319,7 +319,8 @@ uint32_t uSYSputChar ( char* str, uint32_t length, char ch )
 /*---------------------------------------------------------------------------------------------------*/
 uint32_t uSYSendString ( char* str, uint32_t length )
 {
-  str[length] = '\n';
+  str[length]      = '\n';
+  str[length + 1U] = 0U;
   return ( length + 1U );
 }
 /*---------------------------------------------------------------------------------------------------*/

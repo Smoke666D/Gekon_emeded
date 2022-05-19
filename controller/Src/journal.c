@@ -52,11 +52,12 @@ LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
 {
   LOG_STATUS res  = LOG_STATUS_ERROR;
   #if ( defined( WRITE_LOG_TO_SD ) && defined ( FATSD ) )
-    SD_ROUTINE sdRoutine = { 0U };
-    sdRoutine.buffer = cFATSDgetBuffer();
-    sdRoutine.cmd    = SD_COMMAND_WRITE;
-    sdRoutine.file   = FATSD_FILE_LOG;
-    sdRoutine.length = uRESTmakeLog( record, sdRoutine.buffer );
+    SD_ROUTINE sdRoutine = {
+        .buffer = cFATSDgetBuffer(),
+        .cmd    = SD_COMMAND_WRITE,
+        .file   = FATSD_FILE_LOG,
+        .length = uRESTmakeLog( record, sdRoutine.buffer )
+    };
     sdRoutine.length = uSYSendString( sdRoutine.buffer, sdRoutine.length );
     vSDsendRoutine( &sdRoutine );
   #endif

@@ -21,6 +21,7 @@ static FIL                    file                 = { 0U };
 static SD_HandleTypeDef*      hsd                  = NULL;
 static HAL_SD_CardInfoTypeDef cardInfo             = { 0U };
 static FATSD_TYPE             fatsd                = { 0U };
+static SemaphoreHandle_t      xBufferAccessSemaphore           = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -170,10 +171,11 @@ void vFATSDtask ( void* argument )
 void vFATSDinit ( const SD_HandleTypeDef* sd )
 {
   #if defined( FATSD )
-    hsd                  = ( SD_HandleTypeDef* )sd;
-    fatsd.position       = SD_EXTRACTED;
-    fatsd.status         = SD_STATUS_UNMOUNTED;
-    xFileAccessSemaphore = xSemaphoreCreateMutex();
+    hsd                    = ( SD_HandleTypeDef* )sd;
+    fatsd.position         = SD_EXTRACTED;
+    fatsd.status           = SD_STATUS_UNMOUNTED;
+    xFileAccessSemaphore   = xSemaphoreCreateMutex();
+    xBufferAccessSemaphore = xSemaphoreCreateMutex();
     const osThreadAttr_t fatsdTask_attributes = {
       .name       = "fatsdTask",
       .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,

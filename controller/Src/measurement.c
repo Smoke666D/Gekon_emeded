@@ -37,7 +37,6 @@ uint8_t uMEASUREMENTgetChannel ( MEASURMENT_SETTING setting, uint8_t* queue, uin
 {
   ELECTRO_SCHEME data   = getBitMap( &genSetup, GEN_AC_SYS_ADR );
   uint8_t        length = 0U;
-
   switch ( setting )
   {
     case OUTPUT_SETTING_OIL_PRESSURE:
@@ -185,7 +184,7 @@ uint16_t uMEASUREMENTgetData ( uint8_t chanel )
         time = uLOGgetTime();
         res  = ( uint16_t )( time >> 16U );
         break;
-      case MEASUREMENT_TIME_CHANEL:
+      case MEASUREMENT_TIME_CHANEL: /* Time takes 17 bit, the hight bit will be in date */
         time = uLOGgetTime();
         res  = ( uint16_t )( time );
         break;
@@ -199,25 +198,25 @@ uint16_t uMEASUREMENTgetData ( uint8_t chanel )
 /*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTdataInit ( void )
 {
-  uint8_t i = 0U;
-  uint8_t j = 0U;
+  MEASURMENT_SETTING j = 0U;
   measurement.state        = MEASURMENT_STATE_IDLE;
+  measurement.cmd          = MEASURMENT_CMD_NONE;
   measurement.timer.delay  = getValue( &recordInterval );
   measurement.timer.id     = LOGIC_DEFAULT_TIMER_ID;
   measurement.length       = 2U;
   measurement.channels[0U] = MEASUREMENT_DATE_CHANEL;
   measurement.channels[1U] = MEASUREMENT_TIME_CHANEL;
-  for ( i=0U; i<( recordSetup0.atrib->bitMapSize - 1U ); i++ )
+  for ( uint8_t i=1U; i<recordSetup0.atrib->bitMapSize; i++ )
   {
-    if ( getBitMap( &recordSetup0, ( RECORD_ENB_ADR + 1U + i ) ) > 0U )
+    if ( getBitMap( &recordSetup0, i ) > 0U )
     {
       measurement.length += uMEASUREMENTgetChannel( j, measurement.channels, measurement.length );
     }
     j++;
   }
-  for ( i=0; i<recordSetup1.atrib->bitMapSize; i++ )
+  for ( uint8_t i=0U; i<recordSetup1.atrib->bitMapSize; i++ )
   {
-    if ( getBitMap( &recordSetup1, ( RECORD_CURRENT_ENB_ADR + i ) ) > 0U )
+    if ( getBitMap( &recordSetup1, i ) > 0U )
     {
       measurement.length += uMEASUREMENTgetChannel( j, measurement.channels, measurement.length );
     }
@@ -226,12 +225,48 @@ void vMEASUREMENTdataInit ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t vMEASUREMENTputDataField ( char* buffer, uint32_t index, uint8_t data )
+{
+  char sub[3U] = { 0U };
+  if ( data < 100 )
+  {
+    ( void )sprintf( sub, "%d", data );
+    if ( data < 10 )
+    {
+      buffer[index]      = '0';
+      buffer[index + 1U] = sub[0U];
+      buffer[index + 2U] = '.';
+    }
+    else
+    {
+      buffer[index]      = sub[0U];
+      buffer[index + 1U] = sub[1U];
+      buffer[index + 2U] = '.';
+    }
+  }
+  else
+  {
+    buffer[index]      = '9';
+    buffer[index + 1U] = '9';
+    buffer[index + 2U] = '.';
+  }
+  return index + 3U;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTmakeStartLine ( SD_ROUTINE* routine )
 {
-  RTC_TIME time   = { 0U };
-  vRTCgetCashTime( &time );
-  routine->length = ( uint32_t )sprintf( routine->buffer, "// %d.%d.%d %d:%d:%d\n", time.year, time.month, time.day, time.hour, time.min, time.sec );
-  routine->length = uSYSendString( routine->buffer, routine->length );
+  RTC_TIME time = { 0U };
+  eRTCgetTime( &time );
+  routine->buffer[0U] = 0;
+  ( void )strcat( routine->buffer, "// " );
+  routine->length = 3U;
+  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.year );
+  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.month );
+  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.day );
+  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.hour );
+  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.min );
+  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.sec );
+  routine->length = uSYSendString( routine->buffer, ( routine->length - 1U ) );
   vSDsendRoutine( routine );
   return;
 }
@@ -239,9 +274,9 @@ void vMEASUREMENTmakeStartLine ( SD_ROUTINE* routine )
 void vMEASUREMENTmakeLegendLine ( SD_ROUTINE* routine )
 {
   uint8_t i = 0U;
-  routine->buffer[0U] = '/';
-  routine->buffer[1U] = '/';
-  routine->length     = 2U;
+  routine->buffer[0U] = 0U;
+  ( void )strcat( routine->buffer, "// " );
+  routine->length = 3U;
   for ( i=0U; i<measurement.length; i++ )
   {
     routine->length += ( uint32_t )sprintf( routine->buffer, "%d ", measurement.channels[i] );
@@ -253,10 +288,9 @@ void vMEASUREMENTmakeLegendLine ( SD_ROUTINE* routine )
 /*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTmakeDataLine ( SD_ROUTINE* routine )
 {
-  uint8_t i = 0U;
   routine->buffer[0U] = '*';
   sdRoutine.length    = 1U;
-  for ( i=0U; i<measurement.length; i++ )
+  for ( uint8_t i=0U; i<measurement.length; i++ )
   {
     routine->length += ( uint32_t )sprintf( &routine->buffer[routine->length], "%d ", uMEASUREMENTgetData( measurement.channels[i] ) );
   }
@@ -267,67 +301,24 @@ void vMEASUREMENTmakeDataLine ( SD_ROUTINE* routine )
 /*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTtask ( void* argument )
 {
-  MEASURMENT_CMD  inputCmd = MEASURMENT_CMD_NONE;
   for (;;)
   {
-    /*------------------------------------------------------------------*/
-    /*----------------------- Read input command -----------------------*/
-    /*------------------------------------------------------------------*/
-    if ( xQueueReceive( pMEASUREMENTgetCommandQueue(), &inputCmd, 0U ) == pdPASS )
-    {
-      if ( measurement.cmd != inputCmd )
-      {
-        measurement.cmd = inputCmd;
-      }
-    }
-    /*------------------------------------------------------------------*/
-    switch( measurement.cmd )
-    {
-      case MEASURMENT_CMD_NONE:
-        break;
-      case MEASURMENT_CMD_START:
-        if ( measurement.state == MEASURMENT_STATE_IDLE )
-        {
-          measurement.state = MEASURMENT_STATE_START;
-        }
-        measurement.cmd = MEASURMENT_CMD_NONE;
-        break;
-      case MEASURMENT_CMD_STOP:
-        switch ( measurement.state )
-        {
-          case MEASURMENT_STATE_WAIT:
-            vLOGICresetTimer( &measurement.timer );
-            measurement.state = MEASURMENT_STATE_IDLE;
-            measurement.cmd   = MEASURMENT_CMD_NONE;
-            break;
-          case MEASURMENT_STATE_IDLE:
-            measurement.cmd   = MEASURMENT_CMD_NONE;
-            break;
-          case MEASURMENT_STATE_ERROR:
-            measurement.cmd   = MEASURMENT_CMD_NONE;
-            break;
-          default:
-            break;
-        }
-        break;
-      default:
-        measurement.state = MEASURMENT_STATE_ERROR;
-        measurement.cmd   = MEASURMENT_CMD_NONE;
-        break;
-    }
-    /*------------------------------------------------------------------*/
-    /*--------------------------- Processing ---------------------------*/
-    /*------------------------------------------------------------------*/
+    ( void )xQueueReceive( pMEASUREMENTgetCommandQueue(), &measurement.cmd, 0U );
     if ( measurement.enb == PERMISSION_ENABLE )
     {
       switch ( measurement.state )
       {
         case MEASURMENT_STATE_IDLE:
-          if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
+          if ( measurement.cmd == MEASURMENT_CMD_START )
           {
-            vMEASUREMENTsendCmd( MEASURMENT_CMD_START );
+            if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
+            {
+              measurement.cmd   = MEASURMENT_CMD_NONE;
+              measurement.state = MEASURMENT_STATE_START;
+            }
+          } else {
+            measurement.cmd = MEASURMENT_STATE_START;//MEASURMENT_CMD_NONE;
           }
-          osDelay( 1000U );
           break;
         /*--------------------------------------------------------------*/
         case MEASURMENT_STATE_START:
@@ -338,26 +329,38 @@ void vMEASUREMENTtask ( void* argument )
           break;
         /*--------------------------------------------------------------*/
         case MEASURMENT_STATE_WAIT:
-          if ( uLOGICisTimer( &measurement.timer ) > 0U )
+          if ( measurement.cmd == MEASURMENT_CMD_STOP )
           {
-            measurement.state = MEASURMENT_STATE_WRITE;
+            vLOGICresetTimer( &measurement.timer );
+            measurement.state = MEASURMENT_STATE_IDLE;
+            measurement.cmd   = MEASURMENT_CMD_NONE;
+          }
+          else
+          {
+            if ( uLOGICisTimer( &measurement.timer ) > 0U )
+            {
+              measurement.state = MEASURMENT_STATE_WRITE;
+            }
+            measurement.cmd = MEASURMENT_CMD_NONE;
           }
           break;
         /*--------------------------------------------------------------*/
         case MEASURMENT_STATE_WRITE:
-          vMEASUREMENTmakeDataLine( &sdRoutine );
+          //vMEASUREMENTmakeDataLine( &sdRoutine );
           vLOGICstartTimer( &measurement.timer, "Measurement timer   " );
           measurement.state = MEASURMENT_STATE_WAIT;
           break;
         /*--------------------------------------------------------------*/
         case MEASURMENT_STATE_ERROR:
-          osDelay( 0xFFFFFFFFU );
+          vTaskSuspend( ( TaskHandle_t )measurementHandle );
           break;
         default:
-          measurement.state = MEASURMENT_STATE_START;
+          measurement.state = MEASURMENT_STATE_ERROR;
+          measurement.cmd   = MEASURMENT_CMD_NONE;
           break;
       }
     }
+    osDelay( 500U );
   }
   return;
 }
@@ -367,12 +370,12 @@ void vMEASUREMENTtask ( void* argument )
 void vMEASUREMENTinit ( void )
 {
   #if ( defined( FATSD ) && defined( MEASUREMENT ) )
-    measurement.enb = getBitMap( &recordSetup0, RECORD_ENB_ADR );
+    measurement.enb  = getBitMap( &recordSetup0, RECORD_ENB_ADR );
+    sdRoutine.buffer = cFATSDgetBuffer();
+    sdRoutine.cmd    = SD_COMMAND_WRITE;
+    sdRoutine.file   = FATSD_FILE_MEASUREMENT;
     if ( measurement.enb == PERMISSION_ENABLE )
     {
-      sdRoutine.buffer = cFATSDgetBuffer();
-      sdRoutine.cmd    = SD_COMMAND_WRITE;
-      sdRoutine.file   = FATSD_FILE_MEASUREMENT;
       vMEASUREMENTdataInit();
       pMeasurementCommandQueue = xQueueCreateStatic( MEASUREMENT_COMMAND_QUEUE_LENGTH,
                                                      sizeof( MEASURMENT_CMD ),

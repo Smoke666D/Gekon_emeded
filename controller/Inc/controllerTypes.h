@@ -256,6 +256,13 @@ typedef enum
   DEVICE_STATUS_ERROR,           /* 13 0 Fatal error. Need to reset manual */
   DEVICE_STATUS_BAN_START,       /* 14 0 Start is banned by error          */
 } DEVICE_STATUS;
+
+typedef enum
+{
+  MEASUREMENT_RECORD_TYPE_RECORD,
+  MEASUREMENT_RECORD_TYPE_LEGEND,
+  MEASUREMENT_RECORD_TYPE_PREAMBOLA
+} MEASUREMENT_RECORD_TYPE;
 /*----------------------- Callbacks ------------------------------------*/
 typedef uint16_t ( *getDataCallBack )( void );           /* Callback to get 2 byte data */
 typedef void     ( *setRelayCallBack )( RELAY_STATUS );  /* Callback to setup relay state */

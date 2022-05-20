@@ -35,7 +35,7 @@
 #define  MB_TASK_STACK_SIZE            512U
 #define  NET_TASK_STACK_SIZE           ( 448U * 4U )
 #define  ETHERNET_LINK_TASK_STACK_SIZE 512U
-#define  FATSD_TASK_STACK_SIZE         1024U
+#define  FATSD_TASK_STACK_SIZE         2048U
 #define  PID_TASK_STACK_SIZE           512U
 #define  RTC_TASK_STACK_SIZE           512U
 /* RTOS semaphores */

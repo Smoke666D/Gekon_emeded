@@ -13,6 +13,9 @@
 #include "task.h"
 #include "queue.h"
 #include "system.h"
+#include "string.h"
+#include "stdio.h"
+#include "controllerTypes.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 static osThreadId_t  sdHandle                       = NULL;
@@ -114,40 +117,93 @@ FRESULT eSDloadConfig ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t uSDcopyDigsToLine ( uint16_t* data, uint32_t length, char* output, char seporator )
+{
+  uint32_t res = 0U;
+  char     buffer[6U] = { 0U };
+  for ( uint8_t i=0U; i<length; i++ )
+  {
+    output[res] = 0U;
+    res += sprintf( buffer, "%d", data[i] );
+    strcat( output, buffer );
+    if ( i < ( length - 1U ) )
+    {
+      output[res] = seporator;
+      res++;
+    }
+  }
+  return uSYSendString( output, res );
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint32_t uSDmakeMeasurement ( void* input, uint8_t length, char* output )
+{
+  uint16_t* data = ( uint16_t* )input;
+  uint32_t  res  = 0U;
+  switch ( data[0U] )
+  {
+    case MEASUREMENT_RECORD_TYPE_RECORD:
+      res += uSDcopyDigsToLine( &data[1U], ( length - 1U ), &output[res], ' ' );
+      break;
+    case MEASUREMENT_RECORD_TYPE_LEGEND:
+      output[0U] = 0U;
+      ( void )strcat( output, "// " );
+      res = 3U;
+      res += uSDcopyDigsToLine( &data[1U], ( length - 1U ), &output[res], ' ' );
+      break;
+    case MEASUREMENT_RECORD_TYPE_PREAMBOLA:
+      output[0U] = 0U;
+      ( void )strcat( output, "// " );
+      res = 3U;
+      res += uSDcopyDigsToLine( &data[1U], ( length - 1U ), &output[res], '.' );
+      break;
+    default:
+      break;
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 void vSDtask ( void* argument )
 {
-  SD_ROUTINE input = { 0U };
-  FRESULT    res   = FR_OK;
+  SD_ROUTINE input  = { 0U };
+  FRESULT    res    = FR_OK;
+  uint32_t   length = 0U;
   for (;;)
   {
-    if ( xQueueReceive( pSDqueue, &input, 0U ) == pdPASS )
+    if ( pSDqueue != NULL )
     {
-      if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
+      if ( xQueueReceive( pSDqueue, &input, 0U ) == pdPASS )
       {
-        switch ( input.file )
+        if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
         {
-          case FATSD_FILE_CONFIG:
-            if ( input.cmd == SD_COMMAND_READ )
-            {
-              res = eSDloadConfig();
-            }
-            else
-            {
-              res = eSDsaveConfig();
-            }
-            break;
-          case FATSD_FILE_MEASUREMENT:
-            #if defined( MEASUREMENT )
-              res = eFILEaddLine( FATSD_FILE_MEASUREMENT, input.buffer, input.length );
-            #endif
-            break;
-          case FATSD_FILE_LOG:
-            #if defined( WRITE_LOG_TO_SD )
-              res = eFILEaddLine( FATSD_FILE_LOG, input.buffer, input.length );
-            #endif
-            break;
-          default:
-            break;
+          switch ( input.file )
+          {
+            case FATSD_FILE_CONFIG:
+              if ( input.cmd == SD_COMMAND_READ )
+              {
+                res = eSDloadConfig();
+              }
+              else
+              {
+                res = eSDsaveConfig();
+              }
+              break;
+            case FATSD_FILE_MEASUREMENT:
+              #if defined( MEASUREMENT )
+                length = uSDmakeMeasurement( input.data, input.length, cFATSDgetBuffer() );
+                res    = eFILEaddLine( FATSD_FILE_MEASUREMENT, cFATSDgetBuffer(), length );
+              #endif
+              break;
+            case FATSD_FILE_LOG:
+              #if defined( WRITE_LOG_TO_SD )
+                length = uRESTmakeLog( ( LOG_RECORD_TYPE* )input.data, cFATSDgetBuffer() );
+                length = uSYSendString( cFATSDgetBuffer(), length );
+                res    = eFILEaddLine( FATSD_FILE_LOG, cFATSDgetBuffer(), length );
+                osDelay( 1000U );
+              #endif
+              break;
+            default:
+              break;
+          }
         }
       }
     }

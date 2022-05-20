@@ -11,7 +11,7 @@
 #include "common.h"
 #include "fatfs.h"
 /*------------------------ Define --------------------------------------*/
-#define FATSD_BUFFER_SIZE      50U
+#define FATSD_BUFFER_SIZE      100U
 #define MIN_FAT32              65526U
 #define FILES_NUMBER           3U
 #define SEMAPHORE_ACCSEE_DELAY ( ( TickType_t ) 1000U )

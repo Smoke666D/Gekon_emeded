@@ -16,7 +16,6 @@
 #include "journal.h"
 #include "system.h"
 #include "dataSD.h"
-#include "stdio.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 static MEASUREMENT_TYPE measurement              = { 0U };
 static osThreadId_t     measurementHandle        = NULL;
@@ -225,76 +224,53 @@ void vMEASUREMENTdataInit ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint32_t vMEASUREMENTputDataField ( char* buffer, uint32_t index, uint8_t data )
-{
-  char sub[3U] = { 0U };
-  if ( data < 100 )
-  {
-    ( void )sprintf( sub, "%d", data );
-    if ( data < 10 )
-    {
-      buffer[index]      = '0';
-      buffer[index + 1U] = sub[0U];
-      buffer[index + 2U] = '.';
-    }
-    else
-    {
-      buffer[index]      = sub[0U];
-      buffer[index + 1U] = sub[1U];
-      buffer[index + 2U] = '.';
-    }
-  }
-  else
-  {
-    buffer[index]      = '9';
-    buffer[index + 1U] = '9';
-    buffer[index + 2U] = '.';
-  }
-  return index + 3U;
-}
-/*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTmakeStartLine ( SD_ROUTINE* routine )
 {
-  RTC_TIME time = { 0U };
-  eRTCgetTime( &time );
-  routine->buffer[0U] = 0;
-  ( void )strcat( routine->buffer, "// " );
-  routine->length = 3U;
-  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.year );
-  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.month );
-  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.day );
-  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.hour );
-  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.min );
-  routine->length = vMEASUREMENTputDataField( routine->buffer, routine->length, time.sec );
-  routine->length = uSYSendString( routine->buffer, ( routine->length - 1U ) );
+  char       buffer[4U] = { 0U };
+  RTC_TIME   time       = { 0U };
+  RTC_STATUS status     = RTC_BUSY;
+  while ( status == RTC_BUSY )
+  {
+    status = eRTCgetTime( &time );
+    osDelay( 100U );
+  }
+
+  ( void )strcat( buffer, "// " );
+
+  routine->data[0U]  = MEASUREMENT_RECORD_TYPE_PREAMBOLA;
+  routine->data[2U]  = time.year;
+  routine->data[4U]  = time.month;
+  routine->data[6U]  = time.day;
+  routine->data[8U]  = time.hour;
+  routine->data[10U] = time.min;
+  routine->data[12U] = time.sec;
+  routine->length    = 6U;
   vSDsendRoutine( routine );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTmakeLegendLine ( SD_ROUTINE* routine )
 {
-  uint8_t i = 0U;
-  routine->buffer[0U] = 0U;
-  ( void )strcat( routine->buffer, "// " );
-  routine->length = 3U;
-  for ( i=0U; i<measurement.length; i++ )
+  routine->data[0U] = MEASUREMENT_RECORD_TYPE_LEGEND;
+  for ( uint8_t i=0U; i<measurement.length; i++ )
   {
-    routine->length += ( uint32_t )sprintf( routine->buffer, "%d ", measurement.channels[i] );
+    routine->data[( 2U * i ) + 2U] = measurement.channels[i];
   }
-  routine->length = uSYSendString( routine->buffer, routine->length );
+  routine->length = measurement.length + 1U;
   vSDsendRoutine( routine );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
 void vMEASUREMENTmakeDataLine ( SD_ROUTINE* routine )
 {
-  routine->buffer[0U] = '*';
-  sdRoutine.length    = 1U;
+  uint16_t data = 0U;
+  routine->data[0U] = MEASUREMENT_RECORD_TYPE_RECORD;
   for ( uint8_t i=0U; i<measurement.length; i++ )
   {
-    routine->length += ( uint32_t )sprintf( &routine->buffer[routine->length], "%d ", uMEASUREMENTgetData( measurement.channels[i] ) );
+    data = uMEASUREMENTgetData( measurement.channels[i] );
+    routine->data[( 2U * i ) + 2U] = ( uint8_t )( data );
+    routine->data[( 2U * i ) + 3U] = ( uint8_t )( data >> 8U );
   }
-  routine->length = uSYSendString( routine->buffer, routine->length );
   vSDsendRoutine( routine );
   return;
 }
@@ -371,7 +347,6 @@ void vMEASUREMENTinit ( void )
 {
   #if ( defined( FATSD ) && defined( MEASUREMENT ) )
     measurement.enb  = getBitMap( &recordSetup0, RECORD_ENB_ADR );
-    sdRoutine.buffer = cFATSDgetBuffer();
     sdRoutine.cmd    = SD_COMMAND_WRITE;
     sdRoutine.file   = FATSD_FILE_MEASUREMENT;
     if ( measurement.enb == PERMISSION_ENABLE )

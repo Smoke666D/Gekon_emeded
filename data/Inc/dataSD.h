@@ -13,12 +13,7 @@
 /*------------------------ Define --------------------------------------*/
 #define SD_QUEUE_LENGTH      20U
 #define SD_CONFIG_MIN_LENGTH 18U
-
-#if ( LOG_RECORD_SIZE > MEASUREMENT_RECORD_SIZE )
-  #define SD_ROUTINE_DATA_SIZE ( LOG_RECORD_SIZE )
-#else
-  #define SD_ROUTINE_DATA_SIZE ( MEASUREMENT_RECORD_SIZE )
-#endif
+#define SD_ROUTINE_DATA_SIZE 100U
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum
@@ -38,7 +33,7 @@ typedef struct __packed
 {
   FATSD_FILE file : 2U;
   SD_COMMAND cmd  : 1U;
-  char*      buffer;
+  uint8_t    data[SD_ROUTINE_DATA_SIZE];
   uint32_t   length;
 } SD_ROUTINE;
 /*------------------------ Functions -----------------------------------*/

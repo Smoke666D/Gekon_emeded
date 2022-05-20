@@ -50,17 +50,23 @@ LOG_STATUS eLOGmakeRecord ( SYSTEM_EVENT event, LOG_RECORD_TYPE* record )
 /*---------------------------------------------------------------------------------------------------*/
 LOG_STATUS eLOGaddRecord ( LOG_RECORD_TYPE* record )
 {
-  LOG_STATUS res  = LOG_STATUS_ERROR;
+  LOG_STATUS res = LOG_STATUS_ERROR;
+
+
   #if ( defined( WRITE_LOG_TO_SD ) && defined ( FATSD ) )
     SD_ROUTINE sdRoutine = {
-        .buffer = cFATSDgetBuffer(),
         .cmd    = SD_COMMAND_WRITE,
         .file   = FATSD_FILE_LOG,
-        .length = uRESTmakeLog( record, sdRoutine.buffer )
+        .length = 0U
     };
-    sdRoutine.length = uSYSendString( sdRoutine.buffer, sdRoutine.length );
+    for ( uint8_t i=0U; i<LOG_RECORD_SIZE; i++ )
+    {
+      sdRoutine.data[i] = ( ( uint8_t* )record )[i];
+    }
     vSDsendRoutine( &sdRoutine );
   #endif
+
+
 
   if ( eDATAAPIlog( DATA_API_CMD_ADD, NULL, record ) == DATA_API_STAT_OK )
   {

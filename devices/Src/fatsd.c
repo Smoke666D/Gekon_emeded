@@ -21,7 +21,6 @@ static FIL                    file                 = { 0U };
 static SD_HandleTypeDef*      hsd                  = NULL;
 static HAL_SD_CardInfoTypeDef cardInfo             = { 0U };
 static FATSD_TYPE             fatsd                = { 0U };
-static SemaphoreHandle_t      xBufferAccessSemaphore           = NULL;
 /*----------------------- Constant ------------------------------------------------------------------*/
 static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
@@ -56,17 +55,24 @@ FRESULT eFATSDmount ( void )
   FRESULT res = FR_OK;
   fcount    = 0U;
   lineCount = 0U;
-  if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
+  if ( xFileAccessSemaphore != NULL )
   {
-    res = f_mount( &SDFatFS, SDPath, 1U );
-    if ( res == FR_NO_FILESYSTEM )
+    if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
-      while ( res != FR_OK )
+      res = f_mount( &SDFatFS, SDPath, 1U );
+      if ( res == FR_NO_FILESYSTEM )
       {
-        res = f_mkfs( SDPath, 0U, MIN_FAT32 );
+        while ( res != FR_OK )
+        {
+          res = f_mkfs( SDPath, 0U, MIN_FAT32 );
+        }
       }
+      xSemaphoreGive( xFileAccessSemaphore );
     }
-    xSemaphoreGive( xFileAccessSemaphore );
+    else
+    {
+      res = FR_BUSY;
+    }
   }
   else
   {
@@ -175,7 +181,6 @@ void vFATSDinit ( const SD_HandleTypeDef* sd )
     fatsd.position         = SD_EXTRACTED;
     fatsd.status           = SD_STATUS_UNMOUNTED;
     xFileAccessSemaphore   = xSemaphoreCreateMutex();
-    xBufferAccessSemaphore = xSemaphoreCreateMutex();
     const osThreadAttr_t fatsdTask_attributes = {
       .name       = "fatsdTask",
       .priority   = ( osPriority_t ) FATSD_TASK_PRIORITY,
@@ -278,7 +283,7 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
 FRESULT eFILEerase ( FATSD_FILE n )
 {
   FRESULT res = FR_OK;
-  if ( fatsd.status == SD_STATUS_MOUNTED )
+  if ( ( fatsd.status == SD_STATUS_MOUNTED ) && ( xFileAccessSemaphore != NULL ) )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {
@@ -325,7 +330,7 @@ FRESULT eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length )
 {
   FRESULT  res     = FR_OK;
   uint32_t counter = 0U;
-  if ( fatsd.status == SD_STATUS_MOUNTED )
+  if ( ( fatsd.status == SD_STATUS_MOUNTED ) && ( xFileAccessSemaphore != NULL ) )
   {
     if ( xSemaphoreTake( xFileAccessSemaphore, SEMAPHORE_ACCSEE_DELAY ) == pdTRUE )
     {

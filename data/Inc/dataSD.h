@@ -38,7 +38,8 @@ typedef struct __packed
 {
   FATSD_FILE file : 2U;
   SD_COMMAND cmd  : 1U;
-  uint8_t    data[SD_ROUTINE_DATA_SIZE];
+  char*      buffer;
+  uint32_t   length;
 } SD_ROUTINE;
 /*------------------------ Functions -----------------------------------*/
 void     vSDinit ( void );

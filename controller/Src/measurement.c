@@ -244,7 +244,7 @@ void vMEASUREMENTmakeStartLine ( SD_ROUTINE* routine )
   routine->data[8U]  = time.hour;
   routine->data[10U] = time.min;
   routine->data[12U] = time.sec;
-  routine->length    = 6U;
+  routine->length    = 7U;
   vSDsendRoutine( routine );
   return;
 }

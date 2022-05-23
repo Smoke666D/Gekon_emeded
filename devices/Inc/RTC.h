@@ -43,7 +43,7 @@
 #define  RTC_WDAY_MSK         0x07U
 #define  RTC_DAY_MSK          0x3FU
 #define  RTC_DATE_CENTURY     0x80U
-#define  RTC_MONTH_MSK        0x1F
+#define  RTC_MONTH_MSK        0x1FU
 #define  RTC_YEAR_MSK         0xFFU
 
 #define  RTC_ALARMn_DYDT      0x40U

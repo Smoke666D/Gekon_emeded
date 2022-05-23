@@ -1549,6 +1549,8 @@ void StartDefaultTask(void *argument)
       if ( eDATAAPIlogInit() == EEPROM_OK ) /* Get log data from EEPROM                  */
       {
         HAL_GPIO_WritePin( DIN_OFFSET_GPIO_Port, DIN_OFFSET_Pin, GPIO_PIN_SET );
+        vFATSDinit( &hsd );
+        vSDinit();
         vCHARTupdateAtrib();                        /* Update charts attributes                  */
         while ( uADCGetValidDataFlag() == 0U )
         {
@@ -1567,8 +1569,6 @@ void StartDefaultTask(void *argument)
         vCONTROLLERinit( &controllerInitStruct );   /**/
         vOUTPUTinit();
         vMBinit( mbInit );                          /* Start ModBus                              */
-        vFATSDinit( &hsd );
-        vSDinit();
         vMEASUREMENTinit();                         /**/
         period = 100U;
         #if defined ( UNIT_TEST )

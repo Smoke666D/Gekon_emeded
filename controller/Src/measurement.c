@@ -322,7 +322,7 @@ void vMEASUREMENTtask ( void* argument )
           break;
         /*--------------------------------------------------------------*/
         case MEASURMENT_STATE_WRITE:
-          //vMEASUREMENTmakeDataLine( &sdRoutine );
+          vMEASUREMENTmakeDataLine( &sdRoutine );
           vLOGICstartTimer( &measurement.timer, "Measurement timer   " );
           measurement.state = MEASURMENT_STATE_WAIT;
           break;

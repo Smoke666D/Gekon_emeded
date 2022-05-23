@@ -2895,7 +2895,7 @@ const eConfigBitMap recordSetup1BitMap[10U] =
    { 256U, 8U },     // recordMainsFreqEnb
    { 512U, 9U },     // recordVoltageAccEnb
 };
-uint16_t recordSetup1Value[1U] = { 1U };
+uint16_t recordSetup1Value[1U] = { 0U };
 const eConfigAttributes recordSetup1Atrib =
 {
    .adr        = 142U,
@@ -2914,7 +2914,7 @@ eConfigReg recordSetup1 =
    .value = recordSetup1Value,
 };
 /*----------------------------------------------------------------*/
-uint16_t recordIntervalValue[1U] = { 1000U };
+uint16_t recordIntervalValue[1U] = { 100U };
 const eConfigAttributes recordIntervalAtrib =
 {
    .adr        = 143U,

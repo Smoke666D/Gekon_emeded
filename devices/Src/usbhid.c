@@ -166,8 +166,8 @@ void vUSBlogToReport ( USB_REPORT* report )
   }
   else
   {
-    report->stat   = USB_REPORT_STATE_INTERNAL;
     report->length = 0U;
+    report->stat   = USB_REPORT_STATE_INTERNAL;
   }
   return;
 }
@@ -617,9 +617,10 @@ USB_STATUS eUSBeraseLOG ( const USB_REPORT* report )
 {
   USB_STATUS      res    = USB_STATUS_DONE;
   DATA_API_STATUS status = DATA_API_STAT_BUSY;
+  uint16_t        adr    = 0U;
   while ( status == DATA_API_STAT_BUSY )
   {
-    status = eDATAAPIlog( DATA_API_CMD_ERASE, NULL, NULL );
+    status = eDATAAPIlog( DATA_API_CMD_ERASE, &adr, NULL );
   }
   if ( status != DATA_API_STAT_OK )
   {

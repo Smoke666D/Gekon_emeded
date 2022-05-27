@@ -15,9 +15,9 @@
 #define MIN_FAT32              65526U
 #define FILES_NUMBER           3U
 #define SEMAPHORE_ACCSEE_DELAY ( ( TickType_t ) 1000U )
-#define CONFIG_FILE_NAME       u8"config.jsn\0"
-#define MEASUREMEMT_FILE_NAME  u8"measure.jsn\0"
-#define LOG_FILE_NAME          u8"log.jsn\0"
+#define CONFIG_FILE_NAME       u8"config.txt\0"
+#define MEASUREMEMT_FILE_NAME  u8"measure.txt\0"
+#define LOG_FILE_NAME          u8"log.txt\0"
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum

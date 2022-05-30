@@ -14,6 +14,7 @@
 #define SD_QUEUE_LENGTH      20U
 #define SD_CONFIG_MIN_LENGTH 18U
 #define SD_ROUTINE_DATA_SIZE 100U
+#define SD_TIME_SIZE         6U
 /*------------------------- Macros -------------------------------------*/
 /*-------------------------- ENUM --------------------------------------*/
 typedef enum

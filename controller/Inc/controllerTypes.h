@@ -260,7 +260,6 @@ typedef enum
 typedef enum
 {
   MEASUREMENT_RECORD_TYPE_RECORD,
-  MEASUREMENT_RECORD_TYPE_LEGEND,
   MEASUREMENT_RECORD_TYPE_PREAMBOLA
 } MEASUREMENT_RECORD_TYPE;
 /*----------------------- Callbacks ------------------------------------*/

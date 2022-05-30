@@ -244,19 +244,11 @@ void vMEASUREMENTmakeStartLine ( SD_ROUTINE* routine )
   routine->data[8U]  = time.hour;
   routine->data[10U] = time.min;
   routine->data[12U] = time.sec;
-  routine->length    = 7U;
-  vSDsendRoutine( routine );
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vMEASUREMENTmakeLegendLine ( SD_ROUTINE* routine )
-{
-  routine->data[0U] = MEASUREMENT_RECORD_TYPE_LEGEND;
   for ( uint8_t i=0U; i<measurement.length; i++ )
   {
-    routine->data[( 2U * i ) + 2U] = measurement.channels[i];
+    routine->data[( 2U * i ) + 14U] = measurement.channels[i];
   }
-  routine->length = measurement.length + 1U;
+  routine->length = measurement.length + 7U;
   vSDsendRoutine( routine );
   return;
 }
@@ -271,6 +263,7 @@ void vMEASUREMENTmakeDataLine ( SD_ROUTINE* routine )
     routine->data[( 2U * i ) + 2U] = ( uint8_t )( data );
     routine->data[( 2U * i ) + 3U] = ( uint8_t )( data >> 8U );
   }
+  routine->length = measurement.length + 1U;
   vSDsendRoutine( routine );
   return;
 }
@@ -299,7 +292,7 @@ void vMEASUREMENTtask ( void* argument )
         /*--------------------------------------------------------------*/
         case MEASURMENT_STATE_START:
           vMEASUREMENTmakeStartLine( &sdRoutine );
-          vMEASUREMENTmakeLegendLine( &sdRoutine );
+          vMEASUREMENTmakeDataLine( &sdRoutine );
           vLOGICstartTimer( &measurement.timer, "Measurement timer   " );
           measurement.state   = MEASURMENT_STATE_WAIT;
           break;

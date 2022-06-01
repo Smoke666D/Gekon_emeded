@@ -122,8 +122,8 @@ uint8_t uDATAAPIisValid ( void )
   {
     if ( eEEPROMreadMemory( eeprom, STORAGE_SR_ADR, &sysReg, 1U ) == EEPROM_OK )
     {
-      if ( ( sysReg                      != STORAGE_SR_EMPTY ) ||
-           ( REWRITE_ALL_EEPROM      == 0U               ) ||
+      if ( ( sysReg                  != STORAGE_SR_EMPTY ) &&
+           ( REWRITE_ALL_EEPROM      == 0U               ) &&
            ( uSTORAGEcheckMap( map ) >  0U               ) )
       {
         res = 1U;
@@ -133,16 +133,40 @@ uint8_t uDATAAPIisValid ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vDATAAPIsetConstantConfigs ( void )
+{
+  uint16_t idBuffer[UNIQUE_ID_LENGTH] = { 0U };
+  vSYSgetUniqueID16( idBuffer );
+  serialNumber0.value[0U]     = idBuffer[0U];
+  serialNumber0.value[1U]     = idBuffer[1U];
+  serialNumber0.value[2U]     = idBuffer[2U];
+  serialNumber1.value[0U]     = idBuffer[3U];
+  serialNumber1.value[1U]     = idBuffer[4U];
+  serialNumber1.value[2U]     = idBuffer[5U];
+  versionController.value[0U] = HARDWARE_VERSION_MAJOR;
+  versionController.value[1U] = HARDWARE_VERSION_MINOR;
+  versionController.value[2U] = HARDWARE_VERSION_PATCH;
+  versionFirmware.value[0U]   = FIRMWARE_VERSION_MAJOR;
+  versionFirmware.value[1U]   = FIRMWARE_VERSION_MINOR;
+  versionFirmware.value[2U]   = FIRMWARE_VERSION_PATCH;
+  versionBootloader.value[0U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 16U ) & 0xFF );
+  versionBootloader.value[1U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 8U  ) & 0xFF );
+  versionBootloader.value[2U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR )        ) & 0xFF );
+  deviceID.value[0U]          = DEVICE_ID;
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
 EEPROM_STATUS eDATAAPIresetStorage ( void )
 {
   EEPROM_STATUS         res      = EEPROM_OK;
-  const uint8_t         sysReg   = 0x00U;
+  uint8_t               sysReg   = 0x00U;
   const SYSTEM_EVENT    eraseEv  = { .type = EVENT_NONE, .action = HMI_CMD_NONE };
   const LOG_RECORD_TYPE eraseRec = { .time = 0U, .event = eraseEv };
   vFREEDATAerase();
+  vDATAAPIsetConstantConfigs();
   res = eSTORAGEwriteConfigs();
   if ( res == EEPROM_OK )
   {
@@ -200,37 +224,13 @@ EEPROM_STATUS eDATAAPIreadData ( void )
 {
   EEPROM_STATUS res = eSTORAGEreadConfigs();
   uint16_t      buf = 0U;
-  uint16_t      idBuffer[UNIQUE_ID_LENGTH] = { 0U };
-  if ( res == EEPROM_OK )
-  {
-    vSYSgetUniqueID16( idBuffer );
-    serialNumber0.value[0U]     = idBuffer[0U];
-    serialNumber0.value[1U]     = idBuffer[1U];
-    serialNumber0.value[2U]     = idBuffer[2U];
-    serialNumber1.value[0U]     = idBuffer[3U];
-    serialNumber1.value[1U]     = idBuffer[4U];
-    serialNumber1.value[2U]     = idBuffer[5U];
-    versionController.value[0U] = HARDWARE_VERSION_MAJOR;
-    versionController.value[1U] = HARDWARE_VERSION_MINOR;
-    versionController.value[2U] = HARDWARE_VERSION_PATCH;
-    versionFirmware.value[0U]   = FIRMWARE_VERSION_MAJOR;
-    versionFirmware.value[1U]   = FIRMWARE_VERSION_MINOR;
-    versionFirmware.value[2U]   = FIRMWARE_VERSION_PATCH;
-    versionBootloader.value[0U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 16U ) & 0xFF );
-    versionBootloader.value[1U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 8U  ) & 0xFF );
-    versionBootloader.value[2U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR )        ) & 0xFF );
-    deviceID.value[0U]          = DEVICE_ID;
-  }
-  for ( uint8_t i=0U; i<FREE_DATA_SIZE; i++ )
+  vDATAAPIsetConstantConfigs();
+  for ( uint8_t i=0U; ( ( i<FREE_DATA_SIZE ) && ( res == EEPROM_OK ) ); i++ )
   {
     res = eSTORAGEreadFreeData( i );
     if ( *freeDataArray[i] == 0xFFFFU )
     {
       res = eSTORAGEsetFreeData( i, &buf );
-    }
-    if ( res != EEPROM_OK )
-    {
-      break;
     }
   }
   if ( ( res == EEPROM_OK ) && ( *freeDataArray[ENGINE_WORK_MINUTES_ADR] > 60U ) )

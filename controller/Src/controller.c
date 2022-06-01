@@ -41,7 +41,8 @@ static const uint32_t allReinitFlags = DATA_API_FLAG_LCD_TASK_CONFIG_REINIT     
                                        DATA_API_FLAG_CONTROLLER_TASK_CONFIG_REINIT |
                                        DATA_API_FLAG_ELECTRO_TASK_CONFIG_REINIT    |
                                        DATA_API_FLAG_FPI_TASK_CONFIG_REINIT        |
-                                       DATA_API_FLAG_ADC_TASK_CONFIG_REINIT;
+                                       DATA_API_FLAG_ADC_TASK_CONFIG_REINIT        |
+                                       DATA_API_FLAG_MEASUREMENT_TSK_REINIT;
 /*-------------------------------- Variables ---------------------------------*/
 static CONTROLLER_TURNING stopState  = CONTROLLER_TURNING_IDLE;
 static CONTROLLER_TURNING startState = CONTROLLER_TURNING_IDLE;

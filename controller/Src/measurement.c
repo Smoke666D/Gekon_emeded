@@ -15,6 +15,7 @@
 #include "fpi.h"
 #include "journal.h"
 #include "system.h"
+#include "dataAPI.h"
 #if !defined ( UNIT_TEST )
   #include "dataSD.h"
 #endif
@@ -274,6 +275,16 @@ void vMEASUREMENTtask ( void* argument )
 {
   for (;;)
   {
+    if ( ( xEventGroupGetBits( xDATAAPIgetEventGroup() ) & DATA_API_FLAG_MEASUREMENT_TSK_REINIT ) > 0U )
+    {
+      measurement.enb  = getBitMap( &recordSetup0, RECORD_ENB_ADR );
+      if ( measurement.enb == PERMISSION_ENABLE )
+      {
+        vMEASUREMENTdataInit();
+      }
+      xEventGroupClearBits( xDATAAPIgetEventGroup(), DATA_API_FLAG_MEASUREMENT_TSK_REINIT );
+    }
+    /*---------------------------------------------------------------------------*/
     ( void )xQueueReceive( pMEASUREMENTgetCommandQueue(), &measurement.cmd, 0U );
     if ( measurement.enb == PERMISSION_ENABLE )
     {
@@ -341,9 +352,9 @@ void vMEASUREMENTtask ( void* argument )
 void vMEASUREMENTinit ( void )
 {
   #if ( defined( FATSD ) && defined( MEASUREMENT ) )
-    measurement.enb  = getBitMap( &recordSetup0, RECORD_ENB_ADR );
     sdRoutine.cmd    = SD_COMMAND_WRITE;
     sdRoutine.file   = FATSD_FILE_MEASUREMENT;
+    measurement.enb  = getBitMap( &recordSetup0, RECORD_ENB_ADR );
     if ( measurement.enb == PERMISSION_ENABLE )
     {
       vMEASUREMENTdataInit();

@@ -31,7 +31,6 @@ void vTESTtask ( void *argument )
     if ( done == 0U )
     {
       UnityBegin( "" );
-      /*
       runTest_cli();
       runTest_rtc();
       runTest_usbhid();
@@ -41,9 +40,9 @@ void vTESTtask ( void *argument )
       runTets_dataAPI();
       runTest_chart();
       runTest_outputProcessing();
-      */
       runTest_rest();
       //runTest_http();
+      runTest_dataSD();
       UnityEnd();
       done = 1U;
     }

@@ -123,16 +123,16 @@ typedef struct __packed
 } TEST_TYPE;
 /*------------------------ Functions -----------------------------------*/
 #if defined ( UNIT_TEST )
-  uint8_t     uTESTparsingFields ( const char* str, char** filds );
-  uint8_t     uTESTparse ( const char* str, const char** dictionary, uint8_t length );
-  void        vTESTparseString ( const char* str, TEST_TYPE* message );
-  uint8_t     uTESTtimeToStr ( RTC_TIME* time, char* buf );
-  char*       cTESTparseTimeFild ( char* pStr, uint8_t* output );
-  CLI_STATUS eTESTstrToTime ( RTC_TIME* time, char* buf );
-  uint8_t     uTESTstatusToString ( CLI_STATUS status, char* buf );
-  uint8_t     uTESTdioToStr ( uint8_t state, char* buf );
-  uint8_t     uTESThexToStr ( uint8_t* data, uint8_t length, char* buf );
-  uint8_t     uTESTversionToStr ( const uint16_t* version, char* buf );
+  uint8_t     uCLIparsingFields ( const char* str, char** filds );
+  uint8_t     uCLIparse ( const char* str, const char** dictionary, uint8_t length );
+  void        vCLIparseString ( const char* str, TEST_TYPE* message );
+  uint8_t     uCLItimeToStr ( RTC_TIME* time, char* buf );
+  char*       cCLIparseTimeFild ( char* pStr, uint8_t* output );
+  CLI_STATUS  eCLIstrToTime ( RTC_TIME* time, char* buf );
+  uint8_t     uCLIstatusToString ( CLI_STATUS status, char* buf );
+  uint8_t     uCLIdioToStr ( uint8_t state, char* buf );
+  uint8_t     uCLIhexToStr ( uint8_t* data, uint8_t length, char* buf );
+  uint8_t     uCLIversionToStr ( const uint16_t* version, char* buf );
 #endif
 CLI_STATUS vCLIprocess ( const char* str, uint8_t length );
 char*      cCLIgetOutput ( void );

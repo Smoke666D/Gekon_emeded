@@ -21,7 +21,7 @@ void runTest_chart ( void );
 void runTest_outputProcessing ( void );
 void runTest_rest ( void );
 void runTest_http ( void );
-
+void runTest_dataSD ( void );
 
 void vTESTInit ( void );
 

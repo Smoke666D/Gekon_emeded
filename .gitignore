@@ -1,5 +1,7 @@
 settings/
 Debug/
+UnitTests/
+Release/
 build/
 out/
 report/

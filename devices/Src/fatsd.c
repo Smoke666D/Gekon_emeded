@@ -11,6 +11,7 @@
 #include "task.h"
 #include "system.h"
 #include "freeData.h"
+#include "string.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 #if defined( FATSD )
@@ -192,6 +193,39 @@ void vFATSDinit ( const SD_HandleTypeDef* sd )
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*
+ * Get list of the files in core folder
+ * input: names - array of the files names
+ *        number - sizr of the files array
+ * output: result of operation
+ */
+FRESULT eFILEgetList ( char names[][FATSD_FILE_NAME_LENGTH], uint8_t* number )
+{
+  FRESULT res   = FR_OK;
+  FILINFO info  = { 0U };
+  DIR     dir   = { 0U };
+  uint8_t count = 0U;
+  res = f_opendir( &dir, "/" );
+  if ( res == FR_OK )
+  {
+    for (;;)
+    {
+      res = f_readdir( &dir, &info );
+      if ( ( res == FR_OK ) && ( info.fname[0U] != 0U ) )
+      {
+        ( void )strcpy( &names[count][0U], info.fname );
+        count++;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+  *number = count;
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
+/*
  * Read file from file system to the buffer.
  * Callback return the pointer to the buffer. At first and last calling
  * callback get zero length. So callback need to parsing previous data set.
@@ -204,7 +238,7 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
   char*    output   = NULL;
   uint32_t i        = 0U;
   uint8_t  counter  = 0U;
-  uint32_t length   = 0U;
+  volatile uint32_t length   = 0U;
   uint8_t  data[2U] = { 0U };
   if ( ( fatsd.status == SD_STATUS_MOUNTED ) || ( fatsd.status == SD_STATUS_LOCKED ) )
   {
@@ -223,7 +257,7 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
             for ( i=0U; i<file.fsize; i++ )
             {
               res = f_read( &file, &data, 1U, ( UINT* )&counter );
-              if ( res == FR_OK )
+              if ( ( res == FR_OK ) && ( counter == 1U ) )
               {
                 if ( data[0U] == '\n')       /* EOL */
                 {

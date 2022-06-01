@@ -12,6 +12,7 @@
 #include "fatfs.h"
 /*------------------------ Define --------------------------------------*/
 #define FATSD_BUFFER_SIZE      100U
+#define FATSD_FILE_NAME_LENGTH 13U
 #define MIN_FAT32              65526U
 #define FILES_NUMBER           3U
 #define SEMAPHORE_ACCSEE_DELAY ( ( TickType_t ) 1000U )
@@ -54,6 +55,7 @@ typedef struct __packed
 } FATSD_TYPE;
 /*------------------------ Functions -----------------------------------*/
 void      vFATSDinit ( const SD_HandleTypeDef* sd );
+FRESULT   eFILEgetList ( char names[][FATSD_FILE_NAME_LENGTH], uint8_t* number );
 FRESULT   eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback );
 FRESULT   eFILEaddLine ( FATSD_FILE n, const char* line, uint32_t length );
 FRESULT   eFILEerase ( FATSD_FILE n );

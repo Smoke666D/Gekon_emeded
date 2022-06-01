@@ -66,6 +66,14 @@ typedef struct __packed
   uint8_t          channels[MEASUREMENT_CHANNEL_NUMBER];
 } MEASUREMENT_TYPE;
 /*------------------------ Functions -----------------------------------*/
+#if defined ( UNIT_TEST )
+  #include "dataSD.h"
+  uint8_t  uMEASUREMENTgetChannel ( MEASURMENT_SETTING setting, uint8_t* queue, uint8_t index );
+  uint16_t uMEASUREMENTgetData ( uint8_t chanel );
+  void     vMEASUREMENTdataInit ( void );
+  void     vMEASUREMENTmakeStartLine ( SD_ROUTINE* routine );
+  void     vMEASUREMENTmakeDataLine ( SD_ROUTINE* routine );
+#endif
 void          vMEASUREMENTinit ( void );
 void          vMEASUREMENTsendCmd ( MEASURMENT_CMD cmd );
 QueueHandle_t pMEASUREMENTgetCommandQueue ( void );

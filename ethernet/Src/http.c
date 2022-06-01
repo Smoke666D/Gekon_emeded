@@ -393,7 +393,7 @@ STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
 #ifdef OPTIMIZ
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-STREAM_STATUS cHTTPstreamString ( HTTP_STREAM* stream )
+STREAM_STATUS cHTTPstreamJSON ( HTTP_STREAM* stream )
 {
   stream->status             = STREAM_END;
   restBuffer[stream->length] = 0U;
@@ -456,7 +456,7 @@ void vHTTPCleanResponse ( HTTP_RESPONSE *response )
 {
   response->status = HTTP_STATUS_BAD_REQUEST;
   response->method = HTTP_METHOD_NO;
-  for ( uint32_t i=0U; i<HEADER_LENGTH; i++ )
+  for ( uint8_t i=0U; i<HEADER_LENGTH; i++ )
   {
     response->header[i] = 0U;
   }
@@ -473,7 +473,7 @@ void vHTTPCleanResponse ( HTTP_RESPONSE *response )
  * The end of line is LF simbol (Line Feed)
  * Input:  input - pointer to char array of multiline text
  *         num   - number of line of interest
- *         line       - pointer to char array of output buffer for line
+ *         line  - pointer to char array of output buffer for line
  * Output: 1     - There is valid line in output buffer
  *         0     - There is no valid line in output buffer
  */
@@ -490,7 +490,7 @@ uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line )
     start = strchr( end, LF_HEX ) + 1U;
     end   = strchr( start, LF_HEX );
   }
-  if ( start && end)
+  if ( ( start > 0U ) && ( end > 0U ) )
   {
     res = 1U;
     if ( strncpy( line, start, ( strlen( start ) - strlen( end ) ) ) == NULL )
@@ -530,7 +530,6 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
   char*        pchSt     = NULL;
   char*        pchEnd    = NULL;
   char         line[50U] = { 0U };
-
   if ( uHTTPgetLine( req, 0U, line ) > 0U )
   {
     res = HTTP_STATUS_OK;
@@ -579,7 +578,7 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
  *         request - pointer to a output response structure
  * Output: HTTP status
  */
-HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE* response  )
+HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE* response )
 {
   HTTP_STATUS res    = HTTP_STATUS_BAD_REQUEST;
   char*       pchSt  = NULL;
@@ -1037,7 +1036,7 @@ void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             stream->flag             = STREAM_FLAG_COPY;
             stream->length           = uRESTmakeMemorySize( restBuffer );
             response->content.length = stream->length;
-            response->callBack       = cHTTPstreamString;
+            response->callBack       = cHTTPstreamJSON;
             response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
             response->content.data   = restBuffer;
@@ -1052,7 +1051,7 @@ void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             stream->flag             = STREAM_FLAG_COPY;
             stream->length           = uRESTmakeMeasurementLength( restBuffer );
             response->content.length = stream->length;
-            response->callBack       = cHTTPstreamString;
+            response->callBack       = cHTTPstreamJSON;
             response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
             response->content.data   = restBuffer;
@@ -1099,7 +1098,7 @@ void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
             stream->flag             = STREAM_FLAG_COPY;
             stream->length           = uRESTmakeOutput( outputDataReg[adr], outputDataDictionary[adr], restBuffer );
             response->content.length = stream->length;
-            response->callBack       = cHTTPstreamString;
+            response->callBack       = cHTTPstreamJSON;
             response->content.type   = HTTP_CONTENT_JSON;
             response->status         = HTTP_STATUS_OK;
             response->content.data   = restBuffer;
@@ -1117,7 +1116,7 @@ void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
           stream->flag             = STREAM_FLAG_COPY;
           stream->length           = uRESTmakeSystem( restBuffer );
           response->content.length = stream->length;
-          response->callBack       = cHTTPstreamString;
+          response->callBack       = cHTTPstreamJSON;
           response->content.type   = HTTP_CONTENT_JSON;
           response->status         = HTTP_STATUS_OK;
           response->content.data   = restBuffer;

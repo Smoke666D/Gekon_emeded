@@ -13,6 +13,7 @@
 #include "common.h"
 #include "dataAPI.h"
 #include "measurement.h"
+#include "fatsd.h"
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -42,6 +43,7 @@ const char *restRequestStr[REST_REQUEST_NUMBER] =
 uint8_t    uRESTmakeStartRecord ( const char* header, char* output );
   uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output );
   uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
+  uint8_t    uRESTmakeStringRecord ( const char* header, const char* string, RESTrecordPos last, char* output );
   uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
   uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );
   uint16_t   uRESTmakeStrRecord ( const char* header, const uint16_t* data, uint8_t dataLen, RESTrecordPos last, char* output );
@@ -252,10 +254,62 @@ uint32_t uRESTmakeTime ( const RTC_TIME* time, char* output )
 #endif
 uint32_t uRESTmakeMemorySize ( char* output )
 {
-  uint32_t position = 1U;
+  uint32_t  position = 1U;
+  char      fileNames[5][FATSD_FILE_NAME_LENGTH] = { 0U };
+  uint8_t   fileNumber = 0U;
+  FRESULT   sdRes      = FR_OK;
+  SD_STATUS sdStatus   = eFATSDgetStatus();
   output[0U] = '{';
-  //position += uRESTmakeDigRecord( MEMORY_SIZE_STR, uMEASUREMENTgetStorageSize(), REST_LAST_RECORD, &output[position] );
-  output[position] = '}';
+  switch ( sdStatus )
+  {
+    case SD_STATUS_MOUNTED:
+      sdRes = eFILEgetList( fileNames, &fileNumber );
+      if ( sdRes == FR_OK )
+      {
+        position += uRESTmakeStringRecord( PASSWORD_STATUS_STR, "Ok", REST_CONT_RECORD, &output[position] );
+        position += uRESTmakeStartRecord( MEMORY_SIZE_STR, &output[position] );
+        output[position] = '{';
+        position++;
+        position += uRESTmakeDigRecord( MEMORY_FULL_SIZE_STR, uFATSDgetFullSpace(), REST_CONT_RECORD, &output[position] );
+        position += uRESTmakeDigRecord( MEMORY_FREE_SIZE_STR, uFATSDgetFreeSpace(), REST_LAST_RECORD, &output[position] );
+        output[position] = 0U;
+        ( void )strcat( output, "},");
+        position += 2U;
+        position += uRESTmakeStartRecord( MEMORY_FILES_STR, &output[position] );
+        output[position] = '[';
+        position++;
+        for ( uint8_t i=0U; i<fileNumber; i++ )
+        {
+          ( void )strchr( output, '"' );
+          ( void )strcat( output, fileNames[i] );
+          ( void )strchr( output, '"' );
+          if ( i < ( fileNumber - 1U ) )
+          {
+            ( void )strchr( output, ',' );
+          }
+          position += 2U + strlen( fileNames[i] );
+        }
+        output[position] = ']';
+        position++;
+      }
+      else
+      {
+        position += uRESTmakeStringRecord( PASSWORD_STATUS_STR, "Error on reading", REST_LAST_RECORD, &output[position] );
+      }
+      break;
+    case SD_STATUS_UNMOUNTED:
+      position += uRESTmakeStringRecord( PASSWORD_STATUS_STR, "Unmounted", REST_LAST_RECORD, &output[position] );
+      break;
+    case SD_STATUS_LOCKED:
+      position += uRESTmakeStringRecord( PASSWORD_STATUS_STR, "Locked", REST_LAST_RECORD, &output[position] );
+      break;
+    case SD_STATUS_ERROR:
+      position += uRESTmakeStringRecord( PASSWORD_STATUS_STR, "Error", REST_LAST_RECORD, &output[position] );
+      break;
+    default:
+      break;
+  }
+  output[position + 1U] = '}';
   position++;
   return position;
 }
@@ -404,7 +458,8 @@ REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE* password )
     password->status = ( uint8_t )buf;
     if ( res == REST_OK )
     {
-      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &password->data );
+      uint16_t buffer = password->data;
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &buffer );
     }
   }
   else
@@ -419,7 +474,8 @@ REST_ERROR eRESTparsingAuth ( char* input, PASSWORD_TYPE* password )
   REST_ERROR res = REST_OK;
   if ( strchr( input, '{' ) != NULL )
   {
-    res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &password->data );
+    uint16_t buffer = password->data;
+    res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &buffer );
   }
   else
   {
@@ -645,10 +701,12 @@ REST_ERROR eRESTparsingBitMapArray ( const char* input, const char* header, eCon
           {
             bitPointer = &bitMap[i];
             pchAr++;
-            res = eRESTparsingDig16Record( pchAr, BIT_MAP_MASK_STR, &bitPointer->mask );
+            uint16_t buffer16 = bitPointer->mask;
+            res = eRESTparsingDig16Record( pchAr, BIT_MAP_MASK_STR, &buffer16 );
             if ( res == REST_OK )
             {
-              res = eRESTparsingDig8Record( pchAr, BIT_MAP_SHIFT_STR, &bitPointer->shift );
+              uint8_t buffer8 = bitPointer->shift;
+              res = eRESTparsingDig8Record( pchAr, BIT_MAP_SHIFT_STR, &buffer8 );
               if ( res != REST_OK )
               {
                 break;
@@ -1054,6 +1112,23 @@ uint8_t uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len,
     output[shift] = ',';
     shift++;
   }
+  return shift;
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uRESTmakeStringRecord ( const char* header, const char* string, RESTrecordPos last, char* output )
+{
+  uint8_t shift = uRESTmakeStartRecord( header, output );
+  output[0U] = 0U;
+  ( void )strchr( output, ' ' );
+  ( void )strchr( output, '"' );
+  ( void )strcat( output, string );
+  ( void )strchr( output, '"' );
+  if ( last == REST_CONT_RECORD )
+  {
+    ( void )strchr( output, ',' );
+    shift++;
+  }
+  shift += 3U + strlen( string );
   return shift;
 }
 /*---------------------------------------------------------------------------------------------------*/

@@ -24,8 +24,12 @@ static StaticQueue_t xSDqueue                       = { 0U };
 static SD_ROUTINE    sdQueueBuffer[SD_QUEUE_LENGTH] = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
 /*----------------------- Variables -----------------------------------------------------------------*/
-static SD_CONFIG_STATUS status       = SD_CONFIG_STATUS_FAT_ERROR;
-static uint8_t          configCheker = 0U;
+static FRESULT sdStatus = FR_OK;
+#if defined ( UNIT_TEST )
+  uint8_t configCheker = 0U;
+#else
+  static uint8_t configCheker = 0U;
+#endif
 /*----------------------- Functions -----------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
@@ -66,25 +70,22 @@ FRESULT eSDsaveConfig ( void )
     length = uSYSendString( cFATSDgetBuffer(), length );
     res    = eFILEaddLine( FATSD_FILE_CONFIG, cFATSDgetBuffer(), length );
     length = 0U;
+    for ( uint32_t i=0U; ( ( i < SETTING_REGISTER_NUMBER ) && ( res == FR_OK ) ); i++ )
+    {
+      length = uRESTmakeShortCongig( configReg[i], cFATSDgetBuffer() );
+      if ( i < ( SETTING_REGISTER_NUMBER - 1U ) )
+      {
+        length = uSYSputChar( cFATSDgetBuffer(), length, ',' );
+      }
+      length = uSYSendString( cFATSDgetBuffer(), length );
+      res    = eFILEaddLine( FATSD_FILE_CONFIG, cFATSDgetBuffer(), length );
+      length = 0U;
+    }
     if ( res == FR_OK )
     {
-      for ( uint32_t i=0U; ( ( i < SETTING_REGISTER_NUMBER ) && ( res != FR_OK ) ); i++ )
-      {
-        length = uRESTmakeShortCongig( configReg[i], cFATSDgetBuffer() );
-        if ( i < ( SETTING_REGISTER_NUMBER - 1U ) )
-        {
-          length = uSYSputChar( cFATSDgetBuffer(), length, ',' );
-        }
-        length = uSYSendString( cFATSDgetBuffer(), length );
-        res    = eFILEaddLine( FATSD_FILE_CONFIG, cFATSDgetBuffer(), length );
-        length = 0U;
-      }
-      if ( res == FR_OK )
-      {
-        length = uSYSputChar( cFATSDgetBuffer(), length, ']' );
-        length = uSYSendString( cFATSDgetBuffer(), length );
-        res    = eFILEaddLine( FATSD_FILE_CONFIG, cFATSDgetBuffer(), length );
-      }
+      length = uSYSputChar( cFATSDgetBuffer(), length, ']' );
+      length = uSYSendString( cFATSDgetBuffer(), length );
+      res    = eFILEaddLine( FATSD_FILE_CONFIG, cFATSDgetBuffer(), length );
     }
   }
   return res;
@@ -92,17 +93,17 @@ FRESULT eSDsaveConfig ( void )
 /*---------------------------------------------------------------------------------------------------*/
 FRESULT eSDloadConfig ( void )
 {
-  status       = SD_CONFIG_STATUS_OK;
-  configCheker = 0U;
-  FRESULT res  = eFILEreadLineByLine( FATSD_FILE_CONFIG, cSDcheckConfigCallback );
+  SD_CONFIG_STATUS sdConfigStatus = SD_CONFIG_STATUS_OK;
+  configCheker   = 0U;
+  FRESULT res    = eFILEreadLineByLine( FATSD_FILE_CONFIG, cSDcheckConfigCallback );
   if ( res == FR_OK )
   {
     if ( configCheker != SETTING_REGISTER_NUMBER )
     {
-      status = SD_CONFIG_STATUS_FILE_ERROR;
-      res    = FR_FILE_CHECK_ERROR;
+      sdConfigStatus = SD_CONFIG_STATUS_FILE_ERROR;
+      res            = FR_FILE_CHECK_ERROR;
     }
-    if ( status == SD_CONFIG_STATUS_OK )
+    if ( sdConfigStatus == SD_CONFIG_STATUS_OK )
     {
       res = eFILEreadLineByLine( FATSD_FILE_CONFIG, cSDreadConfigCallback );
       if ( res == FR_OK )
@@ -137,6 +138,7 @@ uint32_t uSDcopyDigsToLine ( uint16_t* data, uint32_t length, char* output, char
     output[res] = end;
     res++;
   }
+  output[res] = 0U;
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -177,26 +179,29 @@ void vSDtask ( void* argument )
           switch ( input.file )
           {
             case FATSD_FILE_CONFIG:
+              sdStatus = FR_BUSY;
               if ( input.cmd == SD_COMMAND_READ )
               {
-                ( void )eSDloadConfig();
+                sdStatus = eSDloadConfig();
               }
               else
               {
-                ( void )eSDsaveConfig();
+                sdStatus = eSDsaveConfig();
               }
               break;
             case FATSD_FILE_MEASUREMENT:
               #if defined( MEASUREMENT )
-                length = uSDmakeMeasurement( input.data, input.length, cFATSDgetBuffer() );
-                ( void )eFILEaddLine( FATSD_FILE_MEASUREMENT, cFATSDgetBuffer(), length );
+                sdStatus = FR_BUSY;
+                length   = uSDmakeMeasurement( input.data, input.length, cFATSDgetBuffer() );
+                sdStatus = eFILEaddLine( FATSD_FILE_MEASUREMENT, cFATSDgetBuffer(), length );
               #endif
               break;
             case FATSD_FILE_LOG:
               #if defined( WRITE_LOG_TO_SD )
-                length = uRESTmakeLog( ( LOG_RECORD_TYPE* )input.data, cFATSDgetBuffer() );
-                length = uSYSendString( cFATSDgetBuffer(), length );
-                ( void )eFILEaddLine( FATSD_FILE_LOG, cFATSDgetBuffer(), length );
+                sdStatus = FR_BUSY;
+                length   = uRESTmakeLog( ( LOG_RECORD_TYPE* )input.data, cFATSDgetBuffer() );
+                length   = uSYSendString( cFATSDgetBuffer(), length );
+                sdStatus = eFILEaddLine( FATSD_FILE_LOG, cFATSDgetBuffer(), length );
                 osDelay( 1000U );
               #endif
               break;
@@ -237,6 +242,11 @@ void vSDsendRoutine ( SD_ROUTINE* routine )
     xQueueSend( pSDqueue, &sdRoutine, portMAX_DELAY );
   }
   return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+FRESULT eSDgetStatus ( void )
+{
+  return sdStatus;
 }
 /*---------------------------------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

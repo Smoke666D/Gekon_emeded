@@ -15,7 +15,9 @@
 #include "fpi.h"
 #include "journal.h"
 #include "system.h"
-#include "dataSD.h"
+#if !defined ( UNIT_TEST )
+  #include "dataSD.h"
+#endif
 /*----------------------- Structures ----------------------------------------------------------------*/
 static MEASUREMENT_TYPE measurement              = { 0U };
 static osThreadId_t     measurementHandle        = NULL;

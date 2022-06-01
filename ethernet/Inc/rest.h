@@ -101,7 +101,10 @@ typedef enum
 #define LOG_TIME_STR                "time"
 #define LOG_TYPE_STR                "type"
 #define LOG_ACTION_STR              "action"
-#define MEMORY_SIZE_STR             "size"
+#define MEMORY_SIZE_STR             "memory"
+#define MEMORY_FULL_SIZE_STR        "full"
+#define MEMORY_FREE_SIZE_STR        "free"
+#define MEMORY_FILES_STR            "files"
 #define MESUREMENT_LENGTH_STR       "length"
 #define OUTPUT_NAME_STR             "name"
 #define SYSTEM_TOTAL_STR            "total"
@@ -112,6 +115,7 @@ extern const char 	*restRequestStr[REST_REQUEST_NUMBER];
 #if defined ( UNIT_TEST )
   uint8_t    uRESTmakeStartRecord ( const char* header, char* output );
   uint8_t    uRESTmakeDigRecord ( const char* header, uint32_t data, RESTrecordPos last, char* output );
+  uint8_t    uRESTmakeStringRecord ( const char* header, const char* string, RESTrecordPos last, char* output );
   uint8_t    uRESTmakeValueRecord ( const char* header, uint16_t* data, uint16_t len, uint16_t type, RESTrecordPos last, char* output );
   uint8_t    uRESTmake16FixDigRecord ( const char* header, fix16_t data, RESTrecordPos last, char* output );
   uint8_t    uRESTmakeSignedRecord ( const char* header, signed char data, RESTrecordPos last, char* output );

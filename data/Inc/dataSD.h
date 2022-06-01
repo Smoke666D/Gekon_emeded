@@ -32,13 +32,24 @@ typedef enum
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
-  FATSD_FILE file : 2U;
-  SD_COMMAND cmd  : 1U;
+  FATSD_FILE file;
+  SD_COMMAND cmd;
   uint8_t    data[SD_ROUTINE_DATA_SIZE];
   uint32_t   length;
 } SD_ROUTINE;
+/*------------------------ External ------------------------------------*/
+#if defined ( UNIT_TEST )
+  extern uint8_t configCheker;
+#endif
 /*------------------------ Functions -----------------------------------*/
-void     vSDinit ( void );
-void     vSDsendRoutine ( SD_ROUTINE* routine );
+#if defined ( UNIT_TEST )
+  char*    cSDcheckConfigCallback ( uint16_t length );
+  char*    cSDreadConfigCallback ( uint16_t length );
+  uint32_t uSDcopyDigsToLine ( uint16_t* data, uint32_t length, char* output, char seporator, uint8_t end );
+  uint32_t uSDmakeMeasurement ( void* input, uint8_t length, char* output );
+#endif
+void    vSDinit ( void );
+void    vSDsendRoutine ( SD_ROUTINE* routine );
+FRESULT eSDgetStatus ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_DATASD_H_ */

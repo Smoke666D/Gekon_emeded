@@ -173,10 +173,10 @@ void test_cHTTPstreamData ( void )
   TEST_ASSERT_EQUAL( STREAM_ERROR, cHTTPstreamData( &stream ) );
   return;
 }
-void test_cHTTPstreamString ( void )
+void test_cHTTPstreamJSON ( void )
 {
   HTTP_STREAM stream = { 0U };
-  TEST_ASSERT_EQUAL( STREAM_END, cHTTPstreamString( &stream ) );
+  TEST_ASSERT_EQUAL( STREAM_END, cHTTPstreamJSON( &stream ) );
   return;
 }
 void test_cHTTPstreamLog ( void )
@@ -186,9 +186,9 @@ void test_cHTTPstreamLog ( void )
   stream.index = 0U;
   stream.start = 0U;
   TEST_ASSERT_EQUAL( STREAM_CONTINUES, cHTTPstreamLog( &stream ) );
-  //TEST_ASSERT_EQUAL_STRING( "", restBuffer );
+  TEST_ASSERT_EQUAL_STRING( "", restBuffer );
   TEST_ASSERT_EQUAL( STREAM_END, cHTTPstreamLog( &stream ) );
-  //TEST_ASSERT_EQUAL_STRING( "", restBuffer );
+  TEST_ASSERT_EQUAL_STRING( "", restBuffer );
   stream.start = LOG_SIZE;
   stream.index = 0U;
   stream.size  = 2U;
@@ -197,71 +197,118 @@ void test_cHTTPstreamLog ( void )
 }
 void test_vHTTPCleanResponse ( void )
 {
+  HTTP_RESPONSE response = { 0U };
+  vHTTPCleanResponse( &response );
+  TEST_ASSERT_EQUAL( HTTP_STATUS_BAD_REQUEST, response.status );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
+  TEST_ASSERT_EQUAL( 0U, response.content.length );
+  TEST_ASSERT_EQUAL( HTTP_CONTENT_HTML, response.content.type );
+  TEST_ASSERT_EQUAL( HTTP_CONNECT_CLOSED, response.connect );
+  TEST_ASSERT_EQUAL( HTTP_CACHE_NO_CACHE, response.cache );
+  TEST_ASSERT_EQUAL( HTTP_ENCODING_NO, response.encoding );
+  for  ( uint8_t i=0U; i<HEADER_LENGTH; i++ )
+  {
+    TEST_ASSERT_EQUAL( 0U, response.header[i] );
+  }
   return;
 }
 void test_uHTTPgetLine ( void )
 {
+  const char input[] = "First test sting\n\rSecond test string\n\rThird test string\n\r";
+  char       output[30U] = { 0U };
+  uint8_t    res = 0U;
+  res = uHTTPgetLine( input, 2U, output );
+  TEST_ASSERT_GREATER_THAN( 0, res );
+  TEST_ASSERT_EQUAL_STRING( "Second test string\n\r", output );
   return;
 }
 void test_vHTTPbuildPutResponse ( void )
 {
+  char path[] = "";
+  char content[] = "";
+  HTTP_RESPONSE response = { 0U };
+  uint32_t remoteIP = 0U;
+  vHTTPbuildPutResponse( path, &response, content, remoteIP );
   return;
 }
 void test_vHTTPbuildGetResponse ( void )
 {
+  char path[] = "";
+  HTTP_RESPONSE response = { 0U };
+  uint32_t remoteIP = 0U;
+  vHTTPbuildGetResponse( path, &response, remoteIP );
   return;
 }
 void test_eHTTPparsingRequest ( void )
 {
+  const char input[] = "";
+  HTTP_REQUEST request = { 0U };
+  HTTP_STATUS res = HTTP_STATUS_ERROR;
+  res = eHTTPparsingRequest( input, &request );
   return;
 }
 void test_vHTTPbuildResponse ( void )
 {
+  HTTP_REQUEST request = { 0U };
+  HTTP_RESPONSE response = { 0U };
+  uint32_t remoteIP = 0U;
+  vHTTPbuildResponse( &request, &response, remoteIP );
   return;
 }
 void test_vHTTPmakeResponse ( void )
 {
+  char input[] = "";
+  HTTP_RESPONSE response = { 0U };
+  vHTTPmakeResponse( input, &response );
   return;
 }
 void test_eHTTPbuildRequest ( void )
 {
+  HTTP_STATUS res = HTTP_STATUS_ERROR;
+  HTTP_REQUEST request = { 0U };
+  res = eHTTPbuildRequest( &request );
   return;
 }
 void test_vHTTPmakeRequest ( void )
 {
+  HTTP_REQUEST request = { 0U };
+  char output[30U] = { 0U };
+  vHTTPmakeRequest( &request, output );
   return;
 }
 void test_eHTTPparsingResponse ( void )
 {
+  HTTP_STATUS res = HTTP_STATUS_ERROR;
+  const char input[] = "iii";
+  char data[30U] = { 0U };
+  HTTP_RESPONSE response = { 0U };
+  res = eHTTPparsingResponse( input, data, &response );
   return;
 }
-
-
-
 
 void runTest_http ( void )
 {
   UnitySetTestFile( "http.c" );
-  UnityDefaultTestRun( test_vHTTPcleanRequest, "", 0U );
-  UnityDefaultTestRun( test_vHTTPaddContentType, "", 0U );
-  UnityDefaultTestRun( test_vHTTPaddContentEncoding, "", 0U );
-  UnityDefaultTestRun( test_vHTTPaddCache, "", 0U );
-  UnityDefaultTestRun( test_cHTTPstreamConfigs, "", 0U );
-  UnityDefaultTestRun( test_cHTTPstreamCharts, "", 0U );
-  UnityDefaultTestRun( test_cHTTPstreamTime, "", 0U );
-  UnityDefaultTestRun( test_cHTTPstreamData, "", 0U );
-  UnityDefaultTestRun( test_cHTTPstreamString, "", 0U );
-  UnityDefaultTestRun( test_cHTTPstreamLog, "", 0U );
-  UnityDefaultTestRun( test_vHTTPCleanResponse, "", 0U );
-  UnityDefaultTestRun( test_uHTTPgetLine, "", 0U );
-  UnityDefaultTestRun( test_vHTTPbuildPutResponse, "", 0U );
-  UnityDefaultTestRun( test_vHTTPbuildGetResponse, "", 0U );
-  UnityDefaultTestRun( test_eHTTPparsingRequest, "", 0U );
-  UnityDefaultTestRun( test_vHTTPbuildResponse, "", 0U );
-  UnityDefaultTestRun( test_vHTTPmakeResponse, "", 0U );
-  UnityDefaultTestRun( test_eHTTPbuildRequest, "", 0U );
-  UnityDefaultTestRun( test_vHTTPmakeRequest, "", 0U );
-  UnityDefaultTestRun( test_eHTTPparsingResponse, "", 0U );
+  UnityDefaultTestRun( test_vHTTPcleanRequest, "Cleaning request data structure", 0U );
+  UnityDefaultTestRun( test_vHTTPaddContentType, "Make content type string", 0U );
+  UnityDefaultTestRun( test_vHTTPaddContentEncoding, "Make encoding string", 0U );
+  UnityDefaultTestRun( test_vHTTPaddCache, "Make cache string", 0U );
+  UnityDefaultTestRun( test_cHTTPstreamConfigs, "Make config string for the stream", 0U );
+  UnityDefaultTestRun( test_cHTTPstreamCharts, "Make chart string for the stream", 0U );
+  UnityDefaultTestRun( test_cHTTPstreamTime, "Make time string for the stream", 0U );
+  UnityDefaultTestRun( test_cHTTPstreamData, "Make free data string for the stream", 0U );
+  UnityDefaultTestRun( test_cHTTPstreamJSON, "Make JSON string for the stream", 0U );
+  UnityDefaultTestRun( test_cHTTPstreamLog, "Make log record sting for the stram", 0U );
+  UnityDefaultTestRun( test_vHTTPCleanResponse, "Cleaning response data structure", 0U );
+  UnityDefaultTestRun( test_uHTTPgetLine, "Parsing line from multiline text", 0U );
+  UnityDefaultTestRun( test_vHTTPbuildPutResponse, "Make response for put (write) request", 0U );
+  UnityDefaultTestRun( test_vHTTPbuildGetResponse, "Make response for get (read) request", 0U );
+  UnityDefaultTestRun( test_vHTTPbuildResponse, "Make response for request", 0U );
+  UnityDefaultTestRun( test_vHTTPmakeResponse, "Make response string", 0U );
+  UnityDefaultTestRun( test_eHTTPparsingRequest, "Parsing request string", 0U );
+  UnityDefaultTestRun( test_eHTTPbuildRequest, "Build request structure", 0U );
+  UnityDefaultTestRun( test_vHTTPmakeRequest, "Make string request from request structure", 0U );
+  UnityDefaultTestRun( test_eHTTPparsingResponse, "Parsing data from response text", 0U );
   vTESTsendReport();
   return;
 }

@@ -248,7 +248,7 @@ typedef struct __packed
   STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream );
   STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream );
   STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream );
-  STREAM_STATUS cHTTPstreamString ( HTTP_STREAM* stream );
+  STREAM_STATUS cHTTPstreamJSON ( HTTP_STREAM* stream );
   STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream );
   void vHTTPCleanResponse ( HTTP_RESPONSE *response );
   uint8_t uHTTPgetLine ( const char* input, uint16_t num, char* line );

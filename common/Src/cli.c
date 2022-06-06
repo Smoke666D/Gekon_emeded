@@ -211,6 +211,7 @@ CLI_STATUS eCLIstrToTime ( RTC_TIME* time, char* buf )
 uint8_t uCLIstatusToString ( CLI_STATUS status, char* buf )
 {
   uint8_t res = 0U;
+  buf[0U] = 0U;
   switch ( status )
   {
     case CLI_STATUS_OK:
@@ -318,8 +319,8 @@ uint8_t uCLInumbersToStr ( const uint16_t* data, uint8_t length, char* buf )
 CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
 {
   CLI_STATUS res  = CLI_STATUS_OK;
-  RTC_TIME    time = { 0U };
-  uint16_t    id[UNIQUE_ID_LENGTH] = { 0U };
+  RTC_TIME   time = { 0U };
+  uint16_t   id[UNIQUE_ID_LENGTH] = { 0U };
   vCLIparseString( str, &message );
   switch ( message.cmd )
   {
@@ -362,7 +363,12 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_RELEASE:
           if ( message.dataFlag > 0U )
           {
-            eDATAAPIconfigValue( DATA_API_CMD_WRITE, RELEASE_DATE_ADR, message.data );
+            vSTORAGEresetConfigWriteProtection();
+            if ( eDATAAPIconfigValue( DATA_API_CMD_WRITE, RELEASE_DATE_ADR, message.data ) != DATA_API_STAT_OK )
+            {
+              res = CLI_STATUS_ERROR_EXECUTING;
+            }
+            vSTORAGEsetConfigWriteProtection();
           }
           else
           {
@@ -372,7 +378,12 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_SERIAL:
           if ( message.dataFlag > 0U )
           {
-            eDATAAPIconfigValue( DATA_API_CMD_WRITE, SERIAL_NUMBER_ADR, message.data );
+            vSTORAGEresetConfigWriteProtection();
+            if ( eDATAAPIconfigValue( DATA_API_CMD_WRITE, SERIAL_NUMBER_ADR, message.data ) != DATA_API_STAT_OK )
+            {
+              res = CLI_STATUS_ERROR_EXECUTING;
+            }
+            vSTORAGEsetConfigWriteProtection();
           }
           else
           {

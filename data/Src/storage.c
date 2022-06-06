@@ -14,8 +14,13 @@
   static const EEPROM_TYPE* storageEEPROM = NULL;
 #endif
 /*----------------------- Constant ------------------------------------------------------------------*/
+const uint8_t protectedConfigs[STORAGE_PROTECTED_SIZE] = {
+  RELEASE_DATE_ADR,
+  SERIAL_NUMBER_ADR
+};
 /*----------------------- Variables -----------------------------------------------------------------*/
 uint8_t configBuffer[CONFIG_MAX_SIZE + 1U] = { 0U };
+uint8_t configWriteProtection              = 1U;
 /*----------------------- Functions -----------------------------------------------------------------*/
 #if !defined( UNIT_TEST )
   uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob );
@@ -75,9 +80,8 @@ uint8_t uBlobToFix16 ( fix16_t* val, const uint8_t* blob )
  */
 uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob )
 {
-  uint8_t i     = 0U;
   uint8_t count = 0U;
-  for ( i=0U; i<reg->atrib->len; i++ )
+  for ( uint8_t i=0U; i<reg->atrib->len; i++ )
   {
     count += uUint16ToBlob( reg->value[i], &blob[count] );
   }
@@ -92,9 +96,8 @@ uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob )
  */
 uint8_t uBlobToConfig ( eConfigReg* reg, const uint8_t* blob )
 {
-  uint8_t i     = 0U;
   uint8_t count = 0U;
-  for ( i=0U; i<reg->atrib->len; i++ )
+  for ( uint8_t i=0U; i<reg->atrib->len; i++ )
   {
     count += uBlobToUint16( &reg->value[i], &blob[count] );
   }
@@ -185,9 +188,8 @@ EEPROM_STATUS eSTORAGEwriteMap ( void )
 EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output )
 {
   EEPROM_STATUS res = EEPROM_OK;
-  uint8_t       i   = 0U;
   uint32_t      adr = STORAGE_MAP_ADR;
-  for ( i=0U; i<( STORAGE_MAP_SIZE / 4U ); i++ )
+  for ( uint8_t i=0U; i<( STORAGE_MAP_SIZE / 4U ); i++ )
   {
     res = eSTORAGEreadUint32( &output[i], &adr );
     if ( res != EEPROM_OK )
@@ -217,12 +219,10 @@ uint8_t uSTORAGEcheckMap ( const uint32_t* map )
 EEPROM_STATUS eSTORAGEwriteCharts ( void )
 {
   EEPROM_STATUS res        = EEPROM_OK;
-  uint8_t       i          = 0U;
-  uint8_t       j          = 0U;
   uint32_t      adr        = 0U;
   uint8_t       len        = 0U;
   uint8_t       buffer[4U] = { 0U };
-  for ( i=0U; i<CHART_NUMBER; i++ )
+  for ( uint8_t i=0U; i<CHART_NUMBER; i++ )
   {
     adr  = STORAGE_CHART_ADR + ( CHART_CHART_SIZE * i );
     len  = uUint16ToBlob( charts[i]->size, buffer );
@@ -230,7 +230,7 @@ EEPROM_STATUS eSTORAGEwriteCharts ( void )
     adr += len;
     if ( res == EEPROM_OK )
     {
-      for ( j=0U; j<charts[i]->size; j++ )
+      for ( uint8_t j=0U; j<charts[i]->size; j++ )
       {
         len  = uFix16ToBlob( charts[i]->dots[j].x, buffer );
         res  = eEEPROMwriteMemory( storageEEPROM, adr, buffer, len );
@@ -262,12 +262,10 @@ EEPROM_STATUS eSTORAGEwriteCharts ( void )
 EEPROM_STATUS eSTORAGEreadCharts ( void )
 {
   EEPROM_STATUS res        = EEPROM_OK;
-  uint8_t       i          = 0U;
-  uint16_t      j          = 0U;
   uint8_t       len        = 0U;
   uint32_t      adr        = 0U;
   uint8_t       buffer[4U] = { 0U };
-  for ( i=0U; i<CHART_NUMBER; i++ )
+  for ( uint8_t i=0U; i<CHART_NUMBER; i++ )
   {
     adr  = STORAGE_CHART_ADR + ( CHART_CHART_SIZE * i );
     res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 2U );
@@ -279,7 +277,7 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
     }
     if ( res == EEPROM_OK )
     {
-      for ( j=0U; j<charts[i]->size; j++ )
+      for ( uint16_t j=0U; j<charts[i]->size; j++ )
       {
         res  = eEEPROMreadMemory( storageEEPROM, adr, buffer, 4U );
         len  = uBlobToFix16( &charts[i]->dots[j].x, buffer );
@@ -308,26 +306,55 @@ EEPROM_STATUS eSTORAGEreadCharts ( void )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
+void vSTORAGEresetConfigWriteProtection ( void )
+{
+  configWriteProtection = 0U;
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+void vSTORAGEsetConfigWriteProtection ( void )
+{
+  configWriteProtection = 1U;
+  return;
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uSTORAGEisConfigProtected ( uint8_t n )
+{
+  uint8_t res = 0U;
+  if ( configWriteProtection > 1U ) {
+    for ( uint8_t i=0U; i<STORAGE_PROTECTED_SIZE; i++ ) {
+      if ( n == protectedConfigs[i] )
+      {
+        res = 1U;
+        break;
+      }
+    }
+  }
+  return res;
+}
+/*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteConfigs ( void )
 {
-  EEPROM_STATUS res                          = EEPROM_OK;
-  uint8_t       i                            = 0U;
-  uint32_t      adr                          = STORAGE_CONFIG_ADR;
-  uint8_t       size                         = 0U;
-  for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
+  EEPROM_STATUS res  = EEPROM_OK;
+  uint32_t      adr  = STORAGE_CONFIG_ADR;
+  uint8_t       size = 0U;
+  for ( uint8_t i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
-    size = uConfigToBlob( configReg[i], &configBuffer[1U] );
-    if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )
+    if ( uSTORAGEisConfigProtected( i ) > 0U )
     {
-      res = EEPROM_ADR_ERROR;
-      break;
-    }
-    configBuffer[0U] = size;
-    res  = eEEPROMwriteMemory( storageEEPROM, adr, configBuffer, ( size + 1U ) );
-    adr += size + 1U;
-    if ( res != EEPROM_OK )
-    {
-      break;
+      size = uConfigToBlob( configReg[i], &configBuffer[1U] );
+      if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )
+      {
+        res = EEPROM_ADR_ERROR;
+        break;
+      }
+      configBuffer[0U] = size;
+      res  = eEEPROMwriteMemory( storageEEPROM, adr, configBuffer, ( size + 1U ) );
+      adr += size + 1U;
+      if ( res != EEPROM_OK )
+      {
+        break;
+      }
     }
   }
   return res;
@@ -336,11 +363,10 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
 EEPROM_STATUS eSTORAGEreadConfigs ( void )
 {
   EEPROM_STATUS res  = EEPROM_OK;
-  uint8_t       i    = 0U;
   uint8_t       size = 0U;
   uint8_t       calc = 0U;
   uint32_t      adr  = STORAGE_CONFIG_ADR;
-  for ( i=0U; i<SETTING_REGISTER_NUMBER; i++ )
+  for ( uint8_t i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
     res = eEEPROMreadMemory( storageEEPROM, adr, &size, 1U );
     if ( ( res == EEPROM_OK ) && ( size > 0U ) && ( size < CONFIG_MAX_SIZE ) )
@@ -463,27 +489,6 @@ EEPROM_STATUS eSTORAGEsetFreeData ( FREE_DATA_ADR n, const uint16_t* data )
 {
   *freeDataArray[n] = *data;
   return eSTORAGEsaveFreeData( n );
-}
-/*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* data )
-{
-  return EEPROM_OK;
-}
-/*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEeraseMeasurement ( void )
-{
-  return EEPROM_OK;
-}
-/*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint16_t* data )
-{
-  EEPROM_STATUS res = EEPROM_OK;
-  return res;
-}
-/*---------------------------------------------------------------------------------------------------*/
-EEPROM_STATUS eSTORAGEreadMeasurementCounter ( uint16_t* adr )
-{
-  return EEPROM_OK;
 }
 /*---------------------------------------------------------------------------------------------------*/
 EEPROM_STATUS eSTORAGEwriteMac ( uint8_t* data )

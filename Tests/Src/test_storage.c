@@ -321,30 +321,6 @@ void test_eSTORAGEsetFreeData ( void )
   TEST_ASSERT_EQUAL( EEPROM_OK, eSTORAGEsetFreeData( 0U, &buf ) );
   return;
 }
-void test_eSTORAGEreadMeasurement ( void )
-{
-  uint16_t data = 0U;
-  TEST_ASSERT_EQUAL( EEPROM_OK, eSTORAGEreadMeasurement( 0U, 1U, &data ) );
-  return;
-}
-void test_eSTORAGEeraseMeasurement ( void )
-{
-  TEST_ASSERT_EQUAL( EEPROM_OK, eSTORAGEeraseMeasurement() );
-  return;
-}
-void test_eSTORAGEaddMeasurement ( void )
-{
-  uint16_t data = 0U;
-  TEST_ASSERT_EQUAL( EEPROM_OK, eSTORAGEaddMeasurement( 0U, 1U, &data ) );
-  return;
-}
-void test_eSTORAGEreadMeasurementCounter ( void )
-{
-  uint16_t data = 0U;
-  TEST_ASSERT_EQUAL( EEPROM_OK, eSTORAGEreadMeasurementCounter( &data ) );
-  return;
-}
-
 void runTets_storage ( void )
 {
   UnitySetTestFile( "test_storage.c" );

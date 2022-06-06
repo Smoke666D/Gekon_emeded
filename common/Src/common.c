@@ -117,6 +117,7 @@ void vSERIALtask ( void* argument )
 /*---------------------------------------------------------------------------------------------------*/
 void vSERIALoutputTask ( void* argument )
 {
+  HAL_StatusTypeDef status = HAL_OK;
   for (;;)
   {
     if ( xQueueReceive( pSERIALqueue, &serial.output, SERIAL_OUTPUT_TIMEOUT ) == pdPASS )
@@ -128,8 +129,9 @@ void vSERIALoutputTask ( void* argument )
           osDelay( SERIAL_OUTPUT_TIMEOUT );
         }
         serial.state = SERIAL_STATE_WRITING;
-        HAL_UART_AbortReceive_IT( serial.uart );
-        HAL_UART_Transmit_IT( serial.uart, ( uint8_t* )serial.output.data, serial.output.length );
+        status = HAL_UART_AbortReceive_IT( serial.uart );
+        status = HAL_UART_Transmit_IT( serial.uart, ( uint8_t* )serial.output.data, serial.output.length );
+        status = HAL_OK;
       }
     }
   }

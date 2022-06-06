@@ -14,6 +14,7 @@
 #include "controllerTypes.h"
 #include "mac.h"
 /*------------------------ Define --------------------------------------*/
+#define  STORAGE_PROTECTED_SIZE      2U
 #define  STORAGE_SR_SIZE             1U                                  /* byte */
 #define  STORAGE_MAP_SIZE            32U                                 /* byte */
 #define  STORAGE_CONFIG_SIZE         CONFIG_TOTAL_SIZE                   /* byte */
@@ -84,7 +85,6 @@ EEPROM_STATUS eSTORAGEreadMap ( uint32_t* output );
 uint8_t       uSTORAGEcheckMap ( const uint32_t* map );
 EEPROM_STATUS eSTORAGEwriteConfigs ( void );
 EEPROM_STATUS eSTORAGEreadConfigs ( void );
-//EEPROM_STATUS eSTORAGEdeleteConfigs ( void );
 EEPROM_STATUS eSTORAGEwriteCharts ( void );
 EEPROM_STATUS eSTORAGEreadCharts ( void );
 EEPROM_STATUS eSTORAGEreadFreeData ( FREE_DATA_ADR n );
@@ -96,11 +96,9 @@ EEPROM_STATUS eSTORAGEreadLogRecord ( uint16_t adr, LOG_RECORD_TYPE* record );
 EEPROM_STATUS eSTORAGEwriteLogRecord ( uint16_t adr, const LOG_RECORD_TYPE* record );
 EEPROM_STATUS eSTORAGEsavePassword ( void );
 EEPROM_STATUS eSTORAGEloadPassword ( void );
-EEPROM_STATUS eSTORAGEreadMeasurement ( uint16_t adr, uint8_t length, uint16_t* data );
-EEPROM_STATUS eSTORAGEeraseMeasurement ( void );
-EEPROM_STATUS eSTORAGEaddMeasurement ( uint16_t adr, uint8_t length, const uint16_t* data );
-EEPROM_STATUS eSTORAGEreadMeasurementCounter ( uint16_t* length );
 EEPROM_STATUS eSTORAGEwriteMac ( uint8_t* data );
 EEPROM_STATUS eSTORAGEreadMac ( uint8_t* data );
+void          vSTORAGEresetConfigWriteProtection ( void );
+void          vSTORAGEsetConfigWriteProtection ( void );
 /*----------------------------------------------------------------------*/
 #endif /* INC_STORAGE_H_ */

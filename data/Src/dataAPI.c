@@ -24,9 +24,9 @@ volatile static uint8_t  flTakeSource          = 0U;
 volatile static uint16_t measurementNumberCash = 0U;
 static EEPROM_TYPE*      eeprom                = NULL;
 #if defined ( UNIT_TEST )
-volatile LOG_CASH_TYPE logCash               = { 0U };
+volatile LOG_CASH_TYPE logCash = { 0U };
 #else
-volatile static LOG_CASH_TYPE logCash               = { 0U };
+volatile static LOG_CASH_TYPE logCash = { 0U };
 #endif
 /*------------------------ Define -------------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
@@ -136,13 +136,14 @@ uint8_t uDATAAPIisValid ( void )
 void vDATAAPIsetConstantConfigs ( void )
 {
   uint16_t idBuffer[UNIQUE_ID_LENGTH] = { 0U };
+  uint8_t* mac = uMACget48();
   vSYSgetUniqueID16( idBuffer );
-  serialNumber0.value[0U]     = idBuffer[0U];
-  serialNumber0.value[1U]     = idBuffer[1U];
-  serialNumber0.value[2U]     = idBuffer[2U];
-  serialNumber1.value[0U]     = idBuffer[3U];
-  serialNumber1.value[1U]     = idBuffer[4U];
-  serialNumber1.value[2U]     = idBuffer[5U];
+  uniqueNumber0.value[0U]     = idBuffer[0U];
+  uniqueNumber0.value[1U]     = idBuffer[1U];
+  uniqueNumber0.value[2U]     = idBuffer[2U];
+  uniqueNumber1.value[0U]     = idBuffer[3U];
+  uniqueNumber1.value[1U]     = idBuffer[4U];
+  uniqueNumber1.value[2U]     = idBuffer[5U];
   versionController.value[0U] = HARDWARE_VERSION_MAJOR;
   versionController.value[1U] = HARDWARE_VERSION_MINOR;
   versionController.value[2U] = HARDWARE_VERSION_PATCH;
@@ -153,6 +154,9 @@ void vDATAAPIsetConstantConfigs ( void )
   versionBootloader.value[1U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR ) >> 8U  ) & 0xFF );
   versionBootloader.value[2U] = ( uint16_t )( ( __UNALIGNED_UINT32_READ( BOOTLOADER_VERSION_ADR )        ) & 0xFF );
   deviceID.value[0U]          = DEVICE_ID;
+  uBlobToUint16( &macAddress.value[0U], &mac[0U] );
+  uBlobToUint16( &macAddress.value[1U], &mac[2U] );
+  uBlobToUint16( &macAddress.value[2U], &mac[4U] );
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/

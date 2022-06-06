@@ -65,7 +65,6 @@
 /*------------------------ Functions -----------------------------------*/
 #if defined ( UNIT_TEST )
   uint8_t       uUint16ToBlob ( uint16_t val, uint8_t* blob );
-  uint8_t       uBlobToUint16 ( uint16_t* val, const uint8_t* blob );
   uint8_t       uBlobToUint32 ( uint32_t* val, const uint8_t* blob );
   uint8_t       uUint32ToBlob ( uint32_t val, uint8_t* blob );
   uint8_t       uFix16ToBlob ( fix16_t val, uint8_t* blob );
@@ -75,6 +74,7 @@
   EEPROM_STATUS eSTORAGEwriteUint32 ( uint32_t data, uint32_t* adr );
   EEPROM_STATUS eSTORAGEreadUint32 ( uint32_t* data, uint32_t* adr );
 #endif
+uint8_t       uBlobToUint16 ( uint16_t* val, const uint8_t* blob );
 EEPROM_STATUS eSTORAGEinit ( const EEPROM_TYPE* eeprom );
 uint32_t      uSTORAGEgetSize ( void );
 EEPROM_STATUS eSTORAGEreadSR ( uint8_t* sr );

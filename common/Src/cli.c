@@ -45,7 +45,9 @@ static const char* targetStrings[CLI_TARGETS_NUMBER] = {
   CLI_TARGET_SWITCH_STR,
   CLI_TARGET_LED_STR,
   CLI_TARGET_STORAGE_STR,
-  CLI_TARGET_ID_STR,
+  CLI_TARGET_UNIQUE_STR,
+  CLI_TARGET_RELEASE_STR,
+  CLI_TARGER_SERIAL_STR,
   CLI_TARGET_IP_STR,
   CLI_TARGET_MAC_STR,
   CLI_TARGET_VERSION_STR
@@ -99,29 +101,35 @@ uint8_t uCLIparse ( const char* str, const char** dictionary, uint8_t length )
 void vCLIparseString ( const char* str, TEST_TYPE* message )
 {
   char*   filds[CLI_FILDS_NUMBER] = { 0U };
-  uint8_t counter = 0U;
+  uint8_t fieldsCounter = 0U;
   message->cmd      = CLI_COMMAND_NO;
   message->target   = CLI_TARGET_NO;
-  message->data     = 0U;
   message->dataFlag = 0U;
   message->out[0U]  = 0U;
-  counter = uCLIparsingFields( str, filds );
-  if ( counter > 0U )
+  for ( uint8_t i=0U; i<CLI_DATA_FILDS_NUMBER; i++ )
+  {
+    message->data[i] = 0U;
+  }
+  fieldsCounter     = uCLIparsingFields( str, filds );
+  message->dataFlag = fieldsCounter - CLI_SYSTEM_FILDS_NUMBER;
+  if ( fieldsCounter > 0U )
   {
     message->cmd = ( CLI_COMMAND )( uCLIparse( ( const char* )filds[0U], commandStrings, CLI_COMMANDS_NUMBER ) );
-    if ( ( counter > 1U ) && ( message->cmd != CLI_COMMAND_NO ) )
+    if ( ( fieldsCounter > 1U ) && ( message->cmd != CLI_COMMAND_NO ) )
     {
       message->target = ( CLI_TARGET )( uCLIparse( ( const char* )filds[1U], targetStrings, CLI_TARGETS_NUMBER ) );
-      if ( ( counter > 2U ) && ( message->target != CLI_TARGET_NO ) )
+      if ( ( message->dataFlag > 0U ) && ( message->target != CLI_TARGET_NO ) )
       {
-        message->dataFlag = 1U;
         if ( ( message->cmd == CLI_COMMAND_SET ) && ( message->target == CLI_TARGET_TIME ) )
         {
-          strcpy( message->out, filds[2U] );
+          strcpy( message->out, filds[CLI_SYSTEM_FILDS_NUMBER] );
         }
         else
         {
-          message->data = atoi( filds[2U] );
+          for ( uint8_t i=0; i<message->dataFlag; i++ )
+          {
+            message->data[i] = atoi( filds[CLI_SYSTEM_FILDS_NUMBER + i] );
+          }
         }
       }
     }
@@ -280,7 +288,7 @@ uint8_t uCLIhexToStr ( uint8_t* data, uint8_t length, char* buf )
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t uCLIversionToStr ( const uint16_t* version, char* buf )
 {
-  char    sub[5U] = { 0U };
+  char sub[5U] = { 0U };
   ( void )itoa( ( uint8_t )( version[0U] ), sub, 10U );
   ( void )strcat( buf, sub );
   ( void )strcat( buf, "." );
@@ -289,6 +297,18 @@ uint8_t uCLIversionToStr ( const uint16_t* version, char* buf )
   ( void )strcat( buf, "." );
   ( void )itoa( ( uint8_t )( version[2U] ), sub, 10U );
   ( void )strcat( buf, sub );
+  ( void )strcat( buf, CLI_LINE_END );
+  return strlen( buf );
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uCLInumbersToStr ( const uint16_t* data, uint8_t length, char* buf )
+{
+  char sub[6U] = { 0U };
+  for ( uint8_t i=0; i<length; i++ )
+  {
+    ( void )itoa( data[i], sub, 10U );
+    ( void )strcat( buf, sub );
+  }
   ( void )strcat( buf, CLI_LINE_END );
   return strlen( buf );
 }
@@ -307,9 +327,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
       switch ( message.target )
       {
         case CLI_TARGET_DOUT:
-          if ( ( message.dataFlag > 0U ) && ( message.data < FPO_NUMBER ) )
+          if ( ( message.dataFlag > 0U ) && ( message.data[0U] < FPO_NUMBER ) )
           {
-            vFPOtest( message.data, 1U );
+            vFPOtest( message.data[0U], 1U );
           }
           else
           {
@@ -330,9 +350,29 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           }
           break;
         case CLI_TARGET_LED:
-          if ( message.dataFlag )
+          if ( message.dataFlag > 0U )
           {
-            vCONTROLLERsetLed( message.data, 1U );
+            vCONTROLLERsetLed( message.data[0U], 1U );
+          }
+          else
+          {
+            res = CLI_STATUS_ERROR_DATA;
+          }
+          break;
+        case CLI_TARGET_RELEASE:
+          if ( message.dataFlag > 0U )
+          {
+            eDATAAPIconfigValue( DATA_API_CMD_WRITE, RELEASE_DATE_ADR, message.data );
+          }
+          else
+          {
+            res = CLI_STATUS_ERROR_DATA;
+          }
+          break;
+        case CLI_TARGET_SERIAL:
+          if ( message.dataFlag > 0U )
+          {
+            eDATAAPIconfigValue( DATA_API_CMD_WRITE, SERIAL_NUMBER_ADR, message.data );
           }
           else
           {
@@ -349,9 +389,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
       switch ( message.target )
       {
         case CLI_TARGET_DOUT:
-          if ( ( message.dataFlag > 0U ) && ( message.data < FPO_NUMBER ) )
+          if ( ( message.dataFlag > 0U ) && ( message.data[0U] < FPO_NUMBER ) )
           {
-            vFPOtest( message.data, 0U );
+            vFPOtest( message.data[0U], 0U );
           }
           else
           {
@@ -361,7 +401,7 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_LED:
           if ( message.dataFlag )
           {
-            vCONTROLLERsetLed( message.data, 0U );
+            vCONTROLLERsetLed( message.data[0U], 0U );
           }
           else
           {
@@ -378,9 +418,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
       switch ( message.target )
       {
         case CLI_TARGET_DIN:
-          if ( ( message.data < FPI_NUMBER ) && ( message.dataFlag > 0U ) )
+          if ( ( message.data[0U] < FPI_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uCLIdioToStr( ( ( uFPIgetData() >> message.data ) & 0x01U ), message.out );
+            message.length = uCLIdioToStr( ( ( uFPIgetData() >> message.data[0U] ) & 0x01U ), message.out );
           }
           else
           {
@@ -388,9 +428,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           }
           break;
         case CLI_TARGET_DOUT:
-          if ( ( message.data < FPO_NUMBER ) && ( message.dataFlag > 0U ) )
+          if ( ( message.data[0U] < FPO_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uCLIdioToStr( ( ( uFPOgetData() >> message.data ) & 0x01U ), message.out );
+            message.length = uCLIdioToStr( ( ( uFPOgetData() >> message.data[0U] ) & 0x01U ), message.out );
           }
           else
           {
@@ -433,9 +473,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           message.length = strlen( message.out );
           break;
         case CLI_TARGET_GENERATOR:
-          if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
+          if ( ( message.data[0U] < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            fix16_to_str( fELECTROgetGeneratorVoltage( ( uint8_t )message.data ), message.out, CLI_FIX_DECIMALS );
+            fix16_to_str( fELECTROgetGeneratorVoltage( ( uint8_t )message.data[0U] ), message.out, CLI_FIX_DECIMALS );
             ( void )strcat( message.out, CLI_LINE_END );
             message.length = strlen( message.out );
           }
@@ -445,9 +485,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           }
           break;
         case CLI_TARGET_MAINS:
-          if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
+          if ( ( message.data[0U] < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            fix16_to_str( fELECTROgetMainsVoltage( ( uint8_t )message.data ), message.out, CLI_FIX_DECIMALS );
+            fix16_to_str( fELECTROgetMainsVoltage( ( uint8_t )message.data[0U] ), message.out, CLI_FIX_DECIMALS );
             ( void )strcat( message.out, CLI_LINE_END );
             message.length = strlen( message.out );
           }
@@ -457,9 +497,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           }
           break;
         case CLI_TARGET_CURRENT:
-          if ( ( message.data < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
+          if ( ( message.data[0U] < MAINS_LINE_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            fix16_to_str( fELECTROgetCurrent( ( uint8_t )message.data ), message.out, CLI_FIX_DECIMALS );
+            fix16_to_str( fELECTROgetCurrent( ( uint8_t )message.data[0U] ), message.out, CLI_FIX_DECIMALS );
             ( void )strcat( message.out, CLI_LINE_END );
             message.length = strlen( message.out );
           }
@@ -471,7 +511,7 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_FREQ:
           if ( message.dataFlag > 0U )
           {
-            switch ( message.data )
+            switch ( message.data[0U] )
             {
               case CLI_FREQ_CHANNELS_MAINS:
                 fix16_to_str( fELECTROgetMainsFreq(), message.out, CLI_FIX_DECIMALS );
@@ -499,9 +539,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           message.length = strlen( message.out );
           break;
         case CLI_TARGET_SW:
-          if ( ( message.data < KEYBOARD_COUNT ) && ( message.dataFlag > 0U ) )
+          if ( ( message.data[0U] < KEYBOARD_COUNT ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uCLIdioToStr( uKEYgetState( message.data ), message.out );
+            message.length = uCLIdioToStr( uKEYgetState( message.data[0U] ), message.out );
           }
           else
           {
@@ -515,9 +555,15 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           }
           message.length = uCLIstatusToString( res, message.out );
           break;
-        case CLI_TARGET_ID:
+        case CLI_TARGET_UNIQUE:
           vSYSgetUniqueID16( id );
           message.length = uCLIhexToStr( ( uint8_t* )id, ( UNIQUE_ID_LENGTH * 2U ), message.out );
+          break;
+        case CLI_TARGET_RELEASE:
+          message.length = uCLInumbersToStr( releaseDate.value, releaseDate.atrib->len, message.out );
+          break;
+        case CLI_TARGET_SERIAL:
+          message.length = uCLInumbersToStr( serialNumber.value, serialNumber.atrib->len, message.out );
           break;
         case CLI_TARGET_IP:
           message.length = uSERVERgetStrIP( message.out );
@@ -530,7 +576,7 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_VERSION:
           if ( message.dataFlag > 0U )
           {
-            switch ( message.data )
+            switch ( message.data[0U] )
             {
               case CLI_VERSION_BOOTLOADER:
                 message.length = uCLIversionToStr( ( const uint16_t* )( versionController.value ), message.out );

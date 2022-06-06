@@ -650,8 +650,8 @@ void vUSBsdToReport ( USB_REPORT* report )
   report->data[0U] = ( uint8_t )sdStatus;
   if ( sdStatus == SD_STATUS_MOUNTED )
   {
-    vUint32ToBytes( uFATSDgetFullSpace(), &data[1U] );
-    vUint32ToBytes( uFATSDgetFreeSpace(), &data[5U] );
+    vUint32ToBytes( uFATSDgetFullSpace(), &report->data[1U] );
+    vUint32ToBytes( uFATSDgetFreeSpace(), &report->data[5U] );
     report->length = 9U;
   }
   else

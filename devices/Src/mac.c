@@ -72,7 +72,7 @@ void vMACsetDefault ( void )
   mac48[2U] = MAC_DEFAULT_2;
   mac48[3U] = MAC_DEFAULT_3;
   mac48[4U] = MAC_DEFAULT_4;
-  mac48[4U] = MAC_DEFAULT_5;
+  mac48[5U] = MAC_DEFAULT_5;
   vMACrecalc64();
   return;
 }

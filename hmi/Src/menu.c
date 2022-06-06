@@ -1508,8 +1508,8 @@ void vGetDataForMenu( DATA_COMMNAD_TYPE cmd, char* Data, uint8_t ID )
             break;
        case SERIAL_L:
        case SERIAL_H:
-            eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER0_ADR, (uint16_t*)&tt[0U]);
-            eDATAAPIconfigValue(DATA_API_CMD_READ,SERIAL_NUMBER1_ADR, (uint16_t*)&tt[3U]);
+            eDATAAPIconfigValue( DATA_API_CMD_READ, UNIQUE_NUMBER0_ADR, ( uint16_t* )&tt[0U] );
+            eDATAAPIconfigValue( DATA_API_CMD_READ, UNIQUE_NUMBER1_ADR, ( uint16_t* )&tt[3U] );
             vMenuPrintSerial(Data,(uint16_t*) &tt , ID == SERIAL_L ? 0 : 3);
             break;
       case COOL_TEMP   :

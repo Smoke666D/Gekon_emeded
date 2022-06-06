@@ -17,14 +17,15 @@
 /*----------------------- Variables -----------------------------------------------------------------*/
 uint8_t configBuffer[CONFIG_MAX_SIZE + 1U] = { 0U };
 /*----------------------- Functions -----------------------------------------------------------------*/
-uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob );
-uint8_t uBlobToConfig ( eConfigReg* reg, const uint8_t* blob );
-uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob );
-uint8_t uBlobToFix16 ( fix16_t* val, const uint8_t* blob );
-uint8_t uUint16ToBlob ( uint16_t val, uint8_t* blob );
-uint8_t uBlobToUint16 ( uint16_t* val, const uint8_t* blob );
-uint8_t uBlobToUint32 ( uint32_t* val, const uint8_t* blob );
-uint8_t uUint32ToBlob ( uint32_t val, uint8_t* blob );
+#if !defined( UNIT_TEST )
+  uint8_t uConfigToBlob ( const eConfigReg* reg, uint8_t* blob );
+  uint8_t uBlobToConfig ( eConfigReg* reg, const uint8_t* blob );
+  uint8_t uFix16ToBlob ( fix16_t val, uint8_t* blob );
+  uint8_t uBlobToFix16 ( fix16_t* val, const uint8_t* blob );
+  uint8_t uUint16ToBlob ( uint16_t val, uint8_t* blob );
+  uint8_t uBlobToUint32 ( uint32_t* val, const uint8_t* blob );
+  uint8_t uUint32ToBlob ( uint32_t val, uint8_t* blob );
+#endif
 /*---------------------------------------------------------------------------------------------------*/
 /*----------------------- PRIVATE -------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------------------------------*/

@@ -91,12 +91,12 @@ typedef enum
  */
 typedef enum
 {
-  USB_DIR_BYTE,
-  USB_CMD_BYTE,
-  USB_STAT_BYTE,
-  USB_ADR0_BYTE,
-  USB_LEN0_BYTE,
-  USB_DATA_BYTE,
+  USB_DIR_BYTE,  /* 0 */
+  USB_CMD_BYTE,  /* 1 */
+  USB_STAT_BYTE, /* 2 */
+  USB_ADR0_BYTE, /* 3 */
+  USB_LEN0_BYTE, /* 4 */
+  USB_DATA_BYTE, /* 5 */
 } USB_BYTES;
 typedef enum
 {

@@ -14,10 +14,12 @@
 #endif
 /*------------------------ Define --------------------------------------*/
 #define CLI_COMMANDS_NUMBER     3U
-#define CLI_TARGETS_NUMBER      20U
+#define CLI_TARGETS_NUMBER      22U
 #define CLI_MESSAGE_OUT_LENGTH  40U
 #define CLI_FIX_DECIMALS        2U
-#define CLI_FILDS_NUMBER        5U
+#define CLI_SYSTEM_FILDS_NUMBER 2U
+#define CLI_DATA_FILDS_NUMBER   3U
+#define CLI_FILDS_NUMBER        ( CLI_SYSTEM_FILDS_NUMBER + CLI_DATA_FILDS_NUMBER )
 
 #define CLI_FILD_SEPORATOR      " "
 #define CLI_LINE_END            "\n"
@@ -42,7 +44,9 @@
 #define CLI_TARGET_SWITCH_STR   "sw"
 #define CLI_TARGET_LED_STR      "led"
 #define CLI_TARGET_STORAGE_STR  "storage"
-#define CLI_TARGET_ID_STR       "id"
+#define CLI_TARGET_UNIQUE_STR   "unique"
+#define CLI_TARGET_RELEASE_STR  "released"
+#define CLI_TARGER_SERIAL_STR   "serial"
 #define CLI_TARGET_IP_STR       "ip"
 #define CLI_TARGET_MAC_STR      "mac"
 #define CLI_TARGET_VERSION_STR  "version"
@@ -106,18 +110,20 @@ typedef enum
   CLI_TARGET_SW,        /* 14 get */
   CLI_TARGET_LED,       /* 15 set */
   CLI_TARGET_STORAGE,   /* 16 get */
-  CLI_TARGET_ID,        /* 17 get */
-  CLI_TARGET_IP,        /* 18 get */
-  CLI_TARGET_MAC,       /* 19 get & set */
-  CLI_TARGET_VERSION    /* 20 get */
+  CLI_TARGET_UNIQUE,    /* 17 get */
+  CLI_TARGET_RELEASE,   /* 18 get & set */
+  CLI_TARGET_SERIAL,    /* 19 get & set */
+  CLI_TARGET_IP,        /* 20 get */
+  CLI_TARGET_MAC,       /* 21 get */
+  CLI_TARGET_VERSION    /* 22 get */
 } CLI_TARGET;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
 {
   CLI_COMMAND cmd;
   CLI_TARGET  target;
-  uint8_t     dataFlag : 1U;
-  uint32_t    data;
+  uint8_t     dataFlag;
+  uint16_t    data[CLI_DATA_FILDS_NUMBER];
   uint8_t     length;
   char        out[CLI_MESSAGE_OUT_LENGTH];
 } TEST_TYPE;

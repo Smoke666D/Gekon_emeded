@@ -98,7 +98,7 @@ void test_vUSBlogToReport ( void )
   TEST_ASSERT_GREATER_OR_EQUAL( 0U, report.data[3U] );
   TEST_ASSERT_GREATER_OR_EQUAL( 0U, report.data[4U] );
   TEST_ASSERT_GREATER_OR_EQUAL( 0U, report.data[5U] );
-  report.adr = 0xFFFFU;
+  report.adr = 0xFFU;
   vUSBlogToReport( &report );
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_INTERNAL, report.stat );
   TEST_ASSERT_EQUAL( 0U, report.length );
@@ -115,7 +115,7 @@ void test_vUSBconfigToReport ( void )
   {
     TEST_ASSERT_GREATER_OR_EQUAL( 0U, report.data[i] );
   }
-  report.adr = 0xFFFFU;
+  report.adr = 0xFFU;
   vUSBconfigToReport( &report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_ADR, report.stat );
   TEST_ASSERT_EQUAL( 0U, report.length );
@@ -148,7 +148,7 @@ void test_vUSBchartToReport ( void )
   TEST_ASSERT_EQUAL( 0U, report.length );
   /* Address error */
   report.cmd = USB_REPORT_CMD_GET_CHART_OIL;
-  report.adr = 0xFFFFU;
+  report.adr = 0xFFU;
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_BAD_REQ, report.stat );
   TEST_ASSERT_EQUAL( 0U, report.length );
   return;
@@ -206,7 +206,7 @@ void test_eUSBreportToPassword ( void )
   TEST_ASSERT_EQUAL( 0U, ( configReg[MODULE_SETUP_ADR]->value[0U] & 0x0001U ) );
   TEST_ASSERT_EQUAL( 0U, systemPassword.status );
   /* Length errors */
-  report.length = 0xFFFFU;
+  report.length = 0xFFU;
   status = eUSBreportToPassword( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
   report.length = 1U;
@@ -242,7 +242,7 @@ void test_eUSBcheckupPassword ( void )
   report.length = 1U;
   status = eUSBcheckupPassword( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
-  report.length = 0xFFFFU;
+  report.length = 0xFFU;
   status = eUSBcheckupPassword( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
   /* Reset password */
@@ -264,7 +264,7 @@ void test_eUSBreportToFreeData ( void )
   TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
   TEST_ASSERT_EQUAL( 0x1234U, *freeDataArray[report.adr] );
   /* Address errors */
-  report.adr    = 0xFFFFU;
+  report.adr    = 0xFFU;
   status = eUSBreportToFreeData( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_ADR, status );
   /* Length errors  */
@@ -272,7 +272,7 @@ void test_eUSBreportToFreeData ( void )
   report.length = 1U;
   status = eUSBreportToFreeData( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
-  report.length = 0xFFFFU;
+  report.length = 0xFFU;
   status = eUSBreportToFreeData( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
   /* Cleaning */
@@ -309,12 +309,12 @@ void test_eUSBreportToConfig ( void )
     TEST_ASSERT_EQUAL( value, configReg[report.adr]->value[i] );
   }
   /* Length errors  */
-  report.length = 0xFFFFU;
+  report.length = 0xFFU;
   status        = eUSBreportToConfig( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
   /* Address errors */
   report.length = configReg[report.adr]->atrib->len * 2U;
-  report.adr    = 0xFFFFU;
+  report.adr    = 0xFFU;
   status        = eUSBreportToConfig( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_ADR, status );
   /* Clean */
@@ -356,7 +356,7 @@ void test_eUSBreportToChart ( void )
   TEST_ASSERT_EQUAL( 0x12345678, ( uint32_t )charts[OIL_CHART_ADR]->dots[report.adr - 1U].x );
   TEST_ASSERT_EQUAL( 0x9ABCDEF0, ( uint32_t )charts[OIL_CHART_ADR]->dots[report.adr - 1U].y );
   /* Address error*/
-  report.adr = 0xFFFFU;
+  report.adr = 0xFFU;
   status     = eUSBreportToChart( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_ADR, status );
   /* Length error */
@@ -364,14 +364,14 @@ void test_eUSBreportToChart ( void )
   report.length = 1U;
   status        = eUSBreportToChart( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
-  report.length = 0xFFFFU;
+  report.length = 0xFFU;
   status        = eUSBreportToChart( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
   report.adr    = 1U;
   report.length = 1U;
   status        = eUSBreportToChart( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
-  report.length = 0xFFFFU;
+  report.length = 0xFFU;
   status        = eUSBreportToChart( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_ERROR_LENGTH, status );
   /* Command error */
@@ -392,7 +392,7 @@ void test_vUSBmakeReport ( void )
   report.dir    = 0x01;
   report.cmd    = 0x10;
   report.stat   = 0x01;
-  report.adr    = 0x1234U;
+  report.adr    = 0x12U;
   report.length = 9U;
   for ( i=0U; i<report.length; i++ )
   {
@@ -404,20 +404,15 @@ void test_vUSBmakeReport ( void )
   TEST_ASSERT_EQUAL( 0x10U, report.buf[1U] );
   TEST_ASSERT_EQUAL( 0x01U, report.buf[2U] );
   TEST_ASSERT_EQUAL( 0x12U, report.buf[3U] );
-  TEST_ASSERT_EQUAL( 0x34U, report.buf[4U] );
-  TEST_ASSERT_EQUAL( 0U,    report.buf[5U] );
-  TEST_ASSERT_EQUAL( 0U,    report.buf[6U] );
-  TEST_ASSERT_EQUAL( 9U,   report.buf[7U] );
+  TEST_ASSERT_EQUAL( 9U,    report.buf[4U] );
   for ( i=0U; i<report.length; i++ )
   {
-    TEST_ASSERT_EQUAL( i, report.buf[8U + i] );
+    TEST_ASSERT_EQUAL( i, report.buf[5U + i] );
   }
-  report.length = 0x123456U;
+  report.length = 0x12U;
   vUSBmakeReport( &report );
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, report.stat );
-  TEST_ASSERT_EQUAL( 0x12U, report.buf[5U] );
-  TEST_ASSERT_EQUAL( 0x34U, report.buf[6U] );
-  TEST_ASSERT_EQUAL( 0x56U, report.buf[7U] );
+  TEST_ASSERT_EQUAL( 0x12U, report.buf[4U] );
   return;
 }
 void test_vUSBparseReport ( void )

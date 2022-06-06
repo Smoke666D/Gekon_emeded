@@ -459,12 +459,6 @@ void test_vUSBmeasurementToReport ( void )
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_BAD_REQ, report.stat );
   return;
 }
-void test_vUSBmeasurementLengthToReport ( void )
-{
-  vUSBmeasurementLengthToReport( &report );
-  TEST_ASSERT_EQUAL( USB_REPORT_STATE_BAD_REQ, report.stat );
-  return;
-}
 void test_vUSBoutputToReport ( void )
 {
   report.adr = BATTERY_VOLTAGE_ADR;
@@ -473,7 +467,7 @@ void test_vUSBoutputToReport ( void )
   TEST_ASSERT_EQUAL( 2U, report.length );
   TEST_ASSERT_EQUAL( outputDataReg[report.adr]->value[0U], uByteToUnit16( report.data ) );
   /* Address error */
-  report.adr = 0xFFFFU;
+  report.adr = 0xFFU;
   vUSBoutputToReport( &report );
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_BAD_REQ, report.stat );
   TEST_ASSERT_EQUAL( 0U, report.length );
@@ -542,7 +536,6 @@ void runTest_usbhid ( void )
   UnityDefaultTestRun( test_vUSBconfigToReport, "Config data to report", 0U );
   UnityDefaultTestRun( test_vUSBchartToReport, "Chart data to report", 0U );
   UnityDefaultTestRun( test_vUSBoutputToReport, "Output data to report", 0U );
-  UnityDefaultTestRun( test_vUSBmeasurementLengthToReport, "Measurement", 0U );
   UnityDefaultTestRun( test_eUSBreportToTime, "Parsing report to time", 0U );
   //UnityDefaultTestRun( test_eUSBreportToPassword, "Parsing report to password", 0U );
   //UnityDefaultTestRun( test_eUSBcheckupPassword, "Checkup password", 0U );

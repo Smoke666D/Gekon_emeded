@@ -644,15 +644,21 @@ USB_STATUS eUSBerasePassword ( const USB_REPORT* report )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-void vUSBmeasurementToReport ( USB_REPORT* report )
+void vUSBsdToReport ( USB_REPORT* report )
 {
-  report->stat = USB_REPORT_STATE_BAD_REQ;
-  return;
-}
-/*---------------------------------------------------------------------------------------------------*/
-void vUSBmeasurementLengthToReport ( USB_REPORT* report )
-{
-  report->stat = USB_REPORT_STATE_BAD_REQ;
+  SD_STATUS sdStatus = eFATSDgetStatus();
+  report->data[0U] = ( uint8_t )sdStatus;
+  if ( sdStatus == SD_STATUS_MOUNTED )
+  {
+    vUint32ToBytes( uFATSDgetFullSpace(), &data[1U] );
+    vUint32ToBytes( uFATSDgetFreeSpace(), &data[5U] );
+    report->length = 9U;
+  }
+  else
+  {
+    report->length = 1U;
+  }
+  report->stat = USB_REPORT_STATE_OK;
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -904,17 +910,14 @@ void vStartUsbTask ( void *argument )
         case USB_REPORT_CMD_ERASE_PASSWORD:
           vUSBget( &report, eUSBerasePassword );
           break;
+        case USB_REPORT_CMD_GET_SD:
+          vUSBsend( &report, vUSBsdToReport );
+          break;
         case USB_REPORT_CMD_GET_OUTPUT:
           vUSBsend( &report, vUSBoutputToReport );
           break;
         case USB_REPORT_CMD_PUT_OUTPUT:
           vUSBget( &report, eUSBreportToOutput );
-          break;
-        case USB_REPORT_CMD_GET_MEASUREMENT:
-          vUSBsend( &report, vUSBmeasurementToReport );
-          break;
-        case USB_REPORT_CMD_GET_MEASUREMENT_LENGTH:
-          vUSBsend( &report, vUSBmeasurementLengthToReport );
           break;
         default:
           break;

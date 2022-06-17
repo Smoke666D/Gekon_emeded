@@ -22,6 +22,7 @@
 #include "dataAPI.h"
 #include "dataProces.h"
 #include "mbuart.h"
+#include "fatsd.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -54,7 +55,8 @@ static const char* targetStrings[CLI_TARGETS_NUMBER] = {
   CLI_TARGET_MAC_STR,
   CLI_TARGET_VERSION_STR,
   CLI_TARGET_MODBUS_ADR_STR,
-  CLI_TARGET_MODBUS_BR_STR
+  CLI_TARGET_MODBUS_BR_STR,
+  CLI_TARGET_SD_STR
 };
 /*----------------------- Variables -----------------------------------------------------------------*/
 static TEST_TYPE message = { 0U };
@@ -652,6 +654,9 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           ( void )utoa( uMBgetBaudrateValue( getBitMap( &modbusSetup, MODBUS_BAUDRATE_ADR ) ), message.out, 10U );
           ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
+          break;
+        case CLI_TARGET_SD:
+          message.length = uCLIdioToStr( ( eFATSDgetStatus() == SD_STATUS_MOUNTED ? 1U : 0U ), message.out );
           break;
         default:
           res = CLI_STATUS_ERROR_TARGET;

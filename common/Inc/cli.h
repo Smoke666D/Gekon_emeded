@@ -14,7 +14,7 @@
 #endif
 /*------------------------ Define --------------------------------------*/
 #define CLI_COMMANDS_NUMBER     3U
-#define CLI_TARGETS_NUMBER      24U
+#define CLI_TARGETS_NUMBER      25U
 #define CLI_MESSAGE_OUT_LENGTH  40U
 #define CLI_FIX_DECIMALS        2U
 #define CLI_SYSTEM_FILDS_NUMBER 2U
@@ -29,30 +29,31 @@
 #define CLI_RESET_COMMAND_STR   "reset"
 #define CLI_GET_COMMAND_STR     "get"
 
-#define CLI_TARGET_DIN_STR      "din"
-#define CLI_TARGET_DOUT_STR     "dout"
-#define CLI_TARGET_TIME_STR     "time"
-#define CLI_TARGET_OIL_STR      "oil"
-#define CLI_TARGET_COOLANT_STR  "cool"
-#define CLI_TARGET_FUEL_STR     "fuel"
-#define CLI_TARGET_BAT_STR      "bat"
-#define CLI_TARGET_CHARG_STR    "charg"
-#define CLI_TARGET_GEN_STR      "gen"
-#define CLI_TARGET_MAINS_STR    "mains"
-#define CLI_TARGET_CUR_STR      "cur"
-#define CLI_TARGET_FREQ_STR     "freq"
-#define CLI_TARGET_SPEED_STR    "speed"
-#define CLI_TARGET_SWITCH_STR   "sw"
-#define CLI_TARGET_LED_STR      "led"
-#define CLI_TARGET_STORAGE_STR  "storage"
-#define CLI_TARGET_UNIQUE_STR   "unique"
-#define CLI_TARGET_RELEASE_STR  "released"
-#define CLI_TARGER_SERIAL_STR   "serial"
-#define CLI_TARGET_IP_STR       "ip"
-#define CLI_TARGET_MAC_STR      "mac"
-#define CLI_TARGET_VERSION_STR  "version"
+#define CLI_TARGET_DIN_STR        "din"
+#define CLI_TARGET_DOUT_STR       "dout"
+#define CLI_TARGET_TIME_STR       "time"
+#define CLI_TARGET_OIL_STR        "oil"
+#define CLI_TARGET_COOLANT_STR    "cool"
+#define CLI_TARGET_FUEL_STR       "fuel"
+#define CLI_TARGET_BAT_STR        "bat"
+#define CLI_TARGET_CHARG_STR      "charg"
+#define CLI_TARGET_GEN_STR        "gen"
+#define CLI_TARGET_MAINS_STR      "mains"
+#define CLI_TARGET_CUR_STR        "cur"
+#define CLI_TARGET_FREQ_STR       "freq"
+#define CLI_TARGET_SPEED_STR      "speed"
+#define CLI_TARGET_SWITCH_STR     "sw"
+#define CLI_TARGET_LED_STR        "led"
+#define CLI_TARGET_STORAGE_STR    "storage"
+#define CLI_TARGET_UNIQUE_STR     "unique"
+#define CLI_TARGET_RELEASE_STR    "released"
+#define CLI_TARGER_SERIAL_STR     "serial"
+#define CLI_TARGET_IP_STR         "ip"
+#define CLI_TARGET_MAC_STR        "mac"
+#define CLI_TARGET_VERSION_STR    "version"
 #define CLI_TARGET_MODBUS_ADR_STR "adr"
 #define CLI_TARGET_MODBUS_BR_STR  "baudrate"
+#define CLI_TARGET_SD_STR         "sd"
 
 #define CLI_DIO_ON_STR          "on"
 #define CLI_DIO_OFF_STR         "off"
@@ -120,7 +121,8 @@ typedef enum
   CLI_TARGET_MAC,       /* 21 get */
   CLI_TARGET_VERSION,   /* 22 get */
   CLI_TARGET_MODBUS_ADR,/* 23 get */
-  CLI_TARGET_MODBUS_BR  /* 24 get */
+  CLI_TARGET_MODBUS_BR, /* 24 get */
+  CLI_TARGET_SD         /* 25 get */
 } CLI_TARGET;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed

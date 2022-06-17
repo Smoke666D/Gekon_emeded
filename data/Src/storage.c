@@ -340,7 +340,7 @@ EEPROM_STATUS eSTORAGEwriteConfigs ( void )
   uint8_t       size = 0U;
   for ( uint8_t i=0U; i<SETTING_REGISTER_NUMBER; i++ )
   {
-    if ( uSTORAGEisConfigProtected( i ) > 0U )
+    if ( uSTORAGEisConfigProtected( i ) == 0U )
     {
       size = uConfigToBlob( configReg[i], &configBuffer[1U] );
       if ( ( adr + size ) > ( STORAGE_CONFIG_ADR + CONFIG_TOTAL_SIZE ) )

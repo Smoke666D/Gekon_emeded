@@ -124,6 +124,7 @@ void              vFPIsetBlock ( void );
 TRIGGER_STATE     eFPIgetState ( uint8_t n );
 uint16_t*         uFPIgetMessage ( uint8_t n );
 uint16_t          uFPIgetData ( void );
+uint16_t          uFPIgetRawData ( void );
 SYSTEM_EVENT_TYPE eFPIgetUserEventType ( uint8_t n );
 FPI_LEVEL         eFPIcheckLevel ( FPI_FUNCTION function );
 /*----------------------------------------------------------------------*/

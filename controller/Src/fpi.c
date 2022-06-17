@@ -65,6 +65,7 @@ static const eConfigReg* pFPIregDelay[FPI_NUMBER] =
 static uint8_t  eventBuffer[ 16U * sizeof( FPI_EVENT ) ] = { 0U };
 static FPI      fpis[FPI_NUMBER]                         = { 0U };
 static uint16_t fpiDataReg                               = 0U;
+static uint16_t fpiRawDataReg                            = 0U;
 /*-------------------------------- External -----------------------------------*/
 osThreadId_t fpiHandle = NULL;
 /*-------------------------------- Functions ---------------------------------*/
@@ -246,6 +247,11 @@ uint16_t uFPIgetData ( void )
   return fpiDataReg;
 }
 /*----------------------------------------------------------------------------*/
+uint16_t uFPIgetRawData ( void )
+{
+  return fpiRawDataReg;
+}
+/*----------------------------------------------------------------------------*/
 QueueHandle_t pFPIgetQueue ( void )
 {
   return pFPIQueue;
@@ -342,6 +348,16 @@ void vFPITask ( void* argument )
     {
       for ( uint8_t i=0U; i<FPI_NUMBER; i++ )
       {
+        if ( HAL_GPIO_ReadPin ( fpis[i].port, fpis[i].pin ) == GPIO_PIN_RESET )
+        {
+          fpiRawDataReg |= ( uint8_t )( 1U << i );
+        }
+        else
+        {
+          fpiRawDataReg &= ~( uint8_t )( 1U << i );
+        }
+
+
         if ( fpis[i].function != FPI_FUN_NONE )
         {
           switch ( fpis[i].state )

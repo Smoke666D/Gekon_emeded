@@ -166,5 +166,6 @@ void              vMBputStrPakMaster ( uint8_t *s, uint16_t c );
 uint16_t          uMBgetByteCounter ( void );
 void              vMBtimHandler ( void );
 void              vMBuartHandler ( void );
+uint32_t          uMBgetBaudrateValue ( uint8_t n );
 /*---------------------------------------------------------------------------------------------------*/
 #endif /* INC_MBUART_H_ */

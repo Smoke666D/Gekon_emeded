@@ -14,12 +14,13 @@
 #endif
 /*------------------------ Define --------------------------------------*/
 #define CLI_COMMANDS_NUMBER     3U
-#define CLI_TARGETS_NUMBER      22U
+#define CLI_TARGETS_NUMBER      24U
 #define CLI_MESSAGE_OUT_LENGTH  40U
 #define CLI_FIX_DECIMALS        2U
 #define CLI_SYSTEM_FILDS_NUMBER 2U
 #define CLI_DATA_FILDS_NUMBER   3U
 #define CLI_FILDS_NUMBER        ( CLI_SYSTEM_FILDS_NUMBER + CLI_DATA_FILDS_NUMBER )
+#define CLI_RELEASED_SIZE       3U
 
 #define CLI_FILD_SEPORATOR      " "
 #define CLI_LINE_END            "\n"
@@ -50,6 +51,8 @@
 #define CLI_TARGET_IP_STR       "ip"
 #define CLI_TARGET_MAC_STR      "mac"
 #define CLI_TARGET_VERSION_STR  "version"
+#define CLI_TARGET_MODBUS_ADR_STR "adr"
+#define CLI_TARGET_MODBUS_BR_STR  "baudrate"
 
 #define CLI_DIO_ON_STR          "on"
 #define CLI_DIO_OFF_STR         "off"
@@ -115,7 +118,9 @@ typedef enum
   CLI_TARGET_SERIAL,    /* 19 get & set */
   CLI_TARGET_IP,        /* 20 get */
   CLI_TARGET_MAC,       /* 21 get */
-  CLI_TARGET_VERSION    /* 22 get */
+  CLI_TARGET_VERSION,   /* 22 get */
+  CLI_TARGET_MODBUS_ADR,/* 23 get */
+  CLI_TARGET_MODBUS_BR  /* 24 get */
 } CLI_TARGET;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed
@@ -123,7 +128,7 @@ typedef struct __packed
   CLI_COMMAND cmd;
   CLI_TARGET  target;
   uint8_t     dataFlag;
-  uint16_t    data[CLI_DATA_FILDS_NUMBER];
+  uint32_t    data[CLI_DATA_FILDS_NUMBER];
   uint8_t     length;
   char        out[CLI_MESSAGE_OUT_LENGTH];
 } TEST_TYPE;

@@ -470,12 +470,11 @@ EEPROM_STATUS eEEPROMreadMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8
 EEPROM_STATUS eEEPROMwriteMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint8_t* data, uint16_t len )
 {
   EEPROM_STATUS res    = EEPROM_OK;
-  uint16_t      i      = 0U;
-  uint16_t      size   = 0U;             /* Size of data in memory pages */
-  uint16_t      remain = 0U;             /* Remain of first page in bytes */
-  uint32_t      count  = adr;            /* Counter of address */
-  uint32_t      shift  = 0U;             /* Shift in output buffer */
-  uint16_t      subLen = len;            /* Length of write iteration */
+  uint16_t      size   = 0U;        /* Size of data in memory pages */
+  uint16_t      remain = 0U;        /* Remain of first page in bytes */
+  uint32_t      count  = adr;       /* Counter of address */
+  uint32_t      shift  = 0U;        /* Shift in output buffer */
+  uint16_t      subLen = len;       /* Length of write iteration */
   remain = eeprom->page - ( adr - ( ( ( uint8_t )( adr / eeprom->page ) ) * eeprom->page ) );
   if ( remain < len )
   {
@@ -488,7 +487,7 @@ EEPROM_STATUS eEEPROMwriteMemory ( const EEPROM_TYPE* eeprom, uint32_t adr, uint
   if ( res == EEPROM_OK )
   {
     subLen = eeprom->page;
-    for ( i=0U; i<size; i++ )
+    for ( uint16_t i=0U; i<size; i++ )
     {
       res    = eEEPROMWriteData( eeprom, &count, &data[shift], subLen );
       count += subLen;

@@ -154,7 +154,7 @@ eConfigReg releaseDate =
    .value = releaseDateValue,
 };
 /*----------------------------------------------------------------*/
-uint16_t serialNumberValue[3U] = { 0U, 0U, 0U };
+uint16_t serialNumberValue[2U] = { 0U, 0U };
 const eConfigAttributes serialNumberAtrib =
 {
    .adr        = 8U,
@@ -163,7 +163,7 @@ const eConfigAttributes serialNumberAtrib =
    .max        = 0U,
    .units      = { 0x0020U, 0x0020U, 0x0020U, 0x0020U, 0x0020U },
    .type       = CONFIG_TYPE_UNSIGNED,
-   .len        = 3U,
+   .len        = 2U,
    .bitMapSize = 0U,
    .bitMap     = NULL,
 };

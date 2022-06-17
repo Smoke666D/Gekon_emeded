@@ -20,6 +20,8 @@
 #include "server.h"
 #include "config.h"
 #include "dataAPI.h"
+#include "dataProces.h"
+#include "mbuart.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -50,7 +52,9 @@ static const char* targetStrings[CLI_TARGETS_NUMBER] = {
   CLI_TARGER_SERIAL_STR,
   CLI_TARGET_IP_STR,
   CLI_TARGET_MAC_STR,
-  CLI_TARGET_VERSION_STR
+  CLI_TARGET_VERSION_STR,
+  CLI_TARGET_MODBUS_ADR_STR,
+  CLI_TARGET_MODBUS_BR_STR
 };
 /*----------------------- Variables -----------------------------------------------------------------*/
 static TEST_TYPE message = { 0U };
@@ -211,37 +215,36 @@ CLI_STATUS eCLIstrToTime ( RTC_TIME* time, char* buf )
 uint8_t uCLIstatusToString ( CLI_STATUS status, char* buf )
 {
   uint8_t res = 0U;
-  buf[0U] = 0U;
   switch ( status )
   {
     case CLI_STATUS_OK:
       ( void )strcpy( buf, CLI_ERROR_OK_STR );
-      ( void )strcpy( buf, CLI_LINE_END );
+      ( void )strcat( buf, CLI_LINE_END );
       res = strlen( CLI_ERROR_OK_STR ) + 1U;
       break;
     case CLI_STATUS_ERROR_COMMAND:
       ( void )strcpy( buf, CLI_ERROR_COMMAND_STR );
-      ( void )strcpy( buf, CLI_LINE_END );
+      ( void )strcat( buf, CLI_LINE_END );
       res = strlen( CLI_ERROR_COMMAND_STR ) + 1U;
       break;
     case CLI_STATUS_ERROR_TARGET:
       ( void )strcpy( buf, CLI_ERROR_TARGET_STR );
-      ( void )strcpy( buf, CLI_LINE_END );
+      ( void )strcat( buf, CLI_LINE_END );
       res = strlen( CLI_ERROR_TARGET_STR ) + 1U;
       break;
     case CLI_STATUS_ERROR_DATA:
       ( void )strcpy( buf, CLI_ERROR_DATA_STR );
-      ( void )strcpy( buf, CLI_LINE_END );
+      ( void )strcat( buf, CLI_LINE_END );
       res = strlen( CLI_ERROR_DATA_STR ) + 1U;
       break;
     case CLI_STATUS_ERROR_EXECUTING:
       ( void )strcpy( buf, CLI_ERROR_EXECUTING_STR );
-      ( void )strcpy( buf, CLI_LINE_END );
+      ( void )strcat( buf, CLI_LINE_END );
       res = strlen( CLI_ERROR_EXECUTING_STR ) + 1U;
       break;
     default:
       ( void )strcpy( buf, CLI_ERROR_UNKNOWN );
-      ( void )strcpy( buf, CLI_LINE_END );
+      ( void )strcat( buf, CLI_LINE_END );
       res = strlen( CLI_ERROR_UNKNOWN ) + 1U;
       break;
   }
@@ -302,15 +305,25 @@ uint8_t uCLIversionToStr ( const uint16_t* version, char* buf )
   return strlen( buf );
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uCLInumbersToStr ( const uint16_t* data, uint8_t length, char* buf )
+uint8_t uCLIreleasedToStr ( const uint16_t* data, uint8_t length, char* buf )
 {
-  char sub[6U] = { 0U };
+  char sub[3U] = { 0U };
   for ( uint8_t i=0; i<length; i++ )
   {
-    ( void )itoa( data[i], sub, 10U );
-    ( void )strcat( buf, sub );
+     ( void )itoa( data[i], sub, 10U );
+     if ( data[i] < 10 )
+     {
+       ( void )strcat( buf, "0" );
+     }
+     ( void )strcat( buf, sub );
   }
   ( void )strcat( buf, CLI_LINE_END );
+  return strlen( buf );
+}
+/*---------------------------------------------------------------------------------------------------*/
+uint8_t uCLIserialToStr ( const uint16_t* data, char* buf )
+{
+  ( void )itoa( ( data[0] | ( ( uint32_t )( data[1U] ) << 16U ) ), buf, 10U );
   return strlen( buf );
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -363,8 +376,20 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_RELEASE:
           if ( message.dataFlag > 0U )
           {
+            uint16_t buffer[CLI_RELEASED_SIZE] = { 0U };
+            for ( uint8_t i=0U; i<CLI_RELEASED_SIZE; i++ )
+            {
+              buffer[i] = ( uint16_t )message.data[i];
+            }
             vSTORAGEresetConfigWriteProtection();
-            if ( eDATAAPIconfigValue( DATA_API_CMD_WRITE, RELEASE_DATE_ADR, message.data ) != DATA_API_STAT_OK )
+            if ( eDATAAPIconfigValue( DATA_API_CMD_WRITE, RELEASE_DATE_ADR, buffer ) == DATA_API_STAT_OK )
+            {
+              if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
+              {
+                res = CLI_STATUS_ERROR_EXECUTING;
+              }
+            }
+            else
             {
               res = CLI_STATUS_ERROR_EXECUTING;
             }
@@ -378,8 +403,18 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_SERIAL:
           if ( message.dataFlag > 0U )
           {
+            uint16_t buffer[2U] = { 0U };
+            buffer[0U] = ( uint16_t )( message.data[0] );
+            buffer[1U] = ( uint16_t )( message.data[0] >> 16U );
             vSTORAGEresetConfigWriteProtection();
-            if ( eDATAAPIconfigValue( DATA_API_CMD_WRITE, SERIAL_NUMBER_ADR, message.data ) != DATA_API_STAT_OK )
+            if ( eDATAAPIconfigValue( DATA_API_CMD_WRITE, SERIAL_NUMBER_ADR, buffer ) == DATA_API_STAT_OK )
+            {
+              if ( eDATAAPIconfigValue( DATA_API_CMD_SAVE, 0U, NULL ) != DATA_API_STAT_OK )
+              {
+                res = CLI_STATUS_ERROR_EXECUTING;
+              }
+            }
+            else
             {
               res = CLI_STATUS_ERROR_EXECUTING;
             }
@@ -431,7 +466,7 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_DIN:
           if ( ( message.data[0U] < FPI_NUMBER ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uCLIdioToStr( ( ( uFPIgetData() >> message.data[0U] ) & 0x01U ), message.out );
+            message.length = uCLIdioToStr( ( ( uFPIgetRawData() >> message.data[0U] ) & 0x01U ), message.out );
           }
           else
           {
@@ -571,10 +606,10 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           message.length = uCLIhexToStr( ( uint8_t* )id, ( UNIQUE_ID_LENGTH * 2U ), message.out );
           break;
         case CLI_TARGET_RELEASE:
-          message.length = uCLInumbersToStr( releaseDate.value, releaseDate.atrib->len, message.out );
+          message.length = uCLIreleasedToStr( releaseDate.value, releaseDate.atrib->len, message.out );
           break;
         case CLI_TARGET_SERIAL:
-          message.length = uCLInumbersToStr( serialNumber.value, serialNumber.atrib->len, message.out );
+          message.length = uCLIserialToStr( serialNumber.value, message.out );
           break;
         case CLI_TARGET_IP:
           message.length = uSERVERgetStrIP( message.out );
@@ -607,6 +642,16 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           {
             res = CLI_STATUS_ERROR_DATA;
           }
+          break;
+        case CLI_TARGET_MODBUS_ADR:
+          ( void )utoa( getBitMap( &modbusSetup, MODBUS_ADR_ADR ), message.out, 10U );
+          ( void )strcat( message.out, CLI_LINE_END );
+          message.length = strlen( message.out );
+          break;
+        case CLI_TARGET_MODBUS_BR:
+          ( void )utoa( uMBgetBaudrateValue( getBitMap( &modbusSetup, MODBUS_BAUDRATE_ADR ) ), message.out, 10U );
+          ( void )strcat( message.out, CLI_LINE_END );
+          message.length = strlen( message.out );
           break;
         default:
           res = CLI_STATUS_ERROR_TARGET;

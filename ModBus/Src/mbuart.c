@@ -539,3 +539,12 @@ void vMBuartHandler ( void )
   return;
 }
 /*---------------------------------------------------------------------------------------------------*/
+uint32_t uMBgetBaudrateValue ( uint8_t n )
+{
+  uint32_t res = 0U;
+  if ( n < BOUDRATE_SIZE )
+  {
+    res = BoundRateTable[n];
+  }
+  return res;
+}

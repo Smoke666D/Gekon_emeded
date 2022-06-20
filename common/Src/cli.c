@@ -336,6 +336,7 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
   CLI_STATUS res  = CLI_STATUS_OK;
   RTC_TIME   time = { 0U };
   uint16_t   id[UNIQUE_ID_LENGTH] = { 0U };
+  uint8_t    adr = 0U;
   vCLIparseString( str, &message );
   switch ( message.cmd )
   {
@@ -589,7 +590,17 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
         case CLI_TARGET_SW:
           if ( ( message.data[0U] < KEYBOARD_COUNT ) && ( message.dataFlag > 0U ) )
           {
-            message.length = uCLIdioToStr( uKEYgetState( message.data[0U] ), message.out );
+            adr = message.data[0U];
+            if ( adr == 3U )
+            {
+              adr = 4U;
+            }
+            else if ( adr == 4U )
+            {
+              adr = 3U;
+            }
+            else {}
+            message.length = uCLIdioToStr( uKEYgetState( adr ), message.out );
           }
           else
           {

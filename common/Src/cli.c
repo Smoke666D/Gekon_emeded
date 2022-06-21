@@ -23,6 +23,7 @@
 #include "dataProces.h"
 #include "mbuart.h"
 #include "fatsd.h"
+#include "vrSensor.h"
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
@@ -583,7 +584,7 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           }
           break;
         case CLI_TARGET_SPEED:
-          fix16_to_str( fENGINEgetSpeed(), message.out, CLI_FIX_DECIMALS );
+          fix16_to_str( fVRgetSpeed(), message.out, CLI_FIX_DECIMALS );
           ( void )strcat( message.out, CLI_LINE_END );
           message.length = strlen( message.out );
           break;

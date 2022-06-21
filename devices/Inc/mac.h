@@ -12,9 +12,9 @@
 /*------------------------ Define --------------------------------------*/
 #define  MAC_EUI48_LENGTH  6U
 #define  MAC_EUI64_LENGTH  8U
-#define  MAC_EUI64_ADD3    0xFF
-#define  MAC_EUI64_ADD4    0xFE
-#define  MAC_ADR           0xFA
+#define  MAC_EUI64_ADD3    0xFFU
+#define  MAC_EUI64_ADD4    0xFEU
+#define  MAC_ADR           0xFAU
 #define  MAC_DEFAULT_0     0x00U
 #define  MAC_DEFAULT_1     0x10U
 #define  MAC_DEFAULT_2     0xFAU

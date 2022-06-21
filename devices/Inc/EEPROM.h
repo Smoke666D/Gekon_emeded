@@ -12,6 +12,7 @@
 #include "stm32f2xx_hal_gpio.h"
 #include "common.h"
 /*------------------------ Define --------------------------------------*/
+#define  EEPROM_MAX_ADR_SIZE      4U
 //#define  EEPROM_LENGTH_SIZE       3U
 /*---------- Commands -----------------*/
 #define  EEPROM_CMD_WRSR          0x01U     /* Write Status Register  */
@@ -71,13 +72,14 @@ typedef enum
 typedef struct __packed
 {
   /* EEPROM */
-  FunctionalState     SRWD    : 1U; /* Is EEPROM have Status Register Write Disable bit */
-  FunctionalState     ID      : 1U; /* Is EEPROM have identification page               */
-  EEPROM_PROTECT_TYPE protect : 2U; /* Define protect level                             */
-  uint32_t            size;         /* Size of EEPROM in bytes                          */
-  uint32_t            page;         /* Page size                                        */
-  uint8_t             frequensy;    /* Frequency of SPI                                 */
-  uint32_t            timeout;      /* Timeout for SPI transactions                     */
+  FunctionalState     SRWD;      /* Is EEPROM have Status Register Write Disable bit */
+  FunctionalState     ID;        /* Is EEPROM have identification page               */
+  EEPROM_PROTECT_TYPE protect;   /* Define protect level                             */
+  uint32_t            size;      /* Size of EEPROM in bytes                          */
+  uint32_t            page;      /* Page size                                        */
+  uint8_t             frequensy; /* Frequency of SPI                                 */
+  uint32_t            timeout;   /* Timeout for SPI transactions                     */
+  uint8_t             adrSize;   /* Address size in bytes                            */
   /* Hardware */
   SPI_HandleTypeDef*  spi;
   GPIO_TYPE           cs;
@@ -93,6 +95,7 @@ typedef struct __packed
 #define  M95Mxx_PAGE_SIZE       256U    /* bytes         */
 #define  M95Mxx_CLOCK_FREQ      16U     /* MHz           */
 #define  M95Mxx_TIMEOUT         10U     /* Ticks         */
+#define  M95Mxx_ADR_SIZE        3U      /* bytes         */
 
 #define  AA02E48_SRWD           0U
 #define  AA02E48_ID             0U
@@ -101,6 +104,7 @@ typedef struct __packed
 #define  AA02E48_PAGE_SIZE      16U     /* bytes */
 #define  AA02E48_CLOCK_FREQ     5U      /* MHz   */
 #define  AA02E48_TIMEOUT        10U     /* Ticks */
+#define  AA02E48_ADR_SIZE       1U      /* bytes */
 /*----------------------- Functions ------------------------------------*/
 #if defined ( UNIT_TEST )
   void          vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer );

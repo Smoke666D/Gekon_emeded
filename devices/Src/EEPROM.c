@@ -21,11 +21,15 @@
 #if defined( OPTIMIZ )
   __attribute__ ( ( optimize( OPTIMIZ_LEVEL ) ) )
 #endif
-void vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer )
+void vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer, uint8_t length )
 {
-  buffer[0U] = ( uint8_t )( adr >> 16U );
-  buffer[1U] = ( uint8_t )( adr >> 8U );
-  buffer[2U] = ( uint8_t )( adr );
+  if ( length <= EEPROM_MAX_ADR_SIZE )
+  {
+    for ( uint8_t i=0U; i<length; i++ )
+    {
+      buffer[i] = ( uint8_t )( adr >> ( ( length - i - 1U ) * 8U ) );
+    }
+  }
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -50,8 +54,8 @@ EEPROM_STATUS eEEPROMwrite ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint3
   {
     if ( adr != NULL )
     {
-      vEEPROMmakeAdr( *adr, &buffer[1U] );
-      bufferLen = 4U;
+      vEEPROMmakeAdr( *adr, &buffer[1U], eeprom->adrSize );
+      bufferLen = 1U + eeprom->adrSize;
     }
     while ( eeprom->spi->State != HAL_SPI_STATE_READY )
     {
@@ -108,8 +112,8 @@ EEPROM_STATUS eEEPROMread ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint32
   {
     if ( adr != NULL )
     {
-      vEEPROMmakeAdr( *adr, &buffer[1U] );
-      bufferLen = 4U;
+      vEEPROMmakeAdr( *adr, &buffer[1U], eeprom->adrSize );
+      bufferLen = 1U + eeprom->adrSize;
     }
     while ( eeprom->spi->State != HAL_SPI_STATE_READY )
     {

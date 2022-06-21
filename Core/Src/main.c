@@ -279,9 +279,10 @@ static const EEPROM_TYPE storEE = {
   .page      = M95Mxx_PAGE_SIZE,
   .frequensy = M95Mxx_CLOCK_FREQ,
   .timeout   = M95Mxx_TIMEOUT,
+  .adrSize   = M95Mxx_ADR_SIZE,
   .spi       = &hspi1,
   .cs.pin    = EEPROM_NSS_Pin,
-  .cs.port   = EEPROM_NSS_GPIO_Port,
+  .cs.port   = EEPROM_NSS_GPIO_Port
 };
 static const EEPROM_TYPE macEE = {
   .SRWD      = AA02E48_SRWD,
@@ -291,9 +292,10 @@ static const EEPROM_TYPE macEE = {
   .page      = AA02E48_PAGE_SIZE,
   .frequensy = AA02E48_CLOCK_FREQ,
   .timeout   = AA02E48_TIMEOUT,
+  .adrSize   = AA02E48_ADR_SIZE,
   .spi       = &hspi1,
-  .cs.pin    = EEPROM_NSS_Pin,
-  .cs.port   = EEPROM_NSS_GPIO_Port,
+  .cs.pin    = MAC_NSS_Pin,
+  .cs.port   = MAC_NSS_GPIO_Port
 };
 
 
@@ -1412,6 +1414,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(EEPROM_NSS_GPIO_Port, EEPROM_NSS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(MAC_NSS_GPIO_Port, MAC_NSS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(RS485_DE_GPIO_Port, RS485_DE_Pin, GPIO_PIN_RESET);
@@ -1499,6 +1502,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(EEPROM_NSS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : EEPROM_NSS_Pin */
+  GPIO_InitStruct.Pin = MAC_NSS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(MAC_NSS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PD0 PD1 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;

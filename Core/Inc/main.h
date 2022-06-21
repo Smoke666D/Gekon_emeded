@@ -212,6 +212,8 @@ typedef enum
 #define POUT_H_GPIO_Port GPIOG
 #define RMII_TXD0_Pin GPIO_PIN_13
 #define RMII_TXD0_GPIO_Port GPIOG
+#define MAC_NSS_Pin GPIO_PIN_14
+#define MAC_NSS_GPIO_Port GPIOG
 #define POUT_J_Pin GPIO_PIN_15
 #define POUT_J_GPIO_Port GPIOG
 #define EEPROM_SCK_Pin GPIO_PIN_3

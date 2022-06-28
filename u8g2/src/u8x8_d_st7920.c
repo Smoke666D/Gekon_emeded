@@ -39,26 +39,8 @@
 */
 #include "u8x8.h"
 #include "main.h"
+#include "cmsis_os2.h"
 
-
-static const uint8_t u8x8_d_st7920_init_seq[] = {
-    
-
-  U8X8_DLY(100),
-  U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
-  U8X8_DLY(10),
-
-
-
-  U8X8_C(0x038),            			/* 8 Bit interface (DL=1), basic instruction set (RE=0) */
-  U8X8_C(0x008),		                /* display on, cursor & blink off; 0x08: all off */
-  U8X8_C(0x006),		                /* Entry mode: Cursor move to right ,DDRAM address counter (AC) plus 1, no shift  */
-  U8X8_C(0x002),		                /* disable scroll, enable CGRAM adress  */
-  U8X8_C(0x001),		                /* clear RAM, needs 1.6 ms */
-  U8X8_DLY(4),					/* delay 2ms */
-  U8X8_END_TRANSFER(),             	/* disable chip */
-  U8X8_END()             			/* end of sequence */
-};
 
 static const uint8_t u8x8_d_st7920_powersave0_seq[] = {
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
@@ -82,7 +64,7 @@ static const uint8_t u8x8_d_st7920_powersave1_seq[] = {
 
 uint8_t u8x8_d_st7920_common(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
-  uint8_t x, y, c, i;
+  uint8_t x, y, i;
   uint8_t *ptr;
   switch(msg)
   {

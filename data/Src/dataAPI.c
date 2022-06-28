@@ -299,7 +299,7 @@ EEPROM_STATUS eDATAAPIlogInit ( void )
   res         = eSTORAGEreadLogPointer( &pointer );
   if ( res == EEPROM_OK )
   {
-    if ( pointer == 0xFFFF )
+    if ( pointer == 0xFFFFU )
     {
       logCash.size = 0U;
     }

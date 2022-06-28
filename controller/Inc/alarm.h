@@ -29,16 +29,16 @@ typedef enum
 } STAMP_LIST_EVENT;
 /*----------------------- Callbacks ------------------------------------*/
 /*----------------------- Structures -----------------------------------*/
-typedef struct __packed
+typedef struct
 {
-  STAMP_LIST_EVENT  status : 1U;
-  SYSTEM_EVENT      array[ACTIV_ERROR_LIST_SIZE];
   uint8_t           counter;
+  STAMP_LIST_EVENT  status;
+  SYSTEM_EVENT      array[ACTIV_ERROR_LIST_SIZE];
 } STAMP_LIST;
 
-typedef struct __packed
+typedef struct
 {
-  ERROR_LIST_STATUS status : 2U;
+  ERROR_LIST_STATUS status;
   LOG_RECORD_TYPE   array[ACTIV_ERROR_LIST_SIZE];
   uint8_t           counter;
   STAMP_LIST        stamp;

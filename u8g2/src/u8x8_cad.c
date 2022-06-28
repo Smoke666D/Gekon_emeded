@@ -354,24 +354,15 @@ uint8_t u8x8_cad_011(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 /* u8x8_byte_SetDC is not used */
 uint8_t u8x8_cad_st7920_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
-  uint8_t *data;
-  uint8_t b;
-  uint8_t i;
-  static uint8_t buf[16];
-  uint8_t Data[3];
-  uint8_t *ptr;
+  uint8_t* data = NULL ;
+  uint8_t  b    = 0U;
+  uint8_t  i    = 0U;
+  uint8_t* ptr  = NULL;
+  static uint8_t buf[16U];
   
   switch(msg)
   {
     case U8X8_MSG_CAD_SEND_CMD:
-
-    //  Data[0]=0xF8;
-   //   Data[1]=0xF0 & arg_int ;
-   //   Data[2]=0xF0 & (arg_int <<4);
-
- //     HAL_SPI_Transmit(&hspi1,&Data,3,HAL_MAX_DELAY);
-
-
       u8x8_byte_SendByte(u8x8, 0x0f8);
       u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, 1);
       u8x8_byte_SendByte(u8x8, arg_int & 0x0f0);

@@ -77,7 +77,7 @@ uint8_t uCLIparsingFields ( const char* str, char** fields )
     for ( uint8_t i=1U; i<CLI_FILDS_NUMBER; i++ )
     {
       p = strstr( fields[i - 1U], CLI_FILD_SEPORATOR );
-      if ( p == 0U )
+      if ( p == NULL )
       {
         break;
       }
@@ -129,7 +129,7 @@ void vCLIparseString ( const char* str, TEST_TYPE* message )
       {
         if ( ( message->cmd == CLI_COMMAND_SET ) && ( message->target == CLI_TARGET_TIME ) )
         {
-          strcpy( message->out, filds[CLI_SYSTEM_FILDS_NUMBER] );
+          ( void )strcpy( message->out, filds[CLI_SYSTEM_FILDS_NUMBER] );
         }
         else
         {
@@ -290,7 +290,7 @@ uint8_t uCLIhexToStr ( uint8_t* data, uint8_t length, char* buf )
    }
   }
   ( void )strcat( buf, CLI_LINE_END );
-  return ( length * 2U + length );
+  return ( ( length * 2U ) + length );
 }
 /*---------------------------------------------------------------------------------------------------*/
 uint8_t uCLIversionToStr ( const uint16_t* version, char* buf )
@@ -314,7 +314,7 @@ uint8_t uCLIreleasedToStr ( const uint16_t* data, uint8_t length, char* buf )
   for ( uint8_t i=0; i<length; i++ )
   {
      ( void )itoa( data[i], sub, 10U );
-     if ( data[i] < 10 )
+     if ( data[i] < 10U )
      {
        ( void )strcat( buf, "0" );
      }
@@ -449,7 +449,7 @@ CLI_STATUS vCLIprocess ( const char* str, uint8_t length )
           }
           break;
         case CLI_TARGET_LED:
-          if ( message.dataFlag )
+          if ( message.dataFlag > 0U )
           {
             vCONTROLLERsetLed( message.data[0U], 0U );
           }

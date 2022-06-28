@@ -96,7 +96,7 @@ void vSERIALtask ( void* argument )
 {
   for (;;)
   {
-    if ( ulTaskNotifyTake( pdTRUE, SERIAL_OUTPUT_TIMEOUT ) )
+    if ( ulTaskNotifyTake( pdTRUE, SERIAL_OUTPUT_TIMEOUT ) > 0U )
     {
       if ( ( serial.state == SERIAL_STATE_READING ) && ( serial.error == 0U ) )
       {
@@ -117,7 +117,6 @@ void vSERIALtask ( void* argument )
 /*---------------------------------------------------------------------------------------------------*/
 void vSERIALoutputTask ( void* argument )
 {
-  HAL_StatusTypeDef status = HAL_OK;
   for (;;)
   {
     if ( xQueueReceive( pSERIALqueue, &serial.output, SERIAL_OUTPUT_TIMEOUT ) == pdPASS )
@@ -129,9 +128,8 @@ void vSERIALoutputTask ( void* argument )
           osDelay( SERIAL_OUTPUT_TIMEOUT );
         }
         serial.state = SERIAL_STATE_WRITING;
-        status = HAL_UART_AbortReceive_IT( serial.uart );
-        status = HAL_UART_Transmit_IT( serial.uart, ( uint8_t* )serial.output.data, serial.output.length );
-        status = HAL_OK;
+        ( void )HAL_UART_AbortReceive_IT( serial.uart );
+        ( void )HAL_UART_Transmit_IT( serial.uart, ( uint8_t* )serial.output.data, serial.output.length );
       }
     }
   }
@@ -187,7 +185,8 @@ void HAL_UART_RxCpltCallback( UART_HandleTypeDef *huart )
         portYIELD_FROM_ISR ( yield );
         break;
       case SERIAL_STATE_READING:
-        serial.input[serial.length++] = serial.buffer;
+        serial.input[serial.length] = serial.buffer;
+        serial.length++;
         if ( iSERIALisEndChar( serial.buffer ) > 0U )
         {
           serial.input[serial.length] = 0U;
@@ -218,7 +217,7 @@ void vSERIALinit ( UART_HandleTypeDef* uart )
   osThreadAttr_t task_attributes = { 0U };
   serial.uart   = uart;
   serial.state  = SERIAL_STATE_IDLE;
-  pSERIALqueue  = xQueueCreateStatic( SERIAL_QUEUE_SIZE, sizeof( UART_MESSAGE ), outputBuffer, &xSERIALqueue );
+  pSERIALqueue  = xQueueCreateStatic( SERIAL_QUEUE_SIZE, sizeof( UART_MESSAGE ), ( uint8_t* )outputBuffer, &xSERIALqueue );
   task_attributes.name       = "serialTask";
   task_attributes.priority   = ( osPriority_t ) SERIAL_TASK_PRIORITY;
   task_attributes.stack_size = SERIAL_TSAK_STACK_SIZE;

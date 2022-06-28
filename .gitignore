@@ -4,7 +4,7 @@ UnitTests/
 Release/
 build/
 out/
-report/
+reports/
 
 .settings/language.settings.xml
 

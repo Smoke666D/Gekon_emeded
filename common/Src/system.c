@@ -10,6 +10,7 @@
 #include "task.h"
 #include "stdio.h"
 #include "controllerTypes.h"
+#include <string.h>
 /*-------------------------------- Structures --------------------------------*/
 /*--------------------------------- Constant ---------------------------------*/
 /*-------------------------------- Variables ---------------------------------*/
@@ -33,15 +34,15 @@ void vSYSprintLoadBar ( uint8_t procents )
   }
   for ( i=0U; i<wm; i++ )
   {
-    vLOGICprintDebug( "█" );
+    vSYSserial( "█", 1U );
   }
   for ( i=wm; i<SYS_BAR_LENGTH; i++ )
   {
-    vLOGICprintDebug( "▒" );
+    vSYSserial( "▒", 1U );
   }
   ( void )sprintf( buf, " %u", procents );
-  vLOGICprintDebug( buf );
-  vLOGICprintDebug( "% " );
+  vSYSserial( buf, strlen( buf ) );
+  vSYSserial( "% ", 2U );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -49,10 +50,10 @@ void vSYSprintUsedData ( uint16_t usage, uint16_t total )
 {
   char buf[10U] = { " " };
   ( void )sprintf( buf, " %u", usage );
-  vLOGICprintDebug( buf );
-  vLOGICprintDebug( "/" );
+  vSYSserial( buf, strlen( buf ) );
+  vSYSserial( "/", 1U );
   ( void )sprintf( buf, " %u", total );
-  vLOGICprintDebug( " bytes\r\n" );
+  vSYSserial( " bytes\r\n", 8U );
   return;
 }
 /*----------------------------------------------------------------------------*/
@@ -60,7 +61,7 @@ void vSYSprintHeapData ( void )
 {
   uint16_t usage = xPortGetMinimumEverFreeHeapSize();
   uint8_t  used  = ( uint8_t )( usage * 100U / configTOTAL_HEAP_SIZE );
-  vLOGICprintDebug( "Heap             : " );
+  vSYSserial( "Heap             : ", 19U );
   vSYSprintLoadBar( used );
   vSYSprintUsedData( usage, ( uint16_t )( configTOTAL_HEAP_SIZE ) );
   return;
@@ -70,8 +71,9 @@ void vSYSprintTaskData ( TASK_ANALIZE task )
 {
   uint16_t usage = ( uint16_t )( task.size - uxTaskGetStackHighWaterMark( task.thread ) * 4U );
   uint8_t  used  = ( uint8_t )( task.size / usage );
-  vLOGICprintDebug( pcTaskGetName( task.thread ) );
-  vLOGICprintDebug( " : " );
+  char*    name  = pcTaskGetName( task.thread );
+  vSYSserial( name, strlen( name ) );
+  vSYSserial( " : ", 3U );
   vSYSprintLoadBar( used );
   vSYSprintUsedData( usage, ( uint16_t )( task.size ) );
   return;
@@ -95,15 +97,14 @@ void vSYSaddTask ( osThreadId_t thread, uint32_t size )
 void vSYSprintData ( void )
 {
   #ifdef DEBUG
-    uint8_t i = 0U;
-    vLOGICprintDebug( "------------------ freeRTOS ------------------" );
-
+    vSYSserial( "------------------ freeRTOS ------------------\n", 47U );
     vSYSprintHeapData();
-    for ( i=0U; i<taskNumber; i++ )
+    for ( uint8_t i=0U; i<taskNumber; i++ )
     {
       vSYSprintTaskData( tasks[i] );
+      vSYSserial( "\n", 1U );
     }
-    vLOGICprintDebug( "----------------------------------------------" );
+    vSYSserial( "----------------------------------------------\n", 47U );
   #endif
 }
 /*----------------------------------------------------------------------------*/

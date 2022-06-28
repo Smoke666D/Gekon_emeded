@@ -17,6 +17,7 @@
 -include make/tools.mk
 -include make/source.mk
 -include make/includes.mk
+-include make/check.mk
 
 ######################################
 # target
@@ -63,6 +64,8 @@ FLOAT = -mfloat-abi=soft
 SPEC  = --specs=nano.specs
 MCU   = $(CPU) -mthumb $(FLOAT)
 STD   = -std=gnu11
+
+GCC_FLAGS = -Wno-char-subscripts -Wno-address-of-packed-member
 
 TEST_DEFINES =\
 -DUNIT_TEST \
@@ -127,7 +130,7 @@ test: $(TEST_ELF) $(TEST_HEX)
 ############### release ###############
 $(BUILD_DIR)/$(RELEASE_DIR)/%.o: %.c Makefile | $(BUILD_DIR) $(BUILD_DIR)/$(RELEASE_DIR)
 	@echo "%% $(notdir $<)" "$(STDOUT)"
-	$(V1) $(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(V1) $(CC) -c $(CFLAGS) $(GCC_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/$(RELEASE_DIR)/%.o: %.s Makefile | $(BUILD_DIR) $(BUILD_DIR)/$(RELEASE_DIR)
 	@echo "%% $(notdir $<)" "$(STDOUT)"

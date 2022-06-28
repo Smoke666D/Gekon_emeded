@@ -518,7 +518,7 @@ void vSERVERinit ( void )
 #endif
 uint8_t uSERVERgetStrIP ( char* ipStr )
 {
-  char* pointer = defaultIp;
+  const char* pointer = defaultIp;
   if ( serverState == SERVER_STATE_UP )
   {
     pointer = ip4addr_ntoa( &gnetif.ip_addr );

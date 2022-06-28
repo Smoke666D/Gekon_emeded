@@ -907,7 +907,7 @@ static void ADC_DMAErro(DMA_HandleTypeDef *hdma)
 
 }
 
-void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
+HAL_StatusTypeDef StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
 {
 
    __HAL_LOCK(hadc);
@@ -986,7 +986,7 @@ void StartADCDMA(ADC_HandleTypeDef* hadc, uint32_t* pData, uint32_t Length)
     }
 
     /* Return function status */
-    return;
+    return HAL_OK;
 
 }
 

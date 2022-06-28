@@ -115,7 +115,7 @@ void vFATSDtask ( void* argument )
         fatsd.position = SD_INSERTED;
         HAL_SD_MspInit( hsd );
         retSD = FATFS_LinkDriver( &SD_Driver, SDPath );
-        if ( retSD == 0 )
+        if ( retSD == 0U )
         {
           res = eFATSDmount();
           BSP_SD_GetCardInfo( &cardInfo );
@@ -266,7 +266,7 @@ FRESULT eFILEreadLineByLine ( FATSD_FILE n, lineParserCallback callback )
                   output = callback( length );
                   length = 0U;
                 }
-                else if ( data[0U] == 0x00 ) /* EOF */
+                else if ( data[0U] == 0U ) /* EOF */
                 {
                   output[length] = 0x00;
                   length++;

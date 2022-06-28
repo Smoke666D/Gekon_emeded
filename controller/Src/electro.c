@@ -16,6 +16,7 @@
 #include "adc.h"
 #include "alarm.h"
 #include "system.h"
+#include "constants.h"
 /*---------------------------------- Define ----------------------------------*/
 /*-------------------------------- Structures --------------------------------*/
 static GENERATOR_TYPE      generator            = { 0U };
@@ -466,7 +467,7 @@ void vELECTROdataInit ( void )
   /*----------------------------------------------------------------------------*/
   generator.phaseImbalanceAlarm.error.active        = PERMISSION_DISABLE;
   generator.phaseImbalanceAlarm.type                = ALARM_LEVEL_HIGHT;
-  generator.phaseImbalanceAlarm.level               = fix16_mul( generator.rating.current, fix16_div( getValue( &genCurrentOverPhaseImbalanceLevel ), fix100U ) );
+  generator.phaseImbalanceAlarm.level               = fix16_mul( generator.rating.current, fix16_div( getValue( &genCurrentOverPhaseImbalanceLevel ), fix100 ) );
   generator.phaseImbalanceAlarm.timer.delay         = getValue( &genCurrentOverPhaseImbalanceDelay );
   generator.phaseImbalanceAlarm.timer.id            = LOGIC_DEFAULT_TIMER_ID;
   generator.phaseImbalanceAlarm.error.event.type    = EVENT_PHASE_IMBALANCE;
@@ -476,7 +477,7 @@ void vELECTROdataInit ( void )
   /*----------------------------------------------------------------------------*/
   generator.powerAlarm.error.active                 = PERMISSION_DISABLE;
   generator.powerAlarm.type                         = ALARM_LEVEL_HIGHT;
-  generator.powerAlarm.level                        = fix16_mul( generator.rating.power.active, fix16_div( getValue( &genCurrentOverloadProtectionLevel ), fix100U ) );
+  generator.powerAlarm.level                        = fix16_mul( generator.rating.power.active, fix16_div( getValue( &genCurrentOverloadProtectionLevel ), fix100 ) );
   generator.powerAlarm.timer.delay                  = getValue( &genCurrentOverloadProtectionDelay );
   generator.powerAlarm.timer.id                     = LOGIC_DEFAULT_TIMER_ID;
   generator.powerAlarm.error.event.type             = EVENT_OVER_POWER;
@@ -486,7 +487,7 @@ void vELECTROdataInit ( void )
   /*----------------------------------------------------------------------------*/
   generator.currentWarningAlarm.error.active        = PERMISSION_ENABLE;
   generator.currentWarningAlarm.type                = ALARM_LEVEL_HIGHT;
-  generator.currentWarningAlarm.level               = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentWarningLevel ), fix100U ) );
+  generator.currentWarningAlarm.level               = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentWarningLevel ), fix100 ) );
   generator.currentWarningAlarm.timer.delay         = getValue( &genOverCurrentWarningDelay );
   generator.currentWarningAlarm.timer.id            = LOGIC_DEFAULT_TIMER_ID;
   generator.currentWarningAlarm.error.event.type    = EVENT_OVER_CURRENT;
@@ -496,11 +497,11 @@ void vELECTROdataInit ( void )
   generator.currentWarningAlarm.error.status        = ALARM_STATUS_IDLE;
   /*----------------------------------------------------------------------------*/
   generator.currentAlarm.state                      = ELECTRO_CURRENT_STATUS_IDLE;
-  generator.currentAlarm.thermal.current            = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100U ) );
+  generator.currentAlarm.thermal.current            = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentThermalProtectionLevel ), fix100 ) );
   generator.currentAlarm.thermal.delay              = 0U;
   generator.currentAlarm.thermal.event.type         = EVENT_OVER_CURRENT;
   generator.currentAlarm.thermal.event.action       = currentAction;
-  generator.currentAlarm.cutout.current             = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100U ) );
+  generator.currentAlarm.cutout.current             = fix16_mul( generator.rating.current, fix16_div( getValue( &genOverCurrentCutoffLevel ), fix100 ) );
   generator.currentAlarm.cutout.delay               = 0U;
   generator.currentAlarm.cutout.event.type          = EVENT_SHORT_CIRCUIT;
   generator.currentAlarm.cutout.event.action        = currentAction;

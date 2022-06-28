@@ -183,9 +183,11 @@ eFunctionError eCHARTfunc ( const eChartData* chart, fix16_t x, fix16_t* y )
   eFunctionError res  = FUNC_OK;
   eChartFunction func = { 0U };
   uint16_t       i    = 0U;
-  if ( x <= xAxisAtribs[chart->xType]->max )
+  //if ( x <= xAxisAtribs[chart->xType]->max )
+  if ( x <= chart->x.max )
   {
-    if ( x >= xAxisAtribs[chart->xType]->min )
+    //if ( x >= xAxisAtribs[chart->xType]->min )
+    if( x >= chart->x.min )
     {
       if ( x <= chart->x.min )
       {

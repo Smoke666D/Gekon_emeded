@@ -43,9 +43,8 @@
 typedef  uint16_t timerID_t;
 /*------------------------ Macros --------------------------------------*/
 /*----------------------- Constant -------------------------------------*/
-extern const char*   logTypesDictionary[LOG_TYPES_SIZE];
-extern const char*   logActionsDictionary[LOG_ACTION_SIZE];
-extern const fix16_t fix100U;
+extern const char* const logTypesDictionary[LOG_TYPES_SIZE];
+extern const char* const logActionsDictionary[LOG_ACTION_SIZE];
 /*------------------------- Enum ---------------------------------------*/
 typedef enum
 {
@@ -344,11 +343,9 @@ typedef struct __packed
   SYSTEM_EVENT  event;  /* 2 bytes */
 } LOG_RECORD_TYPE;
 /*----------------------- Extern ---------------------------------------*/
-extern const char* logActionsDictionary[LOG_ACTION_SIZE];
-extern const char* logTypesDictionary[LOG_TYPES_SIZE];
 #if ( DEBUG_SERIAL_ALARM > 0U )
-  extern const char* alarmActionStr[LOG_ACTION_SIZE];
-  extern const char* eventTypesStr[LOG_TYPES_SIZE];
+  extern const char* const alarmActionStr[LOG_ACTION_SIZE];
+  extern const char* const eventTypesStr[LOG_TYPES_SIZE];
 #endif
 /*----------------------- Functions ------------------------------------*/
 const char*   cSTATUSgetString ( DEVICE_STATUS status );

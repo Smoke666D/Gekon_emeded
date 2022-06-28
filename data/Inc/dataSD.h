@@ -11,7 +11,7 @@
 #include "stm32f2xx_hal.h"
 #include "fatsd.h"
 /*------------------------ Define --------------------------------------*/
-#define SD_QUEUE_LENGTH      20U
+#define SD_QUEUE_LENGTH      10U
 #define SD_CONFIG_MIN_LENGTH 18U
 #define SD_ROUTINE_DATA_SIZE 100U
 #define SD_TIME_SIZE         6U

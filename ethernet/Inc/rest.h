@@ -18,15 +18,15 @@
 /*------------------------------ Enum ----------------------------------------*/
 typedef enum
 {
-  REST_OK,
-  REST_MESSAGE_FORMAT_ERROR,
-  REST_RECORD_LOST_ERROR,
-  REST_RECORD_FORMAT_ERROR,
-  REST_RECORD_NO_DATA_ERROR,
-  REST_RECORD_LENGTH_ERROR,
-  REST_RECORD_COPY_ERROR,
-  REST_RECORD_ARRAY_FORMAT_ERROR,
-  REST_RECORD_ARRAY_SIZE_ERROR,
+  REST_OK,                        /* 0 */
+  REST_MESSAGE_FORMAT_ERROR,      /* 1 */
+  REST_RECORD_LOST_ERROR,         /* 2 */
+  REST_RECORD_FORMAT_ERROR,       /* 3 */
+  REST_RECORD_NO_DATA_ERROR,      /* 4 */
+  REST_RECORD_LENGTH_ERROR,       /* 5 */
+  REST_RECORD_COPY_ERROR,         /* 6 */
+  REST_RECORD_ARRAY_FORMAT_ERROR, /* 7 */
+  REST_RECORD_ARRAY_SIZE_ERROR,   /* 8 */
 } REST_ERROR;
 
 typedef enum
@@ -110,7 +110,7 @@ typedef enum
 #define SYSTEM_TOTAL_STR            "total"
 #define SYSTEM_USAGE_STR            "usage"
 /*------------------------------ Extern --------------------------------------*/
-extern const char 	*restRequestStr[REST_REQUEST_NUMBER];
+extern const char* const restRequestStr[REST_REQUEST_NUMBER];
 /*----------------------------- Functions ------------------------------------*/
 #if defined ( UNIT_TEST )
   uint8_t    uRESTmakeStartRecord ( const char* header, char* output );

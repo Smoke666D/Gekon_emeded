@@ -42,7 +42,7 @@ const uint8_t eFPOfuctionList[FPO_FUNCTION_NUMBER] =
   FPO_FUN_IDLING,                 /* 20 */
   FPO_FUN_BUZZER                  /* 21 */
 };
-const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
+const char* const cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
 {
   "NONE",                   /* 0 */
   "DPS_READY",              /* 1 */
@@ -67,7 +67,7 @@ const char* cFPOfunctionNames[FPO_FUNCTION_NUMBER] =
   "IDLING",                 /* 20 */
   "BUZZER"                  /* 21 */
 };
-const char* cFPOnames[FPO_NUMBER] =
+const char* const cFPOnames[FPO_NUMBER] =
 {
   "A", /* 0 */
   "B", /* 1 */

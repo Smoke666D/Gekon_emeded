@@ -16,9 +16,10 @@ static StaticQueue_t      xEventQueue;
 static QueueHandle_t      pEventQueue;
 static SemaphoreHandle_t  xSYSTIMERsemaphore = NULL;
 static DEVICE_INFO        deviceInfo         = { 0U };
+/*---------------------------------- Define ----------------------------------*/
+
 /*--------------------------------- Constant ---------------------------------*/
-const fix16_t fix100U = F16( 100U );
-const char* logActionsDictionary[LOG_ACTION_SIZE] = {
+const char* const logActionsDictionary[LOG_ACTION_SIZE] = {
     "Нет",                            /* 0 */
     "Предупреждение",                 /* 1 */
     "Аварийная остановка",            /* 2 */
@@ -29,7 +30,7 @@ const char* logActionsDictionary[LOG_ACTION_SIZE] = {
     "Автостарт",                      /* 7 */
     "Автостоп"                        /* 8 */
 };
-const char* logTypesDictionary[LOG_TYPES_SIZE] = {
+const char* const logTypesDictionary[LOG_TYPES_SIZE] = {
     "Нет",                               /* 0  */
     "Внешная аварийная остановка",       /* 1  */
     "Ошибка пуска двигателя",            /* 2  */
@@ -78,7 +79,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "Утечка топлива"                     /* 45 */
 };
 #if ( DEBUG_SERIAL_ALARM > 0U )
-  const char* eventTypesStr[LOG_TYPES_SIZE] =
+  const char* const eventTypesStr[LOG_TYPES_SIZE] =
   {
     "NONE",                       /* 00 NONE */
     "EXTERN_EMERGENCY_STOP",      /* 01 EMERGENCY_STOP */
@@ -127,7 +128,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
     "GENERATOR_PHASE_SEQUENCE",   /* 44 */
     "FUEL_LEAK"                   /* 45 */
   };
-  const char* alarmActionStr[LOG_ACTION_SIZE] =
+  const char* const alarmActionStr[LOG_ACTION_SIZE] =
   {
     "NONE",
     "WARNING",
@@ -141,7 +142,7 @@ const char* logTypesDictionary[LOG_TYPES_SIZE] = {
   };
 #endif
 
-static const char* deviceStatusDic[DEVICE_STATUS_NUMBER] =
+static const char* const deviceStatusDic[DEVICE_STATUS_NUMBER] =
 {
   "Загрузка...",        /* 00 */
   "Готов к запуску",    /* 01 */

@@ -137,7 +137,7 @@ void test_uSTORAGEcheckMap ( void )
     STORAGE_PASSWORD_SIZE,    /* 3 */
     STORAGE_LOG_POINTER_SIZE, /* 4 */
     STORAGE_LOG_SIZE,         /* 5 */
-    STORAGE_JOURNAL_SIZE      /* 6 */
+    STORAGE_MAC_SIZE          /* 6 */
   };
   uint8_t res = uSTORAGEcheckMap( ( const uint32_t* )( map ) );
   TEST_ASSERT_EQUAL( 1U, res );

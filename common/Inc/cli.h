@@ -21,6 +21,8 @@
 #define CLI_DATA_FILDS_NUMBER   3U
 #define CLI_FILDS_NUMBER        ( CLI_SYSTEM_FILDS_NUMBER + CLI_DATA_FILDS_NUMBER )
 #define CLI_RELEASED_SIZE       3U
+#define CLI_COMMAND_STR_SIZE    5U
+#define CLI_TARGET_STR_SIZE     8U
 
 #define CLI_FILD_SEPORATOR      " "
 #define CLI_LINE_END            "\n"
@@ -137,7 +139,7 @@ typedef struct __packed
 /*------------------------ Functions -----------------------------------*/
 #if defined ( UNIT_TEST )
   uint8_t     uCLIparsingFields ( const char* str, char** filds );
-  uint8_t     uCLIparse ( const char* str, const char** dictionary, uint8_t length );
+  uint8_t     uCLIparse ( const char* str, const char* const* dictionary, uint8_t length );
   void        vCLIparseString ( const char* str, TEST_TYPE* message );
   uint8_t     uCLItimeToStr ( RTC_TIME* time, char* buf );
   char*       cCLIparseTimeFild ( char* pStr, uint8_t* output );

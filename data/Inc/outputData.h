@@ -11,6 +11,7 @@
 #define   MAX_UNITS_OUTPUT_LENGTH             5U
 #define   MAX_BIT_MAP_OUTPUT_LENGTH           16U
 #define   OUTPUT_DATA_REGISTER_NUMBER         47U
+#define   OUTPUT_DICTIONARY_SIZE              62U
 #define   FILDS_TO_WRITE_OUTPUT_NUMBER        3U
 #define   MAX_VALUE_OUTPUT_LENGTH             1U
 #define   OUTPUT_DATA_MAX_SIZE                61U     // bytes
@@ -211,7 +212,7 @@ extern eConfigReg warning0;
 extern eConfigReg warning1;
 extern eConfigReg controll;
 extern eConfigReg* const outputDataReg[OUTPUT_DATA_REGISTER_NUMBER];
-extern const char*       outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER];
+extern const char* const outputDataDictionary[OUTPUT_DATA_REGISTER_NUMBER];
 extern const fix16_t     scaleMulArray[OUTPUT_DATA_SCALE_NUM];
 /*----------------------------------------------------------------------*/
 #endif /* INC_OUTPUT_DATA_H_ */

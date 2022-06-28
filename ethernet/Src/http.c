@@ -28,7 +28,7 @@ static char     restBuffer[REST_BUFFER_SIZE] = { 0U };
 #endif
 static RTC_TIME time;
 /*----------------------- Constant ------------------------------------------------------------------*/
-const char *httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_PUT, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
+const char* const httpMethodsStr[HTTP_METHOD_NUM] = { HTTP_METHOD_STR_GET, HTTP_METHOD_STR_POST, HTTP_METHOD_STR_PUT, HTTP_METHOD_STR_HEAD, HTTP_METHOD_STR_OPTION};
 /*----------------------- Variables -----------------------------------------------------------------*/
 static AUTH_IP_TYPE ethAuthList[CONNECT_STACK_SIZE] = { 0U }; /* List of authorization IPs*/
 static uint8_t      ethAuthListPointer              = 0U;
@@ -148,7 +148,7 @@ void vHTTPaddContentType ( char* httpStr, HTTP_CONTENT_TYPE type )
       ( void )strcat( httpStr, HTTP_CONTENT_STR_XML );
       break;
     default:
-      ( void )strcat( httpStr, "Error" );
+      ( void )strcat( httpStr, "error" );
       break;
   }
   ( void )strcat( httpStr, HTTP_END_LINE );
@@ -265,43 +265,50 @@ STREAM_STATUS cHTTPstreamFileWebApp ( HTTP_STREAM* stream )
 #endif
 STREAM_STATUS cHTTPstreamConfigs ( HTTP_STREAM* stream )
 {
-  uint32_t length = stream->size - stream->start;
-  if ( ( stream->index == 0U ) && ( length > 1U ) )
+  if ( ( stream->start + stream->size ) <= SETTING_REGISTER_NUMBER )
   {
-    restBuffer[0U] = '[';
-    stream->length = uRESTmakeConfig( configReg[stream->start + stream->index], &restBuffer[1U] ) + 1U;
-  }
-  else
-  {
-    stream->length = uRESTmakeConfig( configReg[stream->start + stream->index], restBuffer );
-  }
-  if ( stream->length == 0U )
-  {
-    stream->status = STREAM_ERROR;
-  }
-  else
-  {
-    stream->index++;
-    if ( ( stream->start + stream->index ) >= stream->size )
+    uint32_t length = stream->size - stream->start;
+    if ( ( stream->index == 0U ) && ( length > 1U ) )
     {
-      if ( length > 1U )
-      {
-        restBuffer[stream->length] = ']';
-      }
-      stream->length++;
-      stream->status = STREAM_END;
+      restBuffer[0U] = '[';
+      stream->length = uRESTmakeConfig( configReg[stream->start + stream->index], &restBuffer[1U] ) + 1U;
     }
     else
     {
-      if ( length > 1U )
-      {
-        restBuffer[stream->length] = ',';
-      }
-      stream->length++;
-      stream->status = STREAM_CONTINUES;
+      stream->length = uRESTmakeConfig( configReg[stream->start + stream->index], restBuffer );
     }
-    restBuffer[stream->length] = 0U;
-    stream->content = restBuffer;
+    if ( stream->length == 0U )
+    {
+      stream->status = STREAM_ERROR;
+    }
+    else
+    {
+      stream->index++;
+      if ( ( stream->start + stream->index ) >= stream->size )
+      {
+        if ( length > 1U )
+        {
+          restBuffer[stream->length] = ']';
+        }
+        stream->length++;
+        stream->status = STREAM_END;
+      }
+      else
+      {
+        if ( length > 1U )
+        {
+          restBuffer[stream->length] = ',';
+        }
+        stream->length++;
+        stream->status = STREAM_CONTINUES;
+      }
+      restBuffer[stream->length] = 0U;
+      stream->content = restBuffer;
+    }
+  }
+  else
+  {
+    stream->status = STREAM_ERROR;
   }
   return stream->status;
 }
@@ -319,43 +326,50 @@ STREAM_STATUS cHTTPstreamMeasurement ( HTTP_STREAM* stream )
 #endif
 STREAM_STATUS cHTTPstreamCharts ( HTTP_STREAM* stream )
 {
-  uint32_t length = stream->size - stream->start;
-  if ( ( stream->index == 0U ) && ( length > 1U ) )
+  if ( ( stream->start + stream->size ) <= CHART_NUMBER )
   {
-    restBuffer[0U] = '[';
-    stream->length = uRESTmakeChart(  charts[stream->start + stream->index], &restBuffer[1U] ) + 1U;
-  }
-  else
-  {
-    stream->length = uRESTmakeChart( charts[stream->start + stream->index], restBuffer );
-  }
-  if ( stream->length == 0U )
-  {
-    stream->status = STREAM_ERROR;
-  }
-  else
-  {
-    stream->index++;
-    if ( ( stream->start + stream->index ) >= stream->size )
+    uint32_t length = stream->size - stream->start;
+    if ( ( stream->index == 0U ) && ( length > 1U ) )
     {
-      if ( length > 1U )
-      {
-        restBuffer[stream->length] = ']';
-      }
-      stream->length++;
-      stream->status = STREAM_END;
+      restBuffer[0U] = '[';
+      stream->length = uRESTmakeChart(  charts[stream->start + stream->index], &restBuffer[1U] ) + 1U;
     }
     else
     {
-      if ( length > 1U )
-      {
-        restBuffer[stream->length] = ',';
-      }
-      stream->length++;
-      stream->status  = STREAM_CONTINUES;
+      stream->length = uRESTmakeChart( charts[stream->start + stream->index], restBuffer );
     }
-    restBuffer[stream->length] = 0U;
-    stream->content = restBuffer;
+    if ( stream->length == 0U )
+    {
+      stream->status = STREAM_ERROR;
+    }
+    else
+    {
+      stream->index++;
+      if ( ( stream->start + stream->index ) >= stream->size )
+      {
+        if ( length > 1U )
+        {
+          restBuffer[stream->length] = ']';
+        }
+        stream->length++;
+        stream->status = STREAM_END;
+      }
+      else
+      {
+        if ( length > 1U )
+        {
+          restBuffer[stream->length] = ',';
+        }
+        stream->length++;
+        stream->status = STREAM_CONTINUES;
+      }
+      restBuffer[stream->length] = 0U;
+      stream->content = restBuffer;
+    }
+  }
+  else
+  {
+    stream->status = STREAM_ERROR;
   }
   return stream->status;
 }
@@ -382,11 +396,18 @@ STREAM_STATUS cHTTPstreamTime ( HTTP_STREAM* stream )
 #endif
 STREAM_STATUS cHTTPstreamData ( HTTP_STREAM* stream )
 {
-  stream->status             = STREAM_END;
-  stream->length             = uRESTmakeData( *( freeDataArray[stream->start] ), restBuffer );
-  restBuffer[stream->length] = 0U;
-  stream->content            = restBuffer;
-  stream->flag               = STREAM_FLAG_COPY;
+  if ( ( stream->start + stream->size ) <= FREE_DATA_SIZE )
+  {
+    stream->status             = STREAM_END;
+    stream->length             = uRESTmakeData( *( freeDataArray[stream->start] ), restBuffer );
+    restBuffer[stream->length] = 0U;
+    stream->content            = restBuffer;
+    stream->flag               = STREAM_FLAG_COPY;
+  }
+  else
+  {
+    stream->status = STREAM_ERROR;
+  }
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -409,38 +430,45 @@ STREAM_STATUS cHTTPstreamLog ( HTTP_STREAM* stream )
   LOG_RECORD_TYPE record = { 0U };
   uint8_t         shift  = 0U;
   uint16_t        adr    = 0U;
-  if ( stream->index >= ( stream->size - 1U ) )
+  if ( ( stream->start + stream->size ) <= LOG_SIZE )
   {
-    stream->status = STREAM_END;
+    if ( stream->index >= ( stream->size - 1U ) )
+    {
+      stream->status = STREAM_END;
+    }
+    else
+    {
+      stream->status = STREAM_CONTINUES;
+      if ( stream->index == 0 ) {
+        shift = 1U;
+        restBuffer[0U] = '[';
+      }
+    }
+    adr = ( uint16_t )stream->index;
+    if ( eDATAAPIlog( DATA_API_CMD_LOAD, &adr, &record ) != DATA_API_STAT_OK )
+    {
+      stream->status = STREAM_ERROR;
+    }
+    stream->length = shift + uRESTmakeLog( &record, &restBuffer[shift] );
+    if ( stream->status == STREAM_CONTINUES )
+    {
+      restBuffer[stream->length] = ',';
+      stream->length++;
+    }
+    if ( stream->status == STREAM_END )
+    {
+      restBuffer[stream->length] = ']';
+      stream->length++;
+    }
+    stream->index++;
+    restBuffer[stream->length] = 0U;
+    stream->content            = restBuffer;
+    stream->flag               = STREAM_FLAG_COPY;
   }
   else
   {
-    stream->status = STREAM_CONTINUES;
-    if ( stream->index == 0 ) {
-      shift = 1U;
-      restBuffer[0U] = '[';
-    }
-  }
-  adr = ( uint16_t )stream->index;
-  if ( eDATAAPIlog( DATA_API_CMD_LOAD, &adr, &record ) != DATA_API_STAT_OK )
-  {
     stream->status = STREAM_ERROR;
   }
-  stream->length = shift + uRESTmakeLog( &record, &restBuffer[shift] );
-  if ( stream->status == STREAM_CONTINUES )
-  {
-    restBuffer[stream->length] = ',';
-    stream->length++;
-  }
-  if ( stream->status == STREAM_END )
-  {
-    restBuffer[stream->length] = ']';
-    stream->length++;
-  }
-  stream->index++;
-  restBuffer[stream->length] = 0U;
-  stream->content            = restBuffer;
-  stream->flag               = STREAM_FLAG_COPY;
   return stream->status;
 }
 /*---------------------------------------------------------------------------------------------------*/
@@ -580,10 +608,10 @@ HTTP_STATUS eHTTPparsingRequest ( const char* req, HTTP_REQUEST* request )
  */
 HTTP_STATUS eHTTPparsingResponse ( const char* input, char* data, HTTP_RESPONSE* response )
 {
-  HTTP_STATUS res    = HTTP_STATUS_BAD_REQUEST;
-  char*       pchSt  = NULL;
-  char*       pchEn  = NULL;
-  pchSt = strchr( input, ' ');
+  HTTP_STATUS res   = HTTP_STATUS_BAD_REQUEST;
+  char*       pchSt = NULL;
+  char*       pchEn = NULL;
+  pchSt = strchr( input, ' ' );
   pchSt++;
   if ( pchSt != NULL )
   {
@@ -884,7 +912,7 @@ void vHTTPbuildGetResponse ( char* path, HTTP_RESPONSE *response, uint32_t remot
   response->encoding       = HTTP_ENCODING_NO;
   /*----------------- Parsing path -----------------*/
   /*------------------ INDEX.HTML ------------------*/
-  strStr = strstr(path, "index" );
+  strStr = strstr( path, "index" );
   if ( ( path[0U] == 0x00U ) || ( strStr != NULL) )
   {
     stream                   = &response->stream;

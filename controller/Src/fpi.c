@@ -47,14 +47,14 @@ static const SYSTEM_EVENT_TYPE eFPIuserEventTypeList[FPI_NUMBER] =
   EVENT_USER_FUNCTION_C, /* 2 */
   EVENT_USER_FUNCTION_D, /* 3 */
 };
-static const eConfigReg* pFPIregConfig[FPI_NUMBER] =
+static const eConfigReg* const pFPIregConfig[FPI_NUMBER] =
 {
   &diaSetup, /* 0 */
   &dibSetup, /* 1 */
   &dicSetup, /* 2 */
   &didSetup  /* 3 */
 };
-static const eConfigReg* pFPIregDelay[FPI_NUMBER] =
+static const eConfigReg* const pFPIregDelay[FPI_NUMBER] =
 {
   &diaDelay, /* 0 */
   &dibDelay, /* 1 */

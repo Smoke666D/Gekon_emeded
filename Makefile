@@ -170,25 +170,25 @@ $(TEST_HEX): $(TEST_ELF) | $(OUTPUT_DIR) $(OUTPUT_DIR)/$(TEST_DIR)
 
 ############### folders ###############
 $(OUTPUT_DIR):
-	$(V1) mkdir $@		
+	$(V1) mkdir -p $@		
 	
 $(BUILD_DIR):
-	$(V1) mkdir $@		
+	$(V1) mkdir -p $@		
 
 $(REPORT_DIR):
-	$(V1) mkdir $@
+	$(V1) mkdir -p $@
 
 $(BUILD_DIR)/$(RELEASE_DIR):
-	$(V1) mkdir $@
+	$(V1) mkdir -p $@
 
 $(BUILD_DIR)/$(TEST_DIR):
-	$(V1) mkdir $@
+	$(V1) mkdir -p $@
 
 $(OUTPUT_DIR)/$(RELEASE_DIR):
-	$(V1) mkdir $@
+	$(V1) mkdir -p $@
 
 $(OUTPUT_DIR)/$(TEST_DIR):
-	$(V1) mkdir $@	
+	$(V1) mkdir -p $@	
 #######################################
 # clean up
 #######################################

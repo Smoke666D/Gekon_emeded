@@ -171,7 +171,7 @@ void vSTATISTICSinit ( void )
   fuel.rate.average                     = fix16_from_int( *freeDataArray[FUEL_RATE_ADR] );
   fuel.tankSize                         = getValue( &fuelTankLevel );
   fuel.rate.momental                    = 0U;
-  fuel.rate.cutout                      = fix16_mul( fix16_div( getValue( &hysteresisLevel ), fix100U ), yAxisAtribs[FUEL_CHART_ADR]->max );
+  fuel.rate.cutout                      = fix16_mul( fix16_div( getValue( &hysteresisLevel ), fix100 ), yAxisAtribs[FUEL_CHART_ADR]->max );
   fuel.stopLeakError.active             = PERMISSION_ENABLE;
   fuel.stopLeakError.event.type         = EVENT_FUEL_LEAK;
   fuel.stopLeakError.event.action       = ACTION_WARNING;

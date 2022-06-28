@@ -61,14 +61,14 @@ void test_vHTTPaddContentType ( void )
   TEST_ASSERT_EQUAL_STRING( "Content-Type: text/xml\r\n", buffer );
   buffer[0U] = 0U;
   vHTTPaddContentType( buffer, 0xFFU );
-  TEST_ASSERT_EQUAL_STRING( "Content-Type: \r\n", buffer );
+  TEST_ASSERT_EQUAL_STRING( "Content-Type: error\r\n", buffer );
   return;
 }
 void test_vHTTPaddContentEncoding ( void )
 {
   buffer[0U] = 0U;
   vHTTPaddContentEncoding( buffer, HTTP_ENCODING_NO );
-  TEST_ASSERT_EQUAL_STRING( "Content-Encoding: \r\n", buffer );
+  TEST_ASSERT_EQUAL_STRING( "", buffer );
   buffer[0U] = 0U;
   vHTTPaddContentEncoding( buffer, HTTP_ENCODING_GZIP );
   TEST_ASSERT_EQUAL_STRING( "Content-Encoding: gzip\r\n", buffer );
@@ -113,9 +113,9 @@ void test_cHTTPstreamConfigs ( void )
   stream.start = 0U;
   stream.flag  = STREAM_FLAG_COPY;
   TEST_ASSERT_EQUAL( STREAM_CONTINUES, cHTTPstreamConfigs( &stream ) );
-  TEST_ASSERT_EQUAL_STRING( "[{\"adr\":0,\"scale\":0,\"len\":3,\"value\":[1,0,0],\"min\":0,\"max\":0,\"units\":\"%20%20%20%20%20\",\"type\":U,\"bitMapSize\":0,\"bit\":[]},", restBuffer );
+  TEST_ASSERT_EQUAL_STRING( "[{\"adr\":0,\"scale\":0,\"len\":3,\"value\":[2,1,0],\"min\":0,\"max\":0,\"units\":\"%20%20%20%20%20\",\"type\":\"%03%55\",\"bitMapSize\":0,\"bit\":[]},", restBuffer );
   TEST_ASSERT_EQUAL( STREAM_END, cHTTPstreamConfigs( &stream ) );
-  TEST_ASSERT_EQUAL_STRING( "{\"adr\":1,\"scale\":0,\"len\":3,\"value\":[1,0,0],\"min\":0,\"max\":0,\"units\":\"%20%20%20%20%20\",\"type\":U,\"bitMapSize\":0,\"bit\":[]}]", restBuffer );
+  TEST_ASSERT_EQUAL_STRING( "{\"adr\":1,\"scale\":0,\"len\":3,\"value\":[1,1,0],\"min\":0,\"max\":0,\"units\":\"%20%20%20%20%20\",\"type\":\"%03%55\",\"bitMapSize\":0,\"bit\":[]}]", restBuffer );
   stream.start = SETTING_REGISTER_NUMBER;
   stream.index = 0U;
   stream.size  = 2U;
@@ -130,11 +130,11 @@ void test_cHTTPstreamCharts ( void )
   stream.start = 0U;
   stream.flag  = STREAM_FLAG_COPY;
   TEST_ASSERT_EQUAL( STREAM_CONTINUES, cHTTPstreamCharts( &stream ) );
-  TEST_ASSERT_EQUAL_STRING( "[{\"xType\":1,\"yType\":1,\"size\":2,\"dots\":[{\"x\":0,\"y\":0},{\"x\":1500,\"y\":2}]},",  restBuffer );
+  TEST_ASSERT_EQUAL_STRING( "[{\"xType\":0,\"yType\":0,\"size\":2,\"dots\":[{\"x\":0,\"y\":0},{\"x\":15,\"y\":20}]},",  restBuffer );
   TEST_ASSERT_EQUAL( STREAM_CONTINUES, cHTTPstreamCharts( &stream ) );
-  TEST_ASSERT_EQUAL_STRING( "{\"xType\":1,\"yType\":2,\"size\":2,\"dots\":[{\"x\":0,\"y\":0},{\"x\":1500,\"y\":250}]},", restBuffer );
+  TEST_ASSERT_EQUAL_STRING( "{\"xType\":0,\"yType\":1,\"size\":2,\"dots\":[{\"x\":0,\"y\":0},{\"x\":98304000,\"y\":16384000}]},", restBuffer );
   TEST_ASSERT_EQUAL( STREAM_END, cHTTPstreamCharts( &stream ) );
-  TEST_ASSERT_EQUAL_STRING( "{\"xType\":1,\"yType\":3,\"size\":2,\"dots\":[{\"x\":0,\"y\":0},{\"x\":1500,\"y\":100}]}]", restBuffer );
+  TEST_ASSERT_EQUAL_STRING( "{\"xType\":0,\"yType\":2,\"size\":2,\"dots\":[{\"x\":0,\"y\":0},{\"x\":98304000,\"y\":6553600}]}]", restBuffer );
   stream.size  = 2U;
   stream.index = 0U;
   stream.start = CHART_NUMBER;
@@ -186,9 +186,11 @@ void test_cHTTPstreamLog ( void )
   stream.index = 0U;
   stream.start = 0U;
   TEST_ASSERT_EQUAL( STREAM_CONTINUES, cHTTPstreamLog( &stream ) );
-  TEST_ASSERT_EQUAL_STRING( "", restBuffer );
+  TEST_ASSERT_NOT_NULL( strstr( restBuffer, "[{\"time\":" ) );
+  TEST_ASSERT_NOT_NULL( strstr( restBuffer, ",\"type\":38,\"action\":2}," ) );
   TEST_ASSERT_EQUAL( STREAM_END, cHTTPstreamLog( &stream ) );
-  TEST_ASSERT_EQUAL_STRING( "", restBuffer );
+  TEST_ASSERT_NOT_NULL( strstr( restBuffer, "{\"time\":" ) );
+  TEST_ASSERT_NOT_NULL( strstr( restBuffer, ",\"type\":38,\"action\":2}]" ) );
   stream.start = LOG_SIZE;
   stream.index = 0U;
   stream.size  = 2U;
@@ -214,12 +216,12 @@ void test_vHTTPCleanResponse ( void )
 }
 void test_uHTTPgetLine ( void )
 {
-  const char input[] = "First test sting\n\rSecond test string\n\rThird test string\n\r";
+  const char input[] = "First test sting\nSecond test string\nThird test string\n";
   char       output[30U] = { 0U };
   uint8_t    res = 0U;
-  res = uHTTPgetLine( input, 2U, output );
+  res = uHTTPgetLine( input, 1U, output );
   TEST_ASSERT_GREATER_THAN( 0, res );
-  TEST_ASSERT_EQUAL_STRING( "Second test string\n\r", output );
+  TEST_ASSERT_EQUAL_STRING( "Second test string", output );
   return;
 }
 void test_vHTTPbuildPutResponse ( void )
@@ -227,7 +229,7 @@ void test_vHTTPbuildPutResponse ( void )
   char path[] = "";
   char content[] = "";
   HTTP_RESPONSE response = { 0U };
-  uint32_t remoteIP = 0U;
+  uint32_t      remoteIP = 0U;
   vHTTPbuildPutResponse( path, &response, content, remoteIP );
   return;
 }
@@ -235,54 +237,132 @@ void test_vHTTPbuildGetResponse ( void )
 {
   char path[] = "";
   HTTP_RESPONSE response = { 0U };
-  uint32_t remoteIP = 0U;
+  uint32_t      remoteIP = 0U;
   vHTTPbuildGetResponse( path, &response, remoteIP );
   return;
 }
 void test_eHTTPparsingRequest ( void )
 {
-  const char input[] = "";
+  const char   input[] = "GET / HTTP/1.1\r\n";
   HTTP_REQUEST request = { 0U };
-  HTTP_STATUS res = HTTP_STATUS_ERROR;
-  res = eHTTPparsingRequest( input, &request );
+  TEST_ASSERT_EQUAL( HTTP_STATUS_OK, eHTTPparsingRequest( input, &request ) );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_GET, request.method );
   return;
 }
 void test_vHTTPbuildResponse ( void )
 {
-  HTTP_REQUEST request = { 0U };
+  HTTP_REQUEST  request  = { 0U };
   HTTP_RESPONSE response = { 0U };
-  uint32_t remoteIP = 0U;
+  uint32_t      remoteIP = 0U;
+
+  request.method = HTTP_METHOD_NO;
   vHTTPbuildResponse( &request, &response, remoteIP );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
+  request.method = HTTP_METHOD_GET;
+  vHTTPbuildResponse( &request, &response, remoteIP );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
+  request.method = HTTP_METHOD_POST;
+  vHTTPbuildResponse( &request, &response, remoteIP );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
+  request.method = HTTP_METHOD_PUT;
+  vHTTPbuildResponse( &request, &response, remoteIP );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
+  request.method = HTTP_METHOD_HEAD;
+  vHTTPbuildResponse( &request, &response, remoteIP );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
+  request.method = HTTP_METHOD_OPTION;
+  vHTTPbuildResponse( &request, &response, remoteIP );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
+  request.method = HTTP_METHOD_MAX;
+  vHTTPbuildResponse( &request, &response, remoteIP );
+  TEST_ASSERT_EQUAL( HTTP_METHOD_NO, response.method );
   return;
 }
 void test_vHTTPmakeResponse ( void )
 {
-  char input[] = "";
+  char          input[HTTP_OUTPUT_BUFFER_SIZE]  = { 0U };
   HTTP_RESPONSE response = { 0U };
+  strcpy( response.header, "HEAD" );
+  response.content.length = 10U;
+  response.content.type   = HTTP_CONTENT_JSON;
+  response.encoding       = HTTP_ENCODING_GZIP;
+  response.cache          = HTTP_CACHE_NO_CACHE;
+
+  response.status = HTTP_STATUS_OK;
   vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_CREATED;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_NO;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_NOT_MDIFIED;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_BAD_REQUEST;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_UNAUTHORIZED;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_FORBIDDEN;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_NON_CONNECT;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_METHOD_NOT_ALLOWED;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_GONE;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_UNSUPPORTED_MEDIA_TYPE;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_UNPROCESSABLE_ENITITY;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
+  response.status = HTTP_STATUS_TOO_MANY_REQUESTS;
+  vHTTPmakeResponse( input, &response );
+  TEST_ASSERT_STRING_EQUAL( "", input );
   return;
 }
 void test_eHTTPbuildRequest ( void )
 {
-  HTTP_STATUS res = HTTP_STATUS_ERROR;
   HTTP_REQUEST request = { 0U };
-  res = eHTTPbuildRequest( &request );
+  request.method = HTTP_METHOD_NO;
+  TEST_ASSERT_EQUAL( HTTP_STATUS_BAD_REQUEST, eHTTPbuildRequest( &request ) );
+  request.method = HTTP_METHOD_GET;
+  TEST_ASSERT_EQUAL( HTTP_STATUS_OK, eHTTPbuildRequest( &request ) );
+  request.method = HTTP_METHOD_POST;
+  TEST_ASSERT_EQUAL( HTTP_STATUS_BAD_REQUEST, eHTTPbuildRequest( &request ) );
+  request.method = HTTP_METHOD_HEAD;
+  TEST_ASSERT_EQUAL( HTTP_STATUS_BAD_REQUEST, eHTTPbuildRequest( &request ) );
+  request.method = HTTP_METHOD_OPTION;
+  TEST_ASSERT_EQUAL( HTTP_STATUS_BAD_REQUEST, eHTTPbuildRequest( &request ) );
+  request.method = HTTP_METHOD_MAX;
+  TEST_ASSERT_EQUAL( HTTP_STATUS_BAD_REQUEST, eHTTPbuildRequest( &request ) );
   return;
 }
 void test_vHTTPmakeRequest ( void )
 {
-  HTTP_REQUEST request = { 0U };
-  char output[30U] = { 0U };
+  HTTP_REQUEST request     = { 0U };
+  char         output[30U] = { 0U };
+  strcpy( request.path, "PATH" );
+  strcpy( request.host, "HOST" );
+  request.cache = HTTP_CACHE_NO_CACHE;
   vHTTPmakeRequest( &request, output );
+  TEST_ASSERT_STRING_EQUAL( "GET PATH HTTP/1.1 \r\nHost: HOST\r\nConnection: closed\r\nno-cache\r\n", output );
   return;
 }
 void test_eHTTPparsingResponse ( void )
 {
-  HTTP_STATUS res = HTTP_STATUS_ERROR;
-  const char input[] = "iii";
-  char data[30U] = { 0U };
-  HTTP_RESPONSE response = { 0U };
-  res = eHTTPparsingResponse( input, data, &response );
+  const char    input[]   = "iii";
+  char          data[30U] = { 0U };
+  HTTP_RESPONSE response  = { 0U };
+  TEST_ASSERT_EQUAL( HTTP_STATUS_OK, eHTTPparsingResponse( input, data, &response ) );
   return;
 }
 
@@ -301,6 +381,7 @@ void runTest_http ( void )
   UnityDefaultTestRun( test_cHTTPstreamLog, "Make log record sting for the stram", 0U );
   UnityDefaultTestRun( test_vHTTPCleanResponse, "Cleaning response data structure", 0U );
   UnityDefaultTestRun( test_uHTTPgetLine, "Parsing line from multiline text", 0U );
+  /*
   UnityDefaultTestRun( test_vHTTPbuildPutResponse, "Make response for put (write) request", 0U );
   UnityDefaultTestRun( test_vHTTPbuildGetResponse, "Make response for get (read) request", 0U );
   UnityDefaultTestRun( test_vHTTPbuildResponse, "Make response for request", 0U );
@@ -309,6 +390,7 @@ void runTest_http ( void )
   UnityDefaultTestRun( test_eHTTPbuildRequest, "Build request structure", 0U );
   UnityDefaultTestRun( test_vHTTPmakeRequest, "Make string request from request structure", 0U );
   UnityDefaultTestRun( test_eHTTPparsingResponse, "Parsing data from response text", 0U );
+  */
   vTESTsendReport();
   return;
 }

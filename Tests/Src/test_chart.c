@@ -50,6 +50,10 @@ void test_eCHARTfunc ( void )
   chart.dots[0U].y = fix16_from_int( 9U );
   chart.dots[1U].x = fix16_from_int( 13U );
   chart.dots[1U].y = fix16_from_int( 20U );
+  chart.x.max = xAxisAtribs[chart.xType]->max;
+  chart.x.min = xAxisAtribs[chart.xType]->min;
+  chart.y.max = yAxisAtribs[chart.yType]->max;
+  chart.y.min = yAxisAtribs[chart.yType]->min;
   vCHARTupdateLimits( &chart );
 
   x = chart.dots[0U].x;

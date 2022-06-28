@@ -14,6 +14,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "outputData.h"
+#include "constants.h"
 /*-------------------------------- Structures --------------------------------*/
 static ACTIVE_ERROR_LIST  activeErrorList = { 0U };
 static SemaphoreHandle_t  xAELsemaphore   = NULL;
@@ -344,7 +345,7 @@ fix16_t fALARMcalcHysteresis ( fix16_t input )
 /*----------------------------------------------------------------------------*/
 void vALARMinit ( void )
 {
-  hysteresis    = fix16_div( getValue( &hysteresisLevel ), fix100U );
+  hysteresis    = fix16_div( getValue( &hysteresisLevel ), fix100 );
   xAELsemaphore = xSemaphoreCreateMutex();
   return;
 }
@@ -356,7 +357,7 @@ fix16_t fALARMgetHysteresis ( void )
 /*----------------------------------------------------------------------------*/
 void vALARMreInit ( void )
 {
-  hysteresis = fix16_div( getValue( &hysteresisLevel ), fix100U );
+  hysteresis = fix16_div( getValue( &hysteresisLevel ), fix100 );
   return;
 }
 /*----------------------------------------------------------------------------*/

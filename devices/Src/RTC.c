@@ -15,7 +15,9 @@ static osThreadId_t       rtcHandle     = NULL;
 static SemaphoreHandle_t  xRTCSemaphore = NULL;
 static RTC_TIME           cashTime      = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
-//static const char* rtcNames[3U] = { "DS3231", "MAX31329", "M41T62" };
+#if defined( RTC_DEBUG )
+  static const char* const rtcNames[3U] = { "DS3231", "MAX31329", "M41T62" };
+#endif
 /*----------------------- Variables -----------------------------------------------------------------*/
 /*----------------------- Functions -----------------------------------------------------------------*/
 void       vRTCTask ( void *argument );

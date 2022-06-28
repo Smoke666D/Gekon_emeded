@@ -90,7 +90,7 @@ static uint16_t F3uCosFiPeriod =0;
 static uint16_t F3uCosFiMax =0;
 
 static fix16_t  xTransCoof =0;
-fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+fix16_t  GENERATOR_DATA[38] = { 0U };
 
 
 /*
@@ -98,7 +98,7 @@ fix16_t  GENERATOR_DATA[38]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
  */
 
 static const fix16_t  xLCurCoof       = F16 (( VRef /4095)/(RCSHUNT * OPTRANSCOOF) );  //Коофицент пересчета значений токовых АЦП в ток на шунтирующих ризисторах
-static const fix16_t  xMinus1         = F16 (-1.0);
+//static const fix16_t  xMinus1         = F16 (-1.0);
 static const fix16_t  x3              = F16 (3);
 static const fix16_t  xVDD_CF         = F16 (VDD_CF);
 static const fix16_t  MIN_CUR         = F16 (0.2);

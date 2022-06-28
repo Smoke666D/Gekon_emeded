@@ -56,7 +56,8 @@ typedef enum
   HTTP_METHOD_POST    = 0x02U,
   HTTP_METHOD_PUT     = 0x03U,
   HTTP_METHOD_HEAD    = 0x04U,
-  HTTP_METHOD_OPTION  = 0x05U
+  HTTP_METHOD_OPTION  = 0x05U,
+  HTTP_METHOD_MAX
 } HTTP_METHOD;
 /*----------------------- Content type ---------------------------------*/
 #define  HTTP_CONTENT_STR_HTML     "text/html"
@@ -108,9 +109,9 @@ typedef enum
 
 typedef enum
 {
-  STREAM_END,
-  STREAM_CONTINUES,
-  STREAM_ERROR,
+  STREAM_END,       /* 0 */
+  STREAM_CONTINUES, /* 1 */
+  STREAM_ERROR,     /* 2 */
 } STREAM_STATUS;
 
 typedef enum

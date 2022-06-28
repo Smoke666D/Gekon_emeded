@@ -422,30 +422,22 @@ void test_vUSBparseReport ( void )
   report.buf[1U] = 0x10U; /* CMD  */
   report.buf[2U] = 0x01U; /* STAT */
   report.buf[3U] = 0x12U; /* ADR1 */
-  report.buf[4U] = 0x34U; /* ADR0 */
-  report.buf[5U] = 0U;    /* LEN2 */
-  report.buf[6U] = 0U;    /* LEN1 */
-  report.buf[7U] = 10U;   /* LEN0 */
+  report.buf[4U] = 10U;   /* LEN0 */
   for ( i=0U; i<10U; i++ )
   {
-    report.buf[8U + i] = i;
+    report.buf[5U + i] = i;
   }
   vUSBparseReport( &report );
   TEST_ASSERT_EQUAL( USB_REPORT_STATE_OK, report.stat );
-  TEST_ASSERT_EQUAL( 0x01U,   report.dir    );
-  TEST_ASSERT_EQUAL( 0x10U,   report.cmd    );
-  TEST_ASSERT_EQUAL( 0x01U,   report.stat   );
-  TEST_ASSERT_EQUAL( 0x1234U, report.adr    );
-  TEST_ASSERT_EQUAL( 10U,     report.length );
+  TEST_ASSERT_EQUAL_UINT8( 0x01U, report.dir    );
+  TEST_ASSERT_EQUAL_UINT8( 0x10U, report.cmd    );
+  TEST_ASSERT_EQUAL_UINT8( 0x01U, report.stat   );
+  TEST_ASSERT_EQUAL_UINT8( 0x12U, report.adr    );
+  TEST_ASSERT_EQUAL_UINT8( 10U,   report.length );
   for ( i=0U; i<10U; i++ )
   {
-    TEST_ASSERT_EQUAL( i, report.data[i] );
+    TEST_ASSERT_EQUAL_UINT8( i, report.data[i] );
   }
-  report.buf[5U] = 0x12U;
-  report.buf[6U] = 0x34U;
-  report.buf[7U] = 0x56U;
-  vUSBparseReport( &report );
-  TEST_ASSERT_EQUAL( 0x123456U, report.length );
   return;
 }
 void test_vUSBmeasurementToReport ( void )
@@ -472,9 +464,9 @@ void test_eUSBreportToOutput ( void )
 {
   USB_STATUS status = USB_STATUS_DONE;
   uint16_t   buf    = outputDataReg[0U]->value[0U];
-  report.adr      = CONTROLL_ADR;
-  report.data[0U] = 0x00U;
-  report.data[1U] = 0x01U;
+  report.adr        = CONTROLL_ADR;
+  report.data[0U]   = 0x01U;
+  report.data[1U]   = 0x00U;
   status = eUSBreportToOutput( ( const USB_REPORT* )&report );
   TEST_ASSERT_EQUAL( USB_STATUS_DONE, status );
   TEST_ASSERT_EQUAL( 0x0001U, outputDataReg[CONTROLL_ADR]->value[0U] );

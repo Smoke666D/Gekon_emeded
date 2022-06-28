@@ -48,7 +48,7 @@ static const fix16_t oilTrashhold           = F16( 0.015 );                    /
 static const fix16_t sensorCutoutLevel      = F16( SENSOR_CUTOUT_LEVEL );      /* Ohm */
 static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /* sec */
 #if ( DEBUG_SERIAL_STATUS > 0U )
-  static const char* cSensorTypes[5U] =
+  static const char* const cSensorTypes[5U] =
   {
     "NONE",
     "NORMAL_OPEN",
@@ -56,7 +56,7 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /
     "RESISTIVE",
     "CURRENT"
   };
-  static const char* engineCmdStr[8U] =
+  static const char* const engineCmdStr[8U] =
   {
     "NONE",
     "START",
@@ -67,7 +67,7 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /
     "RESET_TO_IDLE",
     "BAN_START"
   };
-  static const char* engineStatusStr[9U] =
+  static const char* const engineStatusStr[9U] =
   {
     "IDLE",
     "EMERGENCY_STOP",
@@ -79,7 +79,7 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /
     "FAIL_STARTING",
     "FAIL_STOPPING",
   };
-  static const char* starterStatusStr[13U] =
+  static const char* const starterStatusStr[13U] =
   {
     "IDLE",
     "PREHEATING",
@@ -95,7 +95,7 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /
     "FAIL",
     "OK",
   };
-  static const char* planStopStatusStr[7U] =
+  static const char* const planStopStatusStr[7U] =
   {
     "IDLE",
     "COOLDOWN",
@@ -105,7 +105,7 @@ static const fix16_t fuelPrePumpingDelay    = F16( 1 );                        /
     "FAIL",
     "OK",
   };
-  static const char* emergencyStopStatusStr[3U] =
+  static const char* const emergencyStopStatusStr[3U] =
   {
     "START",
     "PROCESSING",

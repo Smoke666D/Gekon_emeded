@@ -171,10 +171,10 @@ void test_SDmeasurement ( void )
 void runTest_dataSD ( void )
 {
   UnitySetTestFile( "dataSD.c" );
-  UnityDefaultTestRun( test_cSDcheckConfigCallback, "", 0U );
-  UnityDefaultTestRun( test_cSDreadConfigCallback, "", 0U );
-  UnityDefaultTestRun( test_uSDcopyDigsToLine, "", 0U );
-  UnityDefaultTestRun( test_uSDmakeMeasurement, "", 0U );
+  UnityDefaultTestRun( test_cSDcheckConfigCallback, "SD check configuration file", 0U );
+  UnityDefaultTestRun( test_cSDreadConfigCallback, "SD reading configuration file", 0U );
+  UnityDefaultTestRun( test_uSDcopyDigsToLine, "SD copy digital to the line", 0U );
+  UnityDefaultTestRun( test_uSDmakeMeasurement, "SD make measurement record", 0U );
   if ( eFATSDgetStatus() == SD_STATUS_MOUNTED )
   {
     UnityDefaultTestRun( test_SDconfigsWrite, "", 0U );

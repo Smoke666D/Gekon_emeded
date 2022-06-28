@@ -27,55 +27,24 @@ Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_uart.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_sdmmc.c \
 Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_usb.c \
 Unity/unity.c \
-u8g2/Src/u8g2_bitmap.c \
 u8g2/Src/u8g2_box.c \
 u8g2/Src/u8g2_buffer.c \
-u8g2/Src/u8g2_circle.c \
-u8g2/Src/u8g2_cleardisplay.c \
-u8g2/Src/u8g2_d_memory.c \
-u8g2/Src/u8g2_d_setup.c \
 u8g2/Src/u8g2_font.c \
 u8g2/Src/u8g2_fonts.c \
 u8g2/Src/u8g2_hvline.c \
-u8g2/Src/u8g2_input_value.c \
-u8g2/Src/u8g2_intersection.c \
-u8g2/Src/u8g2_kerning.c \
-u8g2/Src/u8g2_line.c \
 u8g2/Src/u8g2_ll_hvline.c \
-u8g2/Src/u8g2_message.c \
-u8g2/Src/u8g2_polygon.c \
-u8g2/Src/u8g2_selection_list.c \
+u8g2/Src/u8g2_line.c \
+u8g2/Src/u8g2_d_setup.c \
 u8g2/Src/u8g2_setup.c \
-u8g2/Src/u8log.c \
-u8g2/Src/u8log_u8g2.c \
-u8g2/Src/u8log_u8x8.c \
-u8g2/Src/u8x8_8x8.c \
-u8g2/Src/u8x8_byte.c \
-u8g2/Src/u8x8_cad.c \
-u8g2/Src/u8x8_capture.c \
-u8g2/Src/u8x8_d_a2printer.c \
-u8g2/Src/u8x8_d_st7920.c \
-u8g2/Src/u8x8_d_t6963.c \
-u8g2/Src/u8x8_d_uc1601.c \
-u8g2/Src/u8x8_d_uc1604.c \
-u8g2/Src/u8x8_d_uc1608.c \
-u8g2/Src/u8x8_d_uc1610.c \
-u8g2/Src/u8x8_d_uc1611.c \
-u8g2/Src/u8x8_d_uc1617.c \
-u8g2/Src/u8x8_d_uc1638.c \
-u8g2/Src/u8x8_d_uc1701_dogs102.c \
-u8g2/Src/u8x8_d_uc1701_mini12864.c \
-u8g2/Src/u8x8_debounce.c \
-u8g2/Src/u8x8_display.c \
-u8g2/Src/u8x8_fonts.c \
-u8g2/Src/u8x8_gpio.c \
-u8g2/Src/u8x8_input_value.c \
-u8g2/Src/u8x8_message.c \
-u8g2/Src/u8x8_selection_list.c \
+u8g2/Src/u8g2_d_memory.c \
 u8g2/Src/u8x8_setup.c \
-u8g2/Src/u8x8_string.c \
-u8g2/Src/u8x8_u16toa.c \
-u8g2/Src/u8x8_u8toa.c \
+u8g2/Src/u8x8_8x8.c \
+u8g2/Src/u8x8_cad.c \
+u8g2/Src/u8x8_display.c \
+u8g2/Src/u8x8_gpio.c \
+u8g2/Src/u8x8_byte.c \
+u8g2/Src/u8x8_d_st7920.c \
+u8g2/Src/u8g2_intersection.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
@@ -227,7 +196,8 @@ controller/Src/statistics.c \
 controller/Src/vrSensor.c \
 common/Src/cli.c \
 common/Src/common.c \
-common/Src/system.c
+common/Src/system.c \
+common/Src/constants.c
 
 C_SOURCES      = $(C_SOURCE_LIBS) $(C_SOURCE_PROJ)
 C_TEST_SOURCES = $(C_SOURCES) $(C_SOURCES_TEST)

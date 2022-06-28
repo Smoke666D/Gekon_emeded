@@ -107,7 +107,7 @@ typedef struct __packed
 #define  AA02E48_ADR_SIZE       1U      /* bytes */
 /*----------------------- Functions ------------------------------------*/
 #if defined ( UNIT_TEST )
-  void          vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer );
+  void          vEEPROMmakeAdr ( uint32_t adr, uint8_t* buffer, uint8_t length );
   EEPROM_STATUS eEEPROMwrite ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size );
   EEPROM_STATUS eEEPROMread ( const EEPROM_TYPE* eeprom, uint8_t cmd, const uint32_t* adr, uint8_t* data, uint16_t size );
   EEPROM_STATUS eEEPROMwriteEnable ( const EEPROM_TYPE* eeprom );

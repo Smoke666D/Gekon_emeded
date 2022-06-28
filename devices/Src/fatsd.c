@@ -23,7 +23,7 @@ static SD_HandleTypeDef*      hsd                  = NULL;
 static HAL_SD_CardInfoTypeDef cardInfo             = { 0U };
 static FATSD_TYPE             fatsd                = { 0U };
 /*----------------------- Constant ------------------------------------------------------------------*/
-static const char* fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
+static const char* const fileNames[FILES_NUMBER] = { CONFIG_FILE_NAME, MEASUREMEMT_FILE_NAME, LOG_FILE_NAME };
 /*----------------------- Variables -----------------------------------------------------------------*/
 static uint32_t fcount    = 0U;
 static uint32_t lineCount = 0U;

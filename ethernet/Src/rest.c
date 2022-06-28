@@ -17,7 +17,7 @@
 /*----------------------- Structures ----------------------------------------------------------------*/
 
 /*----------------------- Constant ------------------------------------------------------------------*/
-const char *restRequestStr[REST_REQUEST_NUMBER] =
+const char* const restRequestStr[REST_REQUEST_NUMBER] =
 {
   REST_REQUEST_CONFIGS,            /* 0 */
   REST_REQUEST_CHARTS,             /* 1 */
@@ -450,16 +450,27 @@ REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE* password )
 {
   REST_ERROR res   = REST_OK;
   char*      pchSt = NULL;
+  uint16_t   stat  = 0U;
   uint16_t   buf   = 0U;
   pchSt = strchr( input, '{' );
   if ( pchSt != NULL )
   {
-    res = eRESTparsingDig16Record( input, PASSWORD_STATUS_STR, &buf );
-    password->status = ( uint8_t )buf;
+    res = eRESTparsingDig16Record( input, PASSWORD_STATUS_STR, &stat );
     if ( res == REST_OK )
     {
-      uint16_t buffer = password->data;
-      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &buffer );
+      res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &buf );
+      if ( res == REST_OK )
+      {
+        if ( stat == 0U )
+        {
+          password->status = PASSWORD_RESET;
+        }
+        else
+        {
+          password->status = PASSWORD_SET;
+        }
+        password->data = buf;
+      }
     }
   }
   else
@@ -472,10 +483,14 @@ REST_ERROR eRESTparsingPassword ( char* input, PASSWORD_TYPE* password )
 REST_ERROR eRESTparsingAuth ( char* input, PASSWORD_TYPE* password )
 {
   REST_ERROR res = REST_OK;
+  uint16_t   buf = 0U;
   if ( strchr( input, '{' ) != NULL )
   {
-    uint16_t buffer = password->data;
-    res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &buffer );
+    res = eRESTparsingDig16Record( input, PASSWORD_DATA_STR, &buf );
+    if ( res == REST_OK )
+    {
+      password->data = buf;
+    }
   }
   else
   {
@@ -591,6 +606,10 @@ REST_ERROR eRESTparsingRecord ( const char* input, const char* header, char* dat
         pchSt++;
         pchEn--;
       }
+      if ( pchSt[0] == '{' )
+      {
+        pchSt++;
+      }
       calcLength = strlen( pchSt ) - strlen( pchEn );
       if ( calcLength > 0U )
       {
@@ -623,7 +642,7 @@ REST_ERROR eRESTparsingRecord ( const char* input, const char* header, char* dat
 REST_ERROR eRESTparsingDotArray ( const char* input, const char* header, eChartDot* dot, uint8_t size )
 {
   REST_ERROR res    = REST_OK;
-  char*      pchSt  = strstr( input, header );;
+  char*      pchSt  = strstr( input, header );
   char*      pchAr  = NULL;
   fix16_t    buffer = 0U;
   if ( pchSt != NULL )
@@ -648,16 +667,19 @@ REST_ERROR eRESTparsingDotArray ( const char* input, const char* header, eChartD
               dot[i].y = buffer;
               if ( res != REST_OK )
               {
+                res = REST_RECORD_ARRAY_FORMAT_ERROR;
                 break;
               }
             }
             else
             {
+              res = REST_RECORD_ARRAY_FORMAT_ERROR;
               break;
             }
           }
           else
           {
+            res = REST_RECORD_ARRAY_FORMAT_ERROR;
             break;
           }
         }
@@ -707,18 +729,26 @@ REST_ERROR eRESTparsingBitMapArray ( const char* input, const char* header, eCon
             {
               uint8_t buffer8 = bitPointer->shift;
               res = eRESTparsingDig8Record( pchAr, BIT_MAP_SHIFT_STR, &buffer8 );
-              if ( res != REST_OK )
+              if ( res == REST_OK )
               {
+                bitMap[i].mask  = buffer16;
+                bitMap[i].shift = buffer8;
+              }
+              else
+              {
+                res = REST_RECORD_ARRAY_FORMAT_ERROR;
                 break;
               }
             }
             else
             {
+              res = REST_RECORD_ARRAY_FORMAT_ERROR;
               break;
             }
           }
           else
           {
+            res = REST_RECORD_ARRAY_FORMAT_ERROR;
             break;
           }
         }

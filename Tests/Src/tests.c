@@ -37,11 +37,11 @@ void vTESTtask ( void *argument )
       runTest_eeprom();
       runTest_vr();
       runTets_storage();
-      runTets_dataAPI();
       runTest_chart();
       runTest_outputProcessing();
       runTest_rest();
-      //runTest_http();
+      runTest_http();
+      runTets_dataAPI();
       runTest_dataSD();
       UnityEnd();
       done = 1U;
@@ -56,7 +56,7 @@ void vTESTInit ( void )
   const osThreadAttr_t tetsTask_attributes = {
     .name       = "UnitTestTask",
     .priority   = ( osPriority_t ) osPriorityNormal,
-    .stack_size = 4096U
+    .stack_size = 5120U
   };
   testHandle = osThreadNew( vTESTtask, NULL, &tetsTask_attributes );
   return;

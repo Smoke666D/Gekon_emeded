@@ -27,12 +27,12 @@
 /*------------------------- Define ------------------------------------------------------------------*/
 /*----------------------- Structures ----------------------------------------------------------------*/
 /*----------------------- Constant ------------------------------------------------------------------*/
-static const char* commandStrings[CLI_COMMANDS_NUMBER] = {
+static const char* const commandStrings[CLI_COMMANDS_NUMBER] = {
   CLI_SET_COMMAND_STR,
   CLI_RESET_COMMAND_STR,
   CLI_GET_COMMAND_STR
 };
-static const char* targetStrings[CLI_TARGETS_NUMBER] = {
+static const char* const targetStrings[CLI_TARGETS_NUMBER] = {
   CLI_TARGET_DIN_STR,
   CLI_TARGET_DOUT_STR,
   CLI_TARGET_TIME_STR,
@@ -91,7 +91,7 @@ uint8_t uCLIparsingFields ( const char* str, char** fields )
   return res;
 }
 /*---------------------------------------------------------------------------------------------------*/
-uint8_t uCLIparse ( const char* str, const char** dictionary, uint8_t length )
+uint8_t uCLIparse ( const char* str, const char* const* dictionary, uint8_t length )
 {
   uint8_t res = 0U;
   for ( uint8_t i=0U; i<length; i++ )
@@ -117,11 +117,11 @@ void vCLIparseString ( const char* str, TEST_TYPE* message )
   {
     message->data[i] = 0U;
   }
-  fieldsCounter     = uCLIparsingFields( str, filds );
-  message->dataFlag = fieldsCounter - CLI_SYSTEM_FILDS_NUMBER;
+  fieldsCounter = uCLIparsingFields( str, filds );
   if ( fieldsCounter > 0U )
   {
-    message->cmd = ( CLI_COMMAND )( uCLIparse( ( const char* )filds[0U], commandStrings, CLI_COMMANDS_NUMBER ) );
+    message->dataFlag = fieldsCounter - CLI_SYSTEM_FILDS_NUMBER;
+    message->cmd      = ( CLI_COMMAND )( uCLIparse( ( const char* )filds[0U], commandStrings, CLI_COMMANDS_NUMBER ) );
     if ( ( fieldsCounter > 1U ) && ( message->cmd != CLI_COMMAND_NO ) )
     {
       message->target = ( CLI_TARGET )( uCLIparse( ( const char* )filds[1U], targetStrings, CLI_TARGETS_NUMBER ) );
@@ -133,7 +133,7 @@ void vCLIparseString ( const char* str, TEST_TYPE* message )
         }
         else
         {
-          for ( uint8_t i=0; i<message->dataFlag; i++ )
+          for ( uint8_t i=0U; i<message->dataFlag; i++ )
           {
             message->data[i] = atoi( filds[CLI_SYSTEM_FILDS_NUMBER + i] );
           }

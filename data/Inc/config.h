@@ -11,6 +11,7 @@
 #define   MAX_UNITS_LENGTH             5U
 #define   MAX_BIT_MAP_LENGTH           10U
 #define   SETTING_REGISTER_NUMBER      147U
+#define   CONFIG_DICTIONARY_SIZE       120U
 #define   FILDS_TO_WRITE_NUMBER        3U
 #define   BROADCAST_ADR                0xFFFFU
 #define   MAX_VALUE_LENGTH             4U
@@ -489,7 +490,7 @@ extern eConfigReg recordSetup0;
 extern eConfigReg recordSetup1;
 extern eConfigReg recordInterval;
 extern eConfigReg* const configReg[SETTING_REGISTER_NUMBER];
-extern const char*       dictionaryArray[SETTING_REGISTER_NUMBER];
+extern const char* const configDictionary[SETTING_REGISTER_NUMBER];
 extern const fix16_t     scaleMulArray[CONFIG_SCALE_NUM];
 /*----------------------------------------------------------------------*/
 #endif /* INC_CONFIG_H_ */

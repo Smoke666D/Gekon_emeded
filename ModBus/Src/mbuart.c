@@ -191,17 +191,17 @@ MB_INIT_STATE eMBuartInit ( UART_HandleTypeDef *uart, eMBUartBaudRate baudRate, 
         tx.buffer[i] = 0x55U;
         rx.buffer[i] = 0U;
       }
-      __HAL_UART_CLEAR_FLAG( uart, UART_FLAG_RXNE );
-      __HAL_UART_CLEAR_FLAG( uart, UART_FLAG_TC );
+      __HAL_UART_CLEAR_FLAG( uart, ( UART_FLAG_RXNE |UART_FLAG_TC ) );
+      //__HAL_UART_CLEAR_FLAG( uart, UART_FLAG_TC );
       vMBcleanUartInput( uart );
       __HAL_UART_DISABLE_IT( uart, UART_IT_TC );      /* Transmission Complete Interrupt Disable  */
       __HAL_UART_ENABLE_IT( uart, UART_IT_RXNE );     /* UART Data Register not empty Interrupt Enable */
-      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_PE );
-      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_FE );
-      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_NE );
-      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_ORE );
-      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_ORE );
-      __HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_LBD );
+      __HAL_UART_CLEAR_FLAG( mbUart.serial, ( USART_SR_PE | USART_SR_FE | USART_SR_NE | USART_SR_ORE | USART_SR_ORE | USART_SR_LBD ) );
+      //__HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_FE );
+      //__HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_NE );
+      //__HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_ORE );
+      //__HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_ORE );
+      //__HAL_UART_CLEAR_FLAG( mbUart.serial, USART_SR_LBD );
       __HAL_UART_ENABLE( uart );
       res = EB_INIT_OK;
     }

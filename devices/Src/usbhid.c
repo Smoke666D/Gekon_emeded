@@ -232,7 +232,7 @@ void vUSBchartToReport ( USB_REPORT* report )
       report->length = 2U;
       vUint16ToBytes( charts[chartAdr]->size, &report->data[0U] );
     }
-    else if ( ( report->adr - 1U ) <= CHART_DOTS_SIZE )
+    else if ( ( report->adr - 1U ) < CHART_DOTS_SIZE )
     {
       report->length = CHART_DOT_SIZE;
       vUint32ToBytes( ( uint32_t )( charts[chartAdr]->dots[report->adr - 1U].x ), &report->data[0U] );

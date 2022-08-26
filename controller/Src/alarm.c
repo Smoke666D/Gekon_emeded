@@ -338,7 +338,7 @@ void vALARMsetWarning ( SYSTEM_EVENT_TYPE event, ERROR_LIST_CMD cmd )
 /*----------------------------------------------------------------------------*/
 fix16_t fALARMcalcHysteresis ( fix16_t input )
 {
-  return fix16_mul( input, fix16_add( F16( 1U ), hysteresis ) );
+  return fix16_mul( input, fix16_add( fix1, hysteresis ) );
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------- PABLICK --------------------------------------------*/

@@ -914,24 +914,31 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
     switch ( cmd )
     {
       case DATA_API_CMD_ADD:
-        if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
+        if ( record != NULL )
         {
-          flTakeSource = 17U;
-          if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
+          if ( xSemaphoreTake( xSemaphore, SEMAPHORE_TAKE_DELAY ) == pdTRUE )
           {
-            if ( eSTORAGEwriteLogRecord( pointer, record ) == EEPROM_OK )
+            flTakeSource = 17U;
+            if ( eSTORAGEreadLogPointer( &pointer ) == EEPROM_OK )
             {
-              if ( pointer < LOG_SIZE )
+              if ( eSTORAGEwriteLogRecord( pointer, record ) == EEPROM_OK )
               {
-                pointer++;
-              }
-              else
-              {
-                pointer = 0U;
-              }
-              if ( eSTORAGEwriteLogPointer( pointer ) == EEPROM_OK )
-              {
-                logCash.pointer = pointer;
+                if ( pointer < LOG_SIZE )
+                {
+                  pointer++;
+                }
+                else
+                {
+                  pointer = 0U;
+                }
+                if ( eSTORAGEwriteLogPointer( pointer ) == EEPROM_OK )
+                {
+                  logCash.pointer = pointer;
+                }
+                else
+                {
+                  res = DATA_API_STAT_EEPROM_ERROR;
+                }
               }
               else
               {
@@ -942,21 +949,21 @@ DATA_API_STATUS eDATAAPIlog ( DATA_API_COMMAND cmd, uint16_t* adr, LOG_RECORD_TY
             {
               res = DATA_API_STAT_EEPROM_ERROR;
             }
+            xSemaphoreGive( xSemaphore );
           }
           else
           {
-            res = DATA_API_STAT_EEPROM_ERROR;
+            res = DATA_API_STAT_BUSY;
           }
-          xSemaphoreGive( xSemaphore );
         }
         else
         {
-          res = DATA_API_STAT_BUSY;
+          res = DATA_API_STAT_NULL_DATA;
         }
         break;
 
       case DATA_API_CMD_READ_CASH:
-        if ( *adr < LOG_SIZE )
+        if ( ( *adr < LOG_SIZE ) && ( adr != NULL ) )
         {
           if ( logCash.adr == *adr )
           {

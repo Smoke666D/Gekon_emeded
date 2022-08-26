@@ -16,7 +16,7 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 # There is NO WARRANTY, to the extent permitted by law.
  
 
-# Make data base, printed on Thu Jun 23 17:54:19 2022
+# Make data base, printed on Thu Aug 18 10:25:31 2022
 
 # Variables
 
@@ -28,16 +28,14 @@ SYSTEMDRIVE = C:
 AS = $(CROSS_COMPILE)gcc -x assembler-with-cpp
 # environment
 LC_ALL = C
-# makefile (from 'Makefile', line 36)
+# makefile (from 'Makefile', line 37)
 OUTPUT_DIR = out
 # environment
 USERPROFILE = C:\Users\79110
-# makefile (from 'Makefile', line 71)
+# makefile (from 'Makefile', line 74)
 GLOBAL_DEFINES = -DUSE_HAL_DRIVER -DSTM32F217xx -DDEBUG -DETHERNET -DFATSD -DMEASUREMENT -DRTC_DEVICE_M41T62 -DWRITE_LOG_TO_SD -DEXTERNAL_MAC
 # environment
 LOCALAPPDATA = C:\Users\79110\AppData\Local
-# environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-2cc2dee2-07f4-49ee-8fab-0e162023669d-sock
 # environment
 STM32CUBE_PATH = C:\LIBS\STM32CubeF1
 # environment
@@ -46,7 +44,7 @@ VSCODE_CWD = C:\Users\79110\AppData\Local\Programs\Microsoft VS Code
 CHOCOLATEYINSTALL = C:\ProgramData\chocolatey
 # environment
 SYSTEMROOT = C:\WINDOWS
-# makefile (from 'Makefile', line 93)
+# makefile (from 'Makefile', line 96)
 LIBS = -lc -lm -lnosys  
 # makefile (from 'make/includes.mk', line 1)
 C_INCLUDES = -ICore/Inc -IDrivers/STM32F2xx_HAL_Driver/Inc -IDrivers/STM32F2xx_HAL_Driver/Inc/Legacy -IDrivers/CMSIS/Device/ST/STM32F2xx/Include -IDrivers/CMSIS/Include -ILWIP/App -ILWIP/Target -IUSB_DEVICE/App -IUSB_DEVICE/Target -IMiddlewares/Third_Party/LwIP/src/include -IMiddlewares/Third_Party/LwIP/system -IMiddlewares/Third_Party/FreeRTOS/Source/include -IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 -IMiddlewares/Third_Party/LwIP/src/include/netif/ppp -IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc -IMiddlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc -IMiddlewares/Third_Party/LwIP/src/include/lwip -IMiddlewares/Third_Party/LwIP/src/include/lwip/apps -IMiddlewares/Third_Party/LwIP/src/include/lwip/priv -IMiddlewares/Third_Party/LwIP/src/include/lwip/prot -IMiddlewares/Third_Party/LwIP/src/include/netif -IMiddlewares/Third_Party/LwIP/src/include/posix -IMiddlewares/Third_Party/LwIP/src/include/posix/sys -IMiddlewares/Third_Party/LwIP/system/arch -Idevices/Inc -Idata/Inc -Iethernet/Inc -Iethernet/site -Ilibfixmath/Inc -Ihmi/Inc -Icontroller/Inc -Icommon/Inc -Iu8g2/Inc -IModBus/Inc -IFATFS/Target -IFATFS/App -IMiddlewares/Third_Party/FatFs/src -IMiddlewares/Third_Party/FatFs/src/drivers -Idsp/Inc -ITests/Inc -IUnity
@@ -54,14 +52,19 @@ C_INCLUDES = -ICore/Inc -IDrivers/STM32F2xx_HAL_Driver/Inc -IDrivers/STM32F2xx_H
 PROCESSOR_LEVEL = 6
 # environment
 PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
+# makefile (from 'Makefile', line 68)
+GCC_FLAGS = -Wno-char-subscripts -Wno-address-of-packed-member
+# makefile (from 'make/ch 
+eck.mk', line 2)
+REPORT_DIR = reports
 # default
 MAKE_COMMAND := C:/ProgramData/chocolatey/lib/make/tools/install/bin/make.exe
-# makefile (from 'Makefile', line 65)
+# makefile (from 'Makefile', line 66)
 STD = -std=gnu11
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_13020_DWXLUWDJVEUZTWNJ
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_7004_VJRLFGFJWANRIWYN
 # makefile (from 'make/build_verbosity.mk', line 6)
 AT := @
 # environment
@@ -74,15 +77,15 @@ VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 %D = $(patsubst %/,%,$(patsubst %\,%,$(dir $%)))
 # automatic
 ^D = $(patsubst %/,%,$(patsubst %\,%,$(dir $^)))
-# environment
-VSCODE_LOG_STACK = false
 # automatic
 %F = $(notdir $%)
+# makefile (from 'make/check.mk', line 3)
+CHKREPORT = $(REPORT_DIR)/cppcheck-report.txt
 # makefile (from 'make/tools.mk', line 6)
 STFLASH = st-flash
 # environment
-VSCODE_CODE_CACHE_PATH = C:\Users\79110\AppData\Roaming\Code\CachedData\4af164ea3a06f701fe3e89a2bcbb421d2026b68f
-# makefile (from 'Makefile', line 110)
+VSCODE_CODE_CACHE_PATH = C:\Users\79110\AppData\Roaming\Code\CachedData\6d9b74a70ca9c7733b29f0456fd8195364076dda
+# makefile (from 'Makefile', line 113)
 TEST_OBJECTS = $(addprefix $(BUILD_DIR)/$(TEST_DIR)/,$(notdir $(C_TEST_SOURCES:.c=.o))) $(addprefix $(BUILD_DIR)/$(TEST_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 # environment
 LANG = C
@@ -98,17 +101,17 @@ PROCESSOR_ARCHITEW6432 = AMD64
 MAKEFLAGS = pqrR
 # environment
 ONEDRIVE = C:\Users\79110\OneDrive
-# makefile (from 'Makefile', line 46)
+# makefile (from 'make/source.mk', line 34)
+C_FATFS_FILES = FATFS/Target/bsp_driver_sd.c FATFS/Target/fatfs_platform.c FATFS/App/fatfs.c Middlewares/Third_Party/FatFs/src/diskio.c Middlewares/Third_Party/FatFs/src/ff.c Middlewares/Third_Party/FatFs/src/ff_gen_drv.c Middlewares/Third_Party/FatFs/src/option/syscall.c Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.c
+# makefile (from 'Makefile', line 47)
 TARGET_BIN = $(addsuffix .bin, $(TARGET_BASENAME) )
 # makefile
 CURDIR := c:/PROJECTS/ENERGAN/energan_enb
-# environment
-VSCODE_PIPE_LOGGING = true
-# makefile (from 'Makefile', line 55)
+# makefile (from 'Makefile', line 56)
 HEX = $(OBJCOPY) -O ihex
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
-# makefile (from 'Makefile', line 92)
+# makefile (from 'Makefile', line 95)
 LDSCRIPT = STM32F217ZGTx_FLASH.ld
 # automatic
 *D = $(patsubst %/,%,$(patsubst %\,%,$(dir $*)))
@@ -124,40 +127,42 @@ STUTIL = st-util
 .SHELLFLAGS := -c
 # environment
 COMMONPROGRAMW6432 = C:\Program Files\Common Files
+# makefile (from 'make/check.mk', line 5)
+CHKMISRAREPORT = $(REPORT_DIR)/misra-report.txt
 # automatic
 +D = $(patsubst %/,%,$(patsubst %\,%,$(dir $+)))
-# makefile (from 'Makefile', line 95)
+# makefile (from 'Makefile', line 98)
 LDFLAGS_TEST = $(MCU) $(SPEC) -T$(LDSCRIPT) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TEST_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
-# makefile (from 'make/includes.mk', line 1)
-MAKEFILE_LIST := Makefile make/build_verbosity.mk make/version.mk make/tools.mk make/source.mk make/includes.mk
-# makefile (from 'Makefile', line 84)
+# makefile (from 'make/source.mk', line 21)
+C_FREERTOS_FILES = Core/Src/freertos.c Middlewares/Third_Party/FreeRTOS/Source/croutine.c Middlewares/Third_Party/FreeRTOS/Source/event_groups.c Middlewares/Third_Party/FreeRTOS/Source/list.c Middlewares/Third_Party/FreeRTOS/Source/queue.c Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c Middlewares/Third_Party/FreeRTOS/Source/tasks.c Middlewares/Third_Party/FreeRTOS/Source/timers.c Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
+# makefile (from 'make/check.mk', line 1)
+MAKEFILE_LIST := Makefile make/build_verbosity.mk make/version.mk make/tools.mk make/source.mk make/includes.mk make/check.mk
+# makefile (from 'Makefile', line 87)
 ASFLAGS = $(MCU) $(STD) $(OPT) -Wall -fdata-sections -ffunction-sections
 # automatic
 @F = $(notdir $@)
-# makefile (from 'Makefile', line 62)
+# makefile (from 'Makefile', line 63)
 FLOAT = -mfloat-abi=soft
 # environment
-VSCODE_VERBOSE_LOGGING = true
-# environment
-VSCODE_PID = 13020
+VSCODE_PID = 7004
 # makefile (from 'make/build_verbosity.mk', line 11)
 STDOUT := 
-# makefile (from 'Makefile', line 44)
+# makefile (from 'Makefile', line 45)
 TARGET_BASENAME = $(OUTPUT_DIR)/$(RELEASE_DIR)/$(TARGET)_$(RELEASE_DIR)_$(VER)
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
-# makefile (from 'Makefile', line 67)
-TEST_DEFINES = -DUNIT_TEST -DUNITY_INCLUDE_CONFIG_H
+# makefile (from 'Makefile', line 70)
+TEST_DEF 
+INES = -DUNIT_TEST -DUNITY_INCLUDE_CONFIG_H
 # makefile (from 'make/tools.mk', line 9)
 CPPCHECK = cppcheck
-# m 
-akefile (from 'Makefile', line 38)
+# makefile (from 'Makefile', line 39)
 RELEASE_DIR = relese
 # makefile (from 'make/version.mk', line 4)
 VER_PATCH := 
 # automatic
 *F = $(notdir $*)
-# makefile (from 'Makefile', line 94)
+# makefile (from 'Makefile', line 97)
 LDFLAGS_RELEASE = $(MCU) $(SPEC) -T$(LDSCRIPT) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(RELEASE_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 # automatic
 <D = $(patsubst %/,%,$(patsubst %\,%,$(dir $<)))
@@ -169,7 +174,7 @@ V1 := @
 ONEDRIVECONSUMER = C:\Users\79110\OneDrive
 # default
 MAKE_HOST := Windows32
-# makefile (from 'Makefile', line 45)
+# makefile (from 'Makefile', line 46)
 TARGET_ELF = $(addsuffix .elf, $(TARGET_BASENAME) )
 # environment
 PROGRAMDATA = C:\ProgramData
@@ -189,39 +194,41 @@ DRIVERDATA = C:\Windows\System32\Drivers\DriverData
 COMSPEC = C:\WINDOWS\system32\cmd.exe
 # environment
 WINDIR = C:\WINDOWS
+# makefile (from 'make/check.mk', line 4)
+CHKFLAGS = --enable=all --error-exitcode=1 --std=c11 --suppressions-list=cppcheck-supress.txt -D__GNUC__
 # environment
 MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files (x86)\Yarn\bin\;C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility;C:\Program Files\CMake\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\OpenSSH-Win64;C:\Program Files\Microsoft Network Monitor 3\;C:\Program Files\LLVM\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\79110\AppData\Local\Programs\Python\Python39\;C:\Users\79110\.windows-build-tools\python27\;C:\Users\79110\.windows-build-tools\python27;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Users\79110\AppData\Local\atom\bin;C:\Users\79110\AppData\Roaming\npm;C:\Users\79110\AppData\Local\Yarn\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Lib\site-packages\pip;C:\Users\79110\AppData\Local\gitkraken\bin;C:\Program Files\CMake\bin;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Program Files\OpenSSL-Win64\bin;C:\Users\79110\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\79110\AppData\Local\GitHubDesktop\bin;C:\LIBS\STM32CubeF1;
+PATH = C:\Python310\Scripts\;C:\Python310\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Yarn\bin\;C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility;C:\Program Files\CMake\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\OpenSSH-Win64;C:\Program Files\Microsoft Network Monitor 3\;C:\Program Files\LLVM\bin;C:\Program Files\nodejs\;C:\Users\79110\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\79110\AppData\Local\Programs\Python\Python39\;C:\Users\79110\.windows-build-tools\python27\;C:\Users\79110\.windows-build-tools\python27;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Users\79110\AppData\Local\Yarn\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Lib\site-packages\pip;C:\Program Files\CMake\bin;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Program Files\OpenSSL-Win64\bin;C:\Users\79110\AppData\Local\Programs\Microsoft VS Code\bin;C:\LIBS\STM32CubeF1;C:\Users\79110\AppData\Roaming\npm;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin;
 # environment
 COMPUTERNAME = MIKE-LAPTOP
 # default
 MAKEFILES := 
 # automatic
 ^F = $(notdir $^)
-# makefile (from 'Makefile', line 51)
+# makefile (from 'Makefile', line 52)
 TEST_HEX = $(addsuffix .hex, $(TEST_BASENAME) )
 # environment
 PROMPT = $P$G
 # environment
 OPENSSL_CONF = C:\Program Files\OpenSSL-Win64\bin\openssl.cfg
 # environment
-CHOCOLATEYLASTPATHUPDATE = 132626865680125295
+CHOCOLATEYLASTPATHUPDATE = 133052186809925977
 # makefile (from 'make/version.mk', line 2)
 VER_MAJOR := 
-# makefile (from 'Makefile', line 49)
+# makefile (from 'Makefile', line 50)
 TEST_BASENAME = $(OUTPUT_DIR)/$(TEST_DIR)/$(TARGET)_$(TEST_DIR)_$(VER)
 # environment
 LOGONSERVER = \\MIKE-LAPTOP
-# environment
-VSCODE_LOG_NATIVE = false
+# makefile (from 'make/source.mk', line 132)
+C_U8G2_FILES = u8g2/Src/u8g2_box.c u8g2/Src/u8g2_buffer.c u8g2/Src/u8g2_font.c u8g2/Src/u8g2_fonts.c u8g2/Src/u8g2_hvline.c u8g2/Src/u8g2_ll_hvline.c u8g2/Src/u8g2_line.c u8g2/Src/u8g2_d_setup.c u8g2/Src/u8g2_setup.c u8g2/Src/u8g2_d_memory.c u8g2/Src/u8x8_setup.c u8g2/Src/u8x8_8x8.c u8g2/Src/u8x8_cad.c u8g2/Src/u8x8_display.c u8g2/Src/u8x8_gpio.c u8g2/Src/u8x8_byte.c u8g2/Src/u8x8_d_st7920.c u8g2/Src/u8g2_intersection.c
 # environment
 USERNAME = 79110
 # makefile (from 'make/tools.mk', line 4)
 SIZE = $(CROSS_COMPILE)size
-# makefile (from 'Makefile', line 61)
+# makefile (from 'Makefile', line 62)
 CPU = -mcpu=cortex-m3
 # environment
 COMMONPROGRAMFILES = C:\Program Files (x86)\Common Files
@@ -234,33 +241,41 @@ PROGRAMW6432 = C:\Program Files
 # environment
 NO_PROXY = 127.0.0.1
 # environment
-PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
-# makefile (from 'Makefile', line 48)
+PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.PY;.PYW
+# makefile (from 'Makefile', line 49)
 TARGET_ZIP = $(addsuffix .zip, $(TARGET_BASENAME) )
 # automatic
 +F = $(notdir $+)
+# makefile (from 'make/source.mk', line 95)
+C_LIBFIXMATH_FILES = libfixmath/Src/fix16.c libfixmath/Src/fix16_exp.c libfixmath/Src/fix16_sqrt.c libfixmath/Src/fix16_str.c libfixmath/Src/fix16_trig.c libfixmath/Src/fract32.c libfixmath/Src/uint32.c 
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = undefined
-# makefile (from 'Makefile', line 102)
+# makefile (from 'Makefile', line 105)
 OBJECTS = $(addprefix $(BUILD_DIR)/$(RELEASE_DIR)/,$(notdir $(C_SOURCES:.c=.o))) $(addprefix $(BUILD_DIR)/$(RELEASE_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 # environment
 USERDOMAIN = MIKE-LAPTOP
 # 'override' directive
 GNUMAKEFLAGS := 
+# makefile (from 'make/source.mk', line 44)
+C_LWIP_FILES = LWIP/Target/ethernetif.c LWIP/App/lwip.c Middlewares/Third_Party/LwIP/system/OS/sys_arch.c Middlewares/Third_Party/LwIP/src/netif/ethernet.c Middlewares/Third_Party/LwIP/src/netif/lowpan6.c Middlewares/Third_Party/LwIP/src/netif/slipif.c Middlewares/Third_Party/LwIP/src/core/def.c Middlewares/Third_Party/LwIP/src/core/dns.c Middlewares/Third_Party/LwIP/src/core/inet_chksum.c Middlewares/Third_Party/LwIP/src/core/init.c Middlewares/Third_Party/LwIP/src/core/ip.c Middlewares/Third_Party/LwIP/src/core/mem.c Middlewares/Third_Party/LwIP/src/core/memp.c Middlewares/Third_Party/LwIP/src/core/netif.c Middlewares/Third_Party/LwIP/src/core/pbuf.c Middlewares/Third_Party/LwIP/src/core/raw.c Middlewares/Third_Party/LwIP/src/core/stats.c Middlewares/Third_Party/LwIP/src/core/sys.c Middlewares/Third_Party/LwIP/src/core/tcp.c Middlewares/Third_Party/LwIP/src/core/tcp_in.c Middlewares/Third_Party/LwIP/src/core/tcp_out.c Middlewares/Third_Party/LwIP/src/core/timeouts.c Middlewares/Third_Party/LwIP/src/core/udp.c Middlewares/Third_Party/LwIP/src/core/ipv6/dhcp6.c Middlewares/Third_Party/LwIP/src/core/ipv6/ethip6.c Middlewares/Third_Party/LwIP/src/core/ipv6/icmp6.c Middlewares/Third_Party/LwIP/src/core/ipv6/inet6.c Middlewares/Third_Party/LwIP/src/core/ipv6/ip6.c Middlewares/Third_Party/LwIP/src/core/ipv6/ip6_addr.c Middlewares/Third_Party/LwIP/src/core/ipv6/ip6_frag.c Middlewares/Third_Party/LwIP/src/core/ipv6/mld6.c Middlewares/Third_Party/LwIP/src/core/ipv6/nd6.c Middlewares/Third_Party/LwIP/src/core/ipv4/autoip.c Middlewares/Third_Party/LwIP/src/core/ipv4/dhcp.c Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c Middlewares/Third_Party/LwIP/src/core/ipv4/icmp.c Middlewares/Third_Party/LwIP/src/core/ipv4/igmp.c Middlewares/Third_Party/LwIP/src/core/ipv4/ip4.c Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_frag.c Middlewares/Third_Party/LwIP/src/apps/mqtt/mqtt.c Middlewares/Third_Party/LwIP/src/api/api_lib.c Middlewares/Third_Party/LwIP/src/api/api_msg.c Middlewares/Third_Party/LwIP/src/api/err.c Middlewares/Third_Party/LwIP/src/api/netbuf.c Middlewares/Third_Party/LwIP/src/api/netdb.c Middlewares/Third_Party/LwIP/src/api/netifapi.c Middlewares/Third_Party/LwIP/src/api/sockets.c Middlewares/Third_Party/LwIP/src/ 
+api/tcpip.c
 # environment
 OS = Windows_NT
-# makefile (from 'Makefile', line 30)
+# makefile (from 'Makefile', line 31)
 OPT = -O0
+# makefile (from 'make/source.mk', line 10)
+C_USB_FILES = Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c USB_DEVICE/Target/usbd_conf.c USB_DEVICE/App/usb_device.c USB_DEVICE/App/usbd_custom_hid_if.c USB_DEVICE/App/usbd_desc.c
 # environment
 __COMPAT_LAYER = DetectorsAppHealth
 # environment
-PLATFORMIO_PATH = C:\Users\79110\.platformio\penv\Scripts;C:\Users\79110\.platformio\penv;C:\Users\79110\.platformio\python3;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files (x86)\Yarn\bin\;C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility;C:\Program Files\CMake\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\OpenSSH-Win64;C:\Program Files\Microsoft Network Monitor 3\;C:\Program Files\LLVM\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\79110\AppData\Local\Programs\Python\Python39\;C:\Users\79110\.windows-build-tools\python27\;C:\Users\79110\.windows-build-tools\python27;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Users\79110\AppData\Local\atom\bin;C:\Users\79110\AppData\Roaming\npm;C:\Users\79110\AppData\Local\Yarn\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Lib\site-packages\pip;C:\Users\79110\AppData\Local\gitkraken\bin;C:\Program Files\CMake\bin;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Program Files\OpenSSL-Win64\bin;C:\Users\79110\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\79110\AppData\Local\GitHubDesktop\bin;C:\LIBS\STM32CubeF1;;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Program Files (x86)\Yarn\bin\;C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility;C:\Program Files\CMake\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\OpenSSH-Win64;C:\Program Files\Microsoft Network Monitor 3\;C:\Program Files\LLVM\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\79110\AppData\Local\Programs\Python\Python39\;C:\Users\79110\.windows-build-tools\python27\;C:\Users\79110\.windows-build-tools\python27;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Users\79110\AppData\Local\atom\bin;C:\Users\79110\AppData\Roaming\npm;C:\Users\79110\AppData\Local\Yarn\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Lib\site-packages\pip;C:\Users\79110\AppData\Local\gitkraken\bin;C:\Program Files\CMake\bin;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Program Files\OpenSSL-Win64\bin;C:\Users\79110\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\7911 
-0\AppData\Local\GitHubDesktop\bin;C:\LIBS\STM32CubeF1;
+PLATFORMIO_PATH = C:\Users\79110\.platformio\penv\Scripts;C:\Users\79110\.platformio\penv;C:\Users\79110\.platformio\python3;C:\Python310\Scripts\;C:\Python310\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Yarn\bin\;C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility;C:\Program Files\CMake\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\OpenSSH-Win64;C:\Program Files\Microsoft Network Monitor 3\;C:\Program Files\LLVM\bin;C:\Program Files\nodejs\;C:\Users\79110\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\79110\AppData\Local\Programs\Python\Python39\;C:\Users\79110\.windows-build-tools\python27\;C:\Users\79110\.windows-build-tools\python27;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Users\79110\AppData\Local\Yarn\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Lib\site-packages\pip;C:\Program Files\CMake\bin;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Program Files\OpenSSL-Win64\bin;C:\Users\79110\AppData\Local\Programs\Microsoft VS Code\bin;C:\LIBS\STM32CubeF1;C:\Users\79110\AppData\Roaming\npm;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin;;C:\Python310\Scripts\;C:\Python310\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Yarn\bin\;C:\Program Files (x86)\STMicroelectronics\STM32 ST-LINK Utility\ST-LINK Utility;C:\Program Files\CMake\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\OpenSSH-Win64;C:\Program Files\Microsoft Network Monitor 3\;C:\Program Files\LLVM\bin;C:\Program Files\nodejs\;C:\Users\79110\AppData\Local\Programs\Python\Python39\Scripts\;C:\Users\79110\AppData\Local\Programs\Python\Python39\;C:\Users\79110\.windows-build-tools\python27\;C:\Users\79110\.windows-build-tools\python27;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Users\79110\AppData\Local\Yarn\bin;C:\Users\79110\AppData\Local\Programs\Python\Python39\Lib\site-packages\pip;C:\Program Files\CMake\bin;C:\Users\79110\AppData\Local\Microsoft\WindowsApps;C:\Program Files\OpenSSL-Win64\bin;C:\Users\79110\AppData\Local\Programs\Microsoft VS Code\bin;C:\LIBS\STM32CubeF1;C:\Users\79110\AppData\Roaming\npm;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin;
+# makefile (from 'make/source.mk', line 104)
+C_HAL_FILES = Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_cortex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_eth.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_exti.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_flash.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_flash_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_gpio.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_i2c.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_iwdg.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pcd.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pcd_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pwr.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pwr_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rcc.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rcc_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_sd.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_spi.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_uart.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_sdmmc.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_usb.c
 # makefile
 .DEFAULT_GOAL := all
 # default
 MAKE_VERSION := 4.3
-# makefile (from 'Makefile', line 50)
+# makefile (from 'Makefile', line 51)
 TEST_ELF = $(addsuffix .elf, $(TEST_BASENAME) )
 # 'override' directive
 .SHELLSTATUS := 255
@@ -268,9 +283,9 @@ TEST_ELF = $(addsuffix .elf, $(TEST_BASENAME) )
 PROGRAMFILES(X86) = C:\Program Files (x86)
 # environment
 USERDOMAIN_ROAMINGPROFILE = MIKE-LAPTOP
-# makefile (from 'Makefile', line 64)
+# makefile (from 'Makefile', line 65)
 MCU = $(CPU) -mthumb $(FLOAT)
-# makefile (from 'Makefile', line 39)
+# makefile (from 'Makefile', line 40)
 TEST_DIR = test
 # environment
 NUMBER_OF_PROCESSORS = 8
@@ -280,64 +295,67 @@ PUBLIC = C:\Users\Public
 VER := ..
 # environment
 MOZ_PLUGIN_PATH = C:\PROGRAM FILES (X86)\FOXIT SOFTWARE\FOXIT READER\plugins\
-# makefile (from 'Makefile', line 56)
+# makefile (from 'Makefile', line 57)
 BIN = $(OBJCOPY) -O binary -S
 # environment
 APPDATA = C:\Users\79110\AppData\Roaming
-# makefile (from 'Makefile', line 87)
+# makefile (from 'Makefile', line 90)
 CFLAGS = $(MCU) $(STD) $(GLOBAL_DEFINES) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections -g3 -fstack-usage -MMD -MP -MF"$(@:%.o=%.d)"
 # environment
 HOMEDRIVE = C:
-# makefile (from 'make/source.mk', line 233)
+# makefile (from 'make/source.mk', line 218)
 C_TEST_SOURCES = $(C_SOURCES) $(C_SOURCES_TEST)
 # environment
 PROCESSOR_ARCHITECTURE = x86
-# makefile (from 'Makefile', line 63)
+# makefile (from 'Makefile', line 64)
 SPEC = --specs=nano.specs
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
-# makefile (from 'Makefile', line 35)
+# makefile (from 'Makefile', line 36)
 BUILD_DIR = build
 # environment
-PLATFORMIO_IDE = 2.4.3
+PLATFORMIO_IDE = 2.5.2
 # makefile (from 'make/source.mk', line 1)
-C_SOURCE_LIBS = Core/Src/freertos.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_cortex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_eth.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_exti.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_flash.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_flash_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_gpio.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_i2c.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_iwdg.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pcd.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pcd_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pwr.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_pwr_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rcc.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_rcc_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_sd.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_spi.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_tim_ex.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_uart.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_sdmmc.c Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_ll_usb.c Unity/unity.c u8g2/Src/u8g2_bitmap.c u8g2/Src/u8g2_box.c u8g2/Src/u8g2_buffer.c u8g2/Src/u8g2_circle.c u8g2/Src/u8g2_cleardisplay.c u8g2/Src/u8g2_d_memory.c u8g2/Src/u8g2_d_setup.c u8g2/Src/u8g2_font.c u8g2/Src/u8g2_fonts.c u8g2/Src/u8g2_hvline.c u8g2/Src/u8g2_input_value.c u8g2/Src/u8g2_intersection.c u8g2/Src/u8g2_kerning.c u8g2/Src/u8g2_line.c u8g2/Src/u8g2_ll_hvline.c u8g2/Src/u8g2_message.c u8g2/Src/u8g2_polygon.c u8g2/Src/u8g2_selection_list.c u8g2/Src/u8g2_setup.c u8g2/Src/u8log.c u8g2/Src/u8log_u8g2.c u8g2/Src/u8log_u8x8.c u8g2/Src/u8x8_8x8.c u8g2/Src/u8x8_byte.c u8g2/Src/u8x8_cad.c u8g2/Src/u8x8_capture.c u8g2/Src/u8x8_d_a2printer.c u8g2/Src/u8x8_d_st7920.c u8g2/Src/u8x8_d_t6963.c u8g2/Src/u8x8_d_uc1601.c u8g2/Src/u8x8_d_uc1604.c u8g2/Src/u8x8_d_uc1608.c u8g2/Src/u8x8_d_uc1610.c u8g2/Src/u8x8_d_uc1611.c u8g2/Src/u8x8_d_uc1617.c u8g2/Src/u8x8_d_uc1638.c u8g2/Src/u8x8_d_uc1701_dogs102.c u8g2/Src/u8x8_d_uc1701_mini12864.c u8g2/Src/u8x8_debounce.c u8g2/Src/u8x8_display.c u8g2/Src/u8x8_fonts.c u8g2/Src/u8x8_gpio.c u8g2/Src/u8x8_input_value.c u8g2/Src/u8x8_message.c u8g2/Src/u8x8_selection_list.c u8g2/Src/u8x8_setup.c u8g2/Src/u8x8_string.c u8g2/Src/u8x8_u16toa.c u8g2/Src/u8x8_u8toa.c Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c Middlewares/Third_Party/FatFs/src/diskio.c Middlewares/Third_Party/FatFs/src/ff.c Middlewares/Third_Party/FatFs/src/ff_gen_drv.c Middlewares/Third_Party/FatFs/src/option/syscall.c Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.c Middlewares/Third_Party/FreeRTOS/Source/croutine.c Middlewares/Third_Party/FreeRTOS/Source/event_groups.c Middlewares/Third_Party/FreeRTOS/Source/list.c Middlewares/Third_Party/FreeRTOS/Source/queue.c Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c Middlewares/Third_Party/FreeRTOS/Source/tasks.c Middlewares/Third_Party/FreeRTOS/Source/timers.c Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c Middlewares/Third_Party/LwIP/system/OS/sys_arch.c Middlewares/Third_Party/LwIP/src/netif/ethernet.c Middlewares/Third_Party/LwIP/src/netif/lowpan6.c Middlewares/Third_Party/LwIP/src/netif/slipif.c Middlewares/Third_Party/LwIP/src/core/def.c Middlewares/Third_Party/LwIP/src/core/dns.c Middlewares/Third_Party/LwIP/src/core/inet_chksum.c Middlewares/Third_Party/LwIP/src/core/init.c Middlewares/Third_Party/LwIP/src/core/ip.c Middlewares/Third_Party/LwIP/src/core/mem.c Middlewares/Third_Party/LwIP/src/core/memp.c Middlewares/Third_Party/LwIP/src/core/netif.c Middlewares/Third_Party/LwIP/src/core/pbuf.c Middlewares/Third_Party/LwIP/src/core/raw.c Middlewares/Third_Party/LwIP/src/core/stats.c Middlewares/Third_Party/LwIP/src/core/sys.c Middlewares/Third_Party/LwIP/src/core/tcp.c Middlewares/Third_Party/LwIP/src/core/tcp_in.c Middlewares/Third_Party/LwIP/src/core/tcp_out.c Middlewares/Third_Party/LwIP/src/core/timeouts.c Middlewares/Third_Party/LwIP/src/core/udp.c Middlewares/Third_Party/LwIP/src/core/ipv6/dhcp6.c Middlewares/Third_Party/LwIP/src/core/ipv6/ethip6.c Middlewares/Third_Party/LwIP/src/core/ipv6/icmp6.c Middlewares/Third_Party/LwIP/src/core/ipv6/inet6.c Middlewares/Third_Party/LwIP/src/core/ipv6/ip6.c Middlewares/Third_Party/LwIP/src/core/ipv6/ip6_addr.c Middlewares/Third_Party/LwIP/src/core/ipv6/ip6_frag.c Middlewares/Third_Party/LwIP/src/core/ipv6/mld6.c Middlewares/Third_Party/LwIP/src/core/ipv6/nd6.c Middlewares/Third_Party/LwIP/src/core/ipv4/autoip.c Middlewares/Third_Party/LwIP/src/core/ipv4/dhcp.c Middlewares/Third_Party/LwIP/src/core/ipv4/etharp.c Middlewares/Third_Party/LwIP/src/core/ipv4/icmp.c Middlewares/Third_Party/LwIP/src/core/ipv4/igmp.c Middlewares/Third_Party/LwIP/src/core/ipv4/ip4.c Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_addr.c Middlewares/Third_Party/LwIP/src/core/ipv4/ip4_frag.c Middlewares/Third_Party/LwIP/src/apps/mqtt/mqtt.c Middlewares/Third_Party/LwIP/src/api/api_lib.c Middlewares/Third_Party/LwIP/src/api/api_msg.c Middlewares/Third_Party/LwIP/src/api/err.c Middlewares/Third_Party/LwIP/src/api/netbuf.c Middlewares/Third_Party/LwIP/src/api/netdb.c Middlewares/Third_Party/LwIP/src/api/netifapi.c Middlewares/Third_Party/LwIP/src/api/sockets.c Middlewares/Third_Party/LwIP/src/api/tcpip.c USB_DEVICE/Target/usbd_conf.c USB_DEVICE/App/usb_device.c USB_DEVICE/App/usbd_custom_hid_if.c USB_DEVICE/App/usbd_desc.c LWIP/Target/ethernetif.c LWIP/App/lwip.c libfixmath/Src/fix16.c libfixmath/Src/fix16_exp.c libfixmath/Src/fix16_sqrt.c libfixmath/Src/fix16_str.c libfixmath/Src/fix16_trig.c libfixmath/Src/fract32.c libfixmath/Src/uint32.c FATFS/Target/bsp_driver_sd.c FATFS/Target/fatfs_platform.c FATFS/App/fatfs.c
+C_SOURCE_LIBS = Core/Src/main.c Core/Src/syscalls.c Core/Src/sysmem.c Core/Src/system_stm32f2xx.c Core/Src/stm32f2xx_hal_msp.c Core/Src/stm32f2xx_hal_timebase_tim.c Core/Src/stm32f2xx_it.c
 # environment
 COMMONPROGRAMFILES(X86) = C:\Program Files (x86)\Common Files
-# makefile (from 'make/source.mk', line 162)
-C_SOURCES_TEST = Tests/Src/test_chart.c Tests/Src/test_cli.c Tests/Src/test_dataAPI.c Tests/Src/test_eeprom.c Tests/Src/test_http.c Tests/Src/test_outputProcessing.c Tests/Src/test_rest.c Tests/Src/test_rtc.c Tests/Src/test_storage.c Tests/Src/test_usbhid.c Tests/Src/test_vr.c Tests/Src/tests.c
+# makefile (from 'make/source.mk', line 152)
+C_SOURCES_TEST = Unity/unity.c Unity/unity_config.c Tests/Src/test_chart.c Tests/Src/test_cli.c Tests/Src/test_dataAPI.c Tests/Src/test_eeprom.c Tests/Src/test_http.c Tests/Src/test_outputProcessing.c Tests/Src/test_rest.c Tests/Src/test_rtc.c Tests/Src/test_storage.c Tests/Src/test_usbhid.c Tests/Src/test_vr.c Tests/Src/tests.c
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
 TEMP = C:\Users\79110\AppData\Local\Temp
 # environment
-VSCODE_IPC_HOOK = \\.\pipe\582447973460b4babb6702e1d5ff83e7-1.68.0-main-sock
-# makefile (from 'make/source.mk', line 176)
-C_SOURCE_PROJ = Core/Src/main.c Core/Src/stm32f2xx_hal_msp.c Core/Src/stm32f2xx_hal_timebase_tim.c Core/Src/stm32f2xx_it.c Core/Src/syscalls.c Core/Src/sysmem.c Core/Src/system_stm32f2xx.c Unity/unity_config.c ModBus/Src/mb.c ModBus/Src/mbcrc.c ModBus/Src/mbfunc.c ModBus/Src/mbregister.c ModBus/Src/mbrtu.c ModBus/Src/mbuart.c hmi/Src/data_manager.c hmi/Src/keyboard.c hmi/Src/lcd.c hmi/Src/menu.c hmi/Src/menu_data.c hmi/Src/utils.c ethernet/Src/http.c ethernet/Src/rest.c ethernet/Src/server.c dsp/Src/pid.c devices/Src/EEPROM.c devices/Src/RTC.c devices/Src/adc.c devices/Src/fatsd.c devices/Src/mac.c devices/Src/usbhid.c data/Src/chart.c data/Src/config.c data/Src/dataAPI.c data/Src/dataSD.c data/Src/freeData.c data/Src/outputData.c data/Src/outputProcessing.c data/Src/storage.c controller/Src/alarm.c controller/Src/charger.c controller/Src/controller.c controller/Src/controllerTypes.c controller/Src/dataProces.c controller/Src/electro.c controller/Src/engine.c controller/Src/fpi.c controller/Src/fpo.c controller/Src/journal.c controller/Src/measurement.c controller/Src/statistics.c controller/Src/vrSensor.c common/Src/cli.c common/Src/common.c common/Src/system.c
+VSCODE_IPC_HOOK = \\.\pipe\582447973460b4babb6702e1d5ff83e7-1.70.1-main-sock
+# makefile (from 'make/source.mk', line 168)
+C_SOURCE_PROJ = ModBus/Src/mb.c ModBus/Src/mbcrc.c ModBus/Src/mbfunc.c ModBus/Src/mbregister.c ModBus/Src/mbrtu.c ModBus/Src/mbuart.c hmi/Src/data_manager.c hmi/Src/keyboard.c hmi/Src/lcd.c hmi/Src/menu.c hmi/Src/menu_data.c hmi/Src/utils.c ethernet/Src/http.c ethernet/Src/rest.c ethernet/Src/server.c dsp/Src/pid.c devices/Src/EEPROM.c devices/Src/RTC.c devices/Src/adc.c devices/Src/fatsd.c devices/Src/mac.c devices/Src/usbhid.c data/Src/chart.c data/Src/config.c data/Src/dataAPI.c data/Src/dataSD.c data/Src/freeData.c data/Src/outputData.c data/Src/outputProcessing.c data/Src/storage.c controller/Src/alarm.c controller/Src/charger.c controller/Src/controller.c controller/Src/controllerTypes.c controller/Src/dataProces.c controller/Src/electro.c controller/Src/engine.c controller/Src/fpi.c controller/Src/fpo.c controller/Src/journal.c controller/Src/measurement.c controller/Src/statistics.c controller/Src/vrSensor.c common/Src/cli.c common/Src/common.c common/Src/system.c common/Src/constants.c
 # default
 .RECIPEPREFIX := 
 # automatic
 <F = $(notdir $<)
 # makefile (from 'make/tools.mk', line 8)
 OPENOCD = openocd
-# makefile (from 'make/source.mk', line 232)
-C_SOURCES = $(C_SOURCE_LIBS) $(C_SOURCE_PROJ)
-# makefile (from 'Makefile', line 47)
+# makefile (from 'make/source.mk', line 217)
+C_SOURCES = $(C_HAL_FILES) $(C_U8G2_FILES) $(C_LIBFIXMATH_FILES) $(C_LWIP_FILES) $(C_FATFS_FILES) $(C_FREERTOS_FILES) $(C_USB_FILES) $(C_SOURCE_LIBS) $(C_SOURCE_PROJ)
+# makefile (from 'make/check.mk', line 6)
+CHKMISRAFLAGS = -q -j4 --addon=misra --std=c11 --suppress=misra-c2012-2.7
+# makefile (from 'Makefile', line 48)
 TARGET_HEX = $(addsuffix .hex, $(TARGET_BASENAME) )
 # default
 SUFFIXES := 
 # environment
 ALLUSERSPROFILE = C:\ProgramData
-# makefile (from 'Makefile', line 24)
+# makefile (from 'Makefile', line 25)
 TARGET = energan_enb
 # environment
 SESSIONNAME = Console
-# makefile (from 'Makefile', line 37)
+# makefile (from 'Makefile', line 38)
 ASM_SOURCES = Core/Startup/startup_stm32f217zgtx.s
-# makefile (from 'Makefile', line 29)
+# makefile (from 'Makefile', line 30)
 DEBUG = 1
 # default
-.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem u 
+ndefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
 # environment
 PROCESSOR_REVISION = 8e0a
 # makefile (from 'make/tools.mk', line 2)
@@ -347,7 +365,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
 # variable set hash-table stats:
-# Load=162/1024=16%, Rehash=0, Collisions=39/421=9%
+# Load=170/1024=17%, Rehash=0, Collisions=50/473=11%
 
 # Pattern-specific Variable Values
 
@@ -358,66 +376,66 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
 # libfixmath/Src (key c:/PROJECTS/ENERGAN/energan_enb/libfixmath/Src, mtime 1635506286): 9 files, no impossibilities.
 # USB_DEVICE/App (key c:/PROJECTS/ENERGAN/energan_enb/USB_DEVICE/App, mtime 1655447453): 8 files, no impossibilities.
 # Middlewares/Third_Party/FreeRTOS/Source (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/FreeRTOS/Source, mtime 1649402459): 12 files, no impossibilities.
-# FATFS/App (key c:/PROJECTS/ENERGAN/energan_enb/FATFS/App, mtime 1655447453): No files, no impossibilities so far.
+# FATFS/App (key c:/PROJECTS/ENERGAN/energan_enb/FATFS/App, mtime 1655447453 
+): No files, no impossibilities so far.
 # Middlewares/Third_Party/LwIP/src/apps/mqtt (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/src/apps/mqtt, mtime 1649402460): 3 files, no impossibilities.
 # Core/Startup (key c:/PROJECTS/ENERGAN/energan_enb/Core/Startup, mtime 1635506286): 3 files, no impossibilities.
 # Middlewares/Third_Party/LwIP/src/api (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/src/api, mtime 1649402460): 10 files, no impossibilities.
 # Middlewares/Third_Party/LwIP/src/core/ipv4 (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/src/core/ipv4, mtime 1649402460): 10 files, no impossibilities.
-# hmi/Src (key c:/PROJECTS/ENERGAN/energan_enb/hmi/Src, mtime 1655447453): 9 files, no impossibilities.
-# Middlewares/Third_Party/LwIP/system/OS (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/system/OS, mtime 1649402460): 
- 3 files, no impossibilities.
-# controller/Src (key c:/PROJECTS/ENERGAN/energan_enb/controller/Src, mtime 1655447453): 15 files, no impossibilities.
+# hmi/Src (key c:/PROJECTS/ENERGAN/energan_enb/hmi/Src, mtime 1656409688): 9 files, no impossibilities.
+# Middlewares/Third_Party/LwIP/system/OS (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/system/OS, mtime 1649402460): 3 files, no impossibilities.
+# controller/Src (key c:/PROJECTS/ENERGAN/energan_enb/controller/Src, mtime 1656409669): 15 files, no impossibilities.
 # Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src, mtime 1649402459): No files, no impossibilities so far.
-# data/Src (key c:/PROJECTS/ENERGAN/energan_enb/data/Src, mtime 1655447453): 10 files, no impossibilities.
+# data/Src (key c:/PROJECTS/ENERGAN/energan_enb/data/Src, mtime 1656409678): 10 files, no impossibilities.
 # Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang, mtime 1649402459): 3 files, no impossibilities.
-# common/Src (key c:/PROJECTS/ENERGAN/energan_enb/common/Src, mtime 1655447453): 6 files, no impossibilities.
+# common/Src (key c:/PROJECTS/ENERGAN/energan_enb/common/Src, mtime 1656409661): 6 files, no impossibilities.
 # u8g2/Src (key c:/PROJECTS/ENERGAN/energan_enb/u8g2/Src, mtime 1635506287): 53 files, no impossibilities.
 # Unity (key c:/PROJECTS/ENERGAN/energan_enb/Unity, mtime 1655447453): 7 files, no impossibilities.
 # Middlewares/Third_Party/FatFs/src/drivers (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/FatFs/src/drivers, mtime 1655447453): 4 files, no impossibilities.
 # Middlewares/Third_Party/FatFs/src (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/FatFs/src, mtime 1655447453): No files, no impossibilities so far.
-# dsp/Src (key c:/PROJECTS/ENERGAN/energan_enb/dsp/Src, mtime 1655447453): 3 files, no impossibilities.
-# build: could not be stat'd.
-# . (key c:/PROJECTS/ENERGAN/energan_enb, mtime 1655448051): 44 files, no impossibilities.
+# dsp/Src (key c:/PROJECTS/ENERGAN/energan_enb/dsp/Src, mtime 1656409674): 3 files, no impossibilities.
+# build (key c:/PROJECTS/ENERGAN/energan_enb/build, mtime 1656405748): 3 files, no impossibilities.
+# . (key c:/PROJECTS/ENERGAN/energan_enb, mtime 1656411510): 48 files, no impossibilities.
 # FATFS/Target (key c:/PROJECTS/ENERGAN/energan_enb/FATFS/Target, mtime 1655447453): No files, no impossibilities so far.
-# ModBus/Src (key c:/PROJECTS/ENERGAN/energan_enb/ModBus/Src, mtime 1655447453): 8 files, no impossibilities.
+# ModBus/Src (key c:/PROJECTS/ENERGAN/energan_enb/ModBus/Src, mtime 1656409659): 8 files, no impossibilities.
 # Middlewares/Third_Party/LwIP/src/core/ipv6 (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/src/core/ipv6, mtime 1649402460): 11 files, no impossibilities.
 # USB_DEVICE/Target (key c:/PROJECTS/ENERGAN/energan_enb/USB_DEVICE/Target, mtime 1655447453): 4 files, no impossibilities.
 # Middlewares/ST/STM32_USB_Device_Library/Core/Src (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/ST/STM32_USB_Device_Library/Core/Src, mtime 1649402459): No files, no impossibilities so far.
 # Middlewares/Third_Party/LwIP/src/core (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/src/core, mtime 1649402460): 21 files, no impossibilities.
 # Tests/Src (key c:/PROJECTS/ENERGAN/energan_enb/Tests/Src, mtime 1655447453): 15 files, no impossibilities.
 # Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3, mtime 1649402459): 4 files, no impossibilities.
-# Core/Src (key c:/PROJECTS/ENERGAN/energan_enb/Core/Src, mtime 1655447453): 3 files, no impossibilities so far.
+# Core/Src (key c:/PROJECTS/ENERGAN/energan_enb/Core/Src, mtime 1656409534): 10 files, no impossibilities.
 # LWIP/App (key c:/PROJECTS/ENERGAN/energan_enb/LWIP/App, mtime 1655447453): No files, no impossibilities so far.
-# devices/Src (key c:/PROJECTS/ENERGAN/energan_enb/devices/Src, mtime 1655447453): 8 files, no impossibilities.
+# devices/Src (key c:/PROJECTS/ENERGAN/energan_enb/devices/Src, mtime 1656409678): 8 files, no impossibilities.
 # Middlewares/Third_Party/FatFs/src/option (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/FatFs/src/option, mtime 1655447453): 3 files, no impossibilities.
 # Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2, mtime 1649402459): 5 files, no impossibilities.
-# Drivers/STM32F2xx_HAL_Driver/Src (key c:/PROJECTS/ENERGAN/energan_enb/Drivers/STM32F2xx_HAL_Driver/Src, mtime 165544 
-7453): No files, no impossibilities so far.
-# Middlewares/Third_Party/LwIP/src/netif (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/src/netif, mtime 1649402459): 6 files, no impossibilities.
+# Drivers/STM32F2xx_HAL_Driver/Src (key c:/PROJECTS/ENERGAN/energan_enb/Drivers/STM32F2xx_HAL_Driver/Src, mtime 1655447453): 7 files, no impossibilities so far.
+# Middlewar 
+es/Third_Party/LwIP/src/netif (key c:/PROJECTS/ENERGAN/energan_enb/Middlewares/Third_Party/LwIP/src/netif, mtime 1649402459): 6 files, no impossibilities.
 # LWIP/Target (key c:/PROJECTS/ENERGAN/energan_enb/LWIP/Target, mtime 1655447453): No files, no impossibilities so far.
-# ethernet/Src (key c:/PROJECTS/ENERGAN/energan_enb/ethernet/Src, mtime 1655447453): 5 files, no impossibilities.
+# ethernet/Src (key c:/PROJECTS/ENERGAN/energan_enb/ethernet/Src, mtime 1656409681): 5 files, no impossibilities.
 
-# 305 files, no impossibilities in 39 directories.
+# 326 files, no impossibilities in 39 directories.
 
 # Implicit Rules
 
 build/relese/%.o: %.c Makefile | build build/relese
-#  recipe to execute (from 'Makefile', line 129):
+#  recipe to execute (from 'Makefile', line 132):
 	@echo "%% $(notdir $<)" "$(STDOUT)"
-	$(V1) $(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(V1) $(CC) -c $(CFLAGS) $(GCC_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 build/relese/%.o: %.s Makefile | build build/relese
-#  recipe to execute (from 'Makefile', line 133):
+#  recipe to execute (from 'Makefile', line 136):
 	@echo "%% $(notdir $<)" "$(STDOUT)"
 	$(V1) $(AS) -c $(CFLAGS) $< -o $@
 
 build/test/%.o: %.c Makefile | build build/test
-#  recipe to execute (from 'Makefile', line 155):
+#  recipe to execute (from 'Makefile', line 158):
 	@echo "%% $(notdir $<)" "$(STDOUT)"
 	$(V1) $(CC) -c $(TEST_DEFINES) $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(TEST_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 build/test/%.o: %.s Makefile | build build/test
-#  recipe to execute (from 'Makefile', line 159):
+#  recipe to execute (from 'Makefile', line 162):
 	@echo "%% $(notdir $<)" "$(STDOUT)"
 	$(V1) $(AS) -c $(TEST_DEFINES) $(CFLAGS) $< -o $@
 
@@ -431,19 +449,13 @@ build/relese/netif.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/freertos.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/tcp_out.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-Core/Src/syscalls.c:
+build/test/freertos.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -491,12 +503,6 @@ build/test/netdb.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_message.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/ip6.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -535,23 +541,17 @@ make/build_verbosity.mk:
 
 build/relese:
 #  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 182):
-	$(V1) mkdir $@
+#  Last modified 2022-08-10 10:24:42
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 185):
+	$(V1) mkdir -p $@
 
 # Not a target:
 build/relese/diskio.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-
-# Not a target:
-build/test/u8x8_debounce.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has 
- not been updated.
 
 # Not a target:
 build/test/chart.o:
@@ -590,7 +590,7 @@ build/relese/stream_buffer.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/usbd_core.o:
+build/test/lowpan6.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -602,7 +602,7 @@ build/relese/fix16_str.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/lowpan6.o:
+build/test/usbd_core.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -644,12 +644,6 @@ build/test/fatsd.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_string.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/cli.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -679,11 +673,19 @@ build/test/stm32f2xx_it.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
+# Not a tar 
+get:
 build/test/ip.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
+
+# Not a target:
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc.c:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-24 15:41:58
+#  File has been updated.
+#  Successfully updated.
 
 # Not a target:
 build/relese/usbd_conf.o:
@@ -735,17 +737,16 @@ build/relese/controllerTypes.o:
 
 # Not a target:
 build/relese/stm32f2xx_hal_eth.o:
-#  Implicit rule search has not bee 
-n done.
-#  Modification time never checked.
-#  File has not been updated.
-
-misra: Core/Src/main.c Core/Src/stm32f2xx_hal_msp.c Core/Src/stm32f2xx_hal_timebase_tim.c Core/Src/stm32f2xx_it.c Core/Src/syscalls.c Core/Src/sysmem.c Core/Src/system_stm32f2xx.c Unity/unity_config.c ModBus/Src/mb.c ModBus/Src/mbcrc.c ModBus/Src/mbfunc.c ModBus/Src/mbregister.c ModBus/Src/mbrtu.c ModBus/Src/mbuart.c hmi/Src/data_manager.c hmi/Src/keyboard.c hmi/Src/lcd.c hmi/Src/menu.c hmi/Src/menu_data.c hmi/Src/utils.c ethernet/Src/http.c ethernet/Src/rest.c ethernet/Src/server.c dsp/Src/pid.c devices/Src/EEPROM.c devices/Src/RTC.c devices/Src/adc.c devices/Src/fatsd.c devices/Src/mac.c devices/Src/usbhid.c data/Src/chart.c data/Src/config.c data/Src/dataAPI.c data/Src/dataSD.c data/Src/freeData.c data/Src/outputData.c data/Src/outputProcessing.c data/Src/storage.c controller/Src/alarm.c controller/Src/charger.c controller/Src/controller.c controller/Src/controllerTypes.c controller/Src/dataProces.c controller/Src/electro.c controller/Src/engine.c controller/Src/fpi.c controller/Src/fpo.c controller/Src/journal.c controller/Src/measurement.c controller/Src/statistics.c controller/Src/vrSensor.c common/Src/cli.c common/Src/common.c common/Src/system.c
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 216):
-	$(CPPCHECK) $(CHKMISRAFLAGS) $(GLOBAL_DEFINES) --output-file=$(CHKMISRAREPORT) $^
+
+misra: ModBus/Src/mb.c ModBus/Src/mbcrc.c ModBus/Src/mbfunc.c ModBus/Src/mbregister.c ModBus/Src/mbrtu.c ModBus/Src/mbuart.c hmi/Src/data_manager.c hmi/Src/keyboard.c hmi/Src/lcd.c hmi/Src/menu.c hmi/Src/menu_data.c hmi/Src/utils.c ethernet/Src/http.c ethernet/Src/rest.c ethernet/Src/server.c dsp/Src/pid.c devices/Src/EEPROM.c devices/Src/RTC.c devices/Src/adc.c devices/Src/fatsd.c devices/Src/mac.c devices/Src/usbhid.c data/Src/chart.c data/Src/config.c data/Src/dataAPI.c data/Src/dataSD.c data/Src/freeData.c data/Src/outputData.c data/Src/outputProcessing.c data/Src/storage.c controller/Src/alarm.c controller/Src/charger.c controller/Src/controller.c controller/Src/controllerTypes.c controller/Src/dataProces.c controller/Src/electro.c controller/Src/engine.c controller/Src/fpi.c controller/Src/fpo.c controller/Src/journal.c controller/Src/measurement.c controller/Src/statistics.c controller/Src/vrSensor.c common/Src/cli.c common/Src/common.c common/Src/system.c common/Src/constants.c | reports
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 219):
+	$(V1) $(CPPCHECK) $(CHKMISRAFLAGS) $(GLOBAL_DEFINES) --output-file=$(CHKMISRAREPORT) $^
 
 # Not a target:
 build/relese/udp.o:
@@ -768,12 +769,12 @@ build/test/freeData.o:
 # Not a target:
 build/test/etharp.o:
 #  Implicit rule search has not been done.
-#  Modification time never checke 
-d.
+#  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/test/diskio.o:
+build/test/diskio.o: 
+
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -803,7 +804,7 @@ build/relese/dns.o:
 #  File has not been updated.
 
 # Not a target:
-Core/Src/system_stm32f2xx.c:
+build/relese/constants.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -887,16 +888,30 @@ build/test/storage.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/startup_stm32f217zgtx.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+make/check.mk:
+#  Implicit rule search has been done.
+#  Last modified 2022-06-28 13:20:33
+#  File has been updated.
+#  Successfully updated.
 
 # Not a target:
 build/test/mbrtu.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
+
+# Not a target:
+build/test/startup_stm32f217zgtx.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+reports:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 182):
+	$(V1) mkdir -p $@
 
 # Not a target:
 build/test/usbd_ctlreq.o:
@@ -906,18 +921,6 @@ build/test/usbd_ctlreq.o:
 
 # Not a target:
 build/relese/keyboard.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_uc1701_dogs102.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_d_a2printer.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -935,12 +938,6 @@ build/relese/u8g2_ll_hvline.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_capture.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/stm32f2xx_hal_timebase_tim.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -948,25 +945,6 @@ build/relese/stm32f2xx_hal_timebase_tim.o:
 
 # Not a target:
 build/relese/ip6_frag.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has  
-not been updated.
-
-# Not a target:
-build/test/u8x8_d_uc1611.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_fonts.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/unity.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -979,12 +957,6 @@ ethernet/Src/http.c:
 
 # Not a target:
 build/test/autoip.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_uc1608.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1026,12 +998,6 @@ build/test/mac.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_capture.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/ip4_addr.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -1044,13 +1010,7 @@ build/test/vrSensor.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_d_uc1617.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8g2_kerning.o:
+build/test/usb_device.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1062,7 +1022,7 @@ build/relese/etharp.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/usb_device.o:
+controller/Src/controllerTypes.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1075,24 +1035,6 @@ build/relese/slipif.o:
 
 # Not a target:
 build/relese/ip6_addr.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8g2_bitmap.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-Core/Src/stm32f2xx_hal_msp.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-controller/Src/controllerTypes.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1116,7 +1058,8 @@ build/relese/ethip6.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/stm32f2xx_hal_spi.o:
+build/ 
+test/stm32f2xx_hal_spi.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1173,17 +1116,10 @@ build/test/stm32f2xx_hal_eth.o:
 build/test/test_chart.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
-#  File has not been 
- updated.
-
-# Not a target:
-build/test/ip4.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_input_value.o:
+build/test/ip4.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1213,10 +1149,11 @@ build/relese/usbd_custom_hid_if.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8log_u8g2.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma.c:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-24 15:41:58
+#  File has been updated.
+#  Successfully updated.
 
 # Not a target:
 build/test/usbd_custom_hid_if.o:
@@ -1225,9 +1162,15 @@ build/test/usbd_custom_hid_if.o:
 #  File has not been updated.
 
 # Not a target:
+devices/Src/EEPROM.c:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-17 09:30:53
+#  Last modified 2022-06-28 13:21:45
 #  File has been updated.
 #  Successfully updated.
 
@@ -1256,33 +1199,18 @@ build/relese/stm32f2xx_hal_iwdg.o:
 #  File has not been updated.
 
 # Not a target:
-devices/Src/EEPROM.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 controller/Src/dataProces.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
-build/relese/u8x8_u8toa.o:
+out/test/energan_enb_test_...elf: build/test/stm32f2xx_hal.o build/test/stm32f2xx_hal_adc.o build/test/stm32f2xx_hal_adc_ex.o build/test/stm32f2xx_hal_cortex.o build/test/stm32f2xx_hal_dma.o build/test/stm32f2xx_hal_dma_ex.o build/test/stm32f2xx_hal_eth.o build/test/stm32f2xx_hal_exti.o build/test/stm32f2xx_hal_flash.o build/test/stm32f2xx_hal_flash_ex.o build/test/stm32f2xx_hal_gpio.o build/test/stm32f2xx_hal_i2c.o build/test/stm32f2xx_hal_iwdg.o build/test/stm32f2xx_hal_pcd.o build/test/stm32f2xx_hal_pcd_ex.o build/test/stm32f2xx_hal_pwr.o build/test/stm32f2xx_hal_pwr_ex.o build/test/stm32f2xx_hal_rcc.o build/test/stm32f2xx_hal_rcc_ex.o build/test/stm32f2xx_hal_sd.o build/test/stm32f2xx_hal_spi.o build/test/stm32f2xx_hal_tim.o build/test/stm32f2xx_hal_tim_ex.o build/test/stm32f2xx_hal_uart.o build/test/stm32f2xx_ll_sdmmc.o build/test/stm32f2xx_ll_usb.o build/test/u8g2_box.o build/test/u8g2_buffer.o b 
+uild/test/u8g2_font.o build/test/u8g2_fonts.o build/test/u8g2_hvline.o build/test/u8g2_ll_hvline.o build/test/u8g2_line.o build/test/u8g2_d_setup.o build/test/u8g2_setup.o build/test/u8g2_d_memory.o build/test/u8x8_setup.o build/test/u8x8_8x8.o build/test/u8x8_cad.o build/test/u8x8_display.o build/test/u8x8_gpio.o build/test/u8x8_byte.o build/test/u8x8_d_st7920.o build/test/u8g2_intersection.o build/test/fix16.o build/test/fix16_exp.o build/test/fix16_sqrt.o build/test/fix16_str.o build/test/fix16_trig.o build/test/fract32.o build/test/uint32.o build/test/ethernetif.o build/test/lwip.o build/test/sys_arch.o build/test/ethernet.o build/test/lowpan6.o build/test/slipif.o build/test/def.o build/test/dns.o build/test/inet_chksum.o build/test/init.o build/test/ip.o build/test/mem.o build/test/memp.o build/test/netif.o build/test/pbuf.o build/test/raw.o build/test/stats.o build/test/sys.o build/test/tcp.o build/test/tcp_in.o build/test/tcp_out.o build/test/timeouts.o build/test/udp.o build/test/dhcp6.o build/test/ethip6.o build/test/icmp6.o build/test/inet6.o build/test/ip6.o build/test/ip6_addr.o build/test/ip6_frag.o build/test/mld6.o build/test/nd6.o build/test/autoip.o build/test/dhcp.o build/test/etharp.o build/test/icmp.o build/test/igmp.o build/test/ip4.o build/test/ip4_addr.o build/test/ip4_frag.o build/test/mqtt.o build/test/api_lib.o build/test/api_msg.o build/test/err.o build/test/netbuf.o build/test/netdb.o build/test/netifapi.o build/test/sockets.o build/test/tcpip.o build/test/bsp_driver_sd.o build/test 
+/fatfs_platform.o build/test/fatfs.o build/test/diskio.o build/test/ff.o build/test/ff_gen_drv.o build/test/syscall.o build/test/sd_diskio.o build/test/freertos.o build/test/croutine.o build/test/event_groups.o build/test/list.o build/test/queue.o build/test/stream_buffer.o build/test/tasks.o build/test/timers.o build/test/heap_4.o build/test/port.o build/test/cmsis_os2.o build/test/usbd_customhid.o build/test/usbd_core.o build/test/usbd_ctlreq.o build/test/usbd_ioreq.o build/test/usbd_conf.o build/test/usb_device.o build/test/usbd_custom_hid_if.o build/test/usbd_desc.o build/test/main.o build/test/syscalls.o build/test/sysmem.o build/test/system_stm32f2xx.o build/test/stm32f2xx_hal_msp.o build/test/stm32f2xx_hal_timebase_tim.o build/test/stm32f2xx_it.o build/test/mb.o build/test/mbcrc.o build/test/mbfunc.o build/test/mbregister.o build/test/mbrtu.o build/test/mbuart.o build/test/data_manager.o build/test/keyboard.o build/test/lcd.o build/test/menu.o build/test/menu_data.o build/test/utils.o build/test/http.o build/test/rest.o build/test/server.o build/test/pid.o build/test/EEPROM.o build/test/RTC.o build/test/adc.o build/test/fatsd.o build/test/mac.o build/test/usbhid.o build/test/chart.o build/test/config.o build/test/dataAPI.o build/test/dataSD.o build/test/freeData.o build/test/outputData.o build/test/outputProcessing.o build/test/storage.o build/test/alarm.o build/test/charger.o build/test/controller.o build/test/controllerTypes.o build/test/dataProces.o build/test/electro.o build/test/engine.o build/test/fpi.o build/test/fpo.o build/test/journal.o build/test/measurement.o build/test/statistics.o build/test/vrSensor.o build/test/cli.o build/test/common.o build/test/system.o build/test/constants.o build/test/unity.o build/test/unity_config.o build/test/test_chart.o build/test/test_cli.o build/test/test_dataAPI.o build/test/test_eeprom.o build/test/test_http.o build/test/test_outputProcessing.o build/test/test_rest.o build/test/test_rtc.o build/test/test_storage.o build/test/test_usbhid.o build/test/test_vr.o build/test/tests.o build/test/startup_stm32f217zgtx.o Makefile
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-
-out/test/energan_enb_test_...elf: build/test/freertos.o build/test/stm32f2xx_hal.o build/test/stm32f2xx_hal_adc.o build/test/stm32f2xx_hal_adc_ex.o build/test/stm32f2xx_hal_cortex.o build/test/stm32f2xx_hal_dma.o build/test/stm32f2xx_hal_dma_ex.o build/test/stm32f2xx_hal_eth.o build/test/stm32f2xx_hal_exti.o build/test/stm32f2xx_hal_flash.o build/test/stm32f2xx_hal_flash_ex.o build/test/stm32f2xx_hal_gpio.o build/test/stm32f2xx_hal_i2c.o build/test/stm32f2xx_hal_iwdg.o build/test/stm32f2xx_hal_pcd.o build/test/stm32f2xx_hal_pcd_ex.o build/test/stm32f2xx_hal_pwr.o build/test/stm32f2xx_hal_pwr_ex.o build/test/stm32f2xx_hal_rcc.o build/test/stm32f2xx_hal_rcc_ex.o build/test/stm32f2xx_hal_sd.o build/test/stm32f2xx_hal_spi.o build/test/stm32f2xx_hal_tim.o build/test/stm32f2xx_hal_tim_ex.o build/test/stm32f2xx_hal_uart.o build/test/stm32f2xx_ll_sdmmc.o build/test/stm32f2xx_ll_usb.o build/test/unity.o build/test/u8g2_bitmap.o build/test/u8g2_box.o build/test/u8g2_buffer.o build/test/u8g2_circle.o build/test/u8g2_cleardisplay.o build/test/u8g2_d_memory.o build/test/u8g2_d_setup.o build/test/u8g2_font.o b 
-uild/test/u8g2_fonts.o build/test/u8g2_hvline.o build/test/u8g2_input_value.o build/test/u8g2_intersection.o build/test/u8g2_kerning.o build/test/u8g2_line.o build/test/u8g2_ll_hvline.o build/test/u8g2_message.o build/test/u8g2_polygon.o build/test/u8g2_selection_list.o build/test/u8g2_setup.o build/test/u8log.o build/test/u8log_u8g2.o build/test/u8log_u8x8.o build/test/u8x8_8x8.o build/test/u8x8_byte.o build/test/u8x8_cad.o build/test/u8x8_capture.o build/test/u8x8_d_a2printer.o build/test/u8x8_d_st7920.o build/test/u8x8_d_t6963.o build/test/u8x8_d_uc1601.o build/test/u8x8_d_uc1604.o build/test/u8x8_d_uc1608.o build/test/u8x8_d_uc1610.o build/test/u8x8_d_uc1611.o build/test/u8x8_d_uc1617.o build/test/u8x8_d_uc1638.o build/test/u8x8_d_uc1701_dogs102.o build/test/u8x8_d_uc1701_mini12864.o build/test/u8x8_debounce.o build/test/u8x8_display.o build/test/u8x8_fonts.o build/test/u8x8_gpio.o build/test/u8x8_input_value.o build/test/u8x8_message.o build/test/u8x8_selection_list.o build/test/u8x8_setup.o build/test/u 
-8x8_string.o build/test/u8x8_u16toa.o build/test/u8x8_u8toa.o build/test/usbd_customhid.o build/test/usbd_core.o build/test/usbd_ctlreq.o build/test/usbd_ioreq.o build/test/diskio.o build/test/ff.o build/test/ff_gen_drv.o build/test/syscall.o build/test/sd_diskio.o build/test/croutine.o build/test/event_groups.o build/test/list.o build/test/queue.o build/test/stream_buffer.o build/test/tasks.o build/test/timers.o build/test/heap_4.o build/test/port.o build/test/cmsis_os2.o build/test/sys_arch.o build/test/ethernet.o build/test/lowpan6.o build/test/slipif.o build/test/def.o build/test/dns.o build/test/inet_chksum.o build/test/init.o build/test/ip.o build/test/mem.o build/test/memp.o build/test/netif.o build/test/pbuf.o build/test/raw.o build/test/stats.o build/test/sys.o build/test/tcp.o build/test/tcp_in.o build/test/tcp_out.o build/test/timeouts.o build/test/udp.o build/test/dhcp6.o build/test/ethip6.o build/test/icmp6.o build/test/inet6.o build/test/ip6.o build/test/ip6_addr.o build/test/ip6_frag.o build/te 
-st/mld6.o build/test/nd6.o build/test/autoip.o build/test/dhcp.o build/test/etharp.o build/test/icmp.o build/test/igmp.o build/test/ip4.o build/test/ip4_addr.o build/test/ip4_frag.o build/test/mqtt.o build/test/api_lib.o build/test/api_msg.o build/test/err.o build/test/netbuf.o build/test/netdb.o build/test/netifapi.o build/test/sockets.o build/test/tcpip.o build/test/usbd_conf.o build/test/usb_device.o build/test/usbd_custom_hid_if.o build/test/usbd_desc.o build/test/ethernetif.o build/test/lwip.o build/te 
-st/fix16.o build/test/fix16_exp.o build/test/fix16_sqrt.o build/test/fix16_str.o build/test/fix16_trig.o build/test/fract32.o build/test/uint32.o build/test/bsp_driver_sd.o build/test/fatfs_platform.o build/test/fatfs.o build/test/main.o build/test/stm32f2xx_hal_msp.o build/test/stm32f2xx_hal_timebase_tim.o build/test/stm32f2xx_it.o build/test/syscalls.o build/test/sysmem.o build/test/system_stm32f2xx.o build/test/unity_config.o build/test/mb.o build/test/mbcrc.o build/test/mbfunc.o build/test/mbregister.o build/test/mbrtu.o build/test/mbuart.o build/test/data_manager.o build/test/keyboard.o build/test/lcd.o build/test/menu.o build/test/menu_data.o build/test/utils.o build/test/http.o build/test/rest.o build/test/server.o build/test/pid.o build/test/EEPROM.o build/test/RTC.o build/test/adc.o build/test/fatsd.o build/test/mac.o build/test/usbhid.o build/test/chart.o build/test/config.o build/test/dataAPI.o build/test/dataSD.o build/test/freeData.o build/test/outputData.o build/test/outputProcessing.o build/tes 
-t/storage.o build/test/alarm.o build/test/charger.o build/test/controller.o build/test/controllerTypes.o build/test/dataProces.o build/test/electro.o build/test/engine.o build/test/fpi.o build/test/fpo.o build/test/journal.o build/test/measurement.o build/test/statistics.o build/test/vrSensor.o build/test/cli.o build/test/common.o build/test/system.o build/test/test_chart.o build/test/test_cli.o build/test/test_dataAPI.o build/test/test_eeprom.o build/test/test_http.o build/test/test_outputProcessing.o build/test/test_rest.o build/test/test_rtc.o build/test/test_storage.o build/test/test_usbhid.o build/test/test_vr.o build/test/tests.o build/test/startup_stm32f217zgtx.o Makefile
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 163):
+#  recipe to execute (from 'Makefile', line 166):
 	@echo make test elf files...
 	$(V1) $(CC) $(TEST_OBJECTS) $(LDFLAGS_TEST) -o $@
 	$(V1) $(SIZE) $@
@@ -1297,25 +1225,25 @@ version:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 219):
+#  recipe to execute (from 'Makefile', line 222):
 	@echo $(VER)
 
 # Not a target:
-build/test/unity.o:
+build/test/u8g2_d_setup.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/test/u8g2_d_setup.o:
+build/test/usbd_customhid.o:
 #  Implicit rule search has not been done.
-#  Modification time never c 
-hecked.
+#  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/test/usbd_customhid.o:
-#  Implicit rule search has not been done.
+build/test/unity.o:
+#  Implicit rule search has n 
+ot been done.
 #  Modification time never checked.
 #  File has not been updated.
 
@@ -1350,12 +1278,6 @@ devices/Src/fatsd.c:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_u8toa.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/fix16_str.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -1369,12 +1291,6 @@ build/relese/uint32.o:
 
 # Not a target:
 build/test/fatfs.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8g2_cleardisplay.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1398,31 +1314,7 @@ build/relese/mqtt.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_debounce.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/storage.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8log_u8x8.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_d_uc1617.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/unity_config.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1437,7 +1329,7 @@ out/relese/energan_enb_relese_...bin: out/relese/energan_enb_relese_...elf | out
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 146):
+#  recipe to execute (from 'Makefile', line 149):
 	@echo make bin file...
 	$(V1) $(BIN) $< $@	
 
@@ -1449,12 +1341,6 @@ build/relese/fix16_exp.o:
 
 # Not a target:
 build/relese/sys.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_selection_list.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1523,7 +1409,7 @@ flash: out/relese/energan_enb_relese_...hex
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 207):
+#  recipe to execute (from 'Makefile', line 210):
 	$(STFLASH) --reset --format ihex write $<
 
 # Not a target:
@@ -1548,8 +1434,7 @@ build/test/statistics.o:
 build/test/stm32f2xx_hal_exti.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
-#  Fi 
-le has not been updated.
+#  File has not been updated.
 
 # Not a target:
 build/relese/utils.o:
@@ -1561,14 +1446,14 @@ size:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 201):
+#  recipe to execute (from 'Makefile', line 204):
 	$(SIZE) $(TARGET_ELF)
 
 clean:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 196):
+#  recipe to execute (from 'Makefile', line 199):
 	-rm -fR $(BUILD_DIR)
 	-rm -fR $(REPORT_DIR)
 	-rm -fR $(OUTPUT_DIR)
@@ -1604,7 +1489,7 @@ build/test/tcp_in.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_fonts.o:
+build/test/mbfunc.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1616,25 +1501,7 @@ build/relese/freeData.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/mbfunc.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/dns.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8g2_bitmap.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_d_t6963.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1658,31 +1525,13 @@ build/test/rest.o:
 #  File has not been updated.
 
 # Not a target:
-Core/Src/stm32f2xx_hal_timebase_tim.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/list.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_d_uc1608.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/measurement.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_selection_list.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1712,12 +1561,6 @@ controller/Src/fpo.c:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8log_u8x8.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/RTC.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -1732,7 +1575,7 @@ common/Src/system.c:
 # Not a target:
 make/source.mk:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-17 09:30:53
+#  Last modified 2022-06-28 12:47:20
 #  File has been updated.
 #  Successfully updated.
 
@@ -1743,19 +1586,20 @@ build/relese/fix16_sqrt.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/data_manager.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8g2_selection_list.o:
+build/relese 
+/data_manager.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
 build/relese/sysmem.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+build/test/ip4_addr.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1774,12 +1618,6 @@ build/test/stm32f2xx_hal_adc.o:
 
 # Not a target:
 build/test/heap_4.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/ip4_addr.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1854,8 +1692,7 @@ build/relese/sd_diskio.o:
 build/relese/netbuf.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
-#  File has not  
-been updated.
+#  File has not been updated.
 
 # Not a target:
 build/test/engine.o:
@@ -1870,13 +1707,13 @@ build/relese/api_msg.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/icmp.o:
+build/relese/fix16.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/relese/fix16.o:
+build/relese/icmp.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1900,12 +1737,6 @@ hmi/Src/utils.c:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8g2_polygon.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/u8g2_setup.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -1924,13 +1755,13 @@ build/relese/measurement.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/ff_gen_drv.o:
+build/test/uint32.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/test/uint32.o:
+build/test/ff_gen_drv.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -1941,18 +1772,41 @@ devices/Src/adc.c:
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
-build/relese/stm32f2xx_hal_dma.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+build/relese/stm32f2xx_hal_dma.o: Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma.c Makefile | build build/relese
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'stm32f2xx_hal_dma'
+#  Last modified 2022-06-28 12:53:56
+#  File has been updated.
+#  Needs to be updated (-q is set).
+# automatic
+# @ := build/relese/stm32f2xx_hal_dma.o
+# automatic
+# * := stm32f2xx_hal_dma
+# automatic
+# < := Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma.c
+# automatic
+# + := Drivers/STM32F2xx_HAL_Dr 
+iver/Src/stm32f2xx_hal_dma.c Makefile
+# automatic
+# % := 
+# automatic
+# ^ := Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_dma.c Makefile
+# automatic
+# ? := Makefile
+# automatic
+# | := build build/relese
+# variable set hash-table stats:
+# Load=8/32=25%, Rehash=0, Collisions=10/31=32%
+#  recipe to execute (from 'Makefile', line 132):
+	@echo "%% $(notdir $<)" "$(STDOUT)"
+	$(V1) $(CC) -c $(CFLAGS) $(GCC_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 out:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 173):
-	$(V1) mkdir $@		
+#  recipe to execute (from 'Makefile', line 176):
+	$(V1) mkdir -p $@		
 	
 
 # Not a target:
@@ -1971,11 +1825,17 @@ out/test:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 191):
-	$(V1) mkdir $@	
+#  recipe to execute (from 'Makefile', line 194):
+	$(V1) mkdir -p $@	
 
 # Not a target:
 controller/Src/engine.c:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+common/Src/constants.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2065,12 +1925,6 @@ build/test/u8g2_setup.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8g2_polygon.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/stm32f2xx_hal_pcd_ex.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -2110,19 +1964,12 @@ out/test/energan_enb_test_...hex: out/test/energan_enb_test_...elf | out out/tes
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 168):
+#  recipe to execute (from 'Makefile', line 171):
 	@echo make test hex file...
 	$(V1) $(HEX) $< $@
 
 # Not a target:
 build/test/fix16_sqrt.o:
-#  Implicit rule search has not been done.
-#  Modification time ne 
-ver checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8g2_circle.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2149,24 +1996,19 @@ out/relese/energan_enb_relese_...zip: out/relese/energan_enb_relese_...hex | out
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 150):
-	@echo pack hex file to the zip...
+#  recipe to execute (from 'Makefile', line 153):
+	@echo 
+ pack hex file to the zip...
 	$(V1) zip $(TARGET_ZIP) $(TARGET_HEX)
 
 # Not a target:
-build/test/u8log_u8g2.o:
+build/test/inet6.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
 build/relese/api_lib.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/inet6.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2208,10 +2050,11 @@ build/test/sys.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_d_uc1701_dogs102.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc_ex.c:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-24 15:41:58
+#  File has been updated.
+#  Successfully updated.
 
 # Not a target:
 build/test/timeouts.o:
@@ -2249,17 +2092,15 @@ build/relese/menu.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
-build/test/u8g2_message.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/stm32f2xx_hal_adc.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+build/relese/stm32f2xx_hal_adc.o: Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc.c Makefile | build build/relese
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'stm32f2xx_hal_adc'
+#  Last modified 2022-08-10 10:24:41
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 132):
+	@echo "%% $(notdir $<)" "$(STDOUT)"
+	$(V1) $(CC) -c $(CFLAGS) $(GCC_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 # Not a target:
 build/relese/menu_data.o:
@@ -2286,7 +2127,7 @@ all: release
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/4=0%
+# Load=0/32=0%, Rehash=0, Collisions=0/18=0%
 
 # Not a target:
 build/test/u8x8_cad.o:
@@ -2296,12 +2137,6 @@ build/test/u8x8_cad.o:
 
 # Not a target:
 build/test/utils.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_uc1701_mini12864.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2367,12 +2202,6 @@ build/relese/u8g2_line.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8g2_circle.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/stm32f2xx_hal_pwr.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -2386,38 +2215,18 @@ build/relese/lwip.o:
 
 build:
 #  Implicit rule search has not been done.
-#  Implicit/static pattern stem: ''
-#  File does not exist.
+#  Last modified 2022-06-28 11:42:28
 #  File has been updated.
-#  Needs to be updated (-q is set).
-# automatic
-# @ := build
-# automatic
-# * := 
-# automatic
-# < := 
-# automatic
-# + := 
-# automatic
-# % := 
-# automatic
-# ^ := 
-# automatic
-# ? := 
-# automatic
-# | := 
-# var 
-iable set hash-table stats:
-# Load=8/32=25%, Rehash=0, Collisions=1/13=8%
-#  recipe to execute (from 'Makefile', line 176):
-	$(V1) mkdir $@		
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 179):
+	$(V1) mkdir -p $@		
 
 build/test:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 185):
-	$(V1) mkdir $@
+#  recipe to execute (from 'Makefile', line 188):
+	$(V1) mkdir -p $@
 
 # Not a target:
 build/relese/fpi.o:
@@ -2427,12 +2236,6 @@ build/relese/fpi.o:
 
 # Not a target:
 build/relese/ip.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_t6963.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2465,8 +2268,8 @@ out/relese:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 188):
-	$(V1) mkdir $@
+#  recipe to execute (from 'Makefile', line 191):
+	$(V1) mkdir -p $@
 
 # Not a target:
 build/relese/u8g2_intersection.o:
@@ -2475,7 +2278,7 @@ build/relese/u8g2_intersection.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_d_uc1701_mini12864.o:
+ModBus/Src/mbrtu.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2487,7 +2290,7 @@ build/test/u8g2_fonts.o:
 #  File has not been updated.
 
 # Not a target:
-ModBus/Src/mbrtu.c:
+controller/Src/statistics.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2529,11 +2332,12 @@ hmi/Src/menu_data.c:
 #  File has not been updated.
 
 zip:
-#  Implicit rule search has not been done.
+#  Implicit rule  
+search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 210):
-	zip $(TARGET_ZIP) $(TARGET_HEX)	
+#  recipe to execute (from 'Makefile', line 213):
+	$(V1) zip $(TARGET_ZIP) $(TARGET_HEX)	
 
 # Not a target:
 build/relese/ff_gen_drv.o:
@@ -2542,22 +2346,11 @@ build/relese/ff_gen_drv.o:
 #  File has not been updated.
 
 # Not a target:
-controller/Src/statistics.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_uc1601.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_input_value.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_cortex.c:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-24 15:41:58
+#  File has been updated.
+#  Successfully updated.
 
 # Not a target:
 controller/Src/alarm.c:
@@ -2578,12 +2371,6 @@ devices/Src/mac.c:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_d_a2printer.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/vrSensor.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -2595,42 +2382,29 @@ build/relese/u8x8_setup.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-build/relese/freertos.o: Core/Src/freertos.c Makefile | build build/relese
-#  Implicit rule search has been done.
-#  Implicit/static pattern stem: 'freertos'
-#  File does not exist.
-#  File has been updated.
-#  Needs to be updated (-q is set).
-# variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/4=0%
-#  recipe to execute (from 'Makefile', line 129):
-	@echo "%% $(notdir $<)" "$(STDOUT)"
-	$(V1) $(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+# Not a target:
+build/relese/freertos.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
-out/relese/energan_enb_relese_...elf: build/relese/freertos.o build/relese/stm32f2xx_hal.o build/relese/stm32f2xx_hal_adc.o build/relese/stm32f2xx_hal_adc_ex.o build/relese/stm32f2xx_hal_cortex.o build/relese/stm32f2xx_hal_dma.o build/relese/stm32f2xx_hal_dma_ex.o build/relese/stm32f2xx_hal_eth.o build/relese/stm32f2xx_hal_exti.o build/relese/stm32f2xx_hal_flash.o build/relese/stm32f2xx_hal_flash_ex.o build/relese/stm32f2xx_hal_gpio.o build/relese/stm32f2xx_hal_i2c.o build/relese/stm32f2xx_hal_iwdg.o build/relese/stm32f2xx_hal_pcd.o build/relese/stm32f2xx_hal_pcd_ex.o build/relese/stm32f2xx_hal_pwr.o build/relese/stm32f2xx_hal_pwr_ex.o build/relese/stm32f2xx_hal_rcc.o build/relese/stm32f2xx_hal_rcc_ex.o build/relese/stm32f2xx_hal_sd.o build/relese/stm32f2xx_hal_spi.o build/relese/stm32f2xx_hal_tim.o build/relese/stm3 
-2f2xx_hal_tim_ex.o build/relese/stm32f2xx_hal_uart.o build/relese/stm32f2xx_ll_sdmmc.o build/relese/stm32f2xx_ll_usb.o build/relese/unity.o build/relese/u8g2_bitmap.o build/relese/u8g2_box.o build/relese/u8g2_buffer.o build/relese/u8g2_circle.o build/relese/u8g2_cleardisplay.o build/relese/u8g2_d_memory.o build/relese/u8g2_d_setup.o build/relese/u8g2_font.o build/relese/u8g2_fonts.o build/relese/u8g2_hvline.o build/relese/u8g2_input_value.o build/relese/u8g2_intersection.o build/relese/u8g2_kerning.o build/relese/u8g2_line.o build/relese/u8g2_ll_hvline.o build/relese/u8g2_message.o build/relese/u8g2_polygon.o build/relese/u8g2_selection_list.o build/relese/u8g2_setup.o build/relese/u8log.o build/relese/u8log_u8g2.o build/relese/u8log_u8x8.o build/relese/u8x8_8x8.o build/relese/u8x8_byte.o build/relese/u8x8_cad.o build/relese/u8x8_capture.o build/relese/u8x8_d_a2printer.o build/relese/u8x8_d_st7920.o build/relese/u8x8_d_t6963.o build/relese/u8x8_d_uc1601.o build/relese/u8x8_d_uc1604.o build/relese/u8x8_d_uc1608.o build/relese/u8x8_d_uc1610.o build/relese/u8x8_d_uc1611.o build/relese/u8x8_d_uc1617.o build/relese/u8x8_d_uc1638.o build/relese/u8x8_d_uc1701_dogs102.o build/relese/u8x8_d_uc1701_mini12864.o build/relese/u8x8_debounce.o build/relese/u8x8_display.o build/relese/u8x8_fonts.o build/relese/u8x8_gpio.o build/relese/u8x8_input_value.o build/relese/u8x8_message.o build/relese/u8x8_selection_list.o build/relese/u8x8_setup.o build/relese/u8x8_string.o build/relese/u8x8_u16toa.o build/relese/u8x8_u8toa.o build/r 
-elese/usbd_customhid.o build/relese/usbd_core.o build/relese/usbd_ctlreq.o build/relese/usbd_ioreq.o build/relese/diskio.o build/relese/ff.o build/relese/ff_gen_drv.o build/relese/syscall.o build/relese/sd_diskio.o build/relese/croutine.o build/relese/event_groups.o build/relese/list.o build/relese/queue.o build/relese/stream_buffer.o build/relese/tasks.o build/relese/timers.o build/relese/heap_4.o build/relese/port.o build/relese/cmsis_os2.o build/relese/sys_arch.o build/relese/ethernet.o build/relese/lowpan6.o build/relese/slipif.o build/relese/def.o build/relese/dns.o build/relese/inet_chksum.o build/relese/init.o build/relese/ip.o build/relese/mem.o build/relese/memp.o build/relese/netif.o build/relese/pbuf.o build/relese/raw.o build/relese/stats.o build/relese/sys.o build/relese/tcp.o build/relese/tcp_in.o build/relese/tcp_out.o build/relese/timeouts.o build/relese/udp.o build/relese/dhcp6.o build/relese/ethip6.o build/relese/icmp6.o build/relese/inet6.o build/relese/ip6.o build/relese/ip6_addr.o build/r 
-elese/ip6_frag.o build/relese/mld6.o build/relese/nd6.o build/relese/autoip.o build/relese/dhcp.o build/relese/etharp.o build/relese/icmp.o build/relese/igmp.o build/relese/ip4.o build/relese/ip4_addr.o build/relese/ip4_frag.o build/relese/mqtt.o build/relese/api_lib.o build/relese/api_msg.o build/relese/err.o build/relese/netbuf.o build/relese/netdb.o build/relese/netifapi.o build/relese/sockets.o build/relese/tcpip.o build/relese/usbd_conf.o build/relese/usb_device.o build/relese/usbd_custom_hid_if.o build/relese/usbd_desc.o build/relese/ethernetif.o build/relese/lwip.o build/relese/fix16.o build/relese/fix16_exp.o build/relese/fix16_sqrt.o build/relese/fix16_str.o build/relese/fix16_trig.o build/relese/fract32.o build/relese/uint32.o build/relese/bsp_driver_sd.o build/relese/fatfs_platform.o build/relese/fatfs.o build/relese/main.o build/relese/stm32f2xx_hal_msp.o build/relese/stm32f2xx_hal_timebase_tim.o build/relese/stm32f2xx_it.o build/relese/syscalls.o build/relese/sysmem.o build/relese/system_stm32f2xx.o build/relese/unity_config.o build/relese/mb.o build/relese/mbcrc.o build/relese/mbfunc.o build/relese/mbregister.o build/relese/mbrtu.o build/relese/mbuart.o build/relese/data_manager.o build/relese/keyboard.o build/relese/lcd.o build/relese/menu.o build/relese/menu_data.o build/relese/utils.o build/relese/http.o build/relese/rest.o build/relese/server.o build/relese/pid.o build/relese/EEPROM.o build/relese/RTC.o build/relese/adc.o build/relese/fatsd.o build/relese/mac.o build/relese/usbhid.o build/relese/chart.o build/relese/config.o build/relese/dataAPI.o build/relese/dataSD.o build/relese/freeData.o build/relese/outputData.o build/relese/outputProcessing.o build/relese/storage.o build/relese/alarm.o build/relese/charger.o build/relese/controller.o build/relese/controllerTypes.o build/relese/dataProces.o build/relese/electro.o build/relese/engine.o build/relese/fpi.o build/relese/fpo.o build/relese/journal.o build/relese/measurement.o build/relese/statistics.o build/relese/vrSensor.o build/relese/cli.o  
-build/relese/common.o build/relese/system.o build/relese/startup_stm32f217zgtx.o Makefile
+out/relese/energan_enb_relese_...elf: build/relese/stm32f2xx_hal.o build/relese/stm32f2xx_hal_adc.o build/relese/stm32f2xx_hal_adc_ex.o build/relese/stm32f2xx_hal_cortex.o build/relese/stm32f2xx_hal_dma.o build/relese/stm32f2xx_hal_dma_ex.o build/relese/stm32f2xx_hal_eth.o build/relese/stm32f2xx_hal_exti.o build/relese/stm32f2xx_hal_flash.o build/relese/stm32f2xx_hal_flash_ex.o build/relese/stm32f2xx_hal_gpio.o build/relese/stm32f2xx_hal_i2c.o build/relese/stm32f2xx_hal_iwdg.o build/relese/stm32f2xx_hal_pcd.o build/relese/stm32f2xx_hal_pcd_ex.o build/relese/stm32f2xx_hal_pwr.o build/relese/stm32f2xx_hal_pwr_ex.o build/relese/stm32f2xx_hal_rcc.o build/relese/stm32f2xx_hal_rcc_ex.o build/relese/stm32f2xx_hal_sd.o build/relese/stm32f2xx_hal_spi.o build/relese/stm32f2xx_hal_tim.o build/relese/stm32f2xx_hal_tim_ex.o build/relese/stm32f2xx_hal_uart.o build/relese/stm32f2xx_ll_sdmmc.o build/relese/stm32f2xx_ll_usb.o build/relese/u8g2_box.o build/relese/u8g2_buffer.o build/relese/u8g2_font.o build/relese/u8g2_fonts.o build/relese/u8g2_hvline.o build/relese/u8g2_ll_hvline.o build/relese/u8g2_line.o build/relese/u8g2_d_setup.o build/relese/u8g2_setup.o build/relese/u8g2_d_memory.o build/relese/u8x8_setup.o build/relese/u8x8_8x8.o build/relese/u8x8_cad.o build/relese/u8x8_display.o build/relese/u8x8_gpio.o build/relese/u8x8_byte.o build/relese/u8x8_d_st7920.o build/relese/u8g2_intersection.o build/relese/fix16.o build/relese/fix16_exp.o build/relese/fix16_sqrt.o build/relese/fix16_str.o build/relese/fix16_trig.o build/relese/fract32.o build/relese/uint32.o build/relese/ethernetif.o build/relese/lwip.o build/relese/sys_arch.o 
+ build/relese/ethernet.o build/relese/lowpan6.o build/relese/slipif.o build/relese/def.o build/relese/dns.o build/relese/inet_chksum.o build/relese/init.o build/relese/ip.o build/relese/mem.o build/relese/memp.o build/relese/netif.o build/relese/pbuf.o build/relese/raw.o build/relese/stats.o build/relese/sys.o build/relese/tcp.o build/relese/tcp_in.o build/relese/tcp_out.o build/relese/timeouts.o build/relese/udp.o build/relese/dhcp6.o build/relese/ethip6.o build/relese/icmp6.o build/relese/inet6.o build/relese/ip6.o build/relese/ip6_addr.o build/relese/ip6_frag.o build/relese/mld6.o build/relese/nd6.o build/relese/autoip.o build/relese/dhcp.o build/relese/etharp.o build/relese/icmp.o build/relese/igmp.o build/relese/ip4.o build/relese/ip4_addr.o build/relese/ip4_frag.o build/relese/mqtt.o build/relese/api_lib.o build/relese/api_msg.o build/relese/err.o build/relese/netbuf.o build/relese/netdb.o build/relese/netifapi.o build/relese/sockets.o build/relese/tcpip.o build/relese/bsp_driver_sd.o build/relese/fatfs 
+_platform.o build/relese/fatfs.o build/relese/diskio.o build/relese/ff.o build/relese/ff_gen_drv.o build/relese/syscall.o build/relese/sd_diskio.o build/relese/freertos.o build/relese/croutine.o build/relese/event_groups.o build/relese/list.o build/relese/queue.o build/relese/stream_buffer.o build/relese/tasks.o build/relese/timers.o build/relese/heap_4.o build/relese/port.o build/relese/cmsis_os2.o build/relese/usbd_customhid.o build/relese/usbd_core.o build/relese/usbd_ctlreq.o build/relese/usbd_ioreq.o build/relese/usbd_conf.o build/relese/usb_device.o build/relese/usbd_custom_hid_if.o build/relese/usbd_desc.o build/relese/main.o build/relese/syscalls.o build/relese/sysmem.o build/relese/system_stm32f2xx.o build/relese/stm32f2xx_hal_msp.o build/relese/stm32f2xx_hal_timebase_tim.o build/relese/stm32f2xx_it.o build/relese/mb.o build/relese/mbcrc.o build/relese/mbfunc.o build/relese/mbregister.o build/relese/mbrtu.o build/relese/mbuart.o build/relese/data_manager.o build/relese/keyboard.o build/relese/lcd.o build/relese/menu.o build/relese/menu_data.o build/relese/utils.o build/relese/http.o build/relese/rest.o build/relese/server.o build/relese/pid.o build/relese/EEPROM.o build/relese/RTC.o build/relese/adc.o build/relese/fatsd.o build/relese/mac.o build/relese/usbhid.o build/relese/chart.o build/relese/config.o build/relese/dataAPI.o build/relese/dataSD.o build/relese/freeData.o build/relese/outputData.o build/relese/outputProcessing.o build/relese/storage.o build/relese/alarm.o build/relese/charger.o build/relese/controller.o build/relese/controllerTypes.o build/relese/dataProces.o build/relese/electro.o build/relese/engine.o build/relese/fpi.o build/relese/fpo.o build/relese/journal.o build/relese/measurement.o build/relese/statistics.o build/relese/vrSensor.o build/relese/cli.o build/relese/common.o build/relese/system.o build/relese/constants.o build/relese/startup_stm32f217zgtx.o Makefile
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has been updated.
-#  Needs to be updated (-q is set).
+#  Needs to be updated (-q 
+ is set).
 # variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/4=0%
-#  recipe to execute (from 'Makefile', line 137):
+# Load=0/32=0%, Rehash=0, Collisions=0/18=0%
+#  recipe to execute (from 'Makefile', line 140):
 	@echo make elf files...
 	$(V1) $(CC) $(OBJECTS) $(LDFLAGS_RELEASE) -o $@
 	$(V1) $(SIZE) $@
 
 # Not a target:
 build/test/stm32f2xx_hal_uart.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_message.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2666,12 +2440,6 @@ build/test/stm32f2xx_hal_gpio.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8g2_message.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/init.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -2689,19 +2457,7 @@ build/test/controller.o:
 #  File has not been updated.
 
 # Not a target:
-Unity/unity_config.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/dhcp.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_uc1604.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2714,12 +2470,6 @@ build/test/alarm.o:
 
 # Not a target:
 build/test/syscalls.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_d_uc1604.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2785,12 +2535,6 @@ build/test/lwip.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_d_uc1610.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/nd6.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -2828,12 +2572,6 @@ devices/Src/usbhid.c:
 
 # Not a target:
 build/test/queue.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8g2_input_value.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2877,7 +2615,8 @@ build/relese/mbfunc.o:
 # Not a target:
 build/relese/outputProcessing.o:
 #  Implicit rule search has not been done.
-#  Modification time never checked.
+#  Modification time never chec 
+ked.
 #  File has not been updated.
 
 # Not a target:
@@ -2908,13 +2647,6 @@ build/test/test_cli.o:
 build/test/fpo.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
-#  File has not be 
-en updated.
-
-# Not a target:
-build/test/u8x8_u16toa.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
@@ -2930,11 +2662,15 @@ build/test/ff.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
-build/relese/stm32f2xx_hal_cortex.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+build/relese/stm32f2xx_hal_cortex.o: Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_cortex.c Makefile | build build/relese
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'stm32f2xx_hal_cortex'
+#  Last modified 2022-08-10 10:24:43
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 132):
+	@echo "%% $(notdir $<)" "$(STDOUT)"
+	$(V1) $(CC) -c $(CFLAGS) $(GCC_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 # Not a target:
 build/relese/usb_device.o:
@@ -2950,12 +2686,6 @@ build/test/stm32f2xx_hal_pcd.o:
 
 # Not a target:
 build/test/fract32.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-Core/Src/main.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -2985,6 +2715,12 @@ build/relese/ethernetif.o:
 #  File has not been updated.
 
 # Not a target:
+build/test/constants.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 build/relese/usbd_ctlreq.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -2998,12 +2734,6 @@ build/relese/stm32f2xx_hal_pwr.o:
 
 # Not a target:
 build/test/nd6.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-Core/Src/sysmem.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -3087,25 +2817,7 @@ build/relese/fatfs.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8x8_u16toa.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/u8g2_font.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_uc1638.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_d_uc1601.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -3140,7 +2852,8 @@ build/test/stm32f2xx_hal_flash_ex.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
+# No 
+t a target:
 build/relese/EEPROM.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -3183,25 +2896,19 @@ build/relese/usbd_core.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_d_uc1638.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/syscalls.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/test/u8g2_selection_list.o:
+build/test/icmp.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8log.o:
+build/test/EEPROM.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -3213,17 +2920,11 @@ build/test/event_groups.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/icmp.o:
-#  Implicit rule search has not been  
-done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/EEPROM.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal.c:
+#  Implicit rule search has been done.
+#  Last modified 2021-06-24 15:41:58
+#  File has been updated.
+#  Successfully updated.
 
 # Not a target:
 build/test/def.o:
@@ -3267,7 +2968,7 @@ release: out/relese/energan_enb_relese_...elf out/relese/energan_enb_relese_...h
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/4=0%
+# Load=0/32=0%, Rehash=0, Collisions=0/18=0%
 
 # Not a target:
 data/Src/outputProcessing.c:
@@ -3275,13 +2976,13 @@ data/Src/outputProcessing.c:
 #  Modification time never checked.
 #  File has not been updated.
 
-cppcheck: Core/Src/main.c Core/Src/stm32f2xx_hal_msp.c Core/Src/stm32f2xx_hal_timebase_tim.c Core/Src/stm32f2xx_it.c Core/Src/syscalls.c Core/Src/sysmem.c Core/Src/system_stm32f2xx.c Unity/unity_config.c ModBus/Src/mb.c ModBus/Src/mbcrc.c ModBus/Src/mbfunc.c ModBus/Src/mbregister.c ModBus/Src/mbrtu.c ModBus/Src/mbuart.c hmi/Src/data_manager.c hmi/Src/keyboard.c hmi/Src/lcd.c hmi/Src/menu.c hmi/Src/menu_data.c hmi/Src/utils.c ethernet/Src/http.c ethernet/Src/r 
-est.c ethernet/Src/server.c dsp/Src/pid.c devices/Src/EEPROM.c devices/Src/RTC.c devices/Src/adc.c devices/Src/fatsd.c devices/Src/mac.c devices/Src/usbhid.c data/Src/chart.c data/Src/config.c data/Src/dataAPI.c data/Src/dataSD.c data/Src/freeData.c data/Src/outputData.c data/Src/outputProcessing.c data/Src/storage.c controller/Src/alarm.c controller/Src/charger.c controller/Src/controller.c controller/Src/controllerTypes.c controller/Src/dataProces.c controller/Src/electro.c controller/Src/engine.c controller/Src/fpi.c controller/Src/fpo.c controller/Src/journal.c controller/Src/measurement.c controller/Src/statistics.c controller/Src/vrSensor.c common/Src/cli.c common/Src/common.c common/Src/system.c
+cppcheck: ModBus/Src/mb.c ModBus/Src/mbcrc.c ModBus/Src/mbfunc.c ModBus/Src/mbregister.c ModBus/Src/mbrtu.c ModBus/Src/mbuart.c hmi/Src/data_manager.c hmi/Src/keyboard.c hmi/Src/lcd.c hmi/Src/menu.c hmi/Src/menu_data.c hmi/Src/utils.c ethernet/Src/http.c ethernet/Src/rest.c ethernet/Src/server.c dsp/Src/pid.c devices/Src/EEPROM.c devices/Src/RTC.c devices/Src/adc.c devices/Src/fatsd.c devices/Src/mac.c devices/Src/usbhid.c data/Src/chart.c data/Src/config.c data/Src/dataAPI.c data/Src/dataSD.c data/Src/freeData.c data/Src/outputData.c data/Src/outputProcessing.c data/Src/storage.c controller/Src/alarm.c controller/Src/charger.c controller/Src/controller.c controller/Src/controllerTypes.c controller/Src/dataProces.c controller/Src/electro.c controller/Src/engine.c controller/Src/fpi.c controller/Src/fpo.c controller/Src/journal.c controller/Src/measurement.c controller/Src/statist 
+ics.c controller/Src/vrSensor.c common/Src/cli.c common/Src/common.c common/Src/system.c common/Src/constants.c | reports
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 213):
-	$(CPPCHECK) $(CHKFLAGS) $(C_INCLUDES) $(GLOBAL_DEFINES) --output-file=$(CHKREPORT) $^
+#  recipe to execute (from 'Makefile', line 216):
+	$(V1) $(CPPCHECK) $(CHKFLAGS) $(C_INCLUDES) $(GLOBAL_DEFINES) --output-file=$(CHKREPORT) $^
 
 # Not a target:
 build/relese/mbregister.o:
@@ -3350,13 +3051,7 @@ build/relese/statistics.o:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8g2_cleardisplay.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/u8x8_d_uc1611.o:
+controller/Src/charger.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -3373,35 +3068,25 @@ build/test/menu_data.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
-build/test/u8log.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+build/relese/stm32f2xx_hal.o: Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal.c Makefile | build build/relese
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'stm32f2xx_hal'
+#  Last modified 2022-08-10 10:24:40
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 132):
+	@echo "%% $(notdir $<)" "$(STDOUT)"
+	$(V1) $(CC) -c $(CFLAGS) $(GCC_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
-# Not a target:
-controller/Src/charger.c:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-.SUFFIXES:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/stm32f2xx_hal.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/relese/stm32f2xx_hal_adc_ex.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
+build/relese/stm32f2xx_hal_adc_ex.o: Drivers/STM32F2xx_HAL_Driver/Src/stm32f2xx_hal_adc_ex.c Makefile | build build/relese
+#  Implicit rule search has been done.
+#  Implicit/static pattern stem: 'stm32f2xx_hal_adc_ex'
+#  Last modified 2022-08-10 10:24:42
+#  File has been updated.
+#  Successfully updated.
+#  recipe to execute (from 'Makefile', line 132):
+	@echo "%% $(notdir $<)" "$(STDOUT)"
+	$(V1) $(CC) -c $(CFLAGS) $(GCC_FLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(RELEASE_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 # Not a target:
 build/test/igmp.o:
@@ -3448,13 +3133,6 @@ build/test/u8x8_8x8.o:
 
 # Not a target:
 build/relese/alarm.o:
-#  Implicit rul 
-e search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-Core/Src/stm32f2xx_it.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -3496,12 +3174,6 @@ data/Src/dataSD.c:
 #  File has not been updated.
 
 # Not a target:
-build/test/u8x8_string.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/relese/tcpip.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -3509,12 +3181,6 @@ build/relese/tcpip.o:
 
 # Not a target:
 build/relese/u8x8_byte.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
-build/test/u8x8_d_uc1610.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -3547,7 +3213,7 @@ out/relese/energan_enb_relese_...hex: out/relese/energan_enb_relese_...elf | out
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 142):
+#  recipe to execute (from 'Makefile', line 145):
 	@echo make hex file...
 	$(V1) $(HEX) $< $@
 	
@@ -3566,7 +3232,8 @@ build/relese/croutine.o:
 
 # Not a target:
 build/test/usbd_ioreq.o:
-#  Implicit rule search has not been done.
+#  Impli 
+cit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
 
@@ -3587,13 +3254,6 @@ hmi/Src/keyboard.c:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-
-# Not a target:
-Core/Src/freertos.c:
-#  Implicit rule search has been done.
-#  Last modified 2022-06-17 09:30:53
-#  File has been updated.
-#  Successfully updated.
 
 # Not a target:
 build/relese/u8g2_box.o:
@@ -3633,12 +3293,6 @@ build/test/stats.o:
 #  File has not been updated.
 
 # Not a target:
-build/relese/u8g2_kerning.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
-# Not a target:
 build/test/unity_config.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -3662,35 +3316,28 @@ build/relese/pbuf.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-# Not a target:
-build/test/u8g2_input_value.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-
 # files hash-table stats:
-# Load=525/1024=51%, Rehash=0, Collisions=661 
-/1135=58%
+# Load=462/1024=45%, Rehash=0, Collisions=576/1068=54%
 # VPATH Search Paths
 
-vpath %.c Core/Src;Drivers/STM32F2xx_HAL_Driver/Src;FATFS/App;FATFS/Target;LWIP/App;LWIP/Target;Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src;Middlewares/ST/STM32_USB_Device_Library/Core/Src;Middlewares/Third_Party/FatFs/src;Middlewares/Third_Party/FatFs/src/drivers;Middlewares/Third_Party/FatFs/src/option;Middlewares/Third_Party/FreeRTOS/Source;Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3;Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang;Middlewares/Third_Party/LwIP/src/api;Middlewares/Third_Party/LwIP/src/apps/mqtt;Middlewares/Third_Party/LwIP/src/core;Middlewares/Third_Party/LwIP/src/core/ipv4;Middlewares/Third_Party/LwIP/src/core/ipv6;Middlewares/Third_Party/LwIP/src/netif;Middlewares/Third_Party/LwIP/system/OS;ModBus/Src;USB_DEVICE/App;USB_DEVICE/Target;Unity;common/Src;controller/Src;data/Src;devices/Src;dsp/Src;ethernet/Src;hmi/Src;libfixmath/Src;u8g2/Src
+vpath %.c Core/Src;Drivers/STM32F2xx_HAL_Driver/Src;FATFS/App;FATFS/Target;LWIP/App;LWIP/Target;Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src;Middlewares/ST/STM32_USB_Device_Library/Core/Src;Middlewares/Third_Party/FatFs/src;Middlewares/Third_Party/FatFs/src/drivers;Middlewares/Third_Party/FatFs/src/option;Middlewares/Third_Party/FreeRTOS/Source;Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3;Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang;Middlewares/Third_Party/LwIP/src/api;Middlewares/Third_Party/LwIP/src/apps/mqtt;Middlewares/Third_Party/LwIP/src/core;Middlewares/Third_Party/LwIP/src/core/ipv4;Middlewares/Third_Party/LwIP/src/core/ipv6;Middlewares/Third_Party/LwIP/src/netif;Middlewares/Third_Party/LwIP/system/OS;ModBus/Src;USB_DEVICE/App;USB_DEVICE/Target;common/Src;controller/Src;data/Src;devices/Src;dsp/Src;ethernet/Src;hmi/Src;libfixmath/Src;u8g2/Src
 vpath %.s Core/Startup
-vpath %.c Core/Src;Drivers/STM32F2xx_HAL_Driver/Src;FATFS/App;FATFS/Target;LWIP/App;LWIP/Target;Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src;Middlewares/ST/STM32_USB_Device_Library/Core/Src;Middlewares/Third_Party/FatFs/src;Middlewares/Third_Party/FatFs/src/drivers;Middlewares/Third_Party/FatFs/src/option;Middlewares/Third_Party/FreeRTOS/Source;Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3;Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang;Middlewares/Third_Party/LwIP/src/api;Middlewares/Third_Party/LwIP/src/apps/mqtt;Middlewares/Third_Party/LwIP/src/core;Middlewares/Third_Party/LwIP/src/core/ipv4;Middlewares/Third_Party/LwIP/src/core/ipv6;Middlewares/Third_Party/LwIP/src/netif;Middlewares/Third_Party/LwIP/system/OS;ModBus/Src;Tests/Src;USB_DEVICE/App;USB_DEVICE/Target;Unity;common/Src;controller/Src;data/Src;devices/Src;dsp/Src;ethernet/Src;hmi/Src;libfixmath/Src;u8g2/Src
+vpath %.c Core/Src;Drivers/STM32F2xx_HAL_Driver/Src;FATFS/App;FATFS/Target;LWIP/App;LWIP/Target;Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src;Middlewares/ST/STM32_USB_Device_Library/Core/Src;Middlewares/Third_Party/FatFs/src;Middlewares/Third_Party/FatFs/src/drivers;Middlewares/Third_Party/FatFs/src/option;Middlewares/Third_Party/FreeRTOS/Source;Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3;Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang;Middlewares/Third_Party/LwIP/src/api;Middlewares/Third_Party/LwIP/src/apps/mqtt;Middlewares/Third_Party/LwIP/src/core;Middlewares/Third_Party/LwIP/src/core/ipv4;Middlewares/Third_Party/LwIP/src/core/ipv6;Middlewares/Third_Party/LwIP/src/netif;Middlewares/Third_Party/LwIP/system/OS;ModBus/Src;Tests/Src;USB_DEVICE/App;USB_DEVICE/Target;Unity;common/Src;controller/Src;data/Src;devices/Src;dsp/Src;e 
+thernet/Src;hmi/Src;libfixmath/Src;u8g2/Src
 vpath %.s Core/Startup
 
 # 4 'vpath' search paths.
 
- 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 2 (1) / strings = 812 / storage = 16204 B / avg = 19 B
-# current buf: size = 8174 B / used = 8031 B / count = 353 / avg = 22 B
-# other used: total = 8173 B / count = 459 / avg = 17 B
-# other free: total = 1 B / max = 1 B / min = 1 B / avg = 1 B
+# strcache buffers: 2 (0) / strings = 767 / storage = 14870 B / avg = 19 B
+# current buf: size = 8174 B / used = 6719 B / count = 299 / avg = 22 B
+# other used: total = 8151 B / count = 468 / avg = 17 B
+# other free: total = 23 B / max = 23 B / min = 23 B / avg = 23 B
 
-# strcache performance: lookups = 1082 / hit rate = 24%
+# strcache performance: lookups = 1075 / hit rate = 28%
 # hash-table stats:
-# Load=812/8192=10%, Rehash=0, Collisions=57/1082=5%
-# Finished Make data base on Thu Jun 23 17:54:19 2022
+# Load=767/8192=9%, Rehash=0, Collisions=60/1075=6%
+# Finished Make data base on Thu Aug 18 10:25:31 2022
 
  

@@ -1472,7 +1472,6 @@ void vENGINEtask ( void* argument )
               engine.status            = ENGINE_STATUS_ERROR;
               engine.cmd               = ENGINE_CMD_NONE;
               starter.status           = STARTER_STATUS_IDLE;
-              engine.cmd               = ENGINE_CMD_NONE;
               engine.startError.active = PERMISSION_ENABLE;
               charger.start            = PERMISSION_DISABLE;
               starter.iteration        = 0U;

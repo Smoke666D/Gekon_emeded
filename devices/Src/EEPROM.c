@@ -339,17 +339,23 @@ EEPROM_STATUS eEEPROMWriteData ( const EEPROM_TYPE* eeprom, const uint32_t* adr,
             }
           }
         }
-        res = eEEPROMreadSR( eeprom, &state );
         if ( res == EEPROM_OK )
         {
-          res = eEEPROMwrite( eeprom, EEPROM_CMD_WRITE, adr, data, ( uint16_t )len );
-          osDelay( eeprom->timeout );
           res = eEEPROMreadSR( eeprom, &state );
           if ( res == EEPROM_OK )
           {
-            res = eEEPROMwriteDisable( eeprom );
+            res = eEEPROMwrite( eeprom, EEPROM_CMD_WRITE, adr, data, ( uint16_t )len );
             osDelay( eeprom->timeout );
             res = eEEPROMreadSR( eeprom, &state );
+            if ( res == EEPROM_OK )
+            {
+              res = eEEPROMwriteDisable( eeprom );
+              if ( res == EEPROM_OK )
+              {
+                osDelay( eeprom->timeout );
+                res = eEEPROMreadSR( eeprom, &state );
+              }
+            }
           }
         }
       }

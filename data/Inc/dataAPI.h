@@ -51,7 +51,8 @@ typedef enum
   DATA_API_STAT_MAX_ERROR,     /* 5 Data is too big                        */
   DATA_API_STAT_ADR_ERROR,     /* 6 Wrong address                          */
   DATA_API_STAT_EEPROM_ERROR,  /* 7 Error during EEPROM write operation    */
-  DATA_API_STAT_ERROR,         /* 8 Other error                            */
+  DATA_API_STAT_NULL_DATA,     /* 8 Data pointer is NULL                   */
+  DATA_API_STAT_ERROR          /* 9 Other error                            */
 } DATA_API_STATUS;
 /*----------------------- Structures -----------------------------------*/
 typedef struct __packed

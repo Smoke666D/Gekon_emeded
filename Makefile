@@ -210,13 +210,13 @@ flash: $(TARGET_HEX)
 	$(STFLASH) --reset --format ihex write $<
 
 zip:
-	zip $(TARGET_ZIP) $(TARGET_HEX)	
+	$(V1) zip $(TARGET_ZIP) $(TARGET_HEX)	
 
 cppcheck: $(C_SOURCE_PROJ) | $(REPORT_DIR)
-	$(CPPCHECK) $(CHKFLAGS) $(C_INCLUDES) $(GLOBAL_DEFINES) --output-file=$(CHKREPORT) $^
+	$(V1) $(CPPCHECK) $(CHKFLAGS) $(C_INCLUDES) $(GLOBAL_DEFINES) --output-file=$(CHKREPORT) $^
 
 misra: $(C_SOURCE_PROJ) | $(REPORT_DIR)
-	$(CPPCHECK) $(CHKMISRAFLAGS) $(GLOBAL_DEFINES) --output-file=$(CHKMISRAREPORT) $^
+	$(V1) $(CPPCHECK) $(CHKMISRAFLAGS) $(GLOBAL_DEFINES) --output-file=$(CHKMISRAREPORT) $^
 
 version:
 	@echo $(VER)

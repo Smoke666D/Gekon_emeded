@@ -105,10 +105,9 @@ void vMBeventFullReset ( void )
 MB_DATA_STATUS eMBreadData ( uint8_t adr, uint8_t* data, uint16_t length )
 {
   MB_DATA_STATUS res = MB_DATA_STATUS_OK;
-  uint16_t       i   = 0U;
   if ( ( ( uint16_t )adr + length ) <= OUTPUT_DATA_REGISTER_NUMBER )
   {
-    for ( i=0U; i<length; i++ )
+    for ( uint16_t i=0U; i<length; i++ )
     {
       vOUTPUTupdate( adr + i );
       data[2U * i]      = ( uint8_t )( uOUTPUTread( adr + i ) >> 8U );
@@ -126,10 +125,9 @@ MB_DATA_STATUS eMBwriteData ( uint8_t adr, const uint16_t* data, uint16_t length
 {
   OUTPUT_STATUS  stat = OUTPUT_STATUS_BUSY;
   MB_DATA_STATUS res  = MB_DATA_STATUS_OK;
-  uint16_t       i    = 0U;
   if ( ( ( uint16_t )adr + length ) <= OUTPUT_DATA_REGISTER_NUMBER )
   {
-    for ( i=0U; i<length; i++ )
+    for ( uint16_t i=0U; i<length; i++ )
     {
       stat = OUTPUT_STATUS_BUSY;
       while ( stat == OUTPUT_STATUS_BUSY )

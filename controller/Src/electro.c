@@ -460,7 +460,6 @@ void vELECTROdataInit ( void )
   generator.phaseSequenceError.ack                  = PERMISSION_DISABLE;
   generator.phaseSequenceError.event.type           = EVENT_GENERATOR_PHASE_SEQUENCE;
   generator.phaseSequenceError.event.action         = ACTION_SHUTDOWN;
-  generator.phaseSequenceError.ack                  = PERMISSION_DISABLE;
   generator.phaseSequenceError.ignor                = PERMISSION_DISABLE;
   generator.phaseSequenceError.trig                 = TRIGGER_IDLE;
   generator.phaseSequenceError.status               = ALARM_STATUS_IDLE;

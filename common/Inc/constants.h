@@ -11,6 +11,7 @@
 extern const fix16_t fix60;       /* --- */
 extern const fix16_t fix100;      /* --- */
 extern const fix16_t fuelDensity; /* gram/liter */
+extern const fix16_t fix1;
 
 
 #endif /* INC_CONSTANTS_H_ */

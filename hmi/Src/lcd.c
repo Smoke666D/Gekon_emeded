@@ -162,20 +162,26 @@ void vLCDdelay ( void )
 {
   static portBASE_TYPE xHigherPriorityTaskWoken;
 
+
   //Управление подсветкой
   lcd_brigth_counter++;
   if (lcd_brigth_counter == lcd_brigth)
+  {
       HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_RESET );
+      HAL_GPIO_WritePin(LCD_MISO_GPIO_Port, LCD_MISO_Pin, GPIO_PIN_RESET );
+  }
   else
     if (lcd_brigth_counter >= 100U)
     {
       lcd_brigth_counter = 0U;
       HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_SET );
+      HAL_GPIO_WritePin( LCD_MISO_GPIO_Port, LCD_MISO_Pin, GPIO_PIN_RESET );
     }
 
   if (lcd_brigth == 0)
   {
     HAL_GPIO_WritePin( LCD_LED_GPIO_Port, LCD_LED_Pin, GPIO_PIN_RESET );
+    HAL_GPIO_WritePin( LCD_MISO_GPIO_Port, LCD_MISO_Pin, GPIO_PIN_RESET );
    }
   //Задержка после команды lcd
   if (lcd_delay)

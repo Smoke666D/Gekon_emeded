@@ -892,6 +892,12 @@ static void MX_SPI2_Init(void)
   /* USER CODE END SPI2_Init 0 */
 
   /* USER CODE BEGIN SPI2_Init 1 */
+   GPIO_InitTypeDef GPIO_InitStruct = {0};
+   GPIO_InitStruct.Pin = LCD_MISO_Pin;
+   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+   GPIO_InitStruct.Pull =  GPIO_PULLUP;
+   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+   HAL_GPIO_Init(LCD_MISO_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE END SPI2_Init 1 */
   /* SPI2 parameter configuration*/
